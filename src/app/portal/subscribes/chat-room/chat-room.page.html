@@ -42,7 +42,10 @@
             </div>
             <div *ngFor="let msg of ViewableMessage; let i = index" [id]="msg.message_id"
               (contextmenu)="ChatBalloonContextMenu(msg)" (mousedown)="ChatBalloonMouseDown($event, msg)"
-              (touchstart)="ChatBalloonOnTouchStart($event, msg)">
+              (touchstart)="ChatBalloonOnTouchStart($event, msg)" class="msg_parent">
+              <div class="msg_bg_form">
+                <div [id]="msg.message_id + '_bg'" class="msg_bg_col"></div>
+              </div>
               <div *ngIf="!msg['is_me'] && !msg.content['noti']">
                 <!-- 날짜 표시 -->
                 <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"

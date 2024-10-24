@@ -1038,10 +1038,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             else this.TargetMessageObject.style.marginRight = `${CurrentChatMovedSize / 2}px`;
           } else this.TargetMessageObject.style.marginLeft = `${-CurrentChatMovedSize / 2}px`;
           if (MESSAGE_QOUTE_SIZE < CurrentChatMovedSize) {
-            this.TargetMessageObject.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .5)';
+            this.TargetMessageBackground.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .5)';
           } else if (-MESSAGE_QOUTE_SIZE > CurrentChatMovedSize) {
-            this.TargetMessageObject.style.backgroundColor = 'rgba(var(--ion-color-tertiary-rgb), .5)';
-          } else this.TargetMessageObject.style.backgroundColor = null;
+            this.TargetMessageBackground.style.backgroundColor = 'rgba(var(--ion-color-tertiary-rgb), .5)';
+          } else this.TargetMessageBackground.style.backgroundColor = null;
         }
       }
       // https://javascript.info/task/truncate
@@ -1118,7 +1118,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               console.log('메시지 복사 실패: ', e);
             }
           }
-          this.TargetMessageObject.style.backgroundColor = null;
+          this.TargetMessageBackground.style.backgroundColor = null;
           this.TargetMessageObject.style.paddingRight = null;
           this.TargetMessageObject.style.marginRight = null;
           this.TargetMessageObject.style.marginLeft = null;
@@ -1136,9 +1136,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 해당 메시지 찾기 */
   async FindQoute(id: string, timestamp: string) {
     let targetChat: HTMLElement;
+    let targetChatBg: HTMLElement;
     for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
       if (id == this.ViewableMessage[i].message_id) {
         targetChat = document.getElementById(id);
+        targetChatBg = document.getElementById(id + '_bg');
         break;
       }
     this.BlockAutoScrollDown = true;
@@ -1156,6 +1158,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }
           if (id == this.ViewableMessage[i].message_id) {
             targetChat = document.getElementById(id);
+            targetChatBg = document.getElementById(id + '_bg');
             break;
           }
         }
@@ -1165,11 +1168,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       targetChat.scrollIntoView({ block: 'center', behavior: 'smooth' });
       setTimeout(() => {
         if (this.WillLeave) return;
-        targetChat.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .5)';
+        targetChatBg.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .5)';
       }, 100);
       setTimeout(() => {
         if (this.WillLeave) return;
-        targetChat.style.backgroundColor = null;
+        targetChatBg.style.backgroundColor = null;
         this.BlockAutoScrollDown = false;
       }, 3500);
     } else this.p5toast.show({
@@ -1835,7 +1838,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 마우스 클릭 시작점 */
   MsgClickedStartPos: number;
+  /** 메시지 가장 부모 개체 */
   TargetMessageObject: HTMLElement;
+  /** 메시지 배경색상 적용을 위한 개체 */
+  TargetMessageBackground: HTMLElement;
   IsQouteMyMessage: boolean;
 
   /** 메시지를 누를 때 */
@@ -1844,6 +1850,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.IsQouteMyMessage = msg.is_me;
       this.MsgClickedStartPos = ev.clientX;
       this.TargetMessageObject = document.getElementById(msg.message_id);
+      this.TargetMessageBackground = document.getElementById(msg.message_id + '_bg');
       this.MsgClickedStartPos = ev.clientX + 90;
       this.p5ChatMsgDragAct(ev.clientX);
     }
@@ -1855,6 +1862,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.IsQouteMyMessage = msg.is_me;
       this.MsgClickedStartPos = ev.touches[0].clientX;
       this.TargetMessageObject = document.getElementById(msg.message_id);
+      this.TargetMessageBackground = document.getElementById(msg.message_id + '_bg');
     } catch (e) { }
   }
 

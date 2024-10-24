@@ -118,6 +118,24 @@
 .qoute_text {
     text-align: initial;
     margin: 4px 0px 0px 0px;
+    cursor: pointer;
+}
+
+.msg_parent {
+    position: relative;
+}
+
+.msg_bg_form {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    padding: 2px 0px;
+}
+
+.msg_bg_col {
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
 }
 
 .qoute_background {
