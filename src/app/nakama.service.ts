@@ -104,8 +104,8 @@ export class NakamaService {
 
   /** 구성: this > Official > TargetKey > Client */
   servers: { [id: string]: { [id: string]: NakamaGroup } } = {
-    'official': {},
-    'unofficial': {},
+    official: {},
+    unofficial: {},
   };
 
   /** 채널 리스트에 서버 이름 표시 여부 */
@@ -474,36 +474,15 @@ export class NakamaService {
       });
       try {
         let count_server = await this.init_all_sessions();
-        if (!count_server) {
-          if (this.isRewardAdsUsed) {
-            this.AccessToOfficialTestServer();
-          } else this.p5toast.show({
+        if (!count_server)
+          this.p5toast.show({
             text: this.lang.text['Nakama']['NoLoginServer'],
           });
-        }
       } catch (e) {
         console.log('테스트 서버 연결 오류: ', e);
       }
     }
     this.TogglingSession = false;
-  }
-
-  /** 리워드 광고 발동 여부  
-   * 리워드 광고를 통해 리워드를 받았다면 광고를 틀지 않습니다.  
-   * 리워드 광고로 리워드를 받았다면 개발 테스트 서버에 연결시킵니다.
-   */
-  isRewardAdsUsed = false;
-  /** 광고 시청 후 개발자 테스트 서버에 참여하기 */
-  async WatchAdsAndGetDevServerInfo(force = false) {
-    if ((!this.isRewardAdsUsed) || force) {
-      /** 광고 정보 불러오기 */
-      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-      loading.present();
-      await this.AccessToOfficialTestServer();
-      loading.dismiss();
-      return true;
-    }
-    return false;
   }
 
   /** 공식 테스트 서버 접근 권한 생성 */
@@ -518,7 +497,6 @@ export class NakamaService {
         target: 'DevTestServer',
         useSSL: true,
       });
-      this.isRewardAdsUsed = true;
       // official 로그인 처리
       let Targets = Object.keys(this.servers['official']);
       for (let i = 0, j = Targets.length; i < j; i++)
@@ -1604,17 +1582,17 @@ export class NakamaService {
    * groups[isOfficial][target][group_id] = { ...info }
    */
   groups: any = {
-    'official': {},
-    'unofficial': {},
+    official: {},
+    unofficial: {},
   }
 
   /** 등록된 채널들 관리  
    * channels_orig[isOfficial][target][channel_id] = { ...info }
    */
   channels_orig = {
-    'local': {},
-    'official': {},
-    'unofficial': {},
+    local: {},
+    official: {},
+    unofficial: {},
   };
 
   /** 채널 추가, 채널 추가에 사용하려는 경우 join_chat_with_modulation() 를 대신 사용하세요
