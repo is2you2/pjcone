@@ -1133,6 +1133,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 인용 메시지를 찾을 때 자동으로 메시지 풀링되는 것을 막기 위해 존재함 */
   BlockAutoScrollDown = false;
+  /** 메시지 개체 배경색 조정용  
+   * BackgroundAct[msg.id] = Date.now();
+   */
+  BackgroundAct = {};
   /** 해당 메시지 찾기 */
   async FindQoute(id: string, timestamp: string) {
     let targetChat: HTMLElement;
@@ -1166,14 +1170,25 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
     if (targetChat) {
       targetChat.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      { // 이미 배경칠된 채팅을 초기화처리
+        let keys = Object.keys(this.BackgroundAct);
+        for (let key of keys) {
+          let colored_bg = document.getElementById(key + '_bg');
+          colored_bg.style.backgroundColor = null;
+        }
+      }
+      this.BackgroundAct[id] = Date.now();
       setTimeout(() => {
         if (this.WillLeave) return;
         targetChatBg.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .5)';
       }, 100);
       setTimeout(() => {
         if (this.WillLeave) return;
-        targetChatBg.style.backgroundColor = null;
         this.BlockAutoScrollDown = false;
+        if ((Date.now() - this.BackgroundAct[id]) >= 3500) {
+          targetChatBg.style.backgroundColor = null;
+          delete this.BackgroundAct[id];
+        }
       }, 3500);
     } else this.p5toast.show({
       text: this.lang.text['ChatRoom']['LostOriginMsg'],
