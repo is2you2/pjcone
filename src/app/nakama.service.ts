@@ -2497,7 +2497,14 @@ export class NakamaService {
               if (this.servers[_is_official][_target].session.user_id != info.user_id)
                 this.load_other_user(info.user_id, _is_official, _target)['online'] = true;
             });
-            if (!BlockSelfCount.includes(p.channel_id)) {
+            /** 자기 자신의 다른 기기 접속인지 검토 */
+            let check_self = true;
+            for (let user of p.joins)
+              if (user.user_id != this.servers[_is_official][_target].session.user_id) {
+                check_self = false;
+                break;
+              }
+            if (!BlockSelfCount.includes(p.channel_id) || !check_self) {
               BlockSelfCount.push(p.channel_id);
               this.count_channel_online_member(p, _is_official, _target);
             }
