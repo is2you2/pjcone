@@ -66,7 +66,7 @@ ToggleWorkers,모든 사용자 선택,Select all users
 Title,채널,Channels
 myProfile,내 프로필,My profile
 OnebyOneChat,1:1 대화 초대,1:1 Chat Invitation
-JoinedChannels,참여 채널,Joined channels
+JoinedChannels,채널 목록,Channel List
 has_noties,검토해야할 알림이 있습니다,There are notifications to review
 NoChat,채널 생성하기,Create a channel
 noChatList,참여중인 대화가 없습니다,There are no active conversations
