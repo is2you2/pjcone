@@ -412,8 +412,13 @@ export class AdminToolsPage implements OnInit {
   }
 
   remove_user(user: any) {
+    let usernameInfo = user.display_name || this.lang.text['Profile']['noname_user'];
+    try {
+      if (this.nakama.usernameOverride[this.isOfficial][this.target][user.id])
+        usernameInfo += ` (${this.nakama.usernameOverride[this.isOfficial][this.target][user.id]})`;
+    } catch (e) { }
     this.alertCtrl.create({
-      header: user.display_name || this.lang.text['Profile']['noname_user'],
+      header: usernameInfo,
       message: this.lang.text['AdminTools']['ForceLeave'],
       buttons: [{
         text: this.lang.text['AdminTools']['ApplyLeave'],
