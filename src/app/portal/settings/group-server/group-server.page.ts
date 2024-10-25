@@ -68,6 +68,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
   CanAddTestServer = false;
   OnlineToggle = false;
   ShowServerList = false;
+  EditingName = false;
   isClickDisplayNameEdit = false;
   initialize() {
     this.gsCanvasDiv = document.getElementById('GroupServerCanvasDiv');
@@ -87,7 +88,6 @@ export class GroupServerPage implements OnInit, OnDestroy {
       let userColorLerp = 0;
       let hasColorLerp = Boolean(this.session_uid);
       let imgDiv: p5.Element;
-      let EditingName = false;
       let OnlineLamp: p5.Element;
       let LoginButton: p5.Element;
       let InputForm = p.createDiv();
@@ -214,7 +214,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
         let editSpan = p.createSpan('<ion-icon name="pencil-outline" style="width: 24px; height: 24px; margin-left: 8px"></ion-icon>');
         editSpan.parent(nameDiv);
         nameDiv.elt.onclick = () => { // 편집 모드로 변경
-          EditingName = true;
+          this.EditingName = true;
           nameEditDiv.value(this.nakama.users.self['display_name'] ? nameSpan.html() : '');
           nameEditDiv.show();
           nameDiv.hide();
@@ -236,7 +236,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
           this.nakama.users.self['display_name'] = nameEditDiv.value();
         });
         nameEditDiv.elt.addEventListener('focusout', () => {
-          EditingName = false;
+          this.EditingName = false;
           this.nakama.users.self['display_name'] = nameEditDiv.value();
           nameSpan.html(`${nameEditDiv.value() || this.lang.text['Profile']['noname_user']}`);
           nameEditDiv.hide();
@@ -379,7 +379,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
       }
       p.keyPressed = (ev: any) => {
         if (ev.code == 'Enter') {
-          if (EditingName)
+          if (this.EditingName)
             nameEditDiv.elt.blur();
         }
       }
@@ -649,7 +649,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
   ionViewDidEnter() {
     this.can_auto_modified = true;
     this.global.p5KeyShortCut['AddAct'] = () => {
-      if (this.ShowServerList)
+      if (this.ShowServerList && !this.EditingName)
         this.OpenNewServerForm();
     }
     this.global.p5KeyShortCut['Escape'] = () => {
