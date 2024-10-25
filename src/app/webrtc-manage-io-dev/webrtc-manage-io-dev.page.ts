@@ -91,9 +91,6 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
     this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
-    this.RegisterServer.onDidDismiss().then(() => {
-      this.global.RestoreShortCutAct('webrtc-manage-io');
-    });
   }
 
   saveSetup() {
@@ -126,6 +123,9 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
 
   OpenNewWebRTCServerForm() {
     this.global.StoreShortCutAct('webrtc-manage-io');
+    this.RegisterServer.onDidDismiss().then(() => {
+      this.global.RestoreShortCutAct('webrtc-manage-io');
+    });
     this.RegisterServer.present();
   }
 
@@ -140,11 +140,11 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
       });
       return;
     }
-    await this.nakama.SaveWebRTCServer(this.userInput);
+    let isExist = await this.nakama.SaveWebRTCServer(this.userInput);
     let address = `${SERVER_PATH_ROOT}pjcone_pwa/?rtcserver=[${this.userInput.urls}],${this.userInput.username},${this.userInput.credential}`;
     let QRCode = this.global.readasQRCodeFromString(address);
     this.QRCodes.push(QRCode);
-    this.ServerInfos.push(this.userInput);
+    if (!isExist) this.ServerInfos.push(this.userInput);
     this.userInput = {
       urls: [''],
       username: '',
@@ -158,6 +158,14 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
   copy_info(index: number) {
     let address = `${SERVER_PATH_ROOT}pjcone_pwa/?rtcserver=[${this.ServerInfos[index].urls}],${this.ServerInfos[index].username},${this.ServerInfos[index].credential}`;
     this.global.WriteValueToClipboard('text/plain', address);
+  }
+
+  ModifyServer(index: number) {
+    this.userInput = this.ServerInfos[index];
+    this.UserInputUrlsLength.length = 0;
+    for (let i = 0, j = this.userInput.urls.length; i < j; i++)
+      this.UserInputUrlsLength.push(i);
+    this.OpenNewWebRTCServerForm();
   }
 
   async RemoveServer(index: number) {

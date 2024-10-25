@@ -693,12 +693,14 @@ export class NakamaService {
       let add = this.catch_address_from_rtc_server_address(info);
       let exist = this.catch_address_from_rtc_server_address(savedWebRTCData[i]);
       if (add == exist) {
+        savedWebRTCData[i] = info;
         isExist = true;
         break;
       }
     }
     if (!isExist) savedWebRTCData.push(info);
     await this.indexed.saveTextFileToUserPath(JSON.stringify(savedWebRTCData), 'servers/webrtc_server.json');
+    return isExist;
   }
 
   /** 서버를 삭제할 때 해당 주소의 WebRTC 서버를 삭제하기 */
