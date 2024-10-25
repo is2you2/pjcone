@@ -649,15 +649,7 @@ export class NakamaService {
     line += `,${info.port}`;
     line += `,${info.useSSL}`;
     return new Promise(async (done) => {
-      // WebRTC 정보 자동 생성처리 (기본 정보 기반)
-      {
-        let auto_gen_server = {
-          urls: [`stun:${info.address}:3478`, `turn:${info.address}:3478`],
-          username: 'username',
-          credential: 'password',
-        }
-        await this.SaveWebRTCServer(auto_gen_server);
-      }
+      await this.AutoGenWebRTCInfo(info);
       if (info.isOfficial != 'official')
         this.indexed.loadTextFromUserPath('servers/list_detail.csv', async (e, v) => {
           let list: string[] = [];
@@ -679,6 +671,16 @@ export class NakamaService {
         done();
       }
     });
+  }
+
+  /** WebRTC 정보 자동 생성처리 (기본 정보 기반) */
+  async AutoGenWebRTCInfo(info: ServerInfo) {
+    let auto_gen_server = {
+      urls: [`stun:${info.address}:3478`, `turn:${info.address}:3478`],
+      username: 'username',
+      credential: 'password',
+    }
+    await this.SaveWebRTCServer(auto_gen_server);
   }
 
   /** WebRTC 정보 저장하기 */

@@ -70,6 +70,14 @@ export class ServerDetailPage implements OnInit, OnDestroy {
     this.global.open_custom_site(address);
   }
 
+  /** WebRTC 서버 정보 손상시 복구용 */
+  async reGenerateWebRTCInfo() {
+    await this.nakama.AutoGenWebRTCInfo(this.dedicated_info);
+    this.p5toast.show({
+      text: this.lang.text['ServerDetail']['RegenWebRTCDone'],
+    });
+  }
+
   index = 0;
 
   @ViewChild('ServerDetailuseSSL') ServerDetailuseSSL: IonToggle;

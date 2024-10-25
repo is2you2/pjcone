@@ -40,11 +40,6 @@
             [(ngModel)]="dedicated_info.address" placeholder="(https://)192.168.0.1"></ion-input>
           <ion-icon slot="end" name="open-outline" (click)="global.open_custom_site(dedicated_info.address)"></ion-icon>
         </ion-item>
-        <ion-item button [disabled]="add_custom_tog">
-          <ion-input [label]="lang.text['GroupServer']['Key']" [(ngModel)]="dedicated_info.key" class="ion-text-right"
-            placeholder="defaultkey">
-          </ion-input>
-        </ion-item>
         <div style="position: relative;">
           <div *ngIf="global.ShowHint" class="shortcut_hint">Ctrl + Enter</div>
           <ion-item button (click)="add_custom_dedicated()" [disabled]="add_custom_tog">
