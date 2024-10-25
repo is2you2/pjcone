@@ -1807,8 +1807,6 @@ export class NakamaService {
           try {
             if (!this.channels_orig[_is_official][_target][_cid]['info'])
               this.channels_orig[_is_official][_target][_cid]['info'] = {};
-            this.channels_orig[_is_official][_target][_cid]['info']['isOfficial'] = _is_official;
-            this.channels_orig[_is_official][_target][_cid]['info']['target'] = _target;
             switch (this.channels_orig[_is_official][_target][_cid]['redirect']['type']) {
               case 1: // 방 대화
                 break;
@@ -1834,6 +1832,8 @@ export class NakamaService {
                 break;
             }
           } catch (e) { }
+          this.channels_orig[_is_official][_target][_cid]['info']['isOfficial'] = _is_official;
+          this.channels_orig[_is_official][_target][_cid]['info']['target'] = _target;
           // 새로 생긴 채널에 현재 시간을 기입하여 가장 최상단으로 올라오도록 구성
           if (!this.channels_orig[_is_official][_target][_cid]['last_comment_time'])
             this.channels_orig[_is_official][_target][_cid]['last_comment_time'] = Date.now();
