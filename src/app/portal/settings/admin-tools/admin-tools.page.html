@@ -79,12 +79,13 @@
       <ion-accordion [value]="all_users[i].id || all_users[i].user_id">
         <ion-item button slot="header">
           <div class="additional_form bg_img_form">
-            <img *ngIf="all_users[i].img" class="profile_img" [src]="all_users[i].img"/>
+            <img *ngIf="all_users[i].img" class="profile_img" [src]="all_users[i].img" />
           </div>
           <div class="additional_form status_bar_single"
             [style]="'background-color: ' + statusBar.colors[all_users[i].online ? 'online' : 'offline']">
           </div>
-          <ion-label class="form_margin">{{all_users[i].display_name ||
+          <ion-label class="form_margin">{{nakama.usernameOverride[isOfficial][target][all_users[i].id] ||
+            all_users[i].display_name ||
             lang.text['Profile']['noname_user']}}</ion-label>
           <ion-icon class="ion-accordion-toggle-icon hide_accordion_icon"></ion-icon>
         </ion-item>
@@ -185,7 +186,8 @@
             <ion-label style="display: contents" color="medium">{{lang.text['AdminTools']['GroupCreator']}}</ion-label>
             <ion-label color="medium" class="ion-text-end">
               {{(nakama.users[isOfficial][target][all_groups[i].creator_id] ?
-              nakama.users[isOfficial][target][all_groups[i].creator_id]['display_name'] :
+              (nakama.usernameOverride[isOfficial][target][all_groups[i].creator_id] ||
+              nakama.users[isOfficial][target][all_groups[i].creator_id]['display_name']) :
               nakama.users.self['display_name']) || lang.text['Profile']['noname_user']}}
             </ion-label>
           </ion-item>
@@ -204,10 +206,11 @@
                       <img
                         *ngIf="user.is_me ? nakama.users.self['img'] : nakama.users[isOfficial][target][user.user.id]['img']"
                         class="profile_img"
-                        [src]="user.is_me ? nakama.users.self['img'] : nakama.users[isOfficial][target][user.user.id]['img']"/>
+                        [src]="user.is_me ? nakama.users.self['img'] : nakama.users[isOfficial][target][user.user.id]['img']" />
                     </div>
                     <ion-label>{{(user.is_me ? nakama.users.self['display_name'] :
-                      user.user.display_name) || lang.text['Profile']['noname_user']}}</ion-label>
+                      (nakama.usernameOverride[isOfficial][target][user.user.id]
+                      || user.user.display_name)) || lang.text['Profile']['noname_user']}}</ion-label>
                   </ion-item>
                 </div>
               </div>
