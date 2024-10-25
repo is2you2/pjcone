@@ -1044,10 +1044,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           } else this.TargetMessageBackground.style.backgroundColor = null;
         }
       }
-      // https://javascript.info/task/truncate
-      let truncate = (str: string, maxlength: number) => {
-        return (str.length > maxlength) ? str.slice(0, maxlength - 1) + '…' : str;
-      }
       p.mouseReleased = () => {
         ReleaseChatMsgAct();
       }
@@ -1070,7 +1066,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.userInput.qoute = {
                 timestamp: target_msg.create_time,
               };
-              if (text) this.userInput.qoute.text = truncate(text, 80);
+              if (text) this.userInput.qoute.text = this.global.truncateString(text, 80);
               if (target_msg.content.viewer == 'image') {
                 if (target_msg.content.url) {
                   this.userInput.qoute.url = target_msg.content.url;

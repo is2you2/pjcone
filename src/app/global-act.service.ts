@@ -1545,8 +1545,10 @@ export class GlobalActService {
     try {
       let data = {};
       let _value = value;
-      if (type == 'text/plain')
+      if (type == 'text/plain') {
         _value = new Blob([value], { type: type });
+        value = this.truncateString(value, 80);
+      }
       data[type] = _value;
       await navigator.clipboard.write([
         new ClipboardItem(data)
@@ -1562,6 +1564,11 @@ export class GlobalActService {
       });
       throw e;
     }
+  }
+
+  /** 문자열 제한하기 */
+  truncateString(str: string, maxlength: number) {
+    return (str.length > maxlength) ? str.slice(0, maxlength - 1) + '…' : str;
   }
 
   /** 웹 소켓 클라이언트 발송 대기 시간 통합 관리용 */
