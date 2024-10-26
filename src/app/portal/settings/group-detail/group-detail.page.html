@@ -10,7 +10,7 @@
 <ion-content>
   <div *ngIf="info['status'] != 'missing'">
     <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;" alt="Loading"
-      (click)="copy_startup_address()"/>
+      (click)="copy_startup_address()" />
   </div>
   <ion-item *ngIf="info['status'] == 'pending'" color="warning">
     <ion-label class="ion-text-center">{{lang.text['GroupDetail']['NotAcceptYet']}}</ion-label>
@@ -28,14 +28,14 @@
     <div class="additional_form bg_img_form">
       <img class="profile_img"
         [style]="'filter: ' + (info['status'] == 'online' ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
-        [src]="info['img']"/>
+        [src]="info['img']" />
     </div>
     <ion-label class="form_margin">
       <div>
         <table>
           <tr>
             <td>
-              {{info['name'] || info['title'] || info['display_name']}}
+              {{info['name'] || info['title'] || info['display_name'] || lang.text['ChatRoom']['noname_chatroom']}}
             </td>
             <td class="server_target">
               {{'(' + (info['server']['name'] || info['server']['target']) + ')'}}
@@ -67,14 +67,11 @@
     <div class="additional_form bg_img_form">
       <img class="profile_img"
         [style]="'filter: ' + (user.user['online'] ? 'grayscale(0) contrast(1);' : 'grayscale(.9) contrast(1.4);')"
-        [src]="user.user.img"/>
+        [src]="user.user.img" />
     </div>
     <ion-label class="form_margin">{{
-      info['info'] ? (info['info']['name'] ||
-      nakama.usernameOverride[info['info']['isOfficial']][info['info']['target']][info['info']['id']]
-      || info['info']['display_name'] ||
-      lang.text['ChatRoom']['noname_chatroom']) : (info['title'] ||
-      lang.text['ChatRoom']['noname_chatroom'])}}</ion-label>
+      nakama.usernameOverride[isOfficial][target][user.user.id]
+      || user.user.display_name}}</ion-label>
   </ion-item>
   <ion-item *ngIf="(info['status'] == 'online' || info['status'] == 'pending') && has_admin" button
     (click)="remove_group()">
