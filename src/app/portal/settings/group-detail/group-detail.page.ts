@@ -48,6 +48,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     this.route.queryParams.subscribe(_p => {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;
+        if (!navParams) return;
         this.info = navParams.info;
         this.file_sel_id = `group_detail_${this.info.id}_${new Date().getTime()}}`;
         this.info_orig = JSON.parse(JSON.stringify(navParams.info));

@@ -45,6 +45,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
     this.route.queryParams.subscribe(_p => {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;
+        if (!navParams) return;
         this.info = navParams.info;
         this.has_admin = navParams.has_admin;
         this.group_info = navParams.group;
@@ -67,6 +68,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
   isClickDisplayNameEdit = false;
   OtherCanvasDiv: any;
   ionViewWillEnter() {
+    if (this.p5canvas) return;
     this.OtherCanvasDiv = document.getElementById('OtherUserCanvasDiv');
     this.p5canvas = new p5((p: p5) => {
       const LERP_SIZE = .025;
