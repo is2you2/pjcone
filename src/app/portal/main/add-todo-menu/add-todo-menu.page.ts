@@ -421,6 +421,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 타이틀에 포커스중인지 검토 */
   CheckIfTitleFocus = false;
   async ionViewWillEnter() {
+    this.WaitingLoaded = true;
     this.lock_modal_open = false;
     if (!this.navParams) return;
     VoiceRecorder.getCurrentStatus().then(v => {
@@ -1088,6 +1089,15 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
   }
 
+  WaitingLoaded = false;
+  /** 정확히 현재 페이지가 처리되어야하는 경우 사용 */
+  async WaitingCurrent() {
+    while (!this.WaitingLoaded) {
+      await new Promise((done) => setTimeout(done, 0));
+    }
+    return true;
+  }
+
   lock_modal_open = false;
   open_content_viewer(index: number) {
     if (this.lock_modal_open) return;
@@ -1095,9 +1105,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     let createRelevances = [];
     for (let i = 0, j = this.userInput.attach.length; i < j; i++)
       createRelevances.push({ content: JSON.parse(JSON.stringify(this.userInput.attach[i])) });
-    this.global.PageDismissAct['todo-ionicivewer'] = (v: any) => {
+    this.global.PageDismissAct['todo-ionicivewer'] = async (v: any) => {
+      await this.WaitingCurrent();
       this.lock_modal_open = false;
-      this.AddShortCut();
       if (v.data) { // 파일 편집하기를 누른 경우
         switch (v.data.type) {
           case 'image':
@@ -1136,7 +1146,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               text: v.data.text,
               dismiss: 'todo-modify-image',
             });
-            return;
+            break;
           case 'text':
             this.userInput.attach[v.data.index].content_related_creator.push(this.userInput.attach[v.data.index].content_creator);
             this.userInput.attach[v.data.index].content_creator = {
@@ -1667,6 +1677,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   WillLeavePage = false;
   async ionViewWillLeave() {
     this.WillLeavePage = true;
+    this.WaitingLoaded = false;
     delete this.global.p5KeyShortCut['EnterAct'];
     this.removeShortCut();
     this.titleIonInput.onblur = null;
