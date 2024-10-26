@@ -1076,7 +1076,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   if (!this.userInput.qoute.url) {
                     let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/${this.userInput.qoute.path}`;
                     this.indexed.checkIfFileExist(path, b => {
-                      if (b) this.indexed.loadBlobFromUserPath(path, '', blob => {
+                      if (b) this.indexed.loadBlobFromUserPath(path, target_msg.content.type, blob => {
                         let FileURL = URL.createObjectURL(blob);
                         this.userInput.qoute['url'] = FileURL;
                         setTimeout(() => {
@@ -1439,7 +1439,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   OpenQouteThumbnail(c: any) {
     let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/${c.content.qoute.path}`;
     this.indexed.checkIfFileExist(path, b => {
-      if (b) this.indexed.loadBlobFromUserPath(path, '', blob => {
+      let file_ext = path.split('.').pop();
+      let file_type = '';
+      switch (file_ext) {
+        case 'svg':
+          file_type = 'image/svg+xml';
+          break;
+      }
+      if (b) this.indexed.loadBlobFromUserPath(path, file_type, blob => {
         let FileURL = URL.createObjectURL(blob);
         c.content.qoute['url'] = FileURL;
         setTimeout(() => {
@@ -1630,7 +1637,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             let FileURL: any;
             try {
               this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
-              let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
+              let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.type);
               FileURL = URL.createObjectURL(blob);
             } catch (e) { }
             this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL, this.cont);
@@ -1688,7 +1695,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             if (this.ViewableMessage[i].content['url']) throw '링크된 파일';
             this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
             this.indexed.checkIfFileExist(this.ViewableMessage[i].content['path'], b => {
-              if (b) this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext, (blob) => {
+              if (b) this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.type, (blob) => {
                 FileURL = URL.createObjectURL(blob);
                 this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL, this.cont);
               });
@@ -1724,7 +1731,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         let FileURL: any;
         try {
           this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
-          let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
+          let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.type);
           FileURL = URL.createObjectURL(blob);
         } catch (e) { }
         this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL, this.cont);
@@ -1779,7 +1786,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         let FileURL: any;
         try {
           this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
-          let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
+          let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.type);
           FileURL = URL.createObjectURL(blob);
         } catch (e) { }
         this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL, this.cont);
@@ -1831,7 +1838,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           for (let i = ShowMeAgainCount - 1; i >= 0; i--) {
             let FileURL: any;
             try {
-              let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.file_ext);
+              let blob = await this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.type);
               FileURL = URL.createObjectURL(blob);
             } catch (e) { }
             this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL, this.cont);
@@ -2329,7 +2336,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.IsMsgEditMode = copied;
           // 파일이 첨부된 메시지라면 썸네일 보여주기
           if (copied.content.path)
-            this.indexed.loadBlobFromUserPath(copied.content.path, '', blob => {
+            this.indexed.loadBlobFromUserPath(copied.content.path, copied.content.type, blob => {
               let FileURL = URL.createObjectURL(blob);
               copied['thumbnail'] = FileURL;
             });
