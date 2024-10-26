@@ -107,10 +107,16 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   isHTMLViewer = false;
 
   /** HTML 직접보기 전환 */
-  ToggleHTMLViewer() {
+  async ToggleHTMLViewer() {
     this.isHTMLViewer = !this.isHTMLViewer;
     if (this.isHTMLViewer) {
       this.p5canvas.remove();
+      // 온전한 재생을 위해 저장 후 재생시킴
+      if (this.FileURL.indexOf('blob:') != 0) {
+        await this.DownloadFileFromURL();
+        let blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo.type);
+        this.FileURL = URL.createObjectURL(blob);
+      }
       this.p5canvas = new p5((p: p5) => {
         p.setup = () => {
           let iframe = p.createElement('iframe');
