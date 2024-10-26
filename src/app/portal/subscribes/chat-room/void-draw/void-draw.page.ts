@@ -61,6 +61,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           width: navParams.width,
           height: navParams.height,
           path: navParams.path,
+          type: navParams.type,
         });
         if (navParams.remote)
           setTimeout(() => {
@@ -464,7 +465,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         this.p5ImageCanvas = ImageCanvas;
         // 사용자 그리기 판넬 생성
         if (initData['path']) { // 배경 이미지 파일이 포함됨
-          let blob = await this.indexed.loadBlobFromUserPath(initData['path'], '');
+          let blob = await this.indexed.loadBlobFromUserPath(initData['path'], initData['type']);
           let FileURL = URL.createObjectURL(blob);
           p.loadImage(FileURL, v => {
             this.p5BaseImage = v;

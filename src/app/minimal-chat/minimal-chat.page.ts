@@ -833,7 +833,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                 }
               if (!is_already_exist) related_creators.push(v.data.msg.content['content_creator']);
             }
-            this.global.PageDismissAct['minimal-ionic-viewer'] = (v: any) => {
+            this.global.PageDismissAct['minimal-ionic-viewer-edit'] = (v: any) => {
               if (v.data) {
                 v.data['loadingCtrl'].dismiss();
                 let base64 = v.data['img'];
@@ -843,16 +843,17 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                 blob['name'] = v.data['name'];
                 this.SendAttachAct({ target: { files: [blob] } });
               }
-              delete this.global.PageDismissAct['minimal-ionic-viewer'];
+              delete this.global.PageDismissAct['minimal-ionic-viewer-edit'];
             }
             await this.WaitingCurrent();
             this.global.ActLikeModal('void-draw', {
               path: v.data.path || FileInfo.path,
               width: v.data.width,
               height: v.data.height,
+              type: v.data.filetype,
               isDarkMode: v.data.isDarkMode,
               scrollHeight: v.data.scrollHeight,
-              dismiss: 'minimal-ionic-viewer',
+              dismiss: 'minimal-ionic-viewer-edit',
             });
             return;
           case 'text':

@@ -1705,7 +1705,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let blob: Blob;
           this.image_info['path'] = this.FileInfo.alt_path || this.FileInfo.path || this.navParams.path;
           if (this.FileInfo['url']) {
-            this.image_info['path'] = 'tmp_files/modify_image.png';
+            this.image_info['path'] = `tmp_files/modify_image.${this.FileInfo.file_ext}`;
             blob = await fetch(this.FileInfo['url'], { signal: this.cont.signal }).then(r => r.blob(),);
             await this.indexed.saveBlobToUserPath(blob, this.image_info['path']);
           }
@@ -1715,6 +1715,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 type: 'image',
                 ...this.image_info,
                 path: this.image_info['path'],
+                filetype: this.FileInfo.type,
                 msg: this.MessageInfo,
                 index: this.RelevanceIndex - 1,
               }

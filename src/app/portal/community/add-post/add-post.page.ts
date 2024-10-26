@@ -124,7 +124,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             if (this.userInput.attachments[i].url)
               this.userInput.attachments[i].thumbnail = this.userInput.attachments[i].url;
             else {
-              let blob = await this.indexed.loadBlobFromUserPath(this.userInput.attachments[i].path, this.userInput.attachments[i].file_ext);
+              let blob = await this.indexed.loadBlobFromUserPath(this.userInput.attachments[i].path, this.userInput.attachments[i].type);
               let FileURL = URL.createObjectURL(blob);
               this.userInput.attachments[i].thumbnail = FileURL;
               setTimeout(() => {
@@ -849,6 +849,7 @@ export class AddPostPage implements OnInit, OnDestroy {
                 path: v.data.path || info.path,
                 width: v.data.width,
                 height: v.data.height,
+                type: v.data.filetype,
                 isDarkMode: v.data.isDarkMode,
                 scrollHeight: v.data.scrollHeight,
                 dismiss: 'add-post-modify-image',
