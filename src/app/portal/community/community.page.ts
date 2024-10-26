@@ -24,7 +24,7 @@ export class CommunityPage implements OnInit {
   ngOnInit() {
     this.nakama.CommunityGoToEditPost = this.add_post;
     this.global.PortalBottonTabAct.Community = () => {
-      if (this.ContentScroll) this.ContentScroll.scrollIntoView({ block: 'start', behavior: 'smooth' })
+      if (this.ContentScroll) this.ContentScroll.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
