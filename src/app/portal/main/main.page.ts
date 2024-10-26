@@ -199,7 +199,7 @@ export class MainPage implements OnInit {
         p.imageMode(p.CENTER);
         let InitScale = Number(localStorage.getItem('p5todoScale') || 1);
         ViewInit();
-        this.ViewInitFunc = ViewInit;
+        this.ViewInitFunc = ViewReinit;
         CamScale = InitScale;
         localStorage.setItem('p5todoScale', `${CamScale}`);
         // 캔버스 멈추기
@@ -417,7 +417,7 @@ export class MainPage implements OnInit {
         }
         p.redraw();
       }
-      /** 카메라 초기화 (3손가락 행동) */
+      /** 카메라 초기화 */
       let ViewInit = () => {
         ScaleCenter.x = p.width / 2;
         ScaleCenter.y = p.height / 2;
@@ -426,6 +426,24 @@ export class MainPage implements OnInit {
         CamScale = 1;
         localStorage.setItem('p5todoScale', `${CamScale}`);
         if (!this.isPlayingCanvas.loop) p.redraw();
+      }
+      /** 카메라 초기화시 시작값 지정 */
+      let ReinitStartFrom = {
+        Act: false,
+        lerp: 0,
+        Scale: p.createVector(),
+        CamPos: p.createVector(),
+        CamScale: 0,
+      }
+      /** 카메라 초기화 (3손가락 행동 등에 의한 재지정) */
+      let ViewReinit = () => {
+        ReinitStartFrom.Act = true;
+        ReinitStartFrom.Scale.x = ScaleCenter.x;
+        ReinitStartFrom.Scale.y = ScaleCenter.y;
+        ReinitStartFrom.CamPos.x = CamPosition.x;
+        ReinitStartFrom.CamPos.y = CamPosition.y;
+        ReinitStartFrom.CamScale = CamScale;
+        if (!this.isPlayingCanvas.loop) p.loop();
       }
       p.draw = () => {
         p.clear(255, 255, 255, 255);
@@ -448,6 +466,30 @@ export class MainPage implements OnInit {
           GravityCenter.x = -p.accelerationX * 40;
           GravityCenter.y = p.accelerationY * 40;
         }
+        // 카메라 초기화 애니메이션 지정
+        if (ReinitStartFrom.Act) {
+          ReinitStartFrom.lerp += .07;
+          ScaleCenter.x = p.lerp(ReinitStartFrom.Scale.x, p.width / 2, asSineGraph(ReinitStartFrom.lerp));
+          ScaleCenter.y = p.lerp(ReinitStartFrom.Scale.y, p.height / 2, asSineGraph(ReinitStartFrom.lerp));
+          CamPosition.x = p.lerp(ReinitStartFrom.CamPos.x, 0, asSineGraph(ReinitStartFrom.lerp));
+          CamPosition.y = p.lerp(ReinitStartFrom.CamPos.y, 0, asSineGraph(ReinitStartFrom.lerp));
+          CamScale = p.lerp(ReinitStartFrom.CamScale, 1, asSineGraph(ReinitStartFrom.lerp));
+          localStorage.setItem('p5todoScale', `${CamScale}`);
+          if (ReinitStartFrom.lerp >= 1) {
+            ReinitStartFrom.Act = false;
+            ReinitStartFrom.lerp = 0;
+            ScaleCenter.x = p.width / 2;
+            ScaleCenter.y = p.height / 2;
+            CamPosition.x = 0;
+            CamPosition.y = 0;
+            CamScale = 1;
+            localStorage.setItem('p5todoScale', `${CamScale}`);
+            if (!this.isPlayingCanvas.loop) p.noLoop();
+          }
+        }
+      }
+      let asSineGraph = (t: number) => {
+        return p.sin(t * p.PI / 2);
       }
       p.windowResized = () => {
         if (BlockInput) return;
@@ -806,7 +848,7 @@ export class MainPage implements OnInit {
             }
             break;
           case 2: // 가운데
-            ViewInit();
+            ViewReinit();
             break;
         }
       }
@@ -890,7 +932,7 @@ export class MainPage implements OnInit {
             break;
           default: // 3개 또는 그 이상은 행동 초기화
             isTouching = false;
-            ViewInit();
+            ViewReinit();
             break;
         }
       }

@@ -33,7 +33,7 @@ export class SubscribesPage implements OnInit {
     });
     this.global.PortalBottonTabAct.Subscribes = () => {
       if (this.SubscribesScrollDiv)
-        this.SubscribesScrollDiv.scrollTop = 0;
+        this.SubscribesScrollDiv.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
