@@ -46,7 +46,9 @@
             <ion-label class="ion-text-center">{{lang.text['GroupServer']['submit']}}</ion-label>
           </ion-item>
         </div>
-        <ion-item-divider>
+        <ion-item-divider style="position: relative;">
+          <div *ngIf="global.ShowHint" class="shortcut_hint" style="top: 0px;">
+            {{lang.text['GroupServer']['RightClickDetail']}}</div>
           <ion-label>{{lang.text['GroupServer']['JoinedServerList']}}</ion-label>
         </ion-item-divider>
         <ion-item *ngFor="let server of servers" button (click)="link_group(server.isOfficial, server.target)"
