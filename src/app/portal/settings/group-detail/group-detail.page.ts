@@ -321,25 +321,6 @@ export class GroupDetailPage implements OnInit, OnDestroy {
               this.info['channel_id'], {
               gupdate: 'remove',
             }).then(async _m => {
-              let self = await this.nakama.servers[this.isOfficial][this.target].client.getAccount(
-                this.nakama.servers[this.isOfficial][this.target].session);
-              let user_metadata = JSON.parse(self.user.metadata);
-              for (let i = 0, j = user_metadata['is_manager'].length; i < j; i++)
-                if (user_metadata['is_manager'][i] == this.info.id) {
-                  user_metadata['is_manager'].splice(i, 1);
-                  break;
-                }
-              if (!user_metadata['is_manager'].length) delete user_metadata['is_manager'];
-              try {
-                await this.nakama.servers[this.isOfficial][this.target].client.rpc(
-                  this.nakama.servers[this.isOfficial][this.target].session,
-                  'update_user_metadata_fn', {
-                  user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
-                  metadata: user_metadata,
-                });
-              } catch (e) {
-                console.log('그룹 삭제시 생성자의 매니저 권한 박탈 동기화 오류: ', e);
-              }
               this.nakama.remove_group_list(this.info, this.isOfficial, this.target);
               this.after_remove_group();
             });
