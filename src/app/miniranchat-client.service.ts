@@ -35,8 +35,7 @@ export class MiniranchatClientService {
   /** 참여된 채널 */
   JoinedChannel: string;
 
-  // 'idle' | 'linked' | 'unlinked' | 'custom'
-  status = 'idle';
+  status: 'idle' | 'linked' | 'unlinked' | 'custom' = 'idle';
 
   /** 사용자 입력과 관련된 것들 */
   userInput = {

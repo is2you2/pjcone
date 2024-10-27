@@ -214,8 +214,11 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   }
 
   AddShortCut() {
-    this.global.p5KeyShortCut['EnterAct'] = () => {
-      if (document.activeElement == this.DomMinimalChatInput) {
+    this.global.p5KeyShortCut['EnterAct'] = (ev: any) => {
+      if (ev['ctrlKey']) {
+        if (this.client.status == 'idle')
+          this.init_joinChat();
+      } else if (document.activeElement == this.DomMinimalChatInput) {
         this.scroll_down();
       } else setTimeout(() => {
         this.focus_on_input();
