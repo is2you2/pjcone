@@ -1127,7 +1127,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             this.ChangeToAnother(1);
             break;
           case 'KeyF': // 메뉴 열기 (우클릭)
-            this.OpenFileMenu();
+            if (!ev['ctrlKey'])
+              this.OpenFileMenu();
             break;
           case 'KeyI': // 파일 정보 보기
             if (ev['ctrlKey'])
