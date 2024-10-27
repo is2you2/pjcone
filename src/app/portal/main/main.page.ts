@@ -218,21 +218,24 @@ export class MainPage implements OnInit {
         // 할 일 추가시 행동
         this.global.p5todoAddtodo = (data: string) => {
           let json = JSON.parse(data);
+          let TmpId = json.id;
+          if (json.remote)
+            TmpId += `_${json.remote.isOfficial}_${json.remote.target}`;
           if (json.removed) return; // 삭제 예약된 할 일은 추가하지 않음
           if (json.done) { // 완료 행동
             for (let i = 0, j = TodoKeys.length; i < j; i++)
-              if (Todos[TodoKeys[i]].json.id == json.id) {
+              if (TodoKeys[i] == TmpId) {
                 Todos[TodoKeys[i]].makeDone();
-                return
+                return;
               }
           } else {
-            if (Todos[json.id]) {
-              Todos[json.id].json = json;
-              Todos[json.id].initialize();
-            } else Todos[json.id] = new TodoElement(json);
+            if (Todos[TmpId]) {
+              Todos[TmpId].json = json;
+              Todos[TmpId].initialize();
+            } else Todos[TmpId] = new TodoElement(json);
           }
           if (!this.isPlayingCanvas.loop) {
-            AddedElement = Todos[json.id];
+            AddedElement = Todos[TmpId];
             p.loop();
           }
           CountTodo();
@@ -251,8 +254,11 @@ export class MainPage implements OnInit {
         }
         this.global.p5removeTodo = (data: string) => {
           let json = JSON.parse(data);
+          let TmpId = json.id;
+          if (json.remote)
+            TmpId += `_${json.remote.isOfficial}_${json.remote.target}`;
           for (let i = 0, j = TodoKeys.length; i < j; i++)
-            if (Todos[TodoKeys[i]].json.id == json.id) {
+            if (TodoKeys[i] == TmpId) {
               Todos[TodoKeys[i]].RemoveTodo();
               break;
             }
@@ -749,8 +755,11 @@ export class MainPage implements OnInit {
           }
         }
         RemoveTodo() {
+          let TmpId = this.json.id;
+          if (this.json.remote)
+            TmpId += `_${this.json.remote.isOfficial}_${this.json.remote.target}`;
           for (let i = 0, j = TodoKeys.length; i < j; i++)
-            if (TodoKeys[i] == this.json.id) {
+            if (TodoKeys[i] == TmpId) {
               TodoKeys.splice(i, 1);
               break;
             }
@@ -760,7 +769,7 @@ export class MainPage implements OnInit {
               break;
             }
           }
-          delete Todos[this.json.id];
+          delete Todos[TmpId];
         }
       }
       /** 할 일 완료 애니메이션 마무리 알갱이 행동 */
