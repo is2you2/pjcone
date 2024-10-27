@@ -98,7 +98,10 @@
                     </ion-item>
                   </div>
                   <div>
-                    <ion-item button *ngIf="FileInfo['url'] && !isQuickLaunchViewer" (click)="CopyQuickViewer()">
+                    <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">
+                      {{lang.text['ContentViewer']['QuickNewWindow']}}</div>
+                    <ion-item button *ngIf="FileInfo['url'] && !isQuickLaunchViewer" (click)="CopyQuickViewer()"
+                      (contextmenu)="OpenNewWindow()">
                       <ion-label>{{lang.text['ContentViewer']['QuickViewerLink']}}</ion-label>
                     </ion-item>
                   </div>

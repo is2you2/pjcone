@@ -1869,6 +1869,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.global.WriteValueToClipboard('text/plain', result.replace(' ', '%20'));
   }
 
+  /** 빠른 진입 링크로 새로운 창에서 열기 */
+  OpenNewWindow() {
+    let result = `${SERVER_PATH_ROOT}pjcone_pwa/?fileviewer=${this.FileInfo.url},${this.FileInfo.viewer}`;
+    window.open(result, '_blank');
+    return false;
+  }
+
   /** 파일 공유 등 이 페이지 안에서 추가 페이지 작업이 있는 경우 */
   InnerChangedPage = false;
   ShareContent() {
