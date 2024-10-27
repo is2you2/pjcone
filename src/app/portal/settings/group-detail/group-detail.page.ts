@@ -60,16 +60,13 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         if (!this.info.server) this.info.server = navParams.server;
         this.isOfficial = this.info.server['isOfficial'];
         this.target = this.info.server['target'];
-        try {
-          this.has_admin = this.info['creator_id'] == this.nakama.servers[this.isOfficial][this.target].session.user_id;
-        } catch (e) {
-          console.log('check is admin failed: ', e);
-          this.has_admin = false;
-        }
         // 사용자 정보가 있다면 로컬 정보 불러오기 처리
         if (this.info['users'] && this.info['users'].length) {
           for (let i = 0, j = this.info['users'].length; i < j; i++)
             if (this.info['users'][i].is_me) { // 정보상 나라면
+              // 그룹 정보상 내게 권한이 있는지 검토
+              this.has_admin = this.info['users'][i]['state'] < 2;
+              // 정보를 로컬에 동기화
               this.info['users'][i]['user'] = this.nakama.users.self;
               this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
                 if (e && v) this.nakama.users.self['img'] = v.replace(/"|\\|=/g, '');
@@ -128,6 +125,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
 
   /** 그룹 최대 인원 수 조정 */
   updateMemberMaximum() {
+    if (!this.has_admin || this.info['status'] == 'missing' || this.info['status'] == 'offline') return;
     this.alertCtrl.create({
       header: this.lang.text['AddGroup']['MemberMaxLimit'],
       inputs: [{
@@ -196,7 +194,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   file_sel_id = '';
   /** ionic 버튼을 눌러 input-file 동작 */
   async buttonClickInputFile() {
-    if (this.has_admin) { // 방장인 경우
+    if (this.has_admin) { // 권한이 있는 경우
       if (this.info.img) {
         this.info.img = undefined;
         this.nakama.servers[this.isOfficial][this.target].client.deleteStorageObjects(
@@ -214,7 +212,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
 
   changeImageContextmenu() {
     let contextAct = async () => {
-      if (this.has_admin) { // 방장인 경우
+      if (this.has_admin) { // 권한이 있는 경우
         if (this.info.img) {
           this.info.img = undefined;
           this.nakama.servers[this.isOfficial][this.target].client.deleteStorageObjects(
