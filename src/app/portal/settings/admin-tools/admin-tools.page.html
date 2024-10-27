@@ -102,27 +102,6 @@
             <ion-label style="display: contents">{{lang.text['AddGroup']['LanguageTag']}}</ion-label>
             <ion-label class="ion-text-end">{{all_users[i].lang_tag}}</ion-label>
           </ion-item>
-          <ion-accordion-group #PromoteSel *ngIf="PromotableGroup[all_users[i].id || all_users[i].user_id]">
-            <ion-accordion [value]="all_users[i].id || all_users[i].user_id">
-              <ion-item button slot="header">
-                <ion-label>{{lang.text['AdminTools']['promote_as_manager']}}</ion-label>
-              </ion-item>
-              <div slot="content">
-                <ion-item button (click)="promote_toggle_all_group(all_users[i])">
-                  <ion-label>{{lang.text['AdminTools']['ToggleAllPromote']}}</ion-label>
-                </ion-item>
-                <ion-item *ngFor="let gid of (PromotableGroup[all_users[i].id || all_users[i].user_id] || {}).keys">
-                  <ion-checkbox
-                    [(ngModel)]="PromotableGroup[all_users[i].id || all_users[i].user_id][gid].promoted">{{(PromotableGroup[all_users[i].id
-                    || all_users[i].user_id][gid].name) || '[' + lang.text['AdminTools']['RemovedGroup'] +
-                    ']'}}</ion-checkbox>
-                </ion-item>
-                <ion-item button (click)="promote_as_manager(all_users[i])">
-                  <ion-label class="ion-text-center">{{lang.text['AdminTools']['Apply']}}</ion-label>
-                </ion-item>
-              </div>
-            </ion-accordion>
-          </ion-accordion-group>
           <ion-item button (click)="start_private_chat(all_users[i])">
             <ion-label>{{lang.text['OtherProfile']['privacy_chat']}}</ion-label>
           </ion-item>
