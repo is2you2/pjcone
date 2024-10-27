@@ -65,6 +65,7 @@ ToggleWorkers,모든 사용자 선택,Select all users
 ## Subscribes,,
 Title,채널,Channels
 myProfile,내 프로필,My profile
+RightClickChat,우클릭하여 대화 초대,Right click to invite to chat
 OnebyOneChat,1:1 대화 초대,1:1 Chat Invitation
 JoinedChannels,채널 목록,Channel List
 has_noties,검토해야할 알림이 있습니다,There are notifications to review
