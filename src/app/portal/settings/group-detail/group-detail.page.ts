@@ -8,7 +8,7 @@ import { GlobalActService } from 'src/app/global-act.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { NavController } from '@ionic/angular';
+import { AlertController, LoadingController, NavController } from '@ionic/angular';
 
 
 @Component({
@@ -28,6 +28,8 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private navCtrl: NavController,
+    private alertCtrl: AlertController,
+    private loadingCtrl: LoadingController,
   ) { }
   ngOnDestroy() {
     this.route.queryParams['unsubscribe']();
@@ -122,6 +124,46 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         console.warn('예상하지 못한 그룹 행동: ', v);
         break;
     }
+  }
+
+  /** 그룹 최대 인원 수 조정 */
+  updateMemberMaximum() {
+    this.alertCtrl.create({
+      header: this.lang.text['AddGroup']['MemberMaxLimit'],
+      inputs: [{
+        type: 'number',
+        placeholder: this.info['max_count']
+      }],
+      buttons: [{
+        text: this.lang.text['GroupDetail']['ChangeMaxCount'],
+        handler: async (ev) => {
+          let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+          loading.present();
+          let newCount = Number(ev['0']);
+          try {
+            await this.nakama.servers[this.isOfficial][this.target].client.rpc(
+              this.nakama.servers[this.isOfficial][this.target].session,
+              'update_group_size_fn', {
+              group_id: this.info['id'],
+              max_count: newCount,
+            });
+            this.info['max_count'] = newCount;
+            if (newCount == 1) {
+              this.nakama.channels_orig[this.isOfficial][this.target][this.info['channel_id']]['status'] = 'online';
+            } else {
+              await this.nakama.count_channel_online_member(this.nakama.channels_orig[this.isOfficial][this.target][this.info['channel_id']], this.isOfficial, this.target);
+            }
+          } catch (e) {
+            console.log('채널 최대인원 변경 실패: ', e);
+            this.p5toast.show({
+              text: `${this.lang.text['GroupDetail']['FailedToChangeMax']}: ${e.statusText || e} (${e.status})`,
+            });
+          }
+          loading.dismiss();
+        }
+      }]
+    }).then(v => v.present());
+    return false;
   }
 
   update_GroupUsersList(_is_official: string, _target: string) {
