@@ -195,6 +195,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.MainDiv = document.getElementById('main_div');
     this.isMobile = isPlatform == 'Android' || isPlatform == 'iOS';
+    this.nakama.socket_reactive['add_todo_menu'] = this;
     // 미리 지정된 데이터 정보가 있는지 검토
     this.route.queryParams.subscribe(_p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
@@ -939,6 +940,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.StoreAt.open();
   }
 
+  /** 단 하나라도 그룹으로부터 권한을 부여받은게 있다면 true */
   isManager = false;
   /** 가용 작업자 */
   AvailableWorker = {};
@@ -993,53 +995,57 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 }
                 this.isManager = true;
               });
-          } else if (user_metadata['is_manager']) {
-            // 매니저인 경우 매니저인 그룹만 사용자 받기
-            for (let i = user_metadata['is_manager'].length - 1; i >= 0; i--) {
-              try {
-                let group = this.nakama.groups[value.isOfficial][value.target][user_metadata['is_manager'][i]];
-                if (!this.AvailableWorker[group.id])
-                  this.AvailableWorker[group.id] = [];
-                for (let k = 0, l = group.users.length; k < l; k++) {
-                  if (!(group.users[k].user.user_id || group.users[k].user.id) // 작업자가 없거나 나라면 건너뛰기
-                    || (group.users[k].user.user_id || group.users[k].user.id) == this.nakama.servers[value.isOfficial][value.target].session.user_id)
-                    continue;
-                  let user = this.nakama.load_other_user(group.users[k].user.user_id || group.users[k].user.id,
-                    value.isOfficial, value.target, user => {
-                      delete user.todo_checked; // 기존 정보 무시
-                      if ((user.id || user.user_id) != this.nakama.servers[value.isOfficial][value.target].session.user_id
-                        && user['display_name'])
-                        user['override_name'] = this.nakama.GetOverrideName(user.id || user.user_id, this.userInput.remote.isOfficial, this.userInput.remote.target);
-                    });
-                  if ((user.id || user.user_id) != this.nakama.servers[value.isOfficial][value.target].session.user_id
-                    && user['display_name'])
-                    this.AvailableWorker[group.id].push(user);
-                }
-                if (!this.AvailableWorker[group.id].length)
-                  delete this.AvailableWorker[group.id];
-                else this.WorkerGroups.push({
-                  id: group.id,
-                  name: group.name,
-                });
-              } catch (e) {
-                user_metadata['is_manager'].splice(i, 1);
-              }
-            } // 사용하지 않는 매니징 그룹을 자동 삭제
-            this.isManager = user_metadata['is_manager'].length;
-            if (!this.isManager) delete user_metadata['is_manager'];
-            this.nakama.servers[value.isOfficial][value.target].client.rpc(
-              this.nakama.servers[value.isOfficial][value.target].session,
-              'update_user_metadata_fn', {
-              user_id: this.nakama.servers[value.isOfficial][value.target].session.user_id,
-              metadata: user_metadata,
-            }).catch(_e => { });
-          }
+          } else this.UpdateWorkerList();
         });
     }
     setTimeout(() => {
       if (isPlatform == 'DesktopPWA' && !this.isModify && this.titleIonInput && !this.titleIonInput.value)
         this.titleIonInput.focus();
     }, 200);
+  }
+
+  /** 작업자 리스트 업데이트하기 */
+  UpdateWorkerList() {
+    if (!this.isStoreAtChanged) return;
+    // 그룹으로부터 권한을 부여받은 경우 해당 그룹에 한하여 할 일 분배 가능
+    let CountIfManager = 0;
+    this.WorkerGroups.length = 0;
+    this.userInput.workers = [];
+    let isOfficial = Object.keys(this.nakama.PromotedGroup);
+    for (let _is_official of isOfficial) {
+      let target = Object.keys(this.nakama.PromotedGroup[_is_official]);
+      for (let _target of target) {
+        let gid = Object.keys(this.nakama.PromotedGroup[_is_official][_target]);
+        for (let _gid of gid) {
+          let group = this.nakama.groups[_is_official][_target][_gid];
+          if (!this.AvailableWorker[group.id])
+            this.AvailableWorker[group.id] = [];
+          this.AvailableWorker[group.id].length = 0;
+          for (let k = 0, l = group.users.length; k < l; k++) {
+            if (!(group.users[k].user.user_id || group.users[k].user.id) // 작업자가 없거나 나라면 건너뛰기
+              || (group.users[k].user.user_id || group.users[k].user.id) == this.nakama.servers[_is_official][_target].session.user_id)
+              continue;
+            let user = this.nakama.load_other_user(group.users[k].user.user_id || group.users[k].user.id,
+              _is_official, _target, user => {
+                delete user.todo_checked; // 기존 정보 무시
+                if ((user.id || user.user_id) != this.nakama.servers[_is_official][_target].session.user_id
+                  && user['display_name'])
+                  user['override_name'] = this.nakama.GetOverrideName(user.id || user.user_id, this.userInput.remote.isOfficial, this.userInput.remote.target);
+              });
+            if ((user.id || user.user_id) != this.nakama.servers[_is_official][_target].session.user_id && user['display_name'])
+              this.AvailableWorker[group.id].push(user);
+          }
+          if (!this.AvailableWorker[group.id].length)
+            delete this.AvailableWorker[group.id];
+          else this.WorkerGroups.push({
+            id: group.id,
+            name: group.name,
+          });
+          CountIfManager++;
+        }
+      }
+    }
+    this.isManager = CountIfManager != 0;
   }
 
   /** 전체 토글 기록용 */
@@ -1688,6 +1694,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    delete this.nakama.socket_reactive['add_todo_menu'];
     this.route.queryParams['unsubscribe']();
     this.desc_input.onpaste = null;
     this.cont.abort();

@@ -1476,7 +1476,10 @@ export class NakamaService {
     } catch (e) { }
     if (!this.users[_is_official][_target]) this.users[_is_official][_target] = {};
     // 이미 준비된 내용이 있으면 해당 내용 전달하기
-    if (this.users[_is_official][_target][userId] && !force) return this.users[_is_official][_target][userId];
+    if (this.users[_is_official][_target][userId] && !force) {
+      _CallBack(this.users[_is_official][_target][userId]);
+      return this.users[_is_official][_target][userId];
+    }
     else this.users[_is_official][_target][userId] = {};
     // 사용자 정보 업데이트
     let failed_update_act = () => {
@@ -1486,6 +1489,7 @@ export class NakamaService {
           let keys = Object.keys(data);
           keys.forEach(key => this.users[_is_official][_target][userId][key] = data[key]);
         }
+        _CallBack(this.users[_is_official][_target][userId]);
       });
     }
     try {
@@ -1503,6 +1507,7 @@ export class NakamaService {
             this.indexed.removeFileFromUserPath(`${_is_official}/${_target}/users/${userId}/profile.json`);
             this.indexed.removeFileFromUserPath(`${_is_official}/${_target}/users/${userId}/profile.img`);
           }
+          _CallBack(this.users[_is_official][_target][userId]);
         }).catch(_e => {
           failed_update_act();
         });
@@ -1513,7 +1518,6 @@ export class NakamaService {
     let failed_image_act = () => {
       if (this.users[_is_official][_target][userId]['img']) {
         delete this.users[_is_official][_target][userId]['img'];
-        _CallBack(this.users[_is_official][_target][userId]);
         this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
       }
       this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/users/${userId}/profile.img`, (e, v) => {
@@ -1530,7 +1534,6 @@ export class NakamaService {
         }]
       }).then(v => {
         if (v.objects.length) this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
-        _CallBack(this.users[_is_official][_target][userId]);
         this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
       }).catch(_e => {
         failed_image_act();
@@ -3009,6 +3012,8 @@ export class NakamaService {
               if (user.state < 2)
                 this.PromotedGroup[_is_official][_target][c.group_id] = true;
               else delete this.PromotedGroup[_is_official][_target][c.group_id];
+              if (this.socket_reactive['add_todo_menu']) // 할 일 정보를 보는 중이라면 작업자 리스트 업데이트
+                this.socket_reactive['add_todo_menu'].UpdateWorkerList();
               break;
             }
           }
