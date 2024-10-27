@@ -244,22 +244,6 @@ export class AddGroupPage implements OnInit, OnDestroy {
       } catch (e) {
         console.error(e);
       }
-      let self = await this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].client.getAccount(
-        this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session);
-      let user_metadata = JSON.parse(self.user.metadata);
-      if (user_metadata['is_manager']) {
-        user_metadata['is_manager'].push(v.id);
-      } else user_metadata['is_manager'] = [v.id];
-      try {
-        await this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].client.rpc(
-          this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session,
-          'update_user_metadata_fn', {
-          user_id: this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session.user_id,
-          metadata: user_metadata,
-        });
-      } catch (e) {
-        console.log('그룹 생성자를 매니저로 승격 오류: ', e);
-      }
       setTimeout(() => {
         this.navCtrl.pop();
       }, 500);
