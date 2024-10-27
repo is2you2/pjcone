@@ -34,7 +34,7 @@
             {{lang.text['OtherProfile']['add_to_group']}}
           </ion-button>
         </td>
-        <td *ngIf="(has_admin || nakama.PromotedGroup[isOfficial][target][group_info.id])">
+        <td *ngIf="(has_admin || nakama.PromotedGroup[isOfficial][target][group_info.id]) && info.state != 0">
           <ion-button (click)="kick_user_from_group()" color="danger" expand="block">
             {{lang.text['OtherProfile']['kick_from_group']}}
           </ion-button>
