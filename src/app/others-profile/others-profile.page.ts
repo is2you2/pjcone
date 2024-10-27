@@ -16,7 +16,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 export class OthersProfilePage implements OnInit, OnDestroy {
 
   constructor(
-    private nakama: NakamaService,
+    public nakama: NakamaService,
     public statusBar: StatusManageService,
     private p5toast: P5ToastService,
     public lang: LanguageSettingService,
@@ -27,8 +27,8 @@ export class OthersProfilePage implements OnInit, OnDestroy {
   ) { }
 
   /** 다른 사용자의 정보 */
-  info = {};
-  group_info = {};
+  info: any = {};
+  group_info: any = {};
   /** 추가 생성 버튼 (알림 검토의 결과물) */
   additional_buttons = {};
   /** 사용자 이미지 */
@@ -342,6 +342,38 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         this.lock_create_chat = false;
         console.error(e);
       }
+    }
+  }
+
+  /** 관리자로 승급 */
+  async PromoteUser() {
+    try {
+      await this.nakama.servers[this.isOfficial][this.target].client.promoteGroupUsers(
+        this.nakama.servers[this.isOfficial][this.target].session, this.group_info['id'], [this.info['user']['id']])
+      this.p5toast.show({
+        text: `${this.lang.text['OtherProfile']['PromoteSucc']}: ${this.info['user']['display_name']}`,
+      });
+      this.info['state'] = 1;
+    } catch (e) {
+      this.p5toast.show({
+        text: `${this.lang.text['OtherProfile']['PromoteFailed']}: ${e.statusText || e} (${e.status})`,
+      });
+    }
+  }
+
+  /** 일반 맴버로 강등 */
+  async DemoteUser() {
+    try {
+      await this.nakama.servers[this.isOfficial][this.target].client.demoteGroupUsers(
+        this.nakama.servers[this.isOfficial][this.target].session, this.group_info['id'], [this.info['user']['id']]);
+      this.p5toast.show({
+        text: `${this.lang.text['OtherProfile']['DemoteSucc']}: ${this.info['user']['display_name']}`,
+      });
+      this.info['state'] = 2;
+    } catch (e) {
+      this.p5toast.show({
+        text: `${this.lang.text['OtherProfile']['DemoteFailed']}: ${e.statusText || e} (${e.status})`,
+      });
     }
   }
 

@@ -169,8 +169,13 @@ user_image_changed,사용자 이미지 변경됨,User image changed
 ## OtherProfile,,
 Title,사용자 정보,User info
 add_to_group,추가,Add to group
-add_friend,친구,Add as friend
 privacy_chat,1:1 대화,Private chat
+PromoteMember,승급,Promote
+PromoteSucc,사용자 승급,User promoted
+PromoteFailed,승급 실패,Promotion failed
+DemoteMember,강등,Demote
+DemoteSucc,사용자 강등,User Demoted
+DemoteFailed,강등 실패,Demotion failed
 kick_from_group,추방,Kick user
 added_to_group,사용자가 추가되었습니다,User added
 kicked_from_group,사용자를 내보냈습니다,User kicked

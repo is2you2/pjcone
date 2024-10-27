@@ -14,22 +14,27 @@
     style="width: 100%; position: absolute; bottom: 0;">
     <table id="input_table" style="width: 100%; background-color: black;">
       <tr>
-        <td *ngIf="has_admin && additional_buttons['-5']">
-          <ion-button (click)="notification_react(-5)" expand="block">
-            {{lang.text['OtherProfile']['add_to_group']}}
-          </ion-button>
-        </td>
-        <td *ngIf="additional_buttons['-2']">
-          <ion-button (click)="notification_react(-2)" expand="block">
-            {{lang.text['OtherProfile']['add_friend']}}
-          </ion-button>
-        </td>
         <td>
           <ion-button [disabled]="lock_create_chat" (click)="create_chat()" expand="block">
             {{lang.text['OtherProfile']['privacy_chat']}}
           </ion-button>
         </td>
-        <td *ngIf="has_admin">
+        <td *ngIf="(has_admin || nakama.PromotedGroup[isOfficial][target][group_info.id]) && info['state'] == 1">
+          <ion-button (click)="DemoteUser()" color="warning" expand="block">
+            {{lang.text['OtherProfile']['DemoteMember']}}
+          </ion-button>
+        </td>
+        <td *ngIf="(has_admin || nakama.PromotedGroup[isOfficial][target][group_info.id]) && info['state'] == 2">
+          <ion-button (click)="PromoteUser()" color="tertiary" expand="block">
+            {{lang.text['OtherProfile']['PromoteMember']}}
+          </ion-button>
+        </td>
+        <td *ngIf="(has_admin || nakama.PromotedGroup[isOfficial][target][group_info.id]) && info['state'] == 3">
+          <ion-button (click)="notification_react(-5)" expand="block">
+            {{lang.text['OtherProfile']['add_to_group']}}
+          </ion-button>
+        </td>
+        <td *ngIf="(has_admin || nakama.PromotedGroup[isOfficial][target][group_info.id])">
           <ion-button (click)="kick_user_from_group()" color="danger" expand="block">
             {{lang.text['OtherProfile']['kick_from_group']}}
           </ion-button>

@@ -50,7 +50,7 @@
   <ion-item-divider>
     <ion-label>{{lang.text['AddGroup']['GroupDetail_placeholder']}}</ion-label>
   </ion-item-divider>
-  <textarea class="infobox" [disabled]="!has_admin" [(ngModel)]="info.description"
+  <textarea class="infobox" [disabled]="!nakama.PromotedGroup[isOfficial][target][info.id]" [(ngModel)]="info.description"
     [placeholder]="lang.text['GroupDetail']['NoDetailGroup']"></textarea>
   <ion-item style="pointer-events: none;">
     <ion-toggle [(ngModel)]="info['open']"
@@ -73,11 +73,11 @@
       nakama.usernameOverride[isOfficial][target][user.user.id]
       || user.user.display_name}}</ion-label>
   </ion-item>
-  <ion-item *ngIf="(info['status'] == 'online' || info['status'] == 'pending') && has_admin" button
+  <ion-item *ngIf="(info['status'] == 'online' || info['status'] == 'pending') && has_superadmin" button
     (click)="remove_group()">
     <ion-label class="ion-text-center" color="danger">{{lang.text['GroupDetail']['BreakupGroup']}}</ion-label>
   </ion-item>
-  <ion-item *ngIf="(info['status'] == 'online' || info['status'] == 'pending') && !has_admin" button
+  <ion-item *ngIf="(info['status'] == 'online' || info['status'] == 'pending') && !has_superadmin" button
     (click)="leave_group()">
     <ion-label class="ion-text-center" color="danger">{{lang.text['GroupDetail']['LeaveGroup']}}</ion-label>
   </ion-item>

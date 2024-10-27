@@ -32,6 +32,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     private loadingCtrl: LoadingController,
   ) { }
   ngOnDestroy() {
+    delete this.nakama.socket_reactive['group_detail'];
     this.route.queryParams['unsubscribe']();
   }
 
@@ -39,7 +40,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   /** 그룹 정보 */
   info: any;
   /** 내가 이 그룹의 방장인지 여부 */
-  has_admin = false;
+  has_superadmin = false;
   /** 진입시 그룹 정보 */
   info_orig: any;
 
@@ -64,8 +65,6 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         if (this.info['users'] && this.info['users'].length) {
           for (let i = 0, j = this.info['users'].length; i < j; i++)
             if (this.info['users'][i].is_me) { // 정보상 나라면
-              // 그룹 정보상 내게 권한이 있는지 검토
-              this.has_admin = this.info['users'][i]['state'] < 2;
               // 정보를 로컬에 동기화
               this.info['users'][i]['user'] = this.nakama.users.self;
               this.indexed.loadTextFromUserPath('servers/self/profile.img', (e, v) => {
@@ -74,6 +73,12 @@ export class GroupDetailPage implements OnInit, OnDestroy {
             } else if (this.info['users'][i]['user']['id']) { // 다른 사람들의 프로필 이미지
               this.info['users'][i]['user'] = this.nakama.load_other_user(this.info['users'][i]['user']['id'], this.isOfficial, this.target);
             } else this.info['users'].splice(i, 1);
+        }
+        try {
+          this.has_superadmin = this.info['creator_id'] == this.nakama.servers[this.isOfficial][this.target].session.user_id;
+        } catch (e) {
+          console.log('check is admin failed: ', e);
+          this.has_superadmin = false;
         }
         // 그룹 이미지 업데이트
         try {
@@ -125,7 +130,8 @@ export class GroupDetailPage implements OnInit, OnDestroy {
 
   /** 그룹 최대 인원 수 조정 */
   updateMemberMaximum() {
-    if (!this.has_admin || this.info['status'] == 'missing' || this.info['status'] == 'offline') return;
+    if (!this.nakama.PromotedGroup[this.isOfficial][this.target][this.info.id]
+      || this.info['status'] == 'missing' || this.info['status'] == 'offline') return;
     this.alertCtrl.create({
       header: this.lang.text['AddGroup']['MemberMaxLimit'],
       inputs: [{
@@ -164,37 +170,37 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     return false;
   }
 
-  update_GroupUsersList(_is_official: string, _target: string) {
-    this.nakama.servers[_is_official][_target].client.listGroupUsers(
-      this.nakama.servers[_is_official][_target].session, this.info['id']
-    ).then(ul => {
-      let result = [];
-      for (let i = 0, j = ul.group_users.length; i < j; i++) {
-        // 내 정보인 경우
-        if (ul.group_users[i].user.id == this.nakama.servers[_is_official][_target].session.user_id) {
-          let form = {
-            state: ul.group_users[i].state,
-            user: this.nakama.users.self,
-          };
-          result.push(form);
-        } else { // 다른 사람의 정보인 경우
-          let user = this.nakama.load_other_user(ul.group_users[i].user.id, _is_official, _target);
-          this.nakama.save_other_user(ul.group_users[i].user, _is_official, _target);
-          let form = {
-            state: ul.group_users[i].state,
-            user: user,
-          }
-          result.push(form);
+  async update_GroupUsersList(_is_official: string, _target: string) {
+    let ul = await this.nakama.servers[_is_official][_target].client.listGroupUsers(
+      this.nakama.servers[_is_official][_target].session, this.info['id']);
+    let result = [];
+    for (let i = 0, j = ul.group_users.length; i < j; i++) {
+      // 내 정보인 경우
+      if (ul.group_users[i].user.id == this.nakama.servers[_is_official][_target].session.user_id) {
+        let form = {
+          state: ul.group_users[i].state,
+          user: this.nakama.users.self,
+          is_me: true,
+        };
+        result.push(form);
+      } else { // 다른 사람의 정보인 경우
+        let user = this.nakama.load_other_user(ul.group_users[i].user.id, _is_official, _target);
+        this.nakama.save_other_user(ul.group_users[i].user, _is_official, _target);
+        let form = {
+          state: ul.group_users[i].state,
+          user: user,
         }
+        result.push(form);
       }
-      this.info['users'] = result;
-    });
+    }
+    this.info['users'] = result;
+    return ul.group_users;
   }
 
   file_sel_id = '';
   /** ionic 버튼을 눌러 input-file 동작 */
   async buttonClickInputFile() {
-    if (this.has_admin) { // 권한이 있는 경우
+    if (this.nakama.PromotedGroup[this.isOfficial][this.target][this.info.id]) { // 권한이 있는 경우
       if (this.info.img) {
         this.info.img = undefined;
         this.nakama.servers[this.isOfficial][this.target].client.deleteStorageObjects(
@@ -212,7 +218,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
 
   changeImageContextmenu() {
     let contextAct = async () => {
-      if (this.has_admin) { // 권한이 있는 경우
+      if (this.nakama.PromotedGroup[this.isOfficial][this.target][this.info.id]) { // 권한이 있는 경우
         if (this.info.img) {
           this.info.img = undefined;
           this.nakama.servers[this.isOfficial][this.target].client.deleteStorageObjects(
@@ -360,7 +366,8 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   /** 그룹 편집사항이 있는지, 그래서 편집해야하는지 여부 검토 */
   need_edit = false;
   edit_group() {
-    if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online' && this.info['status'] != 'missing' && this.has_admin)
+    if (this.statusBar.groupServer[this.isOfficial][this.target] == 'online' && this.info['status'] != 'missing'
+      && this.nakama.PromotedGroup[this.isOfficial][this.target][this.info.id])
       this.nakama.servers[this.isOfficial][this.target].client.updateGroup(
         this.nakama.servers[this.isOfficial][this.target].session,
         this.info['id'], {
@@ -388,7 +395,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         this.nakama.open_others_profile({
           info: userInfo,
           group: this.info,
-          has_admin: this.has_admin,
+          has_admin: this.has_superadmin,
         });
         this.lock_modal_open = false;
       }
@@ -464,7 +471,6 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   }
 
   ionViewWillLeave() {
-    delete this.nakama.socket_reactive['group_detail'];
     this.need_edit = this.info['description'] != this.info_orig['description'];
     if (this.need_edit)
       this.edit_group();

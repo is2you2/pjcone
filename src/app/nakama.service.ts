@@ -134,6 +134,10 @@ export class NakamaService {
         delete group['status'];
         let _is_official = group['server']['isOfficial'];
         let _target = group['server']['target'];
+        if (!this.PromotedGroup[_is_official])
+          this.PromotedGroup[_is_official] = {};
+        if (!this.PromotedGroup[_is_official][_target])
+          this.PromotedGroup[_is_official][_target] = {};
         if (group['users'])
           for (let i = 0, j = group['users'].length; i < j; i++)
             if (!group['users'][i]['is_me'])
@@ -788,6 +792,8 @@ export class NakamaService {
     if (!this.noti_origin[info.isOfficial][info.target]) this.noti_origin[info.isOfficial][info.target] = {};
     if (!this.RemoteTodoCounter[info.isOfficial]) this.RemoteTodoCounter[info.isOfficial] = {};
     if (!this.RemoteTodoCounter[info.isOfficial][info.target]) this.RemoteTodoCounter[info.isOfficial][info.target] = [];
+    if (!this.PromotedGroup[info.isOfficial]) this.PromotedGroup[info.isOfficial] = {};
+    if (!this.PromotedGroup[info.isOfficial][info.target]) this.PromotedGroup[info.isOfficial][info.target] = {};
     this.TogglingSession = true;
     try {
       this.servers[info.isOfficial][info.target].session
@@ -1337,6 +1343,10 @@ export class NakamaService {
     if (!slient) loading.dismiss();
   }
 
+  /** 그룹 내에서 승격된 경우를 기록함 (superadmin, admin)  
+   * PromotedGroup[isOfficial][target][group_id] = state;
+   */
+  PromotedGroup = {};
   /** 저장된 그룹 업데이트하여 반영 */
   async load_groups(_is_official: string, _target: string, _gid: string, only_data = false) {
     // 온라인이라면 서버정보로 덮어쓰기
@@ -1369,6 +1379,13 @@ export class NakamaService {
                   this.groups[_is_official][_target][_gid]['status'] = 'missing';
                   break;
               }
+              if (!this.PromotedGroup[_is_official])
+                this.PromotedGroup[_is_official] = {};
+              if (!this.PromotedGroup[_is_official][_target])
+                this.PromotedGroup[_is_official][_target] = {};
+              if (gulist.group_users[i].state < 2)
+                this.PromotedGroup[_is_official][_target][_gid] = true;
+              else delete this.PromotedGroup[_is_official][_target][_gid];
               am_i_lost = false;
               gulist.group_users[i]['is_me'] = true;
               break;
@@ -2974,9 +2991,29 @@ export class NakamaService {
       case 4: // 채널에 새로 들어온 사람 알림
       case 5: // 그룹에 있던 사용자 나감(들어오려다가 포기한 사람 포함)
       case 6: // 누군가 그룹에서 내보내짐 (kick)
+      case 7: // 사용자 승급
+      case 9: // 사용자 강등
+        /** 그룹 사용자 리스트 */
+        let group_users: GroupUser[];
         if (this.socket_reactive['group_detail']) // 그룹 상세를 보는 중이라면 업데이트하기
-          this.socket_reactive['group_detail'].update_GroupUsersList(_is_official, _target);
-        if (c.code == 3 || c.code == 4) break;
+          group_users = await this.socket_reactive['group_detail'].update_GroupUsersList(_is_official, _target);
+        if (is_me && (c.code == 7 || c.code == 9)) {
+          // 그룹 정보가 없으면 직접 받기
+          if (!group_users) {
+            let v = await this.servers[_is_official][_target].client.listGroupUsers(
+              this.servers[_is_official][_target].session, c.group_id);
+            group_users = v.group_users;
+          }
+          for (let user of group_users) {
+            if (user.user.id == this.servers[_is_official][_target].session.user_id) {
+              if (user.state < 2)
+                this.PromotedGroup[_is_official][_target][c.group_id] = true;
+              else delete this.PromotedGroup[_is_official][_target][c.group_id];
+              break;
+            }
+          }
+        }
+        if (c.code == 3 || c.code == 4 || c.code == 7 || c.code == 9) break;
         // 사용자 유입과 관련된 알림 제거
         if (this.noti_origin[_is_official] && this.noti_origin[_is_official][_target]) {
           let keys = Object.keys(this.noti_origin[_is_official][_target]);
@@ -3290,6 +3327,14 @@ export class NakamaService {
       case 6: // 누군가 그룹에서 내보내짐 (kick)
         c.content['user_update'] = target;
         c.content['noti'] = `${this.lang.text['Nakama']['GroupUserKick']}: ${target['display_name']}`;
+        break;
+      case 7: // 사용자 진급
+        c.content['user_update'] = target;
+        c.content['noti'] = `${this.lang.text['OtherProfile']['PromoteSucc']}: ${target['display_name']}`;
+        break;
+      case 9: // 사용자 강등
+        c.content['user_update'] = target;
+        c.content['noti'] = `${this.lang.text['OtherProfile']['DemoteSucc']}: ${target['display_name']}`;
         break;
       default:
         console.log('예상하지 못한 메시지 코드: ', c);
