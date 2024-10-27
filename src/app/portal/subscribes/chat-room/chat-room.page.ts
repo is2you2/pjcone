@@ -821,6 +821,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   ionViewWillEnter() {
     this.WillLeave = false;
     this.ChatContDiv = document.getElementById('chatroom_content_div');
+    try {
+      this.CheckIfHasScroll = this.ChatLogs.scrollHeight > this.ChatLogs.clientHeight;
+    } catch (e) { }
     if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
     if (!this.userInputTextArea.onblur)
       this.userInputTextArea.onblur = () => {
