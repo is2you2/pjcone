@@ -3135,7 +3135,9 @@ export class NakamaService {
     if (this.socket_reactive['try_load_post']) this.socket_reactive['try_load_post']();
   }
 
-  /** 게시물 폴더 삭제 */
+  /** 게시물 폴더 삭제  
+   * @param [slient=false] 조용한 모드, 직접적인 게시물 편집이 아닌 경우에 true 처리. 파일 삭제 등을 하지 않음
+   */
   async RemovePost(info: any, slient = false) {
     let loading: HTMLIonLoadingElement;
     let isOfficial = info['server']['isOfficial'];
@@ -3150,18 +3152,19 @@ export class NakamaService {
     // 외부링크 처리된 게시물 정보 삭제
     if (info['OutSource']) this.global.remove_file_from_storage(info['OutSource']);
     // 첨부파일 삭제
-    if (info['attachments']) for (let i = 0, j = info['attachments'].length; i < j; i++)
-      try {
-        if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`;
-        if (info['attachments'][i].url) {
-          if (!slient) this.global.remove_file_from_storage(info['attachments'][i].url);
-        } else {
-          try {
-            if (!info.server.local)
-              await this.sync_remove_file(`${info['id']}_attach_${i}`, isOfficial, target, 'server_post', '', `${info['id']}_attach_${i}`);
-          } catch (e) { }
-        }
-      } catch (e) { }
+    if (info['attachments'])
+      for (let i = 0, j = info['attachments'].length; i < j; i++)
+        try {
+          if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`;
+          if (info['attachments'][i].url) {
+            if (!slient) this.global.remove_file_from_storage(info['attachments'][i].url);
+          } else {
+            try {
+              if (!info.server.local)
+                await this.sync_remove_file(`${info['id']}_attach_${i}`, isOfficial, target, 'server_post', '', `${info['id']}_attach_${i}`);
+            } catch (e) { }
+          }
+        } catch (e) { }
     // 메인 사진 삭제
     if (info['mainImage'])
       try {

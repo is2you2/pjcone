@@ -41,6 +41,8 @@ export interface ContentCreatorInfo {
 export interface FileInfo {
   name?: string;
   filename?: string;
+  /** 재등록을 위한 이름 덮어쓰기 */
+  override_name?: string;
   /** blob 파일 형식 (blob.type) */
   type?: string;
   file_ext?: string;
@@ -693,11 +695,10 @@ export class GlobalActService {
   }
 
   /** 병행 스토리지 서버에 파일 업로드 시도
-   * @param file ev.target.files[i] / blob
    * @param address 해당 서버 주소
    * @returns 등록된 주소 반환
    */
-  async upload_file_to_storage(file: any, user_id: string, protocol: string, address: string, useCustomServer: boolean, loading?: HTMLIonLoadingElement): Promise<string> {
+  async upload_file_to_storage(file: FileInfo, user_id: string, protocol: string, address: string, useCustomServer: boolean, loading?: HTMLIonLoadingElement): Promise<string> {
     let innerLoading: HTMLIonLoadingElement;
     if (!loading) innerLoading = await this.loadingCtrl.create({ message: this.lang.text['Settings']['TryToFallbackFS'] });
     else innerLoading = loading;
@@ -716,7 +717,7 @@ export class GlobalActService {
       };
       let upload_time = new Date().getTime();
       let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
-      let filename = `${user_id}_${upload_time}_${only_filename}.${file.file_ext}`;
+      let filename = file.override_name || `${user_id}_${upload_time}_${only_filename}.${file.file_ext}`;
       CatchedAddress = `${protocol}//${address}:9002/cdn/${filename}`;
       progress = setInterval(async () => {
         let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST", signal: cont.signal });
@@ -775,13 +776,13 @@ export class GlobalActService {
   }
 
   /** 사용자 지정 서버에 업로드 시도 */
-  async try_upload_to_user_custom_fs(file: any, user_id: string, loading?: HTMLIonLoadingElement, override_ffs_str?: string) {
+  async try_upload_to_user_custom_fs(file: FileInfo, user_id: string, loading?: HTMLIonLoadingElement, override_ffs_str?: string) {
     let innerLoading: HTMLIonLoadingElement;
     if (!loading) innerLoading = await this.loadingCtrl.create({ message: this.lang.text['Settings']['TryToFallbackFS'] });
     else innerLoading = loading;
     let upload_time = new Date().getTime();
     let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
-    let filename = `${user_id}_${upload_time}_${only_filename}.${file.file_ext}`;
+    let filename = file.override_name || `${user_id}_${upload_time}_${only_filename}.${file.file_ext}`;
     let formData = new FormData();
     let _file = new File([file.blob], filename);
     formData.append("files", _file);

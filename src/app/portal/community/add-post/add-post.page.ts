@@ -961,6 +961,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         } catch (e) { }
         delete this.userInput.mainImage.thumbnail;
         delete this.userInput.mainImage.alt_path;
+        this.userInput.mainImage.override_name = this.userInput.mainImage.url.split('/').pop();
         delete this.userInput.mainImage.url;
       }
       for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
@@ -971,15 +972,16 @@ export class AddPostPage implements OnInit, OnDestroy {
           } catch (e) { }
           delete this.userInput.attachments[i].thumbnail;
           delete this.userInput.attachments[i].alt_path;
+          this.userInput.attachments[i].override_name = this.userInput.attachments[i].url.split('/').pop();
           delete this.userInput.attachments[i].url;
         }
-      await this.nakama.RemovePost(this.userInput, true);
+      await this.nakama.RemovePost(this.userInput);
+      if (this.OriginalInfo) // 기존 게시물 정보 삭제
+        await this.nakama.RemovePost(this.OriginalInfo);
     }
     try {
       // 게시물 아이디 구성하기
       if (!this.isModify || this.isServerChanged) { // 새 게시물 작성시에만 생성
-        if (this.isServerChanged && this.OriginalInfo) // 기존 서버의 게시물 정보 삭제
-          await this.nakama.RemovePost(this.OriginalInfo);
         // 기존 게시물 순번 검토 후 새 게시물 번호 받아오기
         if (is_local) {
           let counter = Number(await this.indexed.loadTextFromUserPath('servers/local/target/posts/me/counter.txt')) || 0;
