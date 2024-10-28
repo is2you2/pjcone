@@ -58,10 +58,14 @@ export class ServerDetailPage implements OnInit, OnDestroy {
       delete this.FilteredInfo.port;
     if (!this.dedicated_info.useSSL)
       delete this.FilteredInfo.useSSL;
-    this.QRCodeSRC = this.global.readasQRCodeFromString(
-      `${SERVER_PATH_ROOT}pjcone_pwa/?server=${this.FilteredInfo.name || ''},${this.FilteredInfo.address || ''},${this.FilteredInfo.useSSL ? 'true' : ''},${this.FilteredInfo.port || ''},${this.FilteredInfo.key || ''}`.replace(' ', '%20'));
+    this.GenerateQRCode();
     // 이미 target값이 등록되었는지 검토
     this.isTargetAlreadyExist = Boolean(this.statusBar.groupServer['unofficial'][this.dedicated_info.target]);
+  }
+
+  GenerateQRCode() {
+    this.QRCodeSRC = this.global.readasQRCodeFromString(
+      `${SERVER_PATH_ROOT}pjcone_pwa/?server=${this.FilteredInfo.name || ''},${this.FilteredInfo.address || ''},${this.FilteredInfo.useSSL ? 'true' : ''},${this.FilteredInfo.port || ''},${this.FilteredInfo.key || ''}`.replace(' ', '%20'));
   }
 
   /** 사설서버 SSL 체크용 페이지 열람 */
@@ -98,20 +102,20 @@ export class ServerDetailPage implements OnInit, OnDestroy {
 
   async apply_changed_info() {
     // 빈 이름 거르기
-    if (!this.dedicated_info.name) {
+    if (!this.FilteredInfo.name) {
       this.p5toast.show({
         text: this.lang.text['GroupServer']['NeedSetDIsplayName'],
       });
       return;
     }
 
-    this.dedicated_info.target = this.dedicated_info.target || this.dedicated_info.name;
+    this.dedicated_info.target = this.FilteredInfo.target || this.FilteredInfo.name;
     // 기능 추가전 임시처리
-    this.dedicated_info.address = this.dedicated_info.address || '192.168.0.1';
-    this.dedicated_info.port = this.dedicated_info.port || 7350;
+    this.dedicated_info.address = this.FilteredInfo.address || '192.168.0.1';
+    this.dedicated_info.port = this.FilteredInfo.port || 7350;
     this.dedicated_info.useSSL = this.ServerDetailuseSSL.checked || false;
-    this.dedicated_info.isOfficial = this.dedicated_info.isOfficial || 'unofficial';
-    this.dedicated_info.key = this.dedicated_info.key || 'defaultkey';
+    this.dedicated_info.isOfficial = this.FilteredInfo.isOfficial || 'unofficial';
+    this.dedicated_info.key = this.FilteredInfo.key || 'defaultkey';
 
     let line = new Date().getTime().toString();
     line += `,${this.dedicated_info.isOfficial}`;

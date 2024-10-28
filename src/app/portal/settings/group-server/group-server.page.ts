@@ -500,8 +500,12 @@ export class GroupServerPage implements OnInit, OnDestroy {
 
   /** 프로필이 변경됨 알림이 필요한지 여부 */
   announce_update_profile = false;
-
+  PageFocusOut = false;
+  ionViewWillEnter() {
+    this.PageFocusOut = false;
+  }
   async ionViewWillLeave() {
+    this.PageFocusOut = true;
     delete this.global.p5KeyShortCut['Escape'];
     delete this.global.p5KeyShortCut['AddAct'];
     delete this.global.p5KeyShortCut['EnterAct'];
@@ -640,11 +644,12 @@ export class GroupServerPage implements OnInit, OnDestroy {
   ionViewDidEnter() {
     this.can_auto_modified = true;
     this.global.p5KeyShortCut['AddAct'] = () => {
-      if (this.ShowServerList && !this.EditingName)
+      if (this.ShowServerList && !this.EditingName && !this.PageFocusOut)
         this.OpenNewServerForm();
     }
     this.global.p5KeyShortCut['Escape'] = () => {
-      this.navCtrl.pop();
+      if (!this.PageFocusOut)
+        this.navCtrl.pop();
     }
   }
   /** 이메일 변경시 오프라인 처리 */
