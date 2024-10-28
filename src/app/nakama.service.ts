@@ -2110,11 +2110,13 @@ export class NakamaService {
         } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
         let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
         // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
-        this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`);
+        if (address[0])
+          this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`);
       } catch (e) { }
       try { // cdn 파일 중 내 파일들 삭제
         let target_address = `${info.server.useSSL ? 'https' : 'http'}://${info.server.address}`;
-        this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`);
+        if (info.server.address)
+          this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`);
       } catch (e) { }
     }
     try {
@@ -2975,7 +2977,7 @@ export class NakamaService {
   async update_from_channel_msg(msg: ChannelMessage, _is_official: string, _target: string, isNewChannel = false) {
     let is_me = msg.sender_id == this.servers[_is_official][_target].session.user_id;
     let is_new = msg.message_id != this.channels_orig[_is_official][_target][msg.channel_id]['last_comment_id'];
-    let c = this.modulation_channel_message(msg, _is_official, _target);
+    let c = this.modulation_channel_message(msg, _is_official, _target, true);
     let is_systemMsg = false;
     switch (c.code) {
       case 0: // 사용자가 작성한 일반적인 메시지
@@ -3305,10 +3307,11 @@ export class NakamaService {
     }
   }
 
-  /** 채널 정보를 분석하여 메시지 변형 (행동은 하지 않음)
+  /** 채널 정보를 분석하여 메시지 변형
+   * @param [with_act=false] 내장 행동을 같이 하는지 여부
    * @return c.modulated
    */
-  modulation_channel_message(c: ChannelMessage, _is_official: string, _target: string) {
+  modulation_channel_message(c: ChannelMessage, _is_official: string, _target: string, with_act = false) {
     this.translate_updates(c);
     let is_me = false;
     try {
@@ -3322,6 +3325,20 @@ export class NakamaService {
     } catch (e) { // 로컬 채널은 무조건 나임
       target = this.users.self;
     }
+    let act_this = async () => {
+      if (with_act) {
+        let gulist = await this.servers[_is_official][_target].client.listGroupUsers(
+          this.servers[_is_official][_target].session, c.group_id);
+        for (let user of gulist.group_users)
+          if (user.user.id == this.servers[_is_official][_target].session.user_id) {
+            user['is_me'] = true;
+            user.user = this.users.self;
+            break;
+          }
+        this.groups[_is_official][_target][c.group_id]['users'] = gulist.group_users;
+        this.count_channel_online_member(c, _is_official, _target);
+      }
+    };
     switch (c.code) {
       case 0: // 사용자가 작성한 일반적인 메시지
         if (c.content['filename']) { // 파일이라면 전송 정보 연결 시도하기
@@ -3340,14 +3357,17 @@ export class NakamaService {
       case 4: // 채널에 새로 들어온 사람 알림
         c.content['user_update'] = target;
         c.content['noti'] = `${this.lang.text['Nakama']['GroupUserJoin']}: ${target['display_name']}`;
+        if (with_act) act_this();
         break;
       case 5: // 그룹에 있던 사용자 나감(들어오려다가 포기한 사람 포함)
         c.content['user_update'] = target;
         c.content['noti'] = `${this.lang.text['Nakama']['GroupUserOut']}: ${target['display_name']}`;
+        if (with_act) act_this();
         break;
       case 6: // 누군가 그룹에서 내보내짐 (kick)
         c.content['user_update'] = target;
         c.content['noti'] = `${this.lang.text['Nakama']['GroupUserKick']}: ${target['display_name']}`;
+        if (with_act) act_this();
         break;
       case 7: // 사용자 진급
         c.content['user_update'] = target;

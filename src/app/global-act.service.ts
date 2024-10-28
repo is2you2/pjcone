@@ -766,6 +766,7 @@ export class GlobalActService {
    */
   async remove_files_from_storage_with_key(target_address: string, target_id: string) {
     try {
+      if (!target_address) throw '대상 주소 없음';
       let lastIndex = target_address.lastIndexOf(':');
       if (lastIndex > 5) target_address = target_address.substring(0, lastIndex);
       await fetch(`${target_address}:9001/remove_key/${target_id}`, { method: "POST" });

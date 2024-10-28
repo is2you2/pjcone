@@ -145,13 +145,15 @@ export class SubscribesPage implements OnInit {
                 try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
                   target_key = `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`
                 } catch (e) { }
-                this.global.remove_files_from_storage_with_key(target_address, target_key);
+                if (address)
+                  this.global.remove_files_from_storage_with_key(target_address, target_key);
               } catch (e) { }
               try { // cdn 삭제 요청, 로컬 채널은 주소 만들다가 알아서 튕김
                 let protocol = channel['info'].server.useSSL ? 'https:' : 'http:';
                 let address = channel['info'].server.address;
                 let target_address = `${[protocol]}//${address}:9002/`;
-                this.global.remove_files_from_storage_with_key(target_address, `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`);
+                if (address)
+                  this.global.remove_files_from_storage_with_key(target_address, `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`);
               } catch (e) { }
               let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${channel.id}`);
               for (let i = 0, j = list.length; i < j; i++) {
@@ -197,7 +199,8 @@ export class SubscribesPage implements OnInit {
                 try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
                   target_key = `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`
                 } catch (e) { }
-                this.global.remove_files_from_storage_with_key(target_address, target_key);
+                if (address[0])
+                  this.global.remove_files_from_storage_with_key(target_address, target_key);
               } catch (e) { }
               let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${channel.id}`);
               for (let i = 0, j = list.length; i < j; i++) {
