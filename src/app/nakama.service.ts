@@ -1615,8 +1615,7 @@ export class NakamaService {
     unofficial: {},
   };
 
-  /** 채널 추가, 채널 추가에 사용하려는 경우 join_chat_with_modulation() 를 대신 사용하세요
-   */
+  /** 채널 추가, 채널 추가에 사용하려는 경우 join_chat_with_modulation() 를 대신 사용하세요 */
   async add_channel(channel_info: Channel, _is_official: string, _target: string) {
     if (!this.channels_orig[_is_official][_target][channel_info.id]) {
       this.channels_orig[_is_official][_target][channel_info.id] = {};
@@ -2949,6 +2948,7 @@ export class NakamaService {
         } catch (e) { }
       }
       this.save_groups_with_less_info();
+      this.count_channel_online_member(c, _is_official, _target);
       return c;
     } catch (e) {
       let err_info: string = '';
@@ -3751,7 +3751,7 @@ export class NakamaService {
         } catch (e) {
           console.error('그룹 사용자 가져오기 오류: ', e);
         }
-        this.join_chat_with_modulation(v.content['group_id'], 3, _is_official, _target);
+        this.join_chat_with_modulation(v.content['group_id'], 3, _is_official, _target, true);
         this.noti.PushLocal({
           id: v.code,
           title: `${this.groups[_is_official][_target][v.content['group_id']]['name']}: ${this.lang.text['Nakama']['LocalNotiTitle']}`,
