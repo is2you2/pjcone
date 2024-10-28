@@ -2129,6 +2129,7 @@ export class NakamaService {
         } catch (e) { }
       }
     } catch (e) { }
+    delete this.PromotedGroup[_is_official][_target][info['id']];
   }
 
   /** 그룹 내에서 사용했던 서버 파일들 전부 삭제 요청 (nakama-postgre)
@@ -2995,11 +2996,18 @@ export class NakamaService {
       case 1: // 채널 메시지를 편집한 경우
       case 2: // 채널 메시지를 삭제한 경우
         break;
+      case 6: // 누군가 그룹에서 내보내짐 (kick)
+        { // 탈퇴 당한 경우 권한 박탈
+          if (is_me) {
+            delete this.PromotedGroup[_is_official][_target][c.group_id];
+            if (this.socket_reactive['add_todo_menu']) // 할 일 정보를 보는 중이라면 작업자 리스트 업데이트
+              this.socket_reactive['add_todo_menu'].UpdateWorkerList();
+          }
+        }
       case 3: // 열린 그룹 상태에서 사용자 들어오기 요청
       case 4: // 채널에 새로 들어온 사람 알림
       case 5: // 그룹에 있던 사용자 나감(들어오려다가 포기한 사람 포함)
-      case 6: // 누군가 그룹에서 내보내짐 (kick)
-      case 7: // 사용자 승급
+      case 7: // 사용자 진급
       case 9: // 사용자 강등
         /** 그룹 사용자 리스트 */
         let group_users: GroupUser[];

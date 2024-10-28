@@ -386,6 +386,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   /** 그룹 떠나기 */
   leave_group() {
     this.need_edit = false;
+    delete this.nakama.PromotedGroup[this.isOfficial][this.target][this.info['id']];
     // 여기서의 status는 나의 상태, 가입 여부 및 방장 여부를 뜻한다
     if (this.info['status'] == 'online')
       this.after_leave_group(() => {
