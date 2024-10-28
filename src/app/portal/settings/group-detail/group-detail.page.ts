@@ -147,7 +147,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
           try {
             await this.nakama.servers[this.isOfficial][this.target].client.rpc(
               this.nakama.servers[this.isOfficial][this.target].session,
-              'update_group_size_fn', {
+              'update_group_info_fn', {
               group_id: this.info['id'],
               max_count: newCount,
             });
@@ -167,7 +167,24 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         }
       }]
     }).then(v => v.present());
-    return false;
+  }
+
+  /** 그룹 공개 여부를 검토함 */
+  async update_group_open() {
+    this.info['open'] = !this.info['open'];
+    try {
+      await this.nakama.servers[this.isOfficial][this.target].client.rpc(
+        this.nakama.servers[this.isOfficial][this.target].session,
+        'update_group_info_fn', {
+        group_id: this.info['id'],
+        open: this.info['open'],
+      });
+    } catch (e) {
+      console.log('그룹 공개 토글 실패: ', e);
+      this.p5toast.show({
+        text: `${this.lang.text['GroupDetail']['FailedToChangeOpen']}: ${e.statusText || e} (${e.status})`,
+      });
+    }
   }
 
   async update_GroupUsersList(_is_official: string, _target: string) {
