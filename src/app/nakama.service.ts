@@ -134,10 +134,7 @@ export class NakamaService {
         delete group['status'];
         let _is_official = group['server']['isOfficial'];
         let _target = group['server']['target'];
-        if (!this.PromotedGroup[_is_official])
-          this.PromotedGroup[_is_official] = {};
-        if (!this.PromotedGroup[_is_official][_target])
-          this.PromotedGroup[_is_official][_target] = {};
+        this.CreateEmptyForm(_is_official, _target);
         if (group['users'])
           for (let i = 0, j = group['users'].length; i < j; i++)
             if (!group['users'][i]['is_me'])
@@ -771,29 +768,7 @@ export class NakamaService {
    * @param info.target 대상 key
    */
   async init_session(info: ServerInfo) {
-    // 빈 양식 생성하기
-    if (!this.groups[info.isOfficial])
-      this.groups[info.isOfficial] = {};
-    if (!this.groups[info.isOfficial][info.target])
-      this.groups[info.isOfficial][info.target] = {};
-    if (!this.channels_orig[info.isOfficial])
-      this.channels_orig[info.isOfficial] = {};
-    if (!this.channels_orig[info.isOfficial][info.target])
-      this.channels_orig[info.isOfficial][info.target] = {};
-    if (!this.usernameOverride[info.isOfficial])
-      this.usernameOverride[info.isOfficial] = {};
-    if (!this.usernameOverride[info.isOfficial][info.target])
-      this.usernameOverride[info.isOfficial][info.target] = {};
-    if (!this.OnTransfer[info.isOfficial]) this.OnTransfer[info.isOfficial] = {};
-    if (!this.OnTransfer[info.isOfficial][info.target]) this.OnTransfer[info.isOfficial][info.target] = {};
-    if (!this.self_match[info.isOfficial]) this.self_match[info.isOfficial] = {};
-    if (!this.self_match[info.isOfficial][info.target]) this.self_match[info.isOfficial][info.target] = undefined;
-    if (!this.noti_origin[info.isOfficial]) this.noti_origin[info.isOfficial] = {};
-    if (!this.noti_origin[info.isOfficial][info.target]) this.noti_origin[info.isOfficial][info.target] = {};
-    if (!this.RemoteTodoCounter[info.isOfficial]) this.RemoteTodoCounter[info.isOfficial] = {};
-    if (!this.RemoteTodoCounter[info.isOfficial][info.target]) this.RemoteTodoCounter[info.isOfficial][info.target] = [];
-    if (!this.PromotedGroup[info.isOfficial]) this.PromotedGroup[info.isOfficial] = {};
-    if (!this.PromotedGroup[info.isOfficial][info.target]) this.PromotedGroup[info.isOfficial][info.target] = {};
+    this.CreateEmptyForm(info.isOfficial, info.target);
     this.TogglingSession = true;
     try {
       this.servers[info.isOfficial][info.target].session
@@ -858,6 +833,32 @@ export class NakamaService {
       }
     }
     this.TogglingSession = false;
+  }
+
+  /** 빈 양식 생성하기 */
+  CreateEmptyForm(isOfficial: string, target: string) {
+    if (!this.groups[isOfficial])
+      this.groups[isOfficial] = {};
+    if (!this.groups[isOfficial][target])
+      this.groups[isOfficial][target] = {};
+    if (!this.channels_orig[isOfficial])
+      this.channels_orig[isOfficial] = {};
+    if (!this.channels_orig[isOfficial][target])
+      this.channels_orig[isOfficial][target] = {};
+    if (!this.usernameOverride[isOfficial])
+      this.usernameOverride[isOfficial] = {};
+    if (!this.usernameOverride[isOfficial][target])
+      this.usernameOverride[isOfficial][target] = {};
+    if (!this.OnTransfer[isOfficial]) this.OnTransfer[isOfficial] = {};
+    if (!this.OnTransfer[isOfficial][target]) this.OnTransfer[isOfficial][target] = {};
+    if (!this.self_match[isOfficial]) this.self_match[isOfficial] = {};
+    if (!this.self_match[isOfficial][target]) this.self_match[isOfficial][target] = undefined;
+    if (!this.noti_origin[isOfficial]) this.noti_origin[isOfficial] = {};
+    if (!this.noti_origin[isOfficial][target]) this.noti_origin[isOfficial][target] = {};
+    if (!this.RemoteTodoCounter[isOfficial]) this.RemoteTodoCounter[isOfficial] = {};
+    if (!this.RemoteTodoCounter[isOfficial][target]) this.RemoteTodoCounter[isOfficial][target] = [];
+    if (!this.PromotedGroup[isOfficial]) this.PromotedGroup[isOfficial] = {};
+    if (!this.PromotedGroup[isOfficial][target]) this.PromotedGroup[isOfficial][target] = {};
   }
 
   AfterLoginActDone = false;
@@ -1344,7 +1345,7 @@ export class NakamaService {
   }
 
   /** 그룹 내에서 승격된 경우를 기록함 (superadmin, admin)  
-   * PromotedGroup[isOfficial][target][group_id] = state;
+   * PromotedGroup[isOfficial][target][group_id] = boolean;
    */
   PromotedGroup = {};
   /** 저장된 그룹 업데이트하여 반영 */
@@ -1673,6 +1674,7 @@ export class NakamaService {
       isOfficial.forEach(_is_official => {
         let Target = Object.keys(this.channels_orig[_is_official]);
         Target.forEach(_target => {
+          this.CreateEmptyForm(_is_official, _target);
           let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
           channel_ids.forEach(_cid => {
             try {
