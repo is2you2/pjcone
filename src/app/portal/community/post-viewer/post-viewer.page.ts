@@ -499,6 +499,34 @@ export class PostViewerPage implements OnInit, OnDestroy {
                 } break;
                 case 'code':
                 case 'text':
+                  if (this.PostInfo['attachments'][index]['type'] == 'text/html') {
+                    // 파일 링크 준비하기
+                    try {
+                      if (!this.PostInfo['attachments'][index]['blob']) {
+                        if (this.PostInfo['attachments'][index]['url']) {
+                          let res = await fetch(this.PostInfo['attachments'][index]['url']);
+                          if (res.ok) {
+                            let download_blob = await res.blob();
+                            await this.indexed.saveBlobToUserPath(download_blob, this.PostInfo['attachments'][index]['alt_path']);
+                          }
+                        }
+                        let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][index]['alt_path'] || this.PostInfo['attachments'][index]['path'], this.PostInfo['attachments'][index]['type']);
+                        this.PostInfo['attachments'][index]['blob'] = blob;
+                      }
+                      let FileURL = URL.createObjectURL(this.PostInfo['attachments'][index]['blob']);
+                      this.FileURLs.push(FileURL);
+                      // 화면에 표시
+                      let HTMLDiv = p.createElement('iframe');
+                      HTMLDiv.style('width', '100%');
+                      HTMLDiv.style('border', '0');
+                      HTMLDiv.style('height', '432px');
+                      HTMLDiv.attribute('src', FileURL);
+                      HTMLDiv.parent(contentDiv);
+                      break;
+                    } catch (e) {
+                      console.log('HTML 파일 읽기 실패: ', e);
+                    }
+                  }
                 case 'disabled': // 사용 불가
                 default: { // 읽을 수 없는 파일들은 클릭시 뷰어 연결 div 생성 (채널 채팅 썸네일과 비슷함)
                   let EmptyDiv = p.createDiv();
