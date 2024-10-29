@@ -15,20 +15,42 @@ export class FloatButtonService {
   ArrayKeys = [];
   /** 애니메이션 행동을 p5에 보내기 */
   AddAnimateActFunc: Function;
+  /** 이 버튼을 추가하고 추가 애니메이션 재생 */
+  AddButtonQueue: Function;
+  /** 이 버튼을 제거하고 제거 애니메이션 재생 */
+  RemoveButtonQueue: Function;
 
   /** float-button 생성하기 */
   private CreateFloatButton() {
     this.p5canvas = new p5((p: p5) => {
       /** 이 버튼들은 애니메이션에 사용됩니다 */
       let AnimatedButton = [];
-      let AddAnimAct = (info: any) => {
+      let AddButtonOtherAct = (info: any) => {
         AnimatedButton.push(info);
+        AnimLerp = 0;
+        p.loop();
+      }
+      let LastAddedQueue: p5.Element;
+      let LastRemoveQueue: p5.Element;
+      let AddButtonAnim = (button: p5.Element) => {
+        LastAddedQueue = button;
+        button.style('transform-origin', '50% 50%');
+        button.style('transform', 'scale(0)')
+        AnimLerp = 0;
+        p.loop();
+      }
+      let RemoveButtonAnim = (button: p5.Element) => {
+        LastRemoveQueue = button;
+        button.style('transform-origin', '50% 50%');
+        button.style('transform', 'scale(1)')
         AnimLerp = 0;
         p.loop();
       }
       p.setup = () => {
         p.noCanvas();
-        this.AddAnimateActFunc = AddAnimAct;
+        this.AddAnimateActFunc = AddButtonOtherAct;
+        this.AddButtonQueue = AddButtonAnim;
+        this.RemoveButtonQueue = RemoveButtonAnim;
         p.noLoop();
       }
       let AnimLerp = 0;
@@ -40,8 +62,18 @@ export class FloatButtonService {
         let EndAnim = AnimLerp >= 1;
         if (EndAnim) {
           AnimLerp = 1;
+          if (LastAddedQueue)
+            LastAddedQueue = null;
+          if (LastRemoveQueue) {
+            LastRemoveQueue.remove();
+            LastRemoveQueue = null;
+          }
           p.noLoop();
         }
+        if (LastAddedQueue)
+          LastAddedQueue.style('transform', `scale(${asSineGraph(AnimLerp)})`)
+        if (LastRemoveQueue)
+          LastRemoveQueue.style('transform', `scale(${asSineGraph(1 - AnimLerp)})`)
         for (let i = AnimatedButton.length - 1; i >= 0; i--) {
           let right = p.lerp(AnimatedButton[i].start, AnimatedButton[i].end, asSineGraph(AnimLerp))
           AnimatedButton[i].button.style(`right: ${right}px`);
@@ -78,6 +110,7 @@ export class FloatButtonService {
     float_button.style("padding-top: 6px");
     float_button.style("background-color: #8888");
     float_button.style("border-radius: 24px");
+    this.AddButtonQueue(float_button);
     this.Buttons[key] = float_button;
     this.ArrayKeys.push(key);
     return float_button;
@@ -85,8 +118,7 @@ export class FloatButtonService {
 
   RemoveFloatButton(key: string) {
     // 버튼 개체 삭제
-    if (this.Buttons[key])
-      this.Buttons[key].remove();
+    if (!this.Buttons[key]) return;
     // 남아있는 버튼 개체들 재조정
     let RemovedIndex = -1;
     for (let i = this.ArrayKeys.length - 1; i >= 0; i--) {
@@ -101,6 +133,7 @@ export class FloatButtonService {
       }
       // 해당 키 정보 삭제하기
       if (this.ArrayKeys[i] == key) {
+        this.RemoveButtonQueue(this.Buttons[this.ArrayKeys[i]]);
         this.ArrayKeys.splice(i, 1);
         RemovedIndex = i;
       }
