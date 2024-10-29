@@ -11,6 +11,7 @@ import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
 import { ActivatedRoute, Router } from '@angular/router';
 import * as p5 from 'p5';
 import { isPlatform } from 'src/app/app.component';
+import { FloatButtonService } from 'src/app/float-button.service';
 
 @Component({
   selector: 'app-add-post',
@@ -29,6 +30,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     private sanitizer: DomSanitizer,
     private route: ActivatedRoute,
     private router: Router,
+    private floatButton: FloatButtonService,
   ) { }
 
   ngOnDestroy() {
@@ -553,35 +555,20 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.ContentTextArea.focus();
   }
 
-  /** 음성 녹음이 진행되는 경우 시간 기록을 편하게 할 수 있는 버튼 생성 */
-  p5floatingButton: p5;
   /** 페이지는 벗어났으나 계속 녹음을 유지중일 때 floating 버튼을 사용 */
   CreateFloatingVoiceTimeHistoryAddButton() {
-    if (this.p5floatingButton) this.p5floatingButton.remove();
-    this.p5floatingButton = new p5((p: p5) => {
-      p.setup = () => {
-        p.noCanvas();
-        let float_button = p.createDiv(`<ion-icon style="width: 36px; height: 36px" name="timer-outline"></ion-icon>`);
-        float_button.style("position: absolute; right: 0; bottom: 56px; z-index: 1");
-        float_button.style("width: 64px; height: 64px");
-        float_button.style("text-align: center; align-content: center");
-        float_button.style("cursor: pointer");
-        float_button.style("margin: 16px");
-        float_button.style("padding-top: 6px");
-        float_button.style("background-color: #8888");
-        float_button.style("border-radius: 24px");
-        float_button.elt.onclick = () => {
-          this.AddVoiceTimeHistory();
-          this.p5toast.show({
-            text: `${this.lang.text['AddPost']['RecordVoiceTime']}: ${this.extended_buttons[5].name}`,
-          });
-        };
-      }
-    });
+    this.floatButton.RemoveFloatButton('addpost-timer');
+    let float_button = this.floatButton.AddFloatButton('addpost-timer', 'timer-outline');
+    float_button.elt.onclick = () => {
+      this.AddVoiceTimeHistory();
+      this.p5toast.show({
+        text: `${this.lang.text['AddPost']['RecordVoiceTime']}: ${this.extended_buttons[5].name}`,
+      });
+    };
   }
 
   async StopAndSaveVoiceRecording() {
-    if (this.p5floatingButton) this.p5floatingButton.remove();
+    this.floatButton.RemoveFloatButton('addpost-timer');
     let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SavingRecord'] });
     loading.present();
     try {

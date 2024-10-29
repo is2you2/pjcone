@@ -201,7 +201,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   ionViewWillEnter() {
     this.WaitingLoaded = true;
     this.DomMinimalChatInput = document.getElementById('minimalchat_input').childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
-    if (this.client.p5canvas) this.client.p5canvas.remove();
+    this.client.RemoveFloatButton();
     this.DomMinimalChatInput.onpaste = (ev: any) => {
       let stack = [];
       for (const clipboardItem of ev.clipboardData.files)
@@ -960,6 +960,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     delete this.global.p5KeyShortCut['Escape'];
     if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
   }
+
   ngOnDestroy() {
     this.route.queryParams['unsubscribe']();
     window.onfocus = null;

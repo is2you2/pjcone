@@ -7,6 +7,7 @@ import { LanguageSettingService } from './language-setting.service';
 import { isPlatform } from './app.component';
 import { GlobalActService } from './global-act.service';
 import { LocalNotiService } from './local-noti.service';
+import { FloatButtonService } from './float-button.service';
 
 /** 기존 MiniRanchat과 서버를 공유하는 랜챗 클라이언트  
  * 해당 프로젝트의 동작 방식 역시 모방되어있다.
@@ -23,6 +24,7 @@ export class MiniranchatClientService {
     private lang: LanguageSettingService,
     private global: GlobalActService,
     private noti: LocalNotiService,
+    private floatButton: FloatButtonService,
   ) {
     this.noti.Sq_client = this;
   }
@@ -126,38 +128,24 @@ export class MiniranchatClientService {
    * DownloadPartManager[uuid][temp_id] = counter;
    */
   DownloadPartManager = {};
-  /** 재접속을 위한 빠른 버튼 보여주기 */
-  p5canvas: p5;
   p5OnDediMessage: Function;
 
   cacheAddress = '';
   /** 페이지는 벗어났으나 계속 연결을 유지중일 때 생성 */
   CreateRejoinButton() {
-    if (this.p5canvas) {
-      this.p5OnDediMessage = null;
-      this.p5canvas.remove();
+    this.RemoveFloatButton();
+    let float_button = this.floatButton.AddFloatButton('minimalchat', 'chatbox-ellipses-outline');
+    this.p5OnDediMessage = (color: string) => {
+      float_button.style(`background-color: #${color}88`);
     }
-    this.p5canvas = new p5((p: p5) => {
-      p.noCanvas();
-      p.setup = () => {
-        let float_button = p.createDiv(`<ion-icon style="width: 36px; height: 36px" name="chatbox-ellipses-outline"></ion-icon>`);
-        float_button.style("position: absolute; right: 0; bottom: 56px; z-index: 1");
-        float_button.style("width: 64px; height: 64px");
-        float_button.style("text-align: center; align-content: center");
-        float_button.style("cursor: pointer");
-        float_button.style("margin: 16px");
-        float_button.style("padding-top: 6px");
-        float_button.style("background-color: #8888");
-        float_button.style("border-radius: 24px");
-        // 메시지를 받으면 배경색이 변함
-        this.p5OnDediMessage = (color: string) => {
-          float_button.style(`background-color: #${color}88`);
-        }
-        float_button.elt.onclick = () => {
-          this.RejoinGroupChat();
-        };
-      }
-    });
+    float_button.elt.onclick = () => {
+      this.RejoinGroupChat();
+    };
+  }
+
+  RemoveFloatButton() {
+    this.p5OnDediMessage = null;
+    this.floatButton.RemoveFloatButton('minimalchat');
   }
 
   RejoinGroupChat() {
@@ -191,10 +179,7 @@ export class MiniranchatClientService {
     this.IsConnected = false;
     this.cacheAddress = '';
     this.uuid = null;
-    if (this.p5canvas) {
-      this.p5OnDediMessage = null;
-      this.p5canvas.remove();
-    }
+    this.RemoveFloatButton();
     this.FFSClient = null;
     this.client = null;
     this.JoinedChannel = null;
