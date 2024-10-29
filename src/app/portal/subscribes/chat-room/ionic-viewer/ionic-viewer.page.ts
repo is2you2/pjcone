@@ -1877,10 +1877,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     return false;
   }
 
-  /** 파일 공유 등 이 페이지 안에서 추가 페이지 작업이 있는 경우 */
+  /** 이 페이지에 있는지를 검토하는 녀석으로 사용중, p5 단축키 기능 제한용 */
   InnerChangedPage = false;
   ShareContent() {
-    this.InnerChangedPage = true;
     this.FileMenu.dismiss();
     let channels = this.nakama.rearrange_channels();
     for (let i = channels.length - 1; i >= 0; i--) {
@@ -2053,8 +2052,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         break;
     }
     URL.revokeObjectURL(this.FileURL);
-    if (!this.isTextEditMode && !this.InnerChangedPage)
-      this.RemoveP5Relative();
+    this.InnerChangedPage = true;
   }
 
   ionViewDidLeave() {
