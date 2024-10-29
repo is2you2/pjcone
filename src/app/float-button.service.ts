@@ -13,12 +13,40 @@ export class FloatButtonService {
   Buttons = {};
   /** 버튼이 추가된 순서 */
   ArrayKeys = [];
+  /** 애니메이션 행동을 p5에 보내기 */
+  AddAnimateActFunc: Function;
 
   /** float-button 생성하기 */
   private CreateFloatButton() {
     this.p5canvas = new p5((p: p5) => {
+      /** 이 버튼들은 애니메이션에 사용됩니다 */
+      let AnimatedButton = [];
+      let AddAnimAct = (info: any) => {
+        AnimatedButton.push(info);
+        AnimLerp = 0;
+        p.loop();
+      }
       p.setup = () => {
         p.noCanvas();
+        this.AddAnimateActFunc = AddAnimAct;
+        p.noLoop();
+      }
+      let AnimLerp = 0;
+      let asSineGraph = (t: number) => {
+        return p.sin(t * p.PI / 2);
+      }
+      p.draw = () => {
+        AnimLerp += .07;
+        let EndAnim = AnimLerp >= 1;
+        if (EndAnim) {
+          AnimLerp = 1;
+          p.noLoop();
+        }
+        for (let i = AnimatedButton.length - 1; i >= 0; i--) {
+          let right = p.lerp(AnimatedButton[i].start, AnimatedButton[i].end, asSineGraph(AnimLerp))
+          AnimatedButton[i].button.style(`right: ${right}px`);
+        }
+        if (EndAnim) AnimatedButton.length = 0;
       }
     });
   }
@@ -32,8 +60,13 @@ export class FloatButtonService {
       this.CreateFloatButton();
     // 기존 버튼들의 위치 재조정
     for (let btn of this.ArrayKeys) {
-      let top = this.Buttons[btn].style('right').split('px').shift();
-      this.Buttons[btn].style(`right: ${top + 80}px`);
+      let right = Number(this.Buttons[btn].style('right').split('px').shift());
+      this.AddAnimateActFunc({
+        type: 'add',
+        button: this.Buttons[btn],
+        start: right,
+        end: right + 80,
+      });
     }
     // 새 버튼 생성
     let float_button = this.p5canvas.createDiv(`<ion-icon style="width: 36px; height: 36px" name="${icon}"></ion-icon>`);
@@ -56,10 +89,15 @@ export class FloatButtonService {
       this.Buttons[key].remove();
     // 남아있는 버튼 개체들 재조정
     let RemovedIndex = -1;
-    for (let i = this.ArrayKeys.length; i >= 0; i--) {
+    for (let i = this.ArrayKeys.length - 1; i >= 0; i--) {
       if (RemovedIndex >= 0) {
-        let top = this.Buttons[this.ArrayKeys[i]].style('right').split('px').shift();
-        this.Buttons[this.ArrayKeys[i]].style(`right: ${top - 80}px`);
+        let right = Number(this.Buttons[this.ArrayKeys[i]].style('right').split('px').shift());
+        this.AddAnimateActFunc({
+          type: 'remove',
+          button: this.Buttons[this.ArrayKeys[i]],
+          start: right,
+          end: right - 80,
+        });
       }
       // 해당 키 정보 삭제하기
       if (this.ArrayKeys[i] == key) {
