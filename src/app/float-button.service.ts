@@ -67,6 +67,8 @@ export class FloatButtonService {
           if (LastRemoveQueue) {
             LastRemoveQueue.remove();
             LastRemoveQueue = null;
+            if (!this.ArrayKeys.length && this.p5canvas)
+              this.p5canvas.remove();
           }
           p.noLoop();
         }
@@ -138,7 +140,5 @@ export class FloatButtonService {
         RemovedIndex = i;
       }
     }
-    if (!this.ArrayKeys.length && this.p5canvas)
-      this.p5canvas.remove();
   }
 }
