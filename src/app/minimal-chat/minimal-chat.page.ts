@@ -158,6 +158,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   /** 빠른진입으로 들어온 경우 QR코드를 보여주지 않음 */
   JoinedQuick = false;
   ngOnInit() {
+    this.global.StoreShortCutAct('minimal-chat-init');
     this.route.queryParams.subscribe(async _p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
       await new Promise(res => setTimeout(res, 100)); // init 지연
@@ -962,6 +963,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.global.RestoreShortCutAct('minimal-chat-init');
     this.route.queryParams['unsubscribe']();
     window.onfocus = null;
     this.minimal_chat_log.onscroll = null;

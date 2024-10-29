@@ -140,7 +140,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         this.navParams = navParams;
       } catch (e) {
         this.WaitingLoaded = false;
-        this.ChangeContentWithKeyInput();
+        this.init_viewer();
         this.BlockReinit = true;
       }
     });
