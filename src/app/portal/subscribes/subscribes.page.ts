@@ -267,11 +267,35 @@ export class SubscribesPage implements OnInit {
   async OpenScanner() {
     this.QRScanResult = null;
     this.global.StoreShortCutAct('qrcode-scanner');
+    let zxing_scanner = await fetch('assets/p5js/zxing_scanner.js');
+    let zxing_scannerBlob = await zxing_scanner.blob();
+    let zxing_scannerURL = URL.createObjectURL(zxing_scannerBlob);
+    let p5js = await fetch('assets/p5js/libraries/p5.min.js');
+    let p5jsBlob = await p5js.blob();
+    let p5jsURL = URL.createObjectURL(p5jsBlob);
+    let zxing = await fetch('assets/p5js/libraries/zxing@0.21.3.min.js');
+    let zxingBlob = await zxing.blob();
+    let zxingURL = URL.createObjectURL(zxingBlob);
+    let scanMain = await fetch('assets/p5js/zxing.html');
+    let scanMainText = await scanMain.text();
+    scanMainText = scanMainText.replace('<script language="javascript" type="text/javascript" src="libraries/p5.min.js"></script>',
+      `<script language="javascript" type="text/javascript" src="${p5jsURL}"></script>`)
+      .replace('<script language="javascript" type="text/javascript" src="libraries/zxing@0.21.3.min.js"></script>',
+        `<script language="javascript" type="text/javascript" src="${zxingURL}"></script>`)
+      .replace('<script language="javascript" type="text/javascript" src="zxing_scanner.js"></script>',
+        `<script language="javascript" type="text/javascript" src="${zxing_scannerURL}"></script>`);
+    let scanMainBlob = new Blob([scanMainText], { type: 'text/html' });
+    let MainURL = URL.createObjectURL(scanMainBlob);
     this.InAppQRScanner.onDidDismiss().then(() => {
+      URL.revokeObjectURL(MainURL);
+      URL.revokeObjectURL(zxing_scannerURL);
+      URL.revokeObjectURL(p5jsURL);
+      URL.revokeObjectURL(zxingURL);
       this.global.RestoreShortCutAct('qrcode-scanner');
     });
     await this.InAppQRScanner.present();
     let iframe = document.getElementById('qr_scan_frame') as HTMLIFrameElement;
+    iframe.src = MainURL;
     let contentWindow = iframe.contentWindow || iframe.contentDocument;
     contentWindow['scan_result'] = async (result: any) => {
       try {
