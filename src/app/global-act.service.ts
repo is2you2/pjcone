@@ -1544,6 +1544,7 @@ export class GlobalActService {
    * @param filename 이미지인 경우 파일 이름 명시
    */
   async WriteValueToClipboard(type: string, value: any, filename?: string) {
+    if (!value) return;
     try {
       let data = {};
       let _value = value;

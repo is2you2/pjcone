@@ -35,6 +35,7 @@ export class LicensesPage implements OnInit, OnDestroy {
       thirdparty: '',
     },
     jsblend: '',
+    zxing: '',
     modules: '',
   };
 
@@ -51,6 +52,9 @@ export class LicensesPage implements OnInit, OnDestroy {
         });
         p.loadStrings('assets/data/docs/js.blend.txt', (v: string[]) => {
           this.licenses.jsblend = v.join('\n');
+        });
+        p.loadStrings('assets/data/docs/zxing.txt', (v: string[]) => {
+          this.licenses.zxing = v.join('\n');
         });
         p.loadStrings('assets/data/docs/licenses.txt', (v: string[]) => {
           this.licenses.modules = v.join('\n');

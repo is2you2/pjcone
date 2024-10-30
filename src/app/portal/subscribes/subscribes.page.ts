@@ -259,4 +259,27 @@ export class SubscribesPage implements OnInit {
     delete this.global.p5KeyShortCut['Digit'];
     delete this.global.p5KeyShortCut['AddAct'];
   }
+
+  @ViewChild('InAppQRScanner') InAppQRScanner: IonModal;
+  QRScanResult: string;
+  /** QR스캐너 열기 */
+  async OpenScanner() {
+    this.QRScanResult = null;
+    this.global.StoreShortCutAct('qrcode-scanner');
+    this.InAppQRScanner.onDidDismiss().then(() => {
+      this.global.RestoreShortCutAct('qrcode-scanner');
+    });
+    await this.InAppQRScanner.present();
+    let iframe = document.getElementById('qr_scan_frame') as HTMLIFrameElement;
+    let contentWindow = iframe.contentWindow || iframe.contentDocument;
+    contentWindow['scan_result'] = async (result: any) => {
+      try {
+        this.QRScanResult = result.text;
+        if (this.QRScanResult)
+          await this.nakama.open_url_link(this.QRScanResult);
+      } catch (e) {
+        console.log('QR스캔 실패: ', e);
+      }
+    }
+  }
 }

@@ -13,6 +13,7 @@ import * as p5 from 'p5';
 import { ActivatedRoute, Router } from '@angular/router';
 import { VoiceRecorder } from '@langx/capacitor-voice-recorder';
 import { ExtendButtonForm } from '../portal/subscribes/chat-room/chat-room.page';
+import { NakamaService } from '../nakama.service';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
 @Component({
@@ -36,6 +37,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     private indexed: IndexedDBService,
     private loadingCtrl: LoadingController,
     private alertCtrl: AlertController,
+    public nakama: NakamaService,
   ) { }
   header_title: string;
   /** 페이지 구분자는 페이지에 사용될 아이콘 이름을 따라가도록 */
@@ -136,20 +138,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     loading.dismiss();
     this.extended_buttons[4].icon = 'mic-circle-outline';
     this.extended_buttons[4].name = this.lang.text['ChatRoom']['Voice'];
-  }
-
-  async open_url_link(url: string) {
-    // 근데 주소가 메인 주소라면 QR행동으로 처리하기
-    if (url.indexOf('https://is2you2.github.io/pjcone_pwa/?') == 0) {
-      let init = this.global.CatchGETs(url) || {};
-      try {
-        await this.client.nakama.AddressToQRCodeAct(init);
-      } catch (e) {
-        this.p5toast.show({
-          text: `${this.lang.text['ChatRoom']['QRLinkFailed']}: ${e}`,
-        });
-      }
-    } else this.global.open_link(url);
   }
 
   @ViewChild('MinimalChatServer') MinimalChatServer: IonSelect;

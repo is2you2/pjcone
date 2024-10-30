@@ -31,4 +31,10 @@
       (click)="global.open_link('https://github.com/acweathersby/js.blend')">{{lang.text['Licenses']['open_link']}}</ion-button>
   </ion-list-header>
   <textarea class="infobox" disabled [(ngModel)]="licenses['jsblend']"></textarea>
+  <ion-list-header>
+    <ion-label>ZXing</ion-label>
+    <ion-button
+      (click)="global.open_link('https://github.com/zxing/zxing')">{{lang.text['Licenses']['open_link']}}</ion-button>
+  </ion-list-header>
+  <textarea class="infobox" disabled [(ngModel)]="licenses['zxing']"></textarea>
 </ion-content>

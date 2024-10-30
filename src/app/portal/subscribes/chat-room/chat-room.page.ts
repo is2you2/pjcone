@@ -2239,17 +2239,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 하이퍼링크 열기 행동 후 포커스 빼기 */
   async open_url_link(url: string) {
-    // 근데 주소가 메인 주소라면 QR행동으로 처리하기
-    if (url.indexOf('https://is2you2.github.io/pjcone_pwa/?') == 0) {
-      let init = this.global.CatchGETs(url) || {};
-      try {
-        await this.nakama.AddressToQRCodeAct(init);
-      } catch (e) {
-        this.p5toast.show({
-          text: `${this.lang.text['ChatRoom']['QRLinkFailed']}: ${e}`,
-        });
-      }
-    } else this.global.open_link(url);
+    await this.nakama.open_url_link(url);
     this.make_ext_hidden();
     this.userInputTextArea.focus();
     this.SetOtherAct();

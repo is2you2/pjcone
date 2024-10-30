@@ -4181,6 +4181,22 @@ export class NakamaService {
     } catch (e) { }
   }
 
+  /** 주소를 검토하여 앱 행동을 하거나 링크 열기 */
+  async open_url_link(url: string) {
+    // 근데 주소가 메인 주소라면 QR행동으로 처리하기
+    if (url.indexOf('https://is2you2.github.io/pjcone_pwa/?') == 0) {
+      let init = this.global.CatchGETs(url) || {};
+      try {
+        await this.AddressToQRCodeAct(init);
+      } catch (e) {
+        console.log('open_url_link: ', e);
+        this.p5toast.show({
+          text: `${this.lang.text['ChatRoom']['QRLinkFailed']}: ${e}`,
+        });
+      }
+    } else this.global.open_link(url);
+  }
+
   async AddressToQRCodeAct(init: any, NeedReturn = false) {
     let json = [];
     if (init['open_profile']) // 프로필 화면 유도
