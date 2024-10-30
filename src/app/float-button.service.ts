@@ -35,6 +35,7 @@ export class FloatButtonService {
       let AddButtonAnim = (button: p5.Element) => {
         LastAddedQueue = button;
         button.style('transform-origin', '50% 50%');
+        button.style('opacity', '0');
         button.style('transform', 'scale(0)')
         AnimLerp = 0;
         p.loop();
@@ -42,6 +43,7 @@ export class FloatButtonService {
       let RemoveButtonAnim = (button: p5.Element) => {
         LastRemoveQueue = button;
         button.style('transform-origin', '50% 50%');
+        button.style('opacity', '1');
         button.style('transform', 'scale(1)')
         AnimLerp = 0;
         p.loop();
@@ -72,10 +74,14 @@ export class FloatButtonService {
           }
           p.noLoop();
         }
-        if (LastAddedQueue)
-          LastAddedQueue.style('transform', `scale(${asSineGraph(AnimLerp)})`)
-        if (LastRemoveQueue)
-          LastRemoveQueue.style('transform', `scale(${asSineGraph(1 - AnimLerp)})`)
+        if (LastAddedQueue) {
+          LastAddedQueue.style('opacity', `${AnimLerp}`);
+          LastAddedQueue.style('transform', `scale(${asSineGraph(AnimLerp)})`);
+        }
+        if (LastRemoveQueue) {
+          LastRemoveQueue.style('opacity', `${1 - AnimLerp}`);
+          LastRemoveQueue.style('transform', `scale(${asSineGraph(1 - AnimLerp)})`);
+        }
         for (let i = AnimatedButton.length - 1; i >= 0; i--) {
           let right = p.lerp(AnimatedButton[i].start, AnimatedButton[i].end, asSineGraph(AnimLerp))
           AnimatedButton[i].button.style(`right: ${right}px`);
