@@ -131,6 +131,12 @@
     </ion-item>
   </div>
   <div>
+    <div *ngIf="global.ShowHint" class="shortcut_hint">{{ShortcutHint['MainQuickLink']}}</div>
+    <ion-item button (click)="OpenQuickQRModal()">
+      <ion-label>{{lang.text['Settings']['MainQuickLink']}}</ion-label>
+    </ion-item>
+  </div>
+  <div>
     <div *ngIf="global.ShowHint" class="shortcut_hint">{{ShortcutHint['license']}}</div>
     <ion-item button (click)="go_to_page('licenses')">
       <ion-label>{{lang.text['Settings']['LicenseNotice']}}</ion-label>
@@ -145,4 +151,18 @@
       style="cursor: pointer; padding: 16px; border-radius: 32px; max-height: 300px;" alt="patreon_link"
       (click)="open_patreon()" />
   </div>
+  <ion-modal #QuickJoinMain class="transparent-modal">
+    <ng-template>
+      <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+        <div
+          style="width: 400px; height: 455px; background-color: var(--chatroom-background); text-align: center; padding: 16px">
+          <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;"
+            (click)="copy_address(QuickMainAddress)" alt="QuickMainLink" />
+          <ion-item button (click)="copy_address(QuickMainAddress)">
+            <ion-label class="ion-text-center">{{QuickMainAddress}}</ion-label>
+          </ion-item>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
 </ion-content>

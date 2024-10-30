@@ -1,11 +1,12 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IonAccordionGroup, IonSelect, iosTransitionAnimation, NavController } from '@ionic/angular';
-import { isNativefier, isPlatform } from 'src/app/app.component';
+import { SERVER_PATH_ROOT, isNativefier, isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
+import { IonModal } from '@ionic/angular/common';
 
 @Component({
   selector: 'app-settings',
@@ -83,6 +84,8 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.navCtrl.pop();
     }
     this.CreateHint();
+    this.QuickMainAddress = `${SERVER_PATH_ROOT}pjcone_pwa`;
+    this.QRCodeSRC = this.global.readasQRCodeFromString(this.QuickMainAddress);
   }
 
   Fallback_FS_input_element: HTMLInputElement;
@@ -106,6 +109,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     creator: 0,
     translator: 0,
     lang: 0,
+    MainQuickLink: 0,
     license: 0,
     sponsor: 0,
   };
@@ -127,6 +131,9 @@ export class SettingsPage implements OnInit, OnDestroy {
     }
     if (StartNumber > 10) return;
     this.ShortcutHint.lang = (StartNumber) % 10;
+    StartNumber++;
+    if (StartNumber > 10) return;
+    this.ShortcutHint.MainQuickLink = (StartNumber) % 10;
     StartNumber++;
     if (StartNumber > 10) return;
     this.ShortcutHint.license = (StartNumber) % 10;
@@ -199,6 +206,7 @@ export class SettingsPage implements OnInit, OnDestroy {
     if (this.lang.lang != 'ko')
       this.LinkButton.push(() => this.go_to_page('translator'));
     this.LinkButton.push(() => this.LangClicked());
+    this.LinkButton.push(() => this.OpenQuickQRModal());
     this.LinkButton.push(() => this.go_to_page('licenses'));
     this.LinkButton.push(() => this.open_patreon());
     // 환경에 맞춰 단축키 구성
@@ -313,5 +321,22 @@ export class SettingsPage implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.Fallback_FS_input_element.onfocus = null;
     delete this.nakama.on_socket_disconnected['settings_admin_check'];
+  }
+
+  QRCodeSRC: any;
+  QuickMainAddress: string;
+  @ViewChild('QuickJoinMain') QuickJoinMain: IonModal;
+  copy_address(target: string) {
+    this.global.WriteValueToClipboard('text/plain', target);
+  }
+
+  OpenQuickQRModal() {
+    this.WillLeave = true;
+    this.global.StoreShortCutAct('QuickMainLink');
+    this.QuickJoinMain.onDidDismiss().then(() => {
+      this.global.RestoreShortCutAct('QuickMainLink');
+      this.WillLeave = false;
+    });
+    this.QuickJoinMain.present();
   }
 }
