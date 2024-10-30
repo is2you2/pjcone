@@ -83,8 +83,9 @@ export class SubscribesPage implements OnInit {
   }
   select_server(i: number) {
     this.user_id = this.nakama.servers[this.servers[i].isOfficial][this.servers[i].target].session.user_id;
+    let address = `${this.nakama.servers[this.servers[i].isOfficial][this.servers[i].target].info.useSSL ? 'https://' : 'http://'}${this.nakama.servers[this.servers[i].isOfficial][this.servers[i].target].info.address}:${this.nakama.servers[this.servers[i].isOfficial][this.servers[i].target].info.port || 7350}`;
     this.isExpanded = false;
-    this.InvitationAddress = `${SERVER_PATH_ROOT}pjcone_pwa/?open_prv_channel=${this.user_id},,`.replace(' ', '%20');
+    this.InvitationAddress = `${SERVER_PATH_ROOT}pjcone_pwa/?open_prv_channel=${this.user_id},${address}`.replace(' ', '%20');
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.InvitationAddress);
     let userColor = `${(this.user_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6)}`;
     const r = parseInt(userColor.slice(0, 2), 16);

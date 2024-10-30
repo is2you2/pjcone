@@ -4251,8 +4251,7 @@ export class NakamaService {
       json.push({
         type: 'open_prv_channel',
         user_id: sep[0],
-        isOfficial: sep[1] || 'official',
-        target: sep[2] || 'DevTestServer',
+        address: sep[1],
       });
     }
     if (init['open_channel']) {
@@ -4260,8 +4259,7 @@ export class NakamaService {
       json.push({
         type: 'open_channel',
         group_id: sep[0],
-        isOfficial: sep[1],
-        target: sep[2],
+        address: sep[1],
       });
     }
     if (init['rtcserver']) {
@@ -4383,23 +4381,35 @@ export class NakamaService {
             await this.try_add_group(json[i])
           });
           break;
-        case 'open_prv_channel': // 1:1 대화 열기 (폰에서 넘어가기 보조용)
-          if (this.AfterLoginActDone) {
-            let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], true);
-            this.go_to_chatroom_without_admob_act(c);
-          } else this.AfterLoginAct.push(async () => {
-            let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, json[i]['isOfficial'], json[i]['target'], true);
-            this.go_to_chatroom_without_admob_act(c);
+        case 'open_prv_channel': { // 1:1 대화 열기 (폰에서 넘어가기 보조용)
+          let info = this.CheckIfHasServer(json[i]['address']);
+          if (info) {
+            if (this.AfterLoginActDone) {
+              let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, info['isOfficial'], info['target'], true);
+              this.go_to_chatroom_without_admob_act(c);
+            } else this.AfterLoginAct.push(async () => {
+              let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, info['isOfficial'], info['target'], true);
+              this.go_to_chatroom_without_admob_act(c);
+            });
+          } else this.p5toast.show({
+            text: this.lang.text['Nakama']['NoLoginServer'],
           });
+        }
           break;
-        case 'open_channel': // 그룹 대화 열기 (폰에서 넘어가기 보조용)
-          if (this.AfterLoginActDone) {
-            let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, json[i]['isOfficial'], json[i]['target'], true);
-            this.go_to_chatroom_without_admob_act(c);
-          } else this.AfterLoginAct.push(async () => {
-            let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, json[i]['isOfficial'], json[i]['target'], true);
-            this.go_to_chatroom_without_admob_act(c);
+        case 'open_channel': { // 그룹 대화 열기 (폰에서 넘어가기 보조용)
+          let info = this.CheckIfHasServer(json[i]['address']);
+          if (info) {
+            if (this.AfterLoginActDone) {
+              let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, info['isOfficial'], info['target'], true);
+              this.go_to_chatroom_without_admob_act(c);
+            } else this.AfterLoginAct.push(async () => {
+              let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, info['isOfficial'], info['target'], true);
+              this.go_to_chatroom_without_admob_act(c);
+            });
+          } else this.p5toast.show({
+            text: this.lang.text['Nakama']['NoLoginServer'],
           });
+        }
           break;
         case 'rtcserver':
           let ServerInfos = [];
@@ -4474,6 +4484,34 @@ export class NakamaService {
         default: // 동작 미정 알림(debug)
           throw "지정된 틀 아님";
       }
+  }
+
+  /** 일반 웹 주소를 검토하여 등록된 서버인지 검토  
+   * 서버에 대한 것이므로 프로토콜 검토는 http 선에서 한다
+   * @param url 평문 모양새의 서버 주소 (proto://host:port)
+   * @returns 등록된 서버면 등록된 서버 정보 반환(ServerInfo), 등록되지 않았으면 신규 등록 후 반환
+   */
+  CheckIfHasServer(url: string) {
+    let result: any = false;
+    try {
+      let sep = url.split('://');
+      let useSSL = sep.shift() == 'https';
+      let sep2 = sep.shift().split(':');
+      let host = sep2[0];
+      let port = Number(sep2[1]);
+      let all_server = this.get_all_server_info(true);
+      for (let info of all_server)
+        if (info.address == host
+          && info.useSSL == useSSL
+          && info.port == port) {
+          result = info;
+          break;
+        }
+    } catch (e) {
+      // 버전 호환이 안된 경우를 고려함
+    }
+    // 등록된 서버가 아니라면 서버 없음 알림
+    return result;
   }
 
   /** 아이디 기반 게시물 불러오기  

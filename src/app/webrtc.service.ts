@@ -86,23 +86,9 @@ export class WebrtcService {
    */
   async initialize(type: 'video' | 'audio' | 'data',
     media_const?: MediaStreamConstraints, nakama?: any, LeaveMatch?: boolean) {
-    if (type != 'data' && window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0) {
-      // 보안 연결 필수, 웹 페이지로 현재 정보와 함께 던져주기
-      let servers = this.nakama.get_all_online_server();
-      let out_link = 'https://is2you2.github.io/pjcone_pwa/';
-      out_link += `?tmp_user=${this.nakama.users.self['email']},${this.nakama.users.self['password']},${this.nakama.users.self['display_name']}`;
-      for (let i = 0, j = servers.length; i < j; i++)
-        out_link += `&server=${servers[i].info.name || ''},${servers[i].info.address || ''},${servers[i].info.useSSL || ''},${servers[i].info.port || ''},${servers[i].info.key || ''}`;
-      out_link += `&open_prv_channel=${nakama.user_id},${nakama.isOfficial || 'official'},${nakama.target || 'DevTestServer'}`;
-      try {
-        let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json');
-        let ServerInfos = JSON.parse(list);
-        for (let i = 0, j = ServerInfos.length; i < j; i++)
-          out_link += `&rtcserver=[${ServerInfos[i].urls}],${ServerInfos[i].username},${ServerInfos[i].credential}`;
-      } catch (e) { }
-      window.open(out_link, '_blank');
+    // 보안 연결 필수, 안되면 안내 띄우고 무시
+    if (type != 'data' && window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0)
       throw this.lang.text['WebRTCDevManager']['SecurityError'];
-    }
     if (type != 'data') {
       let answer = await VoiceRecorder.requestAudioRecordingPermission();
       if (!answer.value) throw this.lang.text['WebRTCDevManager']['SecurityError'];
