@@ -148,7 +148,7 @@ Support,이 프로젝트를 후원합니다,Support this project
 ## NotificationSettings,,
 set_alert,알림 받기,Get notifications
 icon_mono,기본 앱 알림,Default
-diychat,Nakama 채널,Nakama channel
+diychat,Nakama 서버,Nakama server
 simplechat,광장,Square
 engineppt,엔진PPT,EnginePPT
 ## Profile,,
