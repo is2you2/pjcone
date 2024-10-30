@@ -14,11 +14,11 @@ export class FloatButtonService {
   /** 버튼이 추가된 순서 */
   ArrayKeys = [];
   /** 애니메이션 행동을 p5에 보내기 */
-  AddAnimateActFunc: Function;
+  private AddAnimateActFunc: Function;
   /** 이 버튼을 추가하고 추가 애니메이션 재생 */
-  AddButtonQueue: Function;
+  private AddButtonQueue: Function;
   /** 이 버튼을 제거하고 제거 애니메이션 재생 */
-  RemoveButtonQueue: Function;
+  private RemoveButtonQueue: Function;
 
   /** float-button 생성하기 */
   private CreateFloatButton() {

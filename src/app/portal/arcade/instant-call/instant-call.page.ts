@@ -1,10 +1,11 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonSelect, NavController } from '@ionic/angular';
+import { IonSelect, NavController, iosTransitionAnimation } from '@ionic/angular';
 import { VoiceRecorder } from '@langx/capacitor-voice-recorder';
 import * as p5 from 'p5';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
+import { FloatButtonService } from 'src/app/float-button.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
@@ -28,6 +29,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private p5toast: P5ToastService,
     private navCtrl: NavController,
+    private floatbutton: FloatButtonService,
   ) { }
 
   QRCodeAsString: string;
@@ -231,6 +233,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
       this.p5toast.show({
         text: this.lang.text['InstantCall']['CallEnd'],
       });
+      this.floatbutton.RemoveFloatButton('instant-call');
       this.global.WaitingConnect = false;
       this.global.InitEnd = false;
       this.global.PeerConnected = false;
@@ -326,6 +329,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
   /** 통화가 종료되었다면 다시 돌아왔을 때 페이지 나가기 */
   CallClosed = false;
   ionViewWillEnter() {
+    this.floatbutton.RemoveFloatButton('instant-call');
     this.PageOut = false;
     if (this.p5canvas) this.p5canvas.windowResized();
     this.global.StoreShortCutAct('instant-call');
@@ -337,6 +341,14 @@ export class InstantCallPage implements OnInit, OnDestroy {
 
   ionViewWillLeave() {
     this.PageOut = true;
+    if (this.global.WaitingConnect || this.global.InitEnd) {
+      let float_button = this.floatbutton.AddFloatButton('instant-call', 'call-outline');
+      float_button.elt.onclick = () => {
+        this.navCtrl.navigateForward('portal/arcade/instant-call', {
+          animation: iosTransitionAnimation,
+        });
+      }
+    }
     delete this.global.p5KeyShortCut['Escape'];
     this.global.RestoreShortCutAct('instant-call');
   }
