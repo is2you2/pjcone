@@ -1070,26 +1070,37 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 timestamp: target_msg.create_time,
               };
               if (text) this.userInput.qoute.text = this.global.truncateString(text, 80);
-              if (target_msg.content.viewer == 'image') {
-                if (target_msg.content.url) {
-                  this.userInput.qoute.url = target_msg.content.url;
-                  this.userInput.qoute.path = target_msg.content.url;
-                } else if (target_msg.content.path) {
-                  this.userInput.qoute.path = target_msg.content.path.split('/').pop();
-                  if (!this.userInput.qoute.url) {
-                    let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/${this.userInput.qoute.path}`;
-                    this.indexed.checkIfFileExist(path, b => {
-                      if (b) this.indexed.loadBlobFromUserPath(path, target_msg.content.type, blob => {
-                        let FileURL = URL.createObjectURL(blob);
-                        this.userInput.qoute['url'] = FileURL;
-                        setTimeout(() => {
-                          URL.revokeObjectURL(FileURL);
-                        }, 100);
+              if (target_msg.content.viewer)
+                if (target_msg.content.viewer == 'image') {
+                  if (target_msg.content.url) {
+                    this.userInput.qoute.url = target_msg.content.url;
+                    this.userInput.qoute.path = target_msg.content.url;
+                  } else if (target_msg.content.path) {
+                    this.userInput.qoute.path = target_msg.content.path.split('/').pop();
+                    if (!this.userInput.qoute.url) {
+                      let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/${this.userInput.qoute.path}`;
+                      this.indexed.checkIfFileExist(path, b => {
+                        if (b) this.indexed.loadBlobFromUserPath(path, target_msg.content.type, blob => {
+                          let FileURL = URL.createObjectURL(blob);
+                          this.userInput.qoute['url'] = FileURL;
+                          setTimeout(() => {
+                            URL.revokeObjectURL(FileURL);
+                          }, 100);
+                        });
                       });
-                    });
+                    }
                   }
+                } else { // 이미지가 아닌 다른 파일에 대해서
+                  try { // 대안 썸네일이 있는지 확인
+                    this.indexed.loadBlobFromUserPath(`${target_msg.content['path']}_thumbnail.png`, 'image/png', blob => {
+                      let FileURL = URL.createObjectURL(blob);
+                      this.userInput.qoute['url'] = FileURL;
+                      setTimeout(() => {
+                        URL.revokeObjectURL(FileURL);
+                      }, 100);
+                    });
+                  } catch (e) { }
                 }
-              }
               this.userInput.qoute.id = target_msg.message_id;
               this.userInput.qoute.display_name = target_msg.user_display_name;
               this.userInput.qoute.user_id = target_msg['sender_id'];
@@ -1458,6 +1469,22 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       });
       else if (c.content.qoute.path && c.content.qoute.path.indexOf('http') == 0)
         c.content.qoute['url'] = c.content.qoute.path;
+      else {
+        let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${c.content.qoute.id}`;
+        this.indexed.GetFileListFromDB(path, list => {
+          let getlong = list.pop();
+          // 썸네일 파일인 경우에 한해서 동작
+          if (getlong.indexOf('_thumbnail.png')) {
+            this.indexed.loadBlobFromUserPath(getlong, file_type, blob => {
+              let FileURL = URL.createObjectURL(blob);
+              c.content.qoute['url'] = FileURL;
+              setTimeout(() => {
+                URL.revokeObjectURL(FileURL);
+              }, 100);
+            });
+          }
+        });
+      }
     });
   }
 
@@ -1527,6 +1554,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         return;
       } catch (e) { // 주소인 경우 주소로 시도
         try {
+          if (!msg.content.url) throw 'URL 없음';
           text = msg.content.url.replace(' ', '%20');
         } catch (e) { }
       }
@@ -1645,7 +1673,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             } catch (e) { }
             this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL, this.cont);
             this.modulate_chatmsg(i, ShowMeAgainCount + 1);
-            if (this.ViewableMessage[i].content.qoute && this.ViewableMessage[i].content.qoute.path) this.OpenQouteThumbnail(this.ViewableMessage[i]);
+            if (this.ViewableMessage[i].content.qoute) this.OpenQouteThumbnail(this.ViewableMessage[i]);
           }
           this.modulate_chatmsg(0, this.ViewableMessage.length);
           this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
@@ -1707,7 +1735,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.global.modulate_thumbnail(this.ViewableMessage[i].content, '');
           }
           this.modulate_chatmsg(i, j + 1);
-          if (this.ViewableMessage[i].content.qoute && this.ViewableMessage[i].content.qoute.path) this.OpenQouteThumbnail(this.ViewableMessage[i]);
+          if (this.ViewableMessage[i].content.qoute) this.OpenQouteThumbnail(this.ViewableMessage[i]);
         }
         this.modulate_chatmsg(0, this.ViewableMessage.length);
         this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
@@ -1739,7 +1767,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         } catch (e) { }
         this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL, this.cont);
         this.modulate_chatmsg(i, this.ViewableMessage.length);
-        if (this.ViewableMessage[i].content.qoute && this.ViewableMessage[i].content.qoute.path) this.OpenQouteThumbnail(this.ViewableMessage[i]);
+        if (this.ViewableMessage[i].content.qoute) this.OpenQouteThumbnail(this.ViewableMessage[i]);
       }
       this.pullable = true;
     }
@@ -1794,7 +1822,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         } catch (e) { }
         this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL, this.cont);
         this.modulate_chatmsg(i, ShowMeAgainCount + 1);
-        if (this.ViewableMessage[i].content.qoute && this.ViewableMessage[i].content.qoute.path) this.OpenQouteThumbnail(this.ViewableMessage[i]);
+        if (this.ViewableMessage[i].content.qoute) this.OpenQouteThumbnail(this.ViewableMessage[i]);
       }
       this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
       this.pullable = this.ViewMsgIndex != 0 || Boolean(this.LocalHistoryList.length);
@@ -1846,7 +1874,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             } catch (e) { }
             this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL, this.cont);
             this.modulate_chatmsg(i, ShowMeAgainCount);
-            if (this.ViewableMessage[i].content.qoute && this.ViewableMessage[i].content.qoute.path) this.OpenQouteThumbnail(this.ViewableMessage[i]);
+            if (this.ViewableMessage[i].content.qoute) this.OpenQouteThumbnail(this.ViewableMessage[i]);
           }
           this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
         } else await this.LoadLocalChatHistory();
