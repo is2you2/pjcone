@@ -2130,7 +2130,10 @@ export class NakamaService {
         } catch (e) { }
       }
     } catch (e) { }
-    delete this.PromotedGroup[_is_official][_target][info['id']];
+    // 1:1 대화에서는 오류남
+    try {
+      delete this.PromotedGroup[_is_official][_target][info['id']];
+    } catch (e) { }
   }
 
   /** 그룹 내에서 사용했던 서버 파일들 전부 삭제 요청 (nakama-postgre)
