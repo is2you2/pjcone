@@ -263,6 +263,7 @@ export class SubscribesPage implements OnInit {
 
   @ViewChild('InAppQRScanner') InAppQRScanner: IonModal;
   QRScanResult: string;
+  ChangeDeviceFunc: Function;
   /** QR스캐너 열기 */
   async OpenScanner() {
     this.QRScanResult = null;
@@ -291,6 +292,7 @@ export class SubscribesPage implements OnInit {
       URL.revokeObjectURL(zxing_scannerURL);
       URL.revokeObjectURL(p5jsURL);
       URL.revokeObjectURL(zxingURL);
+      this.ChangeDeviceFunc = null;
       this.global.RestoreShortCutAct('qrcode-scanner');
     });
     await this.InAppQRScanner.present();
@@ -298,6 +300,7 @@ export class SubscribesPage implements OnInit {
     iframe.src = MainURL;
     let contentWindow = iframe.contentWindow || iframe.contentDocument;
     setTimeout(() => {
+      this.ChangeDeviceFunc = contentWindow['ChangeDevice'];
       contentWindow['scan_result'] = async (result: any) => {
         try {
           this.QRScanResult = result.text;
@@ -308,5 +311,10 @@ export class SubscribesPage implements OnInit {
         }
       }
     }, 1000);
+  }
+
+  /** QRCode 스캔 중 장치 변경하기 */
+  ChangeScanDevice() {
+    if (this.ChangeDeviceFunc) this.ChangeDeviceFunc();
   }
 }
