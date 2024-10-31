@@ -35,7 +35,7 @@
     <ion-item-divider>
       <ion-label>{{lang.text['Subscribes']['myProfile']}}</ion-label>
     </ion-item-divider>
-    <div>
+    <div style="position: relative;">
       <div *ngIf="global.ShowHint" class="shortcut_hint">` ({{lang.text['Subscribes']['RightClickChat']}})</div>
       <ion-item button (click)="nakama.open_profile_page()" (contextmenu)="OpenOneByOneLink()">
         <div class="additional_form bg_img_form">
