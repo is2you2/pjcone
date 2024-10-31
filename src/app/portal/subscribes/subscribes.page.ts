@@ -297,14 +297,16 @@ export class SubscribesPage implements OnInit {
     let iframe = document.getElementById('qr_scan_frame') as HTMLIFrameElement;
     iframe.src = MainURL;
     let contentWindow = iframe.contentWindow || iframe.contentDocument;
-    contentWindow['scan_result'] = async (result: any) => {
-      try {
-        this.QRScanResult = result.text;
-        if (this.QRScanResult)
-          await this.nakama.open_url_link(this.QRScanResult);
-      } catch (e) {
-        console.log('QR스캔 실패: ', e);
+    setTimeout(() => {
+      contentWindow['scan_result'] = async (result: any) => {
+        try {
+          this.QRScanResult = result.text;
+          if (this.QRScanResult)
+            await this.nakama.open_url_link(this.QRScanResult, false);
+        } catch (e) {
+          console.log('QR스캔 실패: ', e);
+        }
       }
-    }
+    }, 1000);
   }
 }
