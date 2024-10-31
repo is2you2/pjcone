@@ -7,6 +7,7 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { IonModal } from '@ionic/angular/common';
+import { P5ToastService } from 'src/app/p5-toast.service';
 
 @Component({
   selector: 'app-subscribes',
@@ -24,6 +25,7 @@ export class SubscribesPage implements OnInit {
     private indexed: IndexedDBService,
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
+    private p5toast: P5ToastService,
   ) { }
 
   SubscribesScrollDiv: HTMLElement;
@@ -301,6 +303,12 @@ export class SubscribesPage implements OnInit {
     let contentWindow = iframe.contentWindow || iframe.contentDocument;
     setTimeout(() => {
       this.ChangeDeviceFunc = contentWindow['ChangeDevice'];
+      contentWindow['load_failed'] = (e: any) => {
+        this.p5toast.show({
+          text: `${this.lang.text['Subscribes']['QRScanInitFailed']}: ${e}`,
+        });
+        this.InAppQRScanner.dismiss();
+      }
       contentWindow['scan_result'] = async (result: any) => {
         try {
           this.QRScanResult = result.text;
