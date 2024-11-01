@@ -1813,7 +1813,9 @@ export class NakamaService {
               case 1: // 방 대화
                 break;
               case 2: // 1:1 대화
-                this.channels_orig[_is_official][_target][_cid]['info'] = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target);
+                let TargetUser = this.load_other_user(this.channels_orig[_is_official][_target][_cid]['redirect']['id'], _is_official, _target)
+                let keys = Object.keys(TargetUser);
+                keys.forEach(key => this.channels_orig[_is_official][_target][_cid]['info'][key] = TargetUser[key]);
                 this.channels_orig[_is_official][_target][_cid]['title'] = this.channels_orig[_is_official][_target][_cid]['info']['display_name'];
                 break;
               case 3: // 그룹 대화
