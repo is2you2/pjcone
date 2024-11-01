@@ -438,18 +438,13 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         this.p5SetCanvasViewportInit = () => {
           canvas.hide();
           p.resizeCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
-          ScaleCenter.x = p.width / 2;
-          ScaleCenter.y = p.height / 2;
-          CamPosition.x = 0;
-          CamPosition.y = 0;
-          let HeightExceptMenu = targetDiv.clientHeight - 112;
-          let windowRatio = targetDiv.clientWidth / HeightExceptMenu;
-          let canvasRatio = ActualCanvas.width / ActualCanvas.height;
-          if (windowRatio < canvasRatio)
-            CamScale = targetDiv.clientWidth / ActualCanvas.width;
-          else CamScale = HeightExceptMenu / ActualCanvas.height;
           canvas.show();
-          p.redraw();
+          StartCamPos = CamPosition.copy();
+          StartCamScale = CamScale;
+          StartScaleCenter = ScaleCenter.copy();
+          ReinitLerp = 0;
+          PlayReinitViewport = true;
+          p.loop();
         }
         ActualCanvas = p.createGraphics(initData.width, initData.height);
         ActualCanvasSizeHalf = p.createVector(ActualCanvas.width / 2, ActualCanvas.height / 2);
@@ -510,6 +505,12 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       /** Crop 정보 편집시 사용됨 */
       let CropModePosition = p.createVector();
       let CropSize = p.createVector();
+      // 여기부터는 3손가락 행동 애니메이션을 위한 추가 변수
+      let PlayReinitViewport = false;
+      let ReinitLerp = 0;
+      let StartCamPos = p.createVector(0, 0);
+      let StartCamScale = 0;
+      let StartScaleCenter = p.createVector(0, 0);
       let getCropPos = () => {
         return CropPosition;
       }
@@ -529,6 +530,25 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         p.redraw();
       }
       p.draw = () => {
+        // 뷰포트 초기화 애니메이션
+        if (PlayReinitViewport) {
+          ReinitLerp += .07;
+          if (ReinitLerp >= 1) {
+            PlayReinitViewport = false;
+            ReinitLerp = 1;
+            p.noLoop();
+          }
+          ScaleCenter.x = p.lerp(StartScaleCenter.x, p.width / 2, ReinitLerp);
+          ScaleCenter.y = p.lerp(StartScaleCenter.y, p.height / 2, ReinitLerp);
+          CamPosition.x = p.lerp(StartCamPos.x, 0, ReinitLerp);
+          CamPosition.y = p.lerp(StartCamPos.y, 0, ReinitLerp);
+          let HeightExceptMenu = targetDiv.clientHeight - 112;
+          let windowRatio = targetDiv.clientWidth / HeightExceptMenu;
+          let canvasRatio = ActualCanvas.width / ActualCanvas.height;
+          if (windowRatio < canvasRatio)
+            CamScale = p.lerp(StartCamScale, targetDiv.clientWidth / ActualCanvas.width, ReinitLerp);
+          else CamScale = p.lerp(StartCamScale, HeightExceptMenu / ActualCanvas.height, ReinitLerp);
+        }
         p.clear(255, 255, 255, 255);
         p.push();
         p.translate(ScaleCenter);
