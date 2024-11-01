@@ -942,7 +942,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     let isOfficial = this.userInput.server['isOfficial'];
     let target = this.userInput.server['target'];
     if (this.isModify || this.isServerChanged) { // 편집된 게시물이라면 첨부파일을 전부다 지우고 다시 등록
-      if (this.userInput.mainImage && this.userInput.mainImage.url && !this.userInput.mainImage.blob) {
+      if (this.userInput.mainImage && this.userInput.mainImage.url) {
         try {
           let res = await fetch(this.userInput.mainImage.url, { signal: this.cont.signal });
           if (res.ok) this.userInput.mainImage.blob = await res.blob();
@@ -953,7 +953,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         delete this.userInput.mainImage.url;
       }
       for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
-        if (this.userInput.attachments[i].url && !this.userInput.attachments[i].blob) {
+        if (this.userInput.attachments[i].url) {
           try {
             let res = await fetch(this.userInput.attachments[i].url, { signal: this.cont.signal });
             if (res.ok) this.userInput.attachments[i].blob = await res.blob();
@@ -1064,7 +1064,10 @@ export class AddPostPage implements OnInit, OnDestroy {
       if (attach_len) {
         loading.message = this.lang.text['AddPost']['SyncAttaches'];
         for (let i = attach_len - 1; i >= 0; i--) {
-          if (this.userInput.attachments[i]['url']) continue;
+          if (this.userInput.attachments[i]['url']) {
+            console.log('재등록 건너뛰기: ', this.userInput.attachments[i]);
+            continue;
+          }
           if (is_local) {
             try { // FFS 업로드 시도
               if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
