@@ -25,8 +25,8 @@
     <ng-template>
       <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
         <div
-          style="width: 400px; height: 455px; background-color: var(--chatroom-background); text-align: center; padding: 16px">
-          <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;"
+          style="width: 400px; min-height: 455px; background-color: var(--chatroom-background); text-align: center; padding: 16px">
+          <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy; margin-bottom: 8px;"
             (click)="copy_address(SelectedAddress)" alt="QuickLink" />
           <ion-item button (click)="copy_address(QRNavParams.channel)">
             <ion-label class="ion-text-center">{{QRNavParams.channel}}</ion-label>
