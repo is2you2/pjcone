@@ -41,6 +41,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.ContentTextArea.onpaste = null;
     this.p5StartVoiceTimer = null;
     this.p5StopVoiceTimer = null;
+    this.cont.abort();
     if (this.p5canvas) this.p5canvas.remove();
     delete this.nakama.StatusBarChangedCallback;
     if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
@@ -1203,7 +1204,6 @@ export class AddPostPage implements OnInit, OnDestroy {
   WillLeavePageInside = false;
   ionViewWillLeave() {
     this.WillLeavePage = true;
-    this.cont.abort();
     if (!this.WillLeavePageInside)
       this.global.RestoreShortCutAct('AddPostPage');
     delete this.global.p5KeyShortCut['Escape'];
