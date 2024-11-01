@@ -4335,35 +4335,19 @@ export class NakamaService {
           break;
         case 'server': // 그룹 서버 자동등록처리
           let hasAlreadyTargetKey = Boolean(this.statusBar.groupServer['unofficial'][json[i].value.name]);
-          if (hasAlreadyTargetKey) {
+          if (hasAlreadyTargetKey)
             this.p5toast.show({
               text: `${this.lang.text['Nakama']['AlreadyHaveTargetName']}: ${json[i].value.name}`,
             });
-            delete json[i].value.name;
-            this.global.PageDismissAct['quick-server-detail'] = () => {
-              this.global.RestoreShortCutAct('quick-server-detail');
-              delete this.global.PageDismissAct['quick-server-detail'];
-            }
-            this.global.StoreShortCutAct('quick-server-detail');
-            this.global.ActLikeModal('server-detail', {
-              data: json[i].value,
-            });
-          } else {
-            let new_server_info: ServerInfo = {
-              name: decodeURIComponent(json[i].value.name),
-              target: decodeURIComponent(json[i].value.target),
-              address: decodeURIComponent(json[i].value.address),
-              port: json[i].value.port,
-              useSSL: json[i].value.useSSL,
-              isOfficial: json[i].value.isOfficial,
-              key: decodeURIComponent(json[i].value.key),
-            };
-            await this.add_group_server(new_server_info);
-            this.p5toast.show({
-              text: `${this.lang.text['Nakama']['ServerAdded']}: ${json[i].value.name}`,
-            });
-            await this.init_session(new_server_info);
+          delete json[i].value.name;
+          this.global.PageDismissAct['quick-server-detail'] = () => {
+            this.global.RestoreShortCutAct('quick-server-detail');
+            delete this.global.PageDismissAct['quick-server-detail'];
           }
+          this.global.StoreShortCutAct('quick-server-detail');
+          this.global.ActLikeModal('server-detail', {
+            data: json[i].value,
+          });
           break;
         case 'group_dedi': // 그룹사설 채팅 접근
           await this.global.RemoveAllModals();

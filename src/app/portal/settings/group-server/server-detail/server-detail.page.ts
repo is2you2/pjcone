@@ -32,35 +32,35 @@ export class ServerDetailPage implements OnInit, OnDestroy {
     if (this.global.PageDismissAct['quick-server-detail']) this.global.PageDismissAct['quick-server-detail']();
   }
 
-  dedicated_info: ServerInfo;
+  dedicated_info: ServerInfo = {};
   /** 타겟이 이미 존재한다면 타겟 수정 불가 */
   isTargetAlreadyExist = true;
   QRCodeSRC: any;
-  FilteredInfo: ServerInfo;
+  FilteredInfo: ServerInfo = {};
 
   ngOnInit() {
     this.route.queryParams.subscribe(_p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
       this.dedicated_info = navParams.data;
+      this.FilteredInfo = {
+        name: this.dedicated_info.name,
+        address: this.dedicated_info.address,
+        port: this.dedicated_info.port,
+        key: this.dedicated_info.key,
+        useSSL: this.dedicated_info.useSSL,
+      };
+      if (this.dedicated_info.address == '192.168.0.1')
+        delete this.FilteredInfo.address;
+      if (this.dedicated_info.key == 'defaultkey')
+        delete this.FilteredInfo.key;
+      if (this.dedicated_info.port == 7350)
+        delete this.FilteredInfo.port;
+      if (!this.dedicated_info.useSSL)
+        delete this.FilteredInfo.useSSL;
+      this.GenerateQRCode();
+      // 이미 target값이 등록되었는지 검토
+      this.isTargetAlreadyExist = Boolean(this.statusBar.groupServer['unofficial'][this.dedicated_info.target]);
     });
-    this.FilteredInfo = {
-      name: this.dedicated_info.name,
-      address: this.dedicated_info.address,
-      port: this.dedicated_info.port,
-      key: this.dedicated_info.key,
-      useSSL: this.dedicated_info.useSSL,
-    };
-    if (this.dedicated_info.address == '192.168.0.1')
-      delete this.FilteredInfo.address;
-    if (this.dedicated_info.key == 'defaultkey')
-      delete this.FilteredInfo.key;
-    if (this.dedicated_info.port == 7350)
-      delete this.FilteredInfo.port;
-    if (!this.dedicated_info.useSSL)
-      delete this.FilteredInfo.useSSL;
-    this.GenerateQRCode();
-    // 이미 target값이 등록되었는지 검토
-    this.isTargetAlreadyExist = Boolean(this.statusBar.groupServer['unofficial'][this.dedicated_info.target]);
   }
 
   GenerateQRCode() {
@@ -109,6 +109,7 @@ export class ServerDetailPage implements OnInit, OnDestroy {
       return;
     }
 
+    this.dedicated_info.name = this.FilteredInfo.name;
     this.dedicated_info.target = this.FilteredInfo.target || this.FilteredInfo.name;
     // 기능 추가전 임시처리
     this.dedicated_info.address = this.FilteredInfo.address || '192.168.0.1';
