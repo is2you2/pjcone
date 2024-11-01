@@ -758,6 +758,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   InitWithRoomEnv = false;
 
   ngOnInit() {
+    this.cont = new AbortController();
     this.global.WindowOnBlurAct['chatroom'] = () => {
       if (this.ChatManageMenu) this.ChatManageMenu.dismiss();
     }
@@ -1319,8 +1320,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** @param [comeback=false] 페이지 복귀한 경우 일부 데이터 초기화하지 않음 */
   async init_chatroom() {
-    if (this.cont) this.cont.abort();
-    this.cont = new AbortController();
     if (!this.InitWithFileImport) {
       this.userInput.text = '';
       delete this.userInput.file;
