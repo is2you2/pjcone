@@ -39,6 +39,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
   cont: AbortController;
 
   ngOnInit() {
+    this.cont = new AbortController();
     this.route.queryParams.subscribe(_p => {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;
@@ -156,8 +157,6 @@ export class PostViewerPage implements OnInit, OnDestroy {
 
   /** 진입 정보를 어떻게 활용할 것인가 */
   initialize() {
-    if (this.cont) this.cont.abort();
-    this.cont = new AbortController();
     if (this.PostInfo['mainImage']) {
       try {
         let FileURL = this.PostInfo['mainImage']['url'];
