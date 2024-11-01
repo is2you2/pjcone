@@ -1474,7 +1474,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.indexed.GetFileListFromDB(path, list => {
           let getlong = list.pop();
           // 썸네일 파일인 경우에 한해서 동작
-          if (getlong.indexOf('_thumbnail.png')) {
+          if (getlong && getlong.indexOf('_thumbnail.png')) {
             this.indexed.loadBlobFromUserPath(getlong, file_type, blob => {
               let FileURL = URL.createObjectURL(blob);
               c.content.qoute['url'] = FileURL;
