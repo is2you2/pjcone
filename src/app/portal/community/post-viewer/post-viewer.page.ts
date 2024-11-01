@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AlertController, NavController } from '@ionic/angular';
 import * as p5 from 'p5';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -8,6 +8,7 @@ import { GlobalActService } from 'src/app/global-act.service';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { IonModal } from '@ionic/angular/common';
 
 @Component({
   selector: 'app-post-viewer',
@@ -199,6 +200,9 @@ export class PostViewerPage implements OnInit, OnDestroy {
     this.initialize();
   }
 
+  QRCodeSRC: any;
+  ResultSharedAddress: any;
+  @ViewChild('QuickPostView') QuickPostView: IonModal;
   p5canvas: p5;
   /** 내용에 파일 뷰어를 포함한 구성 만들기 */
   create_content() {
@@ -211,7 +215,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
         if (this.PostInfo['OutSource']) {
           let link = document.getElementById('title_link');
           link.onclick = async () => {
-            let targetAddress = '';
+            this.ResultSharedAddress = '';
             // 사용자 지정 서버가 있는지 검토우회
             let address_text: string = this.PostInfo['OutSource'];
             let extract = address_text.substring(0, address_text.indexOf(':8'));
@@ -223,12 +227,19 @@ export class PostViewerPage implements OnInit, OnDestroy {
               }, 500);
               let res = await fetch(HasLocalPage, { signal: cont.signal });
               clearTimeout(id);
-              if (res.ok) targetAddress = `${extract}:12000${window['sub_path']}?postViewer=${this.PostInfo['OutSource']}`;
+              if (res.ok) this.ResultSharedAddress = `${extract}:12000${window['sub_path']}?postViewer=${this.PostInfo['OutSource']}`;
               else throw '주소 없음';
             } catch (e) {
-              targetAddress = `${SERVER_PATH_ROOT}pjcone_pwa/?postViewer=${this.PostInfo['OutSource']}`;
+              this.ResultSharedAddress = `${SERVER_PATH_ROOT}pjcone_pwa/?postViewer=${this.PostInfo['OutSource']}`;
             }
-            this.global.WriteValueToClipboard('text/plain', targetAddress);
+            // QRCode 이미지 생성
+            if (!this.QRCodeSRC)
+              this.QRCodeSRC = this.global.readasQRCodeFromString(this.ResultSharedAddress);
+            this.QuickPostView.onDidDismiss().then(() => {
+              this.global.RestoreShortCutAct('quick-post-view');
+            });
+            this.global.StoreShortCutAct('quick-post-view');
+            this.QuickPostView.present();
           }
         }
         title.style('font-size', '32px');
