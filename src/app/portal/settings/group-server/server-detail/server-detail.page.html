@@ -20,36 +20,42 @@
     <ion-input [label]="lang.text['GroupServer']['DisplayName']" class="ion-text-right" (ionInput)="GenerateQRCode()"
       [(ngModel)]="FilteredInfo.name" [placeholder]="lang.text['GroupServer']['DisplayName_placeholder']"></ion-input>
   </ion-item>
-  <ion-item button [disabled]="isTargetAlreadyExist">
-    <ion-input [label]="lang.text['GroupServer']['DivisionName']" class="ion-text-right" (ionInput)="GenerateQRCode()"
-      [(ngModel)]="FilteredInfo.target"
-      [placeholder]="FilteredInfo.name || lang.text['GroupServer']['DivisionName_placeholder']"></ion-input>
-  </ion-item>
   <ion-item button>
     <ion-input [label]="lang.text['GroupServer']['Address']" class="ion-text-right" [(ngModel)]="FilteredInfo.address"
       (ionInput)="GenerateQRCode()" placeholder="192.168.0.1"></ion-input>
     <ion-icon slot="end" name="open-outline" (click)="open_custom_check()"></ion-icon>
   </ion-item>
-  <ion-item-divider>
-    <ion-label>{{lang.text['ServerDetail']['detailInfo']}}</ion-label>
-  </ion-item-divider>
-  <ion-item button (click)="reGenerateWebRTCInfo()">
-    <ion-label color="warning" class="ion-text-center">{{lang.text['ServerDetail']['RegenWebRTC']}}</ion-label>
-  </ion-item>
-  <ion-item button>
-    <ion-input [label]="lang.text['GroupServer']['Key']" [(ngModel)]="FilteredInfo.key" class="ion-text-right"
-      (ionInput)="GenerateQRCode()" placeholder="defaultkey">
-    </ion-input>
-  </ion-item>
-  <ion-item button>
-    <ion-input [label]="lang.text['GroupServer']['Port']" [(ngModel)]="FilteredInfo.port" class="ion-text-right"
-      (ionInput)="GenerateQRCode()" type="number" placeholder="7350">
-    </ion-input>
-  </ion-item>
-  <ion-item button (click)="FilteredInfo.useSSL = !FilteredInfo.useSSL">
-    <ion-toggle #ServerDetailuseSSL [(ngModel)]="FilteredInfo.useSSL" (ionChange)="GenerateQRCode()"
-      style="pointer-events: none;">{{lang.text['GroupServer']['isSSL']}}</ion-toggle>
-  </ion-item>
+  <ion-accordion-group #ServerDetailInfo>
+    <ion-accordion value="Detail">
+      <ion-item slot="header">
+        <ion-label>{{lang.text['ServerDetail']['detailInfo']}}</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-item button (click)="reGenerateWebRTCInfo()">
+          <ion-label color="warning" class="ion-text-center">{{lang.text['ServerDetail']['RegenWebRTC']}}</ion-label>
+        </ion-item>
+        <ion-item button>
+          <ion-input [label]="lang.text['GroupServer']['DivisionName']" class="ion-text-right"
+            (ionInput)="GenerateQRCode()" [(ngModel)]="FilteredInfo.target"
+            [placeholder]="FilteredInfo.name || lang.text['GroupServer']['DivisionName_placeholder']"></ion-input>
+        </ion-item>
+        <ion-item button>
+          <ion-input [label]="lang.text['GroupServer']['Key']" [(ngModel)]="FilteredInfo.key" class="ion-text-right"
+            (ionInput)="GenerateQRCode()" placeholder="defaultkey">
+          </ion-input>
+        </ion-item>
+        <ion-item button>
+          <ion-input [label]="lang.text['GroupServer']['Port']" [(ngModel)]="FilteredInfo.port" class="ion-text-right"
+            (ionInput)="GenerateQRCode()" type="number" placeholder="7350">
+          </ion-input>
+        </ion-item>
+        <ion-item button (click)="FilteredInfo.useSSL = !FilteredInfo.useSSL">
+          <ion-toggle #ServerDetailuseSSL [(ngModel)]="FilteredInfo.useSSL" (ionChange)="GenerateQRCode()"
+            style="pointer-events: none;">{{lang.text['GroupServer']['isSSL']}}</ion-toggle>
+        </ion-item>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
   <ion-item button (click)="apply_changed_info()">
     <ion-label class="ion-text-center">{{lang.text['ServerDetail']['ApplyChangeServerInfo']}}</ion-label>
   </ion-item>

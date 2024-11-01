@@ -33,8 +33,6 @@ export class ServerDetailPage implements OnInit, OnDestroy {
   }
 
   dedicated_info: ServerInfo = {};
-  /** 타겟이 이미 존재한다면 타겟 수정 불가 */
-  isTargetAlreadyExist = true;
   QRCodeSRC: any;
   FilteredInfo: ServerInfo = {};
 
@@ -58,8 +56,6 @@ export class ServerDetailPage implements OnInit, OnDestroy {
       if (!this.dedicated_info.useSSL)
         delete this.FilteredInfo.useSSL;
       this.GenerateQRCode();
-      // 이미 target값이 등록되었는지 검토
-      this.isTargetAlreadyExist = Boolean(this.statusBar.groupServer['unofficial'][this.dedicated_info.target]);
     });
   }
 
@@ -128,14 +124,13 @@ export class ServerDetailPage implements OnInit, OnDestroy {
     let v = await this.indexed.loadTextFromUserPath('servers/list_detail.csv');
     let list: string[] = [];
     if (v) list = v.split('\n');
-    if (this.isTargetAlreadyExist) // 정보 수정으로 동작
-      for (let i = 0, j = list.length; i < j; i++) {
-        let sep = list[i].split(',');
-        if (sep[3] == this.dedicated_info.target) {
-          list.splice(i, 1);
-          break;
-        }
+    for (let i = 0, j = list.length; i < j; i++) {
+      let sep = list[i].split(',');
+      if (sep[3] == this.dedicated_info.target) {
+        list.splice(i, 1);
+        break;
       }
+    }
     list.push(line);
     await this.indexed.saveTextFileToUserPath(list.join('\n'), 'servers/list_detail.csv');
     this.nakama.init_server(this.dedicated_info);
