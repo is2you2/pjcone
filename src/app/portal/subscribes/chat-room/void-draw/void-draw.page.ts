@@ -529,6 +529,9 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         ImageCanvas.translate(x, y);
         p.redraw();
       }
+      let asSineGraph = (t: number) => {
+        return p.sin(t * p.PI / 2);
+      }
       p.draw = () => {
         // 뷰포트 초기화 애니메이션
         if (PlayReinitViewport) {
@@ -538,16 +541,16 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             ReinitLerp = 1;
             p.noLoop();
           }
-          ScaleCenter.x = p.lerp(StartScaleCenter.x, p.width / 2, ReinitLerp);
-          ScaleCenter.y = p.lerp(StartScaleCenter.y, p.height / 2, ReinitLerp);
-          CamPosition.x = p.lerp(StartCamPos.x, 0, ReinitLerp);
-          CamPosition.y = p.lerp(StartCamPos.y, 0, ReinitLerp);
+          ScaleCenter.x = p.lerp(StartScaleCenter.x, p.width / 2, asSineGraph(ReinitLerp));
+          ScaleCenter.y = p.lerp(StartScaleCenter.y, p.height / 2, asSineGraph(ReinitLerp));
+          CamPosition.x = p.lerp(StartCamPos.x, 0, asSineGraph(ReinitLerp));
+          CamPosition.y = p.lerp(StartCamPos.y, 0, asSineGraph(ReinitLerp));
           let HeightExceptMenu = targetDiv.clientHeight - 112;
           let windowRatio = targetDiv.clientWidth / HeightExceptMenu;
           let canvasRatio = ActualCanvas.width / ActualCanvas.height;
           if (windowRatio < canvasRatio)
-            CamScale = p.lerp(StartCamScale, targetDiv.clientWidth / ActualCanvas.width, ReinitLerp);
-          else CamScale = p.lerp(StartCamScale, HeightExceptMenu / ActualCanvas.height, ReinitLerp);
+            CamScale = p.lerp(StartCamScale, targetDiv.clientWidth / ActualCanvas.width, asSineGraph(ReinitLerp));
+          else CamScale = p.lerp(StartCamScale, HeightExceptMenu / ActualCanvas.height, asSineGraph(ReinitLerp));
         }
         p.clear(255, 255, 255, 255);
         p.push();

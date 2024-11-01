@@ -489,6 +489,19 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               this.image_info['width'] = img.elt.naturalWidth;
               this.image_info['height'] = img.elt.naturalHeight;
               imageOriginalSize = p.createVector(img.elt.naturalWidth, img.elt.naturalHeight);
+              if (this.image_info['width'] / this.image_info['height'] < this.canvasDiv.clientWidth / this.canvasDiv.clientHeight) {
+                let tmp_width = this.image_info['width'] * this.canvasDiv.clientHeight / this.image_info['height'];
+                this.canvasDiv.style.backgroundSize = `${tmp_width}px`;
+                this.canvasDiv.style.backgroundPositionX = `${(this.canvasDiv.clientWidth - tmp_width) / 2}px`;
+                this.canvasDiv.style.backgroundPositionY = `0px`;
+              } else {
+                this.canvasDiv.style.backgroundSize = `${this.canvasDiv.clientWidth}px`;
+                this.canvasDiv.style.backgroundPositionX = `0px`;
+                let imageRatio = this.canvasDiv.clientWidth / imageOriginalSize.x;
+                let centerHeight =
+                  this.canvasDiv.clientHeight / 2 - imageOriginalSize.y * imageRatio / 2;
+                this.canvasDiv.style.backgroundPositionY = `${centerHeight}px`;
+              }
               RePositioningImage();
               img.remove();
               this.ContentOnLoad = true;
@@ -497,22 +510,44 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             }
             p.noLoop();
           }
+          p.draw = () => {
+            if (ReinitImage) {
+              ReinitLerp += .07;
+              if (ReinitLerp >= 1) {
+                ReinitImage = false;
+                ReinitLerp = 1;
+                isInitStatus = true;
+                p.noLoop();
+              }
+              if (this.image_info['width'] / this.image_info['height'] < this.canvasDiv.clientWidth / this.canvasDiv.clientHeight) {
+                let tmp_width = this.image_info['width'] * this.canvasDiv.clientHeight / this.image_info['height'];
+                this.canvasDiv.style.backgroundSize = `${p.lerp(StartBackgroundSize, tmp_width, ReinitLerp)}px`;
+                this.canvasDiv.style.backgroundPositionX = `${p.lerp(StartPositionX, (this.canvasDiv.clientWidth - tmp_width) / 2, ReinitLerp)}px`;
+                this.canvasDiv.style.backgroundPositionY = `${p.lerp(StartPositionY, 0, ReinitLerp)}px`;
+              } else {
+                this.canvasDiv.style.backgroundSize = `${p.lerp(StartBackgroundSize, this.canvasDiv.clientWidth, ReinitLerp)}px`;
+                this.canvasDiv.style.backgroundPositionX = `${p.lerp(StartPositionX, 0, ReinitLerp)}px`;
+                let imageRatio = this.canvasDiv.clientWidth / imageOriginalSize.x;
+                let centerHeight =
+                  this.canvasDiv.clientHeight / 2 - imageOriginalSize.y * imageRatio / 2;
+                this.canvasDiv.style.backgroundPositionY = `${p.lerp(StartPositionY, centerHeight, ReinitLerp)}px`;
+              }
+            }
+          }
+          // 재조정 애니메이션을 위한 추가 변수
+          let ReinitImage = false;
+          let ReinitLerp = 0;
+          let StartBackgroundSize = 0;
+          let StartPositionX = 0;
+          let StartPositionY = 0;
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let RePositioningImage = () => {
-            if (this.image_info['width'] / this.image_info['height'] < this.canvasDiv.clientWidth / this.canvasDiv.clientHeight) {
-              let tmp_width = this.image_info['width'] * this.canvasDiv.clientHeight / this.image_info['height'];
-              this.canvasDiv.style.backgroundSize = `${tmp_width}px`;
-              this.canvasDiv.style.backgroundPositionX = `${(this.canvasDiv.clientWidth - tmp_width) / 2}px`;
-              this.canvasDiv.style.backgroundPositionY = `0px`;
-            } else {
-              this.canvasDiv.style.backgroundSize = `${this.canvasDiv.clientWidth}px`;
-              this.canvasDiv.style.backgroundPositionX = '0px';
-              let imageRatio = this.canvasDiv.clientWidth / imageOriginalSize.x;
-              let centerHeight =
-                this.canvasDiv.clientHeight / 2 - imageOriginalSize.y * imageRatio / 2;
-              this.canvasDiv.style.backgroundPositionY = `${centerHeight}px`;
-            }
-            isInitStatus = true;
+            ReinitImage = true;
+            ReinitLerp = 0;
+            StartBackgroundSize = Number(this.canvasDiv.style.backgroundSize.split('px').shift());
+            StartPositionX = Number(this.canvasDiv.style.backgroundPositionX.split('px').shift());
+            StartPositionY = Number(this.canvasDiv.style.backgroundPositionY.split('px').shift());
+            p.loop();
           }
           p.windowResized = () => {
             setTimeout(() => {
