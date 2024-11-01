@@ -193,6 +193,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   BackButtonPressed = false;
   AlreadyInited = false;
   ngOnInit() {
+    this.cont = new AbortController();
     this.MainDiv = document.getElementById('main_div');
     this.isMobile = isPlatform == 'Android' || isPlatform == 'iOS';
     this.nakama.socket_reactive['add_todo_menu'] = this;
@@ -432,8 +433,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       }
     });
     this.WillLeavePage = false;
-    if (this.cont) this.cont.abort();
-    this.cont = new AbortController();
     this.LoadStorageList();
     let received_json: any;
     if (this.received_data) { // 이미 있는 데이터 조회
