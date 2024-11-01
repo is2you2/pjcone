@@ -44,6 +44,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     private navCtrl: NavController,
   ) { }
   ngOnDestroy() {
+    this.cont.abort();
     if (this.FilenameElement) {
       this.FilenameElement.onblur = null;
       this.FilenameElement.onfocus = null;
@@ -132,6 +133,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   navParams: any;
   ngOnInit() {
+    this.cont = new AbortController();
     this.global.StoreShortCutAct('ionic-viewer');
     this.route.queryParams.subscribe(async _p => {
       try {
@@ -444,11 +446,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       this.FilenameElement.onblur = null;
       this.FilenameElement.onfocus = null;
     }
-    if (this.cont) {
-      this.cont.abort();
-      this.cont = null;
-    }
-    this.cont = new AbortController();
     try { // 로컬에서 파일 찾기 우선 작업
       this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo['type']);
       this.FileURL = URL.createObjectURL(this.blob);
@@ -2159,7 +2156,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   ionViewDidLeave() {
-    this.cont.abort();
     if (this.VideoMediaObject) {
       if (this.VideoMediaObject.elt != document.pictureInPictureElement)
         this.VideoMediaObject.remove();
