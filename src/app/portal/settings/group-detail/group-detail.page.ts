@@ -9,6 +9,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, LoadingController, NavController } from '@ionic/angular';
+import * as p5 from 'p5';
 
 
 @Component({
@@ -110,9 +111,35 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   }
 
   ionViewDidEnter() {
+    this.CreateDrop();
     this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
+  }
+
+  p5canvas: p5;
+  CreateDrop() {
+    let parent = document.getElementById('p5Drop_group_detail');
+    this.p5canvas = new p5((p: p5) => {
+      p.setup = () => {
+        let canvas = p.createCanvas(parent.clientWidth, parent.clientHeight);
+        canvas.parent(parent);
+        p.pixelDensity(.1);
+        canvas.drop(async (file: any) => {
+          if (this.nakama.PromotedGroup[this.isOfficial][this.target][this.info.id]) // 권한이 있는 경우
+            this.inputImageSelected({ target: { files: [file.file] } });
+        });
+      }
+      p.mouseMoved = (ev: any) => {
+        if (ev['dataTransfer']) {
+          parent.style.pointerEvents = 'all';
+          parent.style.backgroundColor = '#0008';
+        } else {
+          parent.style.pointerEvents = 'none';
+          parent.style.backgroundColor = 'transparent';
+        }
+      }
+    });
   }
 
   /** 그룹 사용자 리스트 업데이트 */
