@@ -701,17 +701,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               this.canvasDiv.appendChild(mediaObject['elt']);
               mediaObject['elt'].onended = () => {
                 if (this.AutoPlayNext) {
-                  if (this.PageWillDestroy) {
-                    SearchAndPlayNextAudio();
-                  } else {
-                    this.ChangeToAnother(1);
-                    mediaObject['elt'].onended = null;
-                  }
-                } else if (this.PageWillDestroy) {
-                  document.exitPictureInPicture();
-                  p.remove();
-                  mediaObject['elt'].onended = null;
-                  URL.revokeObjectURL(this.FileURL);
+                  let ChangeTo = -1;
+                  for (let i = this.RelevanceIndex, j = this.Relevances.length, k = 1; i < j; i++, k++)
+                    if (this.Relevances[i].content.viewer == 'audio') {
+                      ChangeTo = k;
+                      break;
+                    }
+                  if (ChangeTo > 0) this.ChangeToAnother(ChangeTo);
                 }
               }
               ResizeAudio();
@@ -727,30 +723,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               this.ContentFailedLoad = false;
             });
             mediaObject['elt'].hidden = true;
-          }
-          let SearchAndPlayNextAudio = async () => {
-            let tmp_calced = this.RelevanceIndex + 1;
-            if (tmp_calced > this.Relevances.length) {
-              document.exitPictureInPicture();
-              p.remove();
-              mediaObject['elt'].onended = null;
-              URL.revokeObjectURL(this.FileURL);
-              return;
-            }
-            this.RelevanceIndex = tmp_calced;
-            let nextFileInfo = this.Relevances[this.RelevanceIndex - 1];
-            if (nextFileInfo.content.viewer != 'video') {
-              SearchAndPlayNextAudio();
-              return;
-            }
-            if (nextFileInfo.content.url) {
-              this.FileURL = nextFileInfo.content.url;
-            } else {
-              let blob = await this.indexed.loadBlobFromUserPath(nextFileInfo.content.path, nextFileInfo.content.type);
-              this.FileURL = URL.createObjectURL(blob);
-            }
-            mediaObject['elt'].src = this.FileURL;
-            mediaObject.play();
           }
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let ResizeAudio = () => {
