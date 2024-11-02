@@ -2381,7 +2381,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 loading.present();
                 let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
                 if (msg.content.url) { // 링크된 파일인 경우
-                  this.global.remove_file_from_storage(msg.content.url);
+                  if (msg.content.url.indexOf(msg.group_id) >= 0 && msg.content.url.indexOf(msg.sender_id) >= 0)
+                    this.global.remove_file_from_storage(msg.content.url);
                 } else { // 파트 업로드 파일인 경우
                   for (let i = 0; i < msg.content['partsize']; i++) {
                     try { // 파일이 없어도 순회 작업 진행
@@ -2407,7 +2408,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             if (FileURL) {
               let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
               if (msg.content.url) { // 링크된 파일인 경우
-                this.global.remove_file_from_storage(msg.content.url);
+                if (msg.content.url.indexOf(msg.group_id) >= 0 && msg.content.url.indexOf(msg.sender_id) >= 0)
+                  this.global.remove_file_from_storage(msg.content.url);
               } else { // 파트 업로드 파일인 경우
                 try {
                   await this.indexed.removeFileFromUserPath(path);
