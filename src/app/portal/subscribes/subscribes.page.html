@@ -72,7 +72,11 @@
                   <td>
                     <span>
                       {{channel['info'] ? (channel['info']['name'] ||
+                      (nakama.usernameOverride[channel['info']['isOfficial']] ?
+                      (nakama.usernameOverride[channel['info']['isOfficial']][channel['info']['target']] ?
                       nakama.usernameOverride[channel['info']['isOfficial']][channel['info']['target']][channel['info']['id']]
+                      : '')
+                      : '')
                       ||
                       channel['info']['display_name'] ||
                       lang.text['ChatRoom']['noname_chatroom']) : (channel['title'] ||
