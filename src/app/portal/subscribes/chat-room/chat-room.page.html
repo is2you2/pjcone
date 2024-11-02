@@ -28,11 +28,12 @@
   <div *ngIf="global.ShowHint && !CheckIfFocusOnInput" class="shortcut_hint"
     style="left: auto; right: 0px; border-radius: 0px 0px 0px 4px;">Backspace
   </div>
-  <table id="main_table" class="channel_bg"
-    style="width: 100%; height: 100%; background-color: var(--chatroom-background);">
+  <table id="main_table"
+    style="width: 100%; height: 100%; background-color: var(--chatroom-background); background-position: center; background-repeat: no-repeat; background-size: cover;">
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
-        <div id="chatroom_div" class="main" style="max-width: 100vw;">
+        <div id="chatroom_div"
+          style="max-width: 100vw; width: 100%; height: 100%; padding: 8px; overflow-x: hidden; overflow-y: auto; scroll-behavior: smooth;">
           <div id="chatroom_content_div">
             <div style="position: relative;">
               <div *ngIf="global.ShowHint && !CheckIfFocusOnInput" class="shortcut_hint">`</div>
