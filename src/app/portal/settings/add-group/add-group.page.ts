@@ -83,6 +83,35 @@ export class AddGroupPage implements OnInit, OnDestroy {
     }
   }
 
+  ionViewDidEnter() {
+    this.CreateDrop();
+  }
+
+  p5drop: p5;
+  CreateDrop() {
+    let parent = document.getElementById('p5Drop_add_group');
+    if (!this.p5drop)
+      this.p5drop = new p5((p: p5) => {
+        p.setup = () => {
+          let canvas = p.createCanvas(parent.clientWidth, parent.clientHeight);
+          canvas.parent(parent);
+          p.pixelDensity(.1);
+          canvas.drop(async (file: any) => {
+            this.inputImageSelected({ target: { files: [file.file] } });
+          });
+        }
+        p.mouseMoved = (ev: any) => {
+          if (ev['dataTransfer']) {
+            parent.style.pointerEvents = 'all';
+            parent.style.backgroundColor = '#0008';
+          } else {
+            parent.style.pointerEvents = 'none';
+            parent.style.backgroundColor = 'transparent';
+          }
+        }
+      });
+  }
+
   /** 생성하려는 그룹의 이름 */
   GroupNameInput: HTMLInputElement;
   IsFocusOnThisPage = true;
@@ -362,6 +391,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.p5canvas) this.p5canvas.remove();
+    if (this.p5drop) this.p5drop.remove();
     delete this.nakama.StatusBarChangedCallback;
   }
 
