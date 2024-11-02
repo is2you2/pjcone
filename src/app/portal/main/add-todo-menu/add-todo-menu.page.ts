@@ -1376,9 +1376,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             } // 수정 전에 있던 이미지가 유지되는 경우 삭제하지 않음, 그 외 삭제
             if (!received_json.attach[i]['exist'] ||
               (received_json.attach[i]['exist'] && !this.userInput.attach[received_json.attach[i]['index']])) {
-              if (received_json.attach[i]['url'])
-                this.global.remove_file_from_storage(received_json.attach[i]['url']);
-              else await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
+              if (received_json.attach[i]['url']) {
+                if (received_json.attach[i].url.indexOf(received_json.id) >= 0)
+                  this.global.remove_file_from_storage(received_json.attach[i]['url']);
+              } else await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
             }
           }
         } catch (e) { }
@@ -1475,9 +1476,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         await this.indexed.removeFileFromUserPath(path);
         if (received_json['attach'])
           for (let i = 0, j = received_json.attach.length; i < j; i++) {
-            if (received_json.attach[i]['url'])
-              this.global.remove_file_from_storage(received_json.attach[i]['url']);
-            else await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
+            if (received_json.attach[i]['url']) {
+              if (received_json.attach[i].url.indexOf(received_json.id) >= 0)
+                this.global.remove_file_from_storage(received_json.attach[i]['url']);
+            } else await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
           }
       }
     }
@@ -1524,7 +1526,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               if (!received_json.attach[i]['exist'] ||
                 (received_json.attach[i]['exist'] && !this.userInput.attach[received_json.attach[i]['index']]))
                 if (received_json.attach[i]['url']) {
-                  this.global.remove_file_from_storage(received_json.attach[i]['url']);
+                  if (received_json.attach[i].url.indexOf(received_json.id) >= 0)
+                    this.global.remove_file_from_storage(received_json.attach[i]['url']);
                 } else try {
                   await this.nakama.sync_remove_file(received_json.attach[i]['path'],
                     this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');

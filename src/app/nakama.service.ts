@@ -1209,7 +1209,10 @@ export class NakamaService {
     }
     if (targetInfo.attach && targetInfo.attach.length)
       for (let i = 0, j = targetInfo.attach.length; i < j; i++) // 로컬 FFS 사용을 대비하여 중복 처리
-        if (targetInfo.attach[i].url) this.global.remove_file_from_storage(targetInfo.attach[i].url);
+        if (targetInfo.attach[i].url) {
+          if (targetInfo.attach[i].url.indexOf(targetInfo.id) >= 0)
+            this.global.remove_file_from_storage(targetInfo.attach[i].url);
+        }
     if (targetInfo.remote) {
       try { // 원격 할 일인 경우 원격 저장소에서 삭제
         if (!this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target])
@@ -1227,7 +1230,8 @@ export class NakamaService {
           if (targetInfo.attach)
             for (let i = 0, j = targetInfo.attach.length; i < j; i++)
               if (targetInfo.attach[i].url) {
-                this.global.remove_file_from_storage(targetInfo.attach[i].url);
+                if (targetInfo.attach[i].url.indexOf(targetInfo.id) >= 0)
+                  this.global.remove_file_from_storage(targetInfo.attach[i].url);
               } else await this.sync_remove_file(targetInfo.attach[i].path, isOfficial, target, 'todo_attach');
           if (isDelete) {
             await this.servers[isOfficial][target]
