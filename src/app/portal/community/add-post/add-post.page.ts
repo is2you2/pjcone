@@ -1034,9 +1034,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             let res = await fetch(this.MainPostImage);
             let blob = await res.blob();
             this.userInput.mainImage.blob = blob;
-          } catch (e) {
-            console.log('받아오기 실패: ', e);
-          }
+          } catch (e) { }
         }
         if (is_local) {
           try { // FFS 업로드 시도
@@ -1074,8 +1072,15 @@ export class AddPostPage implements OnInit, OnDestroy {
       if (attach_len) {
         loading.message = this.lang.text['AddPost']['SyncAttaches'];
         for (let i = attach_len - 1; i >= 0; i--) {
-          if (this.userInput.attachments[i]['url'])
-            continue;
+          if (this.userInput.attachments[i]['url']) {
+            try {
+              let res = await fetch(this.userInput.attachments[i]['url']);
+              let blob = await res.blob();
+              this.userInput.attachments[i].blob = blob;
+            } catch (e) {
+              continue;
+            }
+          }
           if (is_local) {
             try { // FFS 업로드 시도
               if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
