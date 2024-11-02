@@ -736,6 +736,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           this_file.type = '';
           this_file.typeheader = this_file.viewer;
           this.global.modulate_thumbnail(this_file, this_file.url, this.cont);
+          this.AddAttachTextForm();
           this.userInput.attachments.push(this_file);
         } catch (e) {
           if (e == 'done')
@@ -1028,6 +1029,15 @@ export class AddPostPage implements OnInit, OnDestroy {
         loading.message = this.lang.text['AddPost']['SyncMainImage'];
         this.userInput.mainImage.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/MainImage.${this.userInput.mainImage.file_ext}`;
         this.userInput.mainImage.thumbnail = this.MainPostImage;
+        if (!this.userInput.mainImage.blob) {
+          try {
+            let res = await fetch(this.MainPostImage);
+            let blob = await res.blob();
+            this.userInput.mainImage.blob = blob;
+          } catch (e) {
+            console.log('받아오기 실패: ', e);
+          }
+        }
         if (is_local) {
           try { // FFS 업로드 시도
             if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
@@ -1064,10 +1074,8 @@ export class AddPostPage implements OnInit, OnDestroy {
       if (attach_len) {
         loading.message = this.lang.text['AddPost']['SyncAttaches'];
         for (let i = attach_len - 1; i >= 0; i--) {
-          if (this.userInput.attachments[i]['url']) {
-            console.log('재등록 건너뛰기: ', this.userInput.attachments[i]);
+          if (this.userInput.attachments[i]['url'])
             continue;
-          }
           if (is_local) {
             try { // FFS 업로드 시도
               if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
