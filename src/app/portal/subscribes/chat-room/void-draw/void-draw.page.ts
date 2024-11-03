@@ -1069,50 +1069,23 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         });
         break;
       default: // 서버 중계를 가정하고 selfmatch를 활용하여 정보 발송
-        this.RemoteLoadingCtrl = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['WaitingConnection'] });
-        this.RemoteLoadingCtrl.present();
-        let _is_official = target.info.isOfficial;
-        let _target = target.info.target;
-        this.webrtc.CurrentMatch = this.nakama.self_match[_is_official][_target];
+        this.InputCustomAddress = `${target.info.useSSL ? 'wss' : 'ws'}://${target.info.address}`;
+        this.p5SetDrawable(false);
         this.isDrawServerCreated = true;
-        this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Waiting'];
-        this.webrtc.initialize('data', undefined, {
-          isOfficial: _is_official,
-          target: _target,
-        }).then(() => {
-          this.CreateOnMessageLink();
-          this.CreateOnOpenAct(false, async () => {
-            let crop_pos = this.p5getCropPos();
-            this.nakama.VoidDrawInitCallBack = null;
-            await this.nakama.servers[_is_official][_target].socket
-              .sendMatchState(this.nakama.self_match[_is_official][_target].match_id, MatchOpCode.VOIDDRAW_INIT,
-                encodeURIComponent(JSON.stringify({
-                  type: 'size',
-                  width: this.p5ActualCanvas.width,
-                  height: this.p5ActualCanvas.height,
-                  cropX: crop_pos.x,
-                  cropY: crop_pos.y,
-                })));
-          });
-          this.webrtc.CreateOffer();
-          this.nakama.VoidDrawInitCallBack = (json: any) => {
-            this.create_new_canvas({
-              width: json.width,
-              height: json.height,
-            });
-            this.p5setCropPos(json.cropX, json.cropY);
-            this.p5SetDrawable(true);
-            this.p5voidDraw['redraw']();
-          }
-          this.webrtc.InitReplyCallback = async () => {
-            // 배경이미지 공유하지 않도록 재설정
-            this.CreateOnOpenAct(true);
-            this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Offer'];
-            this.webrtc.CreateAnswer();
-          }
-          this.nakama.servers[_is_official][_target].socket.sendMatchState(this.nakama.self_match[_is_official][_target].match_id, MatchOpCode.WEBRTC_INIT_REQ_SIGNAL,
-            encodeURIComponent(''));
+        this.CreateOnMessageLink();
+        this.CreateOnOpenAct(false, async () => {
+          let crop_pos = this.p5getCropPos();
+          this.nakama.VoidDrawInitCallBack = null;
+          await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
+          this.IceWebRTCWsClient.send(JSON.stringify({
+            type: 'size',
+            width: this.p5ActualCanvas.width,
+            height: this.p5ActualCanvas.height,
+            cropX: crop_pos.x,
+            cropY: crop_pos.y,
+          }));
         });
+        this.CreateRemoteLocalClient(this.InputCustomAddress, ev[1]);
         break;
     }
   }
