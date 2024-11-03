@@ -671,7 +671,7 @@ export class NakamaService {
   /** WebRTC 정보 자동 생성처리 (기본 정보 기반) */
   async AutoGenWebRTCInfo(info: ServerInfo) {
     let auto_gen_server = {
-      urls: [`stun:${info.address}:3478`, `turn:${info.address}:3478`],
+      urls: [`stun:${info.address}:${info.webrtc_port || 3478}`, `turn:${info.address}:${info.webrtc_port || 3478}`],
       username: 'username',
       credential: 'password',
     }
