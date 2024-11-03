@@ -5,7 +5,6 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import { StatusManageService } from 'src/app/status-manage.service';
 import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -19,15 +18,15 @@ export class ServerDetailPage implements OnInit, OnDestroy {
   constructor(
     public lang: LanguageSettingService,
     private p5toast: P5ToastService,
-    private statusBar: StatusManageService,
     private indexed: IndexedDBService,
     private nakama: NakamaService,
-    private global: GlobalActService,
+    public global: GlobalActService,
     private route: ActivatedRoute,
     private router: Router,
     private navCtrl: NavController,
   ) { }
   ngOnDestroy(): void {
+    this.global.RestoreShortCutAct('server-detail');
     this.route.queryParams['unsubscribe']();
     if (this.global.PageDismissAct['quick-server-detail']) this.global.PageDismissAct['quick-server-detail']();
   }
@@ -96,6 +95,11 @@ export class ServerDetailPage implements OnInit, OnDestroy {
 
   ionViewDidEnter() {
     this.ServerDetailuseSSL.checked = this.dedicated_info.useSSL;
+    this.global.StoreShortCutAct('server-detail');
+    this.global.p5KeyShortCut['EnterAct'] = (ev: any) => {
+      if (ev['ctrlKey'])
+        this.apply_changed_info();
+    }
     this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
@@ -164,5 +168,6 @@ export class ServerDetailPage implements OnInit, OnDestroy {
 
   ionViewWillLeave() {
     delete this.global.p5KeyShortCut['Escape'];
+    delete this.global.p5KeyShortCut['EnterAct'];
   }
 }

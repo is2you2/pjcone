@@ -76,7 +76,10 @@
       </div>
     </ion-accordion>
   </ion-accordion-group>
-  <ion-item button (click)="apply_changed_info()">
-    <ion-label class="ion-text-center">{{lang.text['ServerDetail']['ApplyChangeServerInfo']}}</ion-label>
-  </ion-item>
+  <div style="position: relative;">
+    <div *ngIf="global.ShowHint" class="shortcut_hint">Ctrl + Enter</div>
+    <ion-item button (click)="apply_changed_info()">
+      <ion-label class="ion-text-center">{{lang.text['ServerDetail']['ApplyChangeServerInfo']}}</ion-label>
+    </ion-item>
+  </div>
 </ion-content>
