@@ -1141,7 +1141,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             channel: json.id,
           };
           this.init_gen_qrcode();
-          this.AddrQRShare.onWillDismiss().then(() => {
+          this.AddrQRShare.onDidDismiss().then(() => {
             this.isDrawServerCreated = false;
             this.global.RestoreShortCutAct('voiddraw-remote');
             this.p5SetDrawable(true);
