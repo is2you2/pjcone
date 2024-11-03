@@ -82,7 +82,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
         break;
       default: // 다른 원격 서버
         let info = ev.detail.value.info;
-        this.UserInputCustomAddress = info.address;
+        this.UserInputCustomAddress = `${info.useSSL ? 'wss' : 'ws'}://${info.address}`;
         if (info.webrtc_port != 3478)
           this.Port = info.webrtc_port;
         if (info.square_port != 12013)
