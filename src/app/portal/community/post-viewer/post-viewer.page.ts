@@ -511,11 +511,12 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   if (this.PostInfo['attachments'][index]['type'] == 'text/html') {
                     // 파일 링크 준비하기
                     try {
-                      if (!this.PostInfo['attachments'][index]['blob']) {
+                      if (!this.PostInfo['attachments'][index]['blob'] || !this.PostInfo['attachments'][index]['blob']['size']) {
                         if (this.PostInfo['attachments'][index]['url']) {
                           let res = await fetch(this.PostInfo['attachments'][index]['url']);
                           if (res.ok) {
                             let download_blob = await res.blob();
+                            this.PostInfo['attachments'][index].alt_path = `servers/${this.PostInfo['server']['isOfficial']}/${this.PostInfo['server']['target']}/posts/${this.PostInfo.creator_id}/${this.PostInfo.id}/[${index}]${this.PostInfo['attachments'][index].filename}`;
                             await this.indexed.saveBlobToUserPath(download_blob, this.PostInfo['attachments'][index]['alt_path']);
                           }
                         }
