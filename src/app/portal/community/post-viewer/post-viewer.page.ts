@@ -232,8 +232,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
               this.ResultSharedAddress = `${SERVER_PATH_ROOT}pjcone_pwa/?postViewer=${this.PostInfo['OutSource']}`;
             }
             // QRCode 이미지 생성
-            if (!this.QRCodeSRC)
-              this.QRCodeSRC = this.global.readasQRCodeFromString(this.ResultSharedAddress);
+            this.QRCodeSRC = this.global.readasQRCodeFromString(this.ResultSharedAddress);
             this.QuickPostView.onDidDismiss().then(() => {
               this.global.RestoreShortCutAct('quick-post-view');
             });
