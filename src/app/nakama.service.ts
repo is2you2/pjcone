@@ -21,7 +21,7 @@ export interface ServerInfo {
   cdn_port?: number;
   apache_port?: number;
   square_port?: number;
-  webrtc_port?: number
+  webrtc_port?: number;
   useSSL?: boolean;
   isOfficial?: string;
   key?: string;
@@ -1227,7 +1227,7 @@ export class NakamaService {
       for (let i = 0, j = targetInfo.attach.length; i < j; i++) // 로컬 FFS 사용을 대비하여 중복 처리
         if (targetInfo.attach[i].url) {
           if (targetInfo.attach[i].url.indexOf(targetInfo.id) >= 0)
-            this.global.remove_file_from_storage(targetInfo.attach[i].url);
+            this.global.remove_file_from_storage(targetInfo.attach[i].url, {});
         }
     if (targetInfo.remote) {
       try { // 원격 할 일인 경우 원격 저장소에서 삭제
@@ -1246,8 +1246,10 @@ export class NakamaService {
           if (targetInfo.attach)
             for (let i = 0, j = targetInfo.attach.length; i < j; i++)
               if (targetInfo.attach[i].url) {
-                if (targetInfo.attach[i].url.indexOf(targetInfo.id) >= 0)
-                  this.global.remove_file_from_storage(targetInfo.attach[i].url);
+                if (targetInfo.attach[i].url.indexOf(targetInfo.id) >= 0) {
+                  let info = this.servers[isOfficial][target].info;
+                  this.global.remove_file_from_storage(targetInfo.attach[i].url, { apache_port: info.apache_port, cdn_port: info.cdn_port });
+                }
               } else await this.sync_remove_file(targetInfo.attach[i].path, isOfficial, target, 'todo_attach');
           if (isDelete) {
             await this.servers[isOfficial][target]
@@ -2101,7 +2103,8 @@ export class NakamaService {
       if (this.servers[_is_official][_target] && is_creator) {
         try {
           let target_address = `${info.server.useSSL ? 'https' : 'http'}://${info.server.address}`;
-          this.global.remove_files_from_storage_with_key(target_address, info['id']);
+          let _info = this.servers[_is_official][_target].info;
+          this.global.remove_files_from_storage_with_key(target_address, info['id'], { cdn_port: _info.cdn_port, apache_port: _info.apache_port });
         } catch (e) { }
         let v = await this.servers[_is_official][_target].client.deleteGroup(
           this.servers[_is_official][_target].session, info['id']);
@@ -2133,12 +2136,15 @@ export class NakamaService {
         let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
         // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
         if (address[0])
-          this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`);
+          this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`, {});
       } catch (e) { }
       try { // cdn 파일 중 내 파일들 삭제
         let target_address = `${info.server.useSSL ? 'https' : 'http'}://${info.server.address}`;
-        if (info.server.address)
-          this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`);
+        if (info.server.address) {
+          let _info = this.servers[_is_official][_target].info;
+          this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`
+            , { cdn_port: _info.cdn_port, apache_port: _info.apache_port });
+        }
       } catch (e) { }
     }
     try {
@@ -2335,7 +2341,7 @@ export class NakamaService {
       let target_address = `${server_info.useSSL ? 'https' : 'http'}://${server_info.address}`;
       try { // cdn 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
         if (only_remove) throw '클라이언트에서 리스트만 삭제';
-        this.global.remove_files_from_storage_with_key(target_address, my_uid);
+        this.global.remove_files_from_storage_with_key(target_address, my_uid, { cdn_port: server_info.cdn_port, apache_port: server_info.apache_port });
       } catch (e) { }
       try { // FFS 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
         if (only_remove) throw '클라이언트에서 리스트만 삭제';
@@ -2349,7 +2355,7 @@ export class NakamaService {
         } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
         let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
         // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
-        this.global.remove_files_from_storage_with_key(target_address, my_uid);
+        this.global.remove_files_from_storage_with_key(target_address, my_uid, {});
       } catch (e) { }
       this.servers[_is_official][_target].client.rpc(
         this.servers[_is_official][_target].session,
@@ -3186,15 +3192,23 @@ export class NakamaService {
       if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${list[i]}`;
       await this.indexed.removeFileFromUserPath(list[i]);
     }
+    let server_info = {};
+    try {
+      let info = this.servers[isOfficial][target].info;
+      server_info['cdn_port'] = info.cdn_port;
+      server_info['apache_port'] = info.apache_port;
+    } catch (e) {
+      server_info = {};
+    }
     // 외부링크 처리된 게시물 정보 삭제
-    if (info['OutSource']) this.global.remove_file_from_storage(info['OutSource']);
+    if (info['OutSource']) this.global.remove_file_from_storage(info['OutSource'], server_info);
     // 첨부파일 삭제
     if (info['attachments'])
       for (let i = 0, j = info['attachments'].length; i < j; i++)
         try {
           if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`;
           if (info['attachments'][i].url) {
-            if (!slient) this.global.remove_file_from_storage(info['attachments'][i].url);
+            if (!slient) this.global.remove_file_from_storage(info['attachments'][i].url, server_info);
           } else {
             try {
               if (!info.server.local)
@@ -3206,7 +3220,7 @@ export class NakamaService {
     if (info['mainImage'])
       try {
         if (info['mainImage'].url) {
-          if (!slient) this.global.remove_file_from_storage(info['mainImage'].url);
+          if (!slient) this.global.remove_file_from_storage(info['mainImage'].url, server_info);
         } else {
           try {
             if (!info.server.local)
@@ -4335,6 +4349,7 @@ export class NakamaService {
         port: sep[2],
         username: sep[3],
         password: sep[4],
+        square_port: sep[5],
       })
     }
     if (NeedReturn) return json;
@@ -4457,6 +4472,7 @@ export class NakamaService {
                 port: json[i]['port'],
                 username: json[i]['username'],
                 password: json[i]['password'],
+                square_port: json[i]['square_port'],
               }
             });
           });

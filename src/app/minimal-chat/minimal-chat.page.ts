@@ -448,7 +448,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         break;
       default: // 다른 원격 서버
         let info = ev.detail.value.info;
-        this.UserInputCustomAddress = info.address;
+        this.UserInputCustomAddress = `${info.useSSL ? 'wss' : 'ws'}://${info.address}:${info.square_port || 12013}`;
         this.NeedInputCustomAddress = false;
         break;
     }
@@ -478,7 +478,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         protocol += ':';
       } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'wss:' : 'ws:';
       let target_address = `${protocol}//${address[0]}`;
-      this.client.initialize(target_address);
+      this.client.initialize(target_address, address[1]);
     }
     const PWA_Action = [{
       title: this.lang.text['MinimalChat']['Noti_Reply'],
@@ -685,8 +685,11 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   FFSOverrideConnect() {
     let sep = this.client.FallbackOverrideAddress.split('://');
     let address_without_protocol = sep.pop();
-    let check_prot = this.global.checkProtocolFromAddress(address_without_protocol);
-    this.client.FFSClient = new WebSocket(`${check_prot ? 'wss:' : 'ws:'}//${address_without_protocol}:12013`);
+    let sep2 = address_without_protocol.split(':');
+    let address = sep2.shift();
+    let port = sep2.pop();
+    let check_prot = this.global.checkProtocolFromAddress(address);
+    this.client.FFSClient = new WebSocket(`${check_prot ? 'wss:' : 'ws:'}//${address}:${port || 12013}`);
     this.client.FFSClient.onopen = () => {
       this.client.FFSClient.send(JSON.stringify({
         type: 'override',
@@ -932,7 +935,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     // 첨부했던 파일들 삭제
     this.indexed.GetFileListFromDB('tmp_files/sqaure', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     for (let i = 0, j = this.client.FFS_Urls.length; i < j; i++)
-      this.global.remove_files_from_storage_with_key(this.client.FFS_Urls[i], `square_${this.client.JoinedChannel || 'public'}_${this.client.uuid}`);
+      this.global.remove_files_from_storage_with_key(this.client.FFS_Urls[i], `square_${this.client.JoinedChannel || 'public'}_${this.client.uuid}`, {});
     this.client.disconnect();
     this.client.FFS_Urls.length = 0;
     this.client.DownloadPartManager = {};

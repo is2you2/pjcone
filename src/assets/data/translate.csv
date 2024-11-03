@@ -327,7 +327,7 @@ Key,서버 키,Key
 Port,Nakama 서버 포트,Nakama server port
 cdnPort,파일 서버 포트,File server port
 apachePort,아파치 서버 포트,Apache port
-SqaurePort,광장 서버 포트,Square port
+SquarePort,광장 서버 포트,Square port
 WebRTCPort,WebRTC 서버 포트,WebRTC server port
 isSSL,SSL 적용여부,use SSL
 submit,등록하기,Submit

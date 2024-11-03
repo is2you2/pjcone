@@ -942,6 +942,14 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.isSaveClicked = true;
     let isOfficial = this.userInput.server['isOfficial'];
     let target = this.userInput.server['target'];
+    let server_info = {};
+    try {
+      let info = this.nakama.servers[isOfficial][target].info;
+      server_info['cdn_port'] = info.cdn_port;
+      server_info['apache_port'] = info.apache_port;
+    } catch (e) {
+      server_info = {};
+    }
     if (this.isModify || this.isServerChanged) { // 편집된 게시물이라면 첨부파일을 전부다 지우고 다시 등록
       if (this.userInput.mainImage && this.userInput.mainImage.url) {
         try {
@@ -1056,7 +1064,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             let address = this.nakama.servers[this.isOfficial][this.target].info.address;
             let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
             let savedAddress = await this.global.upload_file_to_storage(this.userInput.mainImage,
-              this.nakama.servers[this.isOfficial][this.target].session.user_id,
+              { user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
               protocol, address, this.useFirstCustomCDN == 1, loading);
             let isURL = Boolean(savedAddress);
             if (!isURL) throw '링크 만들기 실패';
@@ -1102,7 +1110,7 @@ export class AddPostPage implements OnInit, OnDestroy {
               let address = this.nakama.servers[this.isOfficial][this.target].info.address;
               let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
               let savedAddress = await this.global.upload_file_to_storage(this.userInput.attachments[i],
-                this.nakama.servers[this.isOfficial][this.target].session.user_id,
+                { user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
                 protocol, address, this.useFirstCustomCDN == 1, loading);
               let isURL = Boolean(savedAddress);
               if (!isURL) throw '링크 만들기 실패';
@@ -1118,7 +1126,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       }
       /** 바깥 공유가 되어있다면 일단 삭제처리 */
       if (this.userInput.OutSource) {
-        this.global.remove_file_from_storage(this.userInput.OutSource);
+        this.global.remove_file_from_storage(this.userInput.OutSource, server_info);
         this.userInput.OutSource = undefined;
       }
       this.UseOutLink = this.UseOutLink && this.userInput.creator_id != 'me';
@@ -1136,7 +1144,9 @@ export class AddPostPage implements OnInit, OnDestroy {
           let user_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
           let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
           loading.message = `${this.lang.text['AddPost']['SyncPostInfo']}`;
-          let outlink = await this.global.upload_file_to_storage(file, user_id, protocol, address, this.useFirstCustomCDN == 1);
+          let outlink = await this.global.upload_file_to_storage(file,
+            { user_id: user_id, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
+            protocol, address, this.useFirstCustomCDN == 1);
           if (outlink) {
             this.userInput.OutSource = outlink;
           } else throw '업로드 실패';

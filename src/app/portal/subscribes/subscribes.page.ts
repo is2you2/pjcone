@@ -129,6 +129,7 @@ export class SubscribesPage implements OnInit {
             handler: async () => {
               let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
               loading.present();
+              let info = this.nakama.servers[isOfficial][target].info;
               await this.nakama.remove_group_list(this.nakama.groups[isOfficial][target][channel['group_id']], isOfficial, target, true);
               delete this.nakama.channels_orig[isOfficial][target][channel.id];
               this.nakama.remove_channel_files(isOfficial, target, channel.id);
@@ -149,14 +150,16 @@ export class SubscribesPage implements OnInit {
                   target_key = `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`
                 } catch (e) { }
                 if (address)
-                  this.global.remove_files_from_storage_with_key(target_address, target_key);
+                  this.global.remove_files_from_storage_with_key(target_address, target_key, {});
               } catch (e) { }
               try { // cdn 삭제 요청, 로컬 채널은 주소 만들다가 알아서 튕김
                 let protocol = channel['info'].server.useSSL ? 'https:' : 'http:';
                 let address = channel['info'].server.address;
-                let target_address = `${[protocol]}//${address}:9002/`;
-                if (address)
-                  this.global.remove_files_from_storage_with_key(target_address, `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`);
+                let target_address = `${[protocol]}//${address}:${info.apache_port || 9002}/`;
+                if (address) {
+                  this.global.remove_files_from_storage_with_key(target_address, `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`,
+                    { apache_port: info.apache_port, cdn_port: info.cdn_port });
+                }
               } catch (e) { }
               let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${channel.id}`);
               for (let i = 0, j = list.length; i < j; i++) {
@@ -203,7 +206,7 @@ export class SubscribesPage implements OnInit {
                   target_key = `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`
                 } catch (e) { }
                 if (address[0])
-                  this.global.remove_files_from_storage_with_key(target_address, target_key);
+                  this.global.remove_files_from_storage_with_key(target_address, target_key, {});
               } catch (e) { }
               let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${channel.id}`);
               for (let i = 0, j = list.length; i < j; i++) {

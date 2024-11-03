@@ -37,6 +37,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
   ServerList: any;
   /** WebRTC 대상 포트 */
   Port: number;
+  signalPort: number;
   /** WebRTC 사용자 정보 */
   Username: string;
   Password: string;
@@ -57,6 +58,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
         this.UserInputCustomAddress = navParams.address;
         this.ChannelId = navParams.channel;
         this.Port = navParams.port;
+        this.signalPort = navParams.square_port;
         this.Username = navParams.username;
         this.Password = navParams.password;
         this.LinkToServer(true);
@@ -71,6 +73,8 @@ export class InstantCallPage implements OnInit, OnDestroy {
   /** 연결 대상 선택 */
   SelectAddressTarget(ev: any) {
     this.title.setTitle(this.lang.text['InstantCall']['Title']);
+    this.Port = undefined;
+    this.signalPort = undefined;
     switch (ev.detail.value) {
       case 'local':
         this.UserInputCustomAddress = '';
@@ -79,6 +83,10 @@ export class InstantCallPage implements OnInit, OnDestroy {
       default: // 다른 원격 서버
         let info = ev.detail.value.info;
         this.UserInputCustomAddress = info.address;
+        if (info.webrtc_port != 3478)
+          this.Port = info.webrtc_port;
+        if (info.square_port != 12013)
+          this.signalPort = info.square_port;
         this.NeedInputCustomAddress = false;
         break;
     }
@@ -111,7 +119,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
       });
     let protocol = sep_protocol.pop();
     if (!protocol) protocol = this.global.checkProtocolFromAddress(address_only) ? 'wss' : 'ws';
-    this.global.InstantCallWSClient = new WebSocket(`${protocol}://${address_only}:12013`);
+    this.global.InstantCallWSClient = new WebSocket(`${protocol}://${address_only}:${this.signalPort || 12013}`);
     /** 웹소켓에서 사용하는 내 아이디 기억 */
     let uuid: string;
     this.global.InstantCallWSClient.onopen = async () => {
@@ -163,7 +171,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
             channel: json.id,
           }));
           this.ChannelId = json.id;
-          this.QRCodeAsString = `${SERVER_PATH_ROOT}pjcone_pwa/?instc=${this.UserInputCustomAddress},${this.ChannelId},${this.Port || ''},${this.Username || ''},${this.Password || ''}`;
+          this.QRCodeAsString = `${SERVER_PATH_ROOT}pjcone_pwa/?instc=${this.UserInputCustomAddress},${this.ChannelId},${this.Port || ''},${this.Username || ''},${this.Password || ''},${this.signalPort || ''}`;
           break;
         case 'init_req':
           this.webrtc.StatusText = this.lang.text['InstantCall']['Connecting'];

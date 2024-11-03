@@ -38,7 +38,8 @@
         <ion-item button [disabled]="add_custom_tog">
           <ion-input [label]="lang.text['GroupServer']['Address']" class="ion-text-right"
             [(ngModel)]="dedicated_info.address" placeholder="(https://)192.168.0.1"></ion-input>
-          <ion-icon slot="end" name="open-outline" (click)="global.open_custom_site(dedicated_info.address)"></ion-icon>
+          <ion-icon slot="end" name="open-outline"
+            (click)="global.open_custom_site(dedicated_info.address, dedicated_info.cdn_port)"></ion-icon>
         </ion-item>
         <div style="position: relative;">
           <div *ngIf="global.ShowHint" class="shortcut_hint">Ctrl + Enter</div>

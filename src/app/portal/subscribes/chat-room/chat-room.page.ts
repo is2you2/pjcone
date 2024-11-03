@@ -382,6 +382,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             handler: async () => {
               let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
               loading.present();
+              let server_info = {};
+              try {
+                let info = this.nakama.servers[this.isOfficial][this.target].info;
+                server_info['cdn_port'] = info.cdn_port;
+                server_info['apache_port'] = info.apache_port;
+              } catch (e) {
+                server_info = {};
+              }
               delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
               try { // 그룹 이미지 삭제
                 switch (this.info['redirect']['type']) {
@@ -418,13 +426,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
                   target_key = `${this.info['info'].id}_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`
                 } catch (e) { }
-                this.global.remove_files_from_storage_with_key(target_address, target_key);
+                this.global.remove_files_from_storage_with_key(target_address, target_key, {});
               } catch (e) { }
               try { // cdn 삭제 요청, 로컬 채널은 주소 만들다가 알아서 튕김
                 let protocol = this.info['info'].server.useSSL ? 'https:' : 'http:';
                 let address = this.info['info'].server.address;
-                let target_address = `${[protocol]}//${address}:9002/`;
-                this.global.remove_files_from_storage_with_key(target_address, `${this.info['info'].id}_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`);
+                let target_address = `${[protocol]}//${address}:${server_info['apache_port'] || 9002}/`;
+                this.global.remove_files_from_storage_with_key(target_address, `${this.info['info'].id}_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`, server_info);
               } catch (e) { }
               // 해당 채널과 관련된 파일 일괄 삭제 (로컬)
               let list = await this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`);
@@ -2080,8 +2088,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         let targetname = `${this.info['group_id'] ||
           (this.info['user_id_one'] == this.nakama.servers[this.isOfficial][this.target].session.user_id ? this.info['user_id_two'] : this.info['user_id_one'])
           }_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`;
+        let server_info = this.nakama.servers[this.isOfficial][this.target].info;
         let savedAddress = await this.global.upload_file_to_storage(this.userInput.file,
-          targetname, protocol, address, this.useFirstCustomCDN == 1);
+          { user_id: targetname, apache_port: server_info.apache_port, cdn_port: server_info.cdn_port }, protocol, address, this.useFirstCustomCDN == 1);
         isURL = Boolean(savedAddress);
         if (!isURL) throw '링크 만들기 실패';
         delete result['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
@@ -2325,6 +2334,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     if (msg.content['user_update']) return; // 시스템 메시지 관리 불가
     if (msg.content['gupdate']) return; // 시스템 메시지 관리 불가 (그룹)
     if (!msg['is_me']) return;
+    let server_info = {};
+    try {
+      let info = this.nakama.servers[this.isOfficial][this.target].info;
+      server_info['cdn_port'] = info.cdn_port;
+      server_info['apache_port'] = info.apache_port;
+    } catch (e) {
+      server_info = {};
+    }
     let orig_msg = this.deserialize_text(msg);
     let MsgText = orig_msg;
     let FileURL = msg.content['url'];
@@ -2382,7 +2399,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
                 if (msg.content.url) { // 링크된 파일인 경우
                   if (msg.content.url.indexOf(msg.group_id) >= 0 && msg.content.url.indexOf(msg.sender_id) >= 0)
-                    this.global.remove_file_from_storage(msg.content.url);
+                    this.global.remove_file_from_storage(msg.content.url, server_info);
                 } else { // 파트 업로드 파일인 경우
                   for (let i = 0; i < msg.content['partsize']; i++) {
                     try { // 파일이 없어도 순회 작업 진행
@@ -2409,7 +2426,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
               if (msg.content.url) { // 링크된 파일인 경우
                 if (msg.content.url.indexOf(msg.group_id) >= 0 && msg.content.url.indexOf(msg.sender_id) >= 0)
-                  this.global.remove_file_from_storage(msg.content.url);
+                  this.global.remove_file_from_storage(msg.content.url, server_info);
               } else { // 파트 업로드 파일인 경우
                 try {
                   await this.indexed.removeFileFromUserPath(path);

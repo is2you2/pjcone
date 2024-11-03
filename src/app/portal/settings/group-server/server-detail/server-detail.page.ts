@@ -79,7 +79,7 @@ export class ServerDetailPage implements OnInit, OnDestroy {
   /** 사설서버 SSL 체크용 페이지 열람 */
   open_custom_check() {
     let address = (this.dedicated_info.useSSL ? 'https://' : 'http://') + this.dedicated_info.address;
-    this.global.open_custom_site(address);
+    this.global.open_custom_site(address, this.dedicated_info.cdn_port);
   }
 
   /** WebRTC 서버 정보 손상시 복구용 */

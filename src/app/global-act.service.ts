@@ -37,6 +37,13 @@ export interface ContentCreatorInfo {
   hidden?: boolean;
 }
 
+/** 간략한 서버 관련 정보 */
+interface ServerInfoShort {
+  user_id?: string;
+  cdn_port?: number;
+  apache_port?: number;
+}
+
 /** 뷰어 동작 호완을 위한 틀 */
 export interface FileInfo {
   name?: string;
@@ -698,7 +705,7 @@ export class GlobalActService {
    * @param address 해당 서버 주소
    * @returns 등록된 주소 반환
    */
-  async upload_file_to_storage(file: FileInfo, user_id: string, protocol: string, address: string, useCustomServer: boolean, loading?: HTMLIonLoadingElement): Promise<string> {
+  async upload_file_to_storage(file: FileInfo, info: ServerInfoShort, protocol: string, address: string, useCustomServer: boolean, loading?: HTMLIonLoadingElement): Promise<string> {
     let innerLoading: HTMLIonLoadingElement;
     if (!loading) innerLoading = await this.loadingCtrl.create({ message: this.lang.text['Settings']['TryToFallbackFS'] });
     else innerLoading = loading;
@@ -706,7 +713,7 @@ export class GlobalActService {
     let Catched = false;
     let CatchedAddress: string;
     if (useCustomServer)
-      CatchedAddress = await this.try_upload_to_user_custom_fs(file, user_id, innerLoading);
+      CatchedAddress = await this.try_upload_to_user_custom_fs(file, info.user_id, innerLoading);
     innerLoading.message = this.lang.text['GlobalAct']['CheckCdnServer'];
     let progress: any;
     let cont = new AbortController();
@@ -717,10 +724,10 @@ export class GlobalActService {
       };
       let upload_time = new Date().getTime();
       let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
-      let filename = file.override_name || `${user_id}_${upload_time}_${only_filename}.${file.file_ext}`;
-      CatchedAddress = `${protocol}//${address}:9002/cdn/${filename}`;
+      let filename = file.override_name || `${info.user_id}_${upload_time}_${only_filename}.${file.file_ext}`;
+      CatchedAddress = `${protocol}//${address}:${info.apache_port || 9002}/cdn/${filename}`;
       progress = setInterval(async () => {
-        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST", signal: cont.signal });
+        let res = await fetch(`${protocol}//${address}:${info.cdn_port || 9001}/filesize/${filename}`, { method: "POST", signal: cont.signal });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
         innerLoading.message = `${file.filename}: ${progressPercent || 0}%`;
@@ -728,7 +735,7 @@ export class GlobalActService {
       let formData = new FormData();
       let _file = new File([file.blob], filename);
       formData.append("files", _file);
-      let up_res = await fetch(`${protocol}//${address}:9001/cdn/${filename}`, { method: "POST", body: formData });
+      let up_res = await fetch(`${protocol}//${address}:${info.cdn_port || 9001}/cdn/${filename}`, { method: "POST", body: formData });
       if (!up_res.ok) throw '업로드 단계에서 실패';
       clearInterval(progress);
       cont.abort();
@@ -746,14 +753,14 @@ export class GlobalActService {
   }
 
   /** 해당 주소의 파일 삭제 요청 (cdn 기반 파일) */
-  async remove_file_from_storage(url: string) {
+  async remove_file_from_storage(url: string, info: ServerInfoShort) {
     try {
       let sep = url.split('/cdn/');
       let target_file_name = sep.pop();
       let target_address = sep.shift();
       let lastIndex = target_address.lastIndexOf(':');
       if (lastIndex > 5) target_address = target_address.substring(0, lastIndex);
-      await fetch(`${target_address}:9001/remove/${target_file_name}`, { method: "POST" });
+      await fetch(`${target_address}:${info.cdn_port || 9001}/remove/${target_file_name}`, { method: "POST" });
     } catch (e) {
       console.log('remove_file_from_storage: ', e);
     }
@@ -764,12 +771,12 @@ export class GlobalActService {
    * @param target_address 해당 서버 주소 (protocol://address 까지) (FFS는 포함되지 않음)
    * @param target_id 인덱스 키 값
    */
-  async remove_files_from_storage_with_key(target_address: string, target_id: string) {
+  async remove_files_from_storage_with_key(target_address: string, target_id: string, info: ServerInfoShort) {
     try {
       if (!target_address) throw '대상 주소 없음';
       let lastIndex = target_address.lastIndexOf(':');
       if (lastIndex > 5) target_address = target_address.substring(0, lastIndex);
-      await fetch(`${target_address}:9001/remove_key/${target_id}`, { method: "POST" });
+      await fetch(`${target_address}:${info.cdn_port || 9001}/remove_key/${target_id}`, { method: "POST" });
     } catch (e) {
       console.log('remove_files_from_storage_with_key: ', e);
       throw e;
@@ -1473,7 +1480,7 @@ export class GlobalActService {
   }
 
   /** FFS 등 지정된 사이트의 연결을 빠르게 허용할 수 있도록 구성 */
-  open_custom_site(targetAddress: string) {
+  open_custom_site(targetAddress: string, port?: number) {
     try {
       let sep = targetAddress.split('://');
       let without_protocol = sep.pop();
@@ -1488,7 +1495,7 @@ export class GlobalActService {
       GetwithoutPort[0] = '//' + GetwithoutPort[0];
       GetwithoutPort.unshift(checkProtocol ? 'https' : 'http');
       if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
-        window.open(GetwithoutPort.join(':') + ':9001', '_blank');
+        window.open(GetwithoutPort.join(':') + `:${port || 9001}`, '_blank');
     } catch (e) { }
   }
 

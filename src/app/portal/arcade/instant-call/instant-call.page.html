@@ -25,8 +25,12 @@
       <ion-icon slot="end" name="open-outline" (click)="global.open_custom_site(UserInputCustomAddress)"></ion-icon>
     </ion-item>
     <ion-item *ngIf="NeedInputCustomAddress">
-      <ion-input [label]="lang.text['GroupServer']['Port']" [(ngModel)]="Port" class="ion-text-right"
+      <ion-input [label]="lang.text['GroupServer']['WebRTCPort']" [(ngModel)]="Port" class="ion-text-right"
         [placeholder]="lang.text['Settings']['joinDedi_placeholder'] + ' (3478)'"></ion-input>
+    </ion-item>
+    <ion-item *ngIf="NeedInputCustomAddress">
+      <ion-input [label]="lang.text['GroupServer']['SquarePort']" [(ngModel)]="signalPort" class="ion-text-right"
+        [placeholder]="lang.text['Settings']['joinDedi_placeholder'] + ' (12013)'"></ion-input>
     </ion-item>
     <ion-item *ngIf="NeedInputCustomAddress">
       <ion-input [label]="lang.text['WebRTCDevManager']['Username']" [(ngModel)]="Username" class="ion-text-right"

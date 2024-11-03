@@ -1255,12 +1255,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     }
     this.IceWebRTCWsClient.onerror = (e) => {
       console.log('그림판 기능 공유 연결 오류: ', e);
-      // 혹시라도 자체 서명 사이트에 접근중이라면 허용처리를 할 수 있게 사이트 연결
-      if (this.InputCustomAddress.indexOf('wss://') == 0 && (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')) {
-        let GetwithoutProtocol = this.InputCustomAddress.split('://');
-        this.global.open_link(`https://${GetwithoutProtocol.pop()}:9001`);
-        this.InputCustomAddress = null;
-      }
       this.IceWebRTCWsClient.close();
       this.p5toast.show({
         text: `${this.lang.text['TodoDetail']['Disconnected']}: ${e}`,

@@ -1256,6 +1256,14 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     let has_attach = Boolean(this.userInput.attach.length);
     delete this.userInput.display_store;
     delete this.userInput.display_creator;
+    let server_info = {};
+    try {
+      let info = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].info;
+      server_info['apache_port'] = info.apache_port;
+      server_info['cdn_port'] = info.cdn_port;
+    } catch (e) {
+      server_info = {};
+    }
     // 들어올 때와 같은지 검토
     let exactly_same = JSON.stringify(this.userInput) == this.received_data;
     if (exactly_same) {
@@ -1378,7 +1386,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               (received_json.attach[i]['exist'] && !this.userInput.attach[received_json.attach[i]['index']])) {
               if (received_json.attach[i]['url']) {
                 if (received_json.attach[i].url.indexOf(received_json.id) >= 0)
-                  this.global.remove_file_from_storage(received_json.attach[i]['url']);
+                  this.global.remove_file_from_storage(received_json.attach[i]['url'], server_info);
               } else await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
             }
           }
@@ -1478,7 +1486,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           for (let i = 0, j = received_json.attach.length; i < j; i++) {
             if (received_json.attach[i]['url']) {
               if (received_json.attach[i].url.indexOf(received_json.id) >= 0)
-                this.global.remove_file_from_storage(received_json.attach[i]['url']);
+                this.global.remove_file_from_storage(received_json.attach[i]['url'], server_info);
             } else await this.indexed.removeFileFromUserPath(received_json.attach[i]['path']);
           }
       }
@@ -1527,7 +1535,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 (received_json.attach[i]['exist'] && !this.userInput.attach[received_json.attach[i]['index']]))
                 if (received_json.attach[i]['url']) {
                   if (received_json.attach[i].url.indexOf(received_json.id) >= 0)
-                    this.global.remove_file_from_storage(received_json.attach[i]['url']);
+                    this.global.remove_file_from_storage(received_json.attach[i]['url'], server_info);
                 } else try {
                   await this.nakama.sync_remove_file(received_json.attach[i]['path'],
                     this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach');
@@ -1552,7 +1560,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               targetname = `${this.userInput.id}_${this.userInput.remote.creator_id}`;
             } catch (e) { }
             let savedAddress = await this.global.upload_file_to_storage(this.userInput.attach[i],
-              targetname, protocol, address, this.useFirstCustomCDN == 1);
+              { user_id: targetname, apache_port: server_info['apache_port'], cdn_port: server_info['cdn_port'] }, protocol, address, this.useFirstCustomCDN == 1);
             let isURL = Boolean(savedAddress);
             if (!isURL) throw '링크 만들기 실패';
             delete this.userInput.attach[i]['size'];

@@ -62,8 +62,7 @@ export class MiniranchatClientService {
    * 클라이언트 연결 시도
    * @param _Address 기본값: 메인 소켓 서버, 사설 서버 주소로 변경 가능
    */
-  initialize(_Address?: string) {
-    const PORT: number = 12013;
+  initialize(_Address?: string, PORT?: number) {
     this.cacheAddress = _Address;
     // https 홈페이지에서 비보안 연결 시도시 시작 끊기
     if (location.protocol == 'https:' && _Address.indexOf('ws://') == 0) {
@@ -73,7 +72,7 @@ export class MiniranchatClientService {
       this.disconnect();
       return;
     }
-    this.client = new WebSocket(`${_Address}:${PORT}`);
+    this.client = new WebSocket(`${_Address}:${PORT || 12013}`);
     this.client.onopen = (ev) => {
       this.funcs.onopen(ev);
       this.IsConnected = true;
@@ -86,11 +85,6 @@ export class MiniranchatClientService {
     }
     this.client.onerror = (e) => {
       console.error('MiniranchatClientService 오류 발생: ', e);
-      // 혹시라도 자체 서명 사이트에 접근중이라면 허용처리를 할 수 있게 사이트 연결
-      if (_Address.indexOf('wss://') == 0 && (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')) {
-        let GetwithoutProtocol = _Address.split('://');
-        window.open(`https://${GetwithoutProtocol.pop()}:9001`, '_blank');
-      }
       this.disconnect();
     }
     this.client.onmessage = (ev) => {
