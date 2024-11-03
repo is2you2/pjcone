@@ -45,8 +45,28 @@
           </ion-input>
         </ion-item>
         <ion-item button>
-          <ion-input [label]="lang.text['GroupServer']['Port']" [(ngModel)]="FilteredInfo.port" class="ion-text-right"
-            (ionInput)="GenerateQRCode()" type="number" placeholder="7350">
+          <ion-input [label]="lang.text['GroupServer']['Port']" [(ngModel)]="FilteredInfo.nakama_port"
+            class="ion-text-right" (ionInput)="GenerateQRCode()" type="number" placeholder="7350">
+          </ion-input>
+        </ion-item>
+        <ion-item button>
+          <ion-input [label]="lang.text['GroupServer']['cdnPort']" [(ngModel)]="FilteredInfo.cdn_port"
+            class="ion-text-right" (ionInput)="GenerateQRCode()" type="number" placeholder="9001">
+          </ion-input>
+        </ion-item>
+        <ion-item button>
+          <ion-input [label]="lang.text['GroupServer']['apachePort']" [(ngModel)]="FilteredInfo.apache_port"
+            class="ion-text-right" (ionInput)="GenerateQRCode()" type="number" placeholder="9002">
+          </ion-input>
+        </ion-item>
+        <ion-item button>
+          <ion-input [label]="lang.text['GroupServer']['SqaurePort']" [(ngModel)]="FilteredInfo.square_port"
+            class="ion-text-right" (ionInput)="GenerateQRCode()" type="number" placeholder="12013">
+          </ion-input>
+        </ion-item>
+        <ion-item button>
+          <ion-input [label]="lang.text['GroupServer']['WebRTCPort']" [(ngModel)]="FilteredInfo.webrtc_port"
+            class="ion-text-right" (ionInput)="GenerateQRCode()" type="number" placeholder="3478">
           </ion-input>
         </ion-item>
         <ion-item button (click)="FilteredInfo.useSSL = !FilteredInfo.useSSL">

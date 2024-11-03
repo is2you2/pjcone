@@ -17,7 +17,11 @@ export interface ServerInfo {
   address?: string;
   /** 앱 내에서 구성하는 key 이름 */
   target?: string;
-  port?: number;
+  nakama_port?: number;
+  cdn_port?: number;
+  apache_port?: number;
+  square_port?: number;
+  webrtc_port?: number
   useSSL?: boolean;
   isOfficial?: string;
   key?: string;
@@ -173,7 +177,11 @@ export class NakamaService {
           name: sep[2],
           target: sep[3],
           address: sep[4],
-          port: +sep[5],
+          nakama_port: +sep[5] || 7350,
+          cdn_port: +sep[7] || 9001,
+          apache_port: +sep[8] || 9002,
+          square_port: +sep[9] || 12013,
+          webrtc_port: +sep[10] || 3478,
           useSSL: Boolean(sep[6] == 'true'),
         }
         this.servers[info.isOfficial][info.target] = {};
@@ -373,7 +381,7 @@ export class NakamaService {
     if (!this.servers[_info.isOfficial][_info.target]) this.servers[_info.isOfficial][_info.target] = {};
     this.servers[_info.isOfficial][_info.target].client = new Client(
       (_info.key || 'defaultkey'), _info.address,
-      (_info.port || 7350).toString(),
+      (_info.nakama_port || 7350).toString(),
       (_info.useSSL || false),
     );
   }
@@ -615,7 +623,11 @@ export class NakamaService {
     info.target = info.target || info.name;
     // 기능 추가전 임시처리
     info.address = info.address || '192.168.0.1';
-    info.port = info.port || 7350;
+    info.nakama_port = info.nakama_port || 7350;
+    info.cdn_port = info.cdn_port || 9001;
+    info.apache_port = info.apache_port || 9002;
+    info.square_port = info.square_port || 12013;
+    info.webrtc_port = info.webrtc_port || 3478;
     info.useSSL = info.useSSL || false;
     info.isOfficial = info.isOfficial || 'unofficial';
     info.key = info.key || 'defaultkey';
@@ -625,8 +637,12 @@ export class NakamaService {
     line += `,${info.name}`;
     line += `,${info.target}`;
     line += `,${info.address}`;
-    line += `,${info.port}`;
+    line += `,${info.nakama_port}`;
     line += `,${info.useSSL}`;
+    line += `,${info.cdn_port}`;
+    line += `,${info.apache_port}`;
+    line += `,${info.square_port}`;
+    line += `,${info.webrtc_port}`;
     return new Promise(async (done) => {
       await this.AutoGenWebRTCInfo(info);
       if (info.isOfficial != 'official')
@@ -4210,26 +4226,26 @@ export class NakamaService {
     let json = [];
     if (init['open_profile']) // 프로필 화면 유도
       json.push({ type: 'open_profile' });
-    if (init['tmp_user']) { // 임시 사용자 정보 기입, 첫 데이터로 반영
-      let sep = init['tmp_user'][0].split(',');
-      this.users.self['email'] = sep[0];
-      this.users.self['password'] = sep[1];
-      this.users.self['display_name'] = sep[2];
-      this.users.self['online'] = true;
-      this.save_self_profile();
-    }
     if (init['server']) { // 그룹 서버 등록
       for (let i = 0, j = init['server'].length; i < j; i++) {
         let sep = init['server'][i].split(',');
+        let address = sep[0];
+        let addSep = address.split('://');
+        let useSSL = addSep.shift() == 'https';
+        let sep2 = addSep.shift().split(':');
+        let host = sep2[0];
+        let port = Number(sep2[1]);
         json.push({
           type: 'server',
           value: {
-            name: sep[0] || 'No named server',
-            target: sep[0] || 'No named server',
-            address: sep[1] || '192.168.0.1',
-            useSSL: sep[2] || false,
-            port: sep[3] || 7350,
-            key: sep[4] || 'defaultkey',
+            address: host || '192.168.0.1',
+            useSSL: useSSL || false,
+            nakama_port: port || 7350,
+            cdn_port: sep[2] || 9001,
+            apache_port: sep[3] || 9002,
+            square_port: sep[4] || 12013,
+            webrtc_port: sep[5] || 3478,
+            key: sep[1] || 'defaultkey',
             isOfficial: 'unofficial',
           },
         });
@@ -4336,8 +4352,6 @@ export class NakamaService {
       switch (json[i].type) {
         case 'open_profile': // 프로필 페이지 열기 유도
           this.open_profile_page();
-          break;
-        case 'tmp_user': // 빠른 임시 진입을 위해 사용자 정보를 임의로 기입
           break;
         case 'server': // 그룹 서버 자동등록처리
           let hasAlreadyTargetKey = Boolean(this.statusBar.groupServer['unofficial'][json[i].value.name]);
@@ -4496,7 +4510,7 @@ export class NakamaService {
       for (let info of all_server)
         if (info.address == host
           && info.useSSL == useSSL
-          && info.port == port) {
+          && info.nakama_port == port) {
           result = info;
           break;
         }

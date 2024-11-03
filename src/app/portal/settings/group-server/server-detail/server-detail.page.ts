@@ -43,7 +43,11 @@ export class ServerDetailPage implements OnInit, OnDestroy {
       this.FilteredInfo = {
         name: this.dedicated_info.name,
         address: this.dedicated_info.address,
-        port: this.dedicated_info.port,
+        nakama_port: this.dedicated_info.nakama_port,
+        cdn_port: this.dedicated_info.cdn_port,
+        apache_port: this.dedicated_info.apache_port,
+        square_port: this.dedicated_info.square_port,
+        webrtc_port: this.dedicated_info.webrtc_port,
         key: this.dedicated_info.key,
         useSSL: this.dedicated_info.useSSL,
       };
@@ -51,8 +55,16 @@ export class ServerDetailPage implements OnInit, OnDestroy {
         delete this.FilteredInfo.address;
       if (this.dedicated_info.key == 'defaultkey')
         delete this.FilteredInfo.key;
-      if (this.dedicated_info.port == 7350)
-        delete this.FilteredInfo.port;
+      if (this.dedicated_info.nakama_port == 7350)
+        delete this.FilteredInfo.nakama_port;
+      if (this.dedicated_info.cdn_port == 9001)
+        delete this.FilteredInfo.cdn_port;
+      if (this.dedicated_info.apache_port == 9002)
+        delete this.FilteredInfo.apache_port;
+      if (this.dedicated_info.square_port == 12013)
+        delete this.FilteredInfo.square_port;
+      if (this.dedicated_info.webrtc_port == 3478)
+        delete this.FilteredInfo.webrtc_port;
       if (!this.dedicated_info.useSSL)
         delete this.FilteredInfo.useSSL;
       this.GenerateQRCode();
@@ -61,7 +73,7 @@ export class ServerDetailPage implements OnInit, OnDestroy {
 
   GenerateQRCode() {
     this.QRCodeSRC = this.global.readasQRCodeFromString(
-      `${SERVER_PATH_ROOT}pjcone_pwa/?server=${this.FilteredInfo.name || ''},${this.FilteredInfo.address || ''},${this.FilteredInfo.useSSL ? 'true' : ''},${this.FilteredInfo.port || ''},${this.FilteredInfo.key || ''}`.replace(' ', '%20'));
+      `${SERVER_PATH_ROOT}pjcone_pwa/?server=${this.FilteredInfo.useSSL ? 'https' : 'http'}://${this.FilteredInfo.address || ''}${this.FilteredInfo.nakama_port ? `:${this.FilteredInfo.nakama_port}` : ''},${this.FilteredInfo.key || ''},${this.FilteredInfo.cdn_port || ''},${this.FilteredInfo.apache_port || ''},${this.FilteredInfo.square_port || ''},${this.FilteredInfo.webrtc_port || ''}`.replace(' ', '%20'));
   }
 
   /** 사설서버 SSL 체크용 페이지 열람 */
@@ -92,8 +104,8 @@ export class ServerDetailPage implements OnInit, OnDestroy {
   /** 시작 진입 주소 생성 */
   copy_startup_address() {
     let startup_address =
-      `${SERVER_PATH_ROOT}pjcone_pwa/?server=${this.FilteredInfo.name || ''},${this.FilteredInfo.address || ''},${this.FilteredInfo.useSSL ? 'true' : ''},${this.FilteredInfo.port || ''},${this.FilteredInfo.key || ''}`;
-    this.global.WriteValueToClipboard('text/plain', startup_address.replace(' ', '%20'));
+      `${SERVER_PATH_ROOT}pjcone_pwa/?server=${this.FilteredInfo.useSSL ? 'https' : 'http'}://${this.FilteredInfo.address || ''}${this.FilteredInfo.nakama_port ? `:${this.FilteredInfo.nakama_port}` : ''},${this.FilteredInfo.key || ''},${this.FilteredInfo.cdn_port || ''},${this.FilteredInfo.apache_port || ''},${this.FilteredInfo.square_port || ''},${this.FilteredInfo.webrtc_port || ''}`.replace(' ', '%20');
+    this.global.WriteValueToClipboard('text/plain', startup_address);
   }
 
   async apply_changed_info() {
@@ -109,7 +121,11 @@ export class ServerDetailPage implements OnInit, OnDestroy {
     this.dedicated_info.target = this.FilteredInfo.target || this.FilteredInfo.name;
     // 기능 추가전 임시처리
     this.dedicated_info.address = this.FilteredInfo.address || '192.168.0.1';
-    this.dedicated_info.port = this.FilteredInfo.port || 7350;
+    this.dedicated_info.nakama_port = this.FilteredInfo.nakama_port || 7350;
+    this.dedicated_info.cdn_port = this.FilteredInfo.nakama_port || 9001;
+    this.dedicated_info.apache_port = this.FilteredInfo.nakama_port || 9002;
+    this.dedicated_info.square_port = this.FilteredInfo.nakama_port || 12013;
+    this.dedicated_info.webrtc_port = this.FilteredInfo.nakama_port || 3478;
     this.dedicated_info.useSSL = this.ServerDetailuseSSL.checked || false;
     this.dedicated_info.isOfficial = this.FilteredInfo.isOfficial || 'unofficial';
     this.dedicated_info.key = this.FilteredInfo.key || 'defaultkey';
@@ -119,8 +135,12 @@ export class ServerDetailPage implements OnInit, OnDestroy {
     line += `,${this.dedicated_info.name}`;
     line += `,${this.dedicated_info.target}`;
     line += `,${this.dedicated_info.address}`;
-    line += `,${this.dedicated_info.port}`;
+    line += `,${this.dedicated_info.nakama_port}`;
     line += `,${this.dedicated_info.useSSL}`;
+    line += `,${this.dedicated_info.cdn_port}`;
+    line += `,${this.dedicated_info.apache_port}`;
+    line += `,${this.dedicated_info.square_port}`;
+    line += `,${this.dedicated_info.webrtc_port}`;
     let v = await this.indexed.loadTextFromUserPath('servers/list_detail.csv');
     let list: string[] = [];
     if (v) list = v.split('\n');

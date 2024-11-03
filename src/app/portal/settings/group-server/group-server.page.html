@@ -58,7 +58,7 @@
           </div>
           <ion-label class="form_margin">
             <h2>{{server.name}}</h2>
-            <p>{{(server.useSSL ? 'https://' : 'http://') + server.address + ':' + server.port}}</p>
+            <p>{{(server.useSSL ? 'https://' : 'http://') + server.address + ':' + server.nakama_port}}</p>
           </ion-label>
           <ion-button (click)="remove_server(server.isOfficial, server.target)">
             {{statusBar.groupServer[server.isOfficial][server.target] == 'online' ?

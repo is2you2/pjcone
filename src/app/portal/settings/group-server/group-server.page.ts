@@ -407,7 +407,11 @@ export class GroupServerPage implements OnInit, OnDestroy {
     name: undefined,
     address: undefined,
     target: undefined,
-    port: undefined,
+    nakama_port: undefined,
+    cdn_port: undefined,
+    square_port: undefined,
+    webrtc_port: undefined,
+    apache_port: undefined,
     useSSL: undefined,
     isOfficial: undefined,
     key: undefined,
@@ -433,7 +437,11 @@ export class GroupServerPage implements OnInit, OnDestroy {
       protocol += ':';
     } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
     this.dedicated_info.address = address[0];
-    this.dedicated_info.port = Number(address[1]) || 7350;
+    this.dedicated_info.nakama_port = Number(address[1]) || 7350;
+    this.dedicated_info.apache_port = Number(address[1]) || 9002;
+    this.dedicated_info.cdn_port = Number(address[1]) || 9001;
+    this.dedicated_info.square_port = Number(address[1]) || 12013;
+    this.dedicated_info.webrtc_port = Number(address[1]) || 3478;
     this.dedicated_info.useSSL = (window.location.protocol == 'https:') && !isNativefier;
     this.dedicated_info.useSSL = this.dedicated_info.useSSL || Boolean(protocol == 'https:');
     this.dedicated_info.key = this.dedicated_info.key || 'defaultkey';
@@ -444,7 +452,11 @@ export class GroupServerPage implements OnInit, OnDestroy {
       this.dedicated_info.name = undefined;
       this.dedicated_info.address = undefined;
       this.dedicated_info.target = undefined;
-      this.dedicated_info.port = undefined;
+      this.dedicated_info.nakama_port = undefined;
+      this.dedicated_info.apache_port = undefined;
+      this.dedicated_info.cdn_port = undefined;
+      this.dedicated_info.square_port = undefined;
+      this.dedicated_info.webrtc_port = undefined;
       this.dedicated_info.key = undefined;
       this.dedicated_info.useSSL = undefined;
       this.dedicated_info.isOfficial = undefined;
