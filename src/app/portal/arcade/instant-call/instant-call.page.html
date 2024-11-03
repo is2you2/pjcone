@@ -44,10 +44,14 @@
       <ion-label class="ion-text-center">{{lang.text['voidDraw']['ConnectToAddress']}}</ion-label>
     </ion-item>
   </div>
-  <ion-item *ngIf="QRCodeAsString && global.WaitingConnect" button (click)="copy_qr_address()">
-    <ion-label class="ion-text-center">{{QRCodeAsString}}</ion-label>
-  </ion-item>
-  <div *ngIf="global.WaitingConnect || global.InitEnd">
+  <div *ngIf="QRCodeAsString && global.WaitingConnect">
+    <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;"
+      (click)="copy_qr_address()" alt="QRCode" />
+    <ion-item button (click)="copy_qr_address()">
+      <ion-label class="ion-text-center">{{QRCodeAsString}}</ion-label>
+    </ion-item>
+  </div>
+  <div *ngIf="!QRCodeAsString && (global.WaitingConnect || global.InitEnd)">
     <div class="disconnect_info">
       <ion-icon style="width: 60px; height: 60px;" color="medium" name="call-outline"></ion-icon>
       <div>

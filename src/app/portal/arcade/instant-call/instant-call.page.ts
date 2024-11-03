@@ -32,6 +32,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
     private floatbutton: FloatButtonService,
   ) { }
 
+  QRCodeSRC: any;
   QRCodeAsString: string;
   p5canvas: p5;
   ServerList: any;
@@ -172,6 +173,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
           }));
           this.ChannelId = json.id;
           this.QRCodeAsString = `${SERVER_PATH_ROOT}pjcone_pwa/?instc=${this.UserInputCustomAddress},${this.ChannelId},${this.Port || ''},${this.Username || ''},${this.Password || ''},${this.signalPort || ''}`;
+          this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRCodeAsString);
           break;
         case 'init_req':
           this.webrtc.StatusText = this.lang.text['InstantCall']['Connecting'];
@@ -263,6 +265,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
 
   /** 웹소켓 서버에 연결된 경우 배경에 연결중임을 표현 */
   ShowWaiting() {
+    this.QRCodeSRC = undefined;
     this.QRCodeAsString = '';
     if (this.p5canvas) return;
     this.p5canvas = new p5((p: p5) => {
