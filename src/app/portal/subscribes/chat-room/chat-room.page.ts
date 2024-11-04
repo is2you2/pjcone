@@ -2791,6 +2791,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.indexed.GetFileListFromDB('tmp_files/chatroom', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     this.route.queryParams['unsubscribe']();
     try {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];

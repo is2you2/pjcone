@@ -1704,6 +1704,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.indexed.GetFileListFromDB('tmp_files/todo', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     delete this.nakama.socket_reactive['add_todo_menu'];
     this.route.queryParams['unsubscribe']();
     this.desc_input.onpaste = null;
