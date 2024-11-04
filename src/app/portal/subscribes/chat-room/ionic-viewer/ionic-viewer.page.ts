@@ -419,6 +419,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   async DownloadFileFromURL() {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     loading.present();
+    this.ContentChanging = true;
     try {
       let res = await fetch(this.FileInfo.url, { signal: this.cont.signal });
       if (res.ok) {
@@ -432,6 +433,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`,
       });
     }
+    this.ContentChanging = false;
     loading.dismiss();
   }
   /** p5.video 가 생성된 경우 여기에 기록 */
