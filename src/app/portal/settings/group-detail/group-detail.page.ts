@@ -6,7 +6,6 @@ import { Notification } from '@heroiclabs/nakama-js';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, LoadingController, NavController } from '@ionic/angular';
 import * as p5 from 'p5';
@@ -58,8 +57,10 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         this.file_sel_id = `group_detail_${this.info.id}_${new Date().getTime()}}`;
         this.info_orig = JSON.parse(JSON.stringify(navParams.info));
         this.nakama.socket_reactive['group_detail'] = this;
-        this.QRCodeSRC = this.global.readasQRCodeFromString(
-          `${SERVER_PATH_ROOT}pjcone_pwa/?group=${this.info.name},${this.info.id}`.replace(' ', '%20'));
+        this.global.GetHeaderAddress(undefined, true).then(address => {
+          this.QRCodeSRC = this.global.readasQRCodeFromString(
+            `${address}?group=${this.info.name},${this.info.id}`.replace(' ', '%20'));
+        });
         if (!this.info.server) this.info.server = navParams.server;
         this.isOfficial = this.info.server['isOfficial'];
         this.target = this.info.server['target'];

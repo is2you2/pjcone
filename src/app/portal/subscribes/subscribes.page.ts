@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { AlertController, LoadingController, NavController } from '@ionic/angular';
-import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
+import { isPlatform } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
@@ -87,8 +87,10 @@ export class SubscribesPage implements OnInit {
     this.user_id = this.nakama.servers[this.servers[i].isOfficial][this.servers[i].target].session.user_id;
     let address = `${this.nakama.servers[this.servers[i].isOfficial][this.servers[i].target].info.useSSL ? 'https://' : 'http://'}${this.nakama.servers[this.servers[i].isOfficial][this.servers[i].target].info.address}:${this.nakama.servers[this.servers[i].isOfficial][this.servers[i].target].info.nakama_port || 7350}`;
     this.isExpanded = false;
-    this.InvitationAddress = `${SERVER_PATH_ROOT}pjcone_pwa/?open_prv_channel=${this.user_id},${address}`.replace(' ', '%20');
-    this.QRCodeSRC = this.global.readasQRCodeFromString(this.InvitationAddress);
+    this.global.GetHeaderAddress(undefined, true).then(header_address => {
+      this.InvitationAddress = `${header_address}?open_prv_channel=${this.user_id},${address}`.replace(' ', '%20');
+      this.QRCodeSRC = this.global.readasQRCodeFromString(this.InvitationAddress);
+    });
     let userColor = `${(this.user_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6)}`;
     const r = parseInt(userColor.slice(0, 2), 16);
     const g = parseInt(userColor.slice(2, 4), 16);

@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IonAccordionGroup, IonSelect, iosTransitionAnimation, NavController } from '@ionic/angular';
-import { SERVER_PATH_ROOT, isNativefier, isPlatform } from 'src/app/app.component';
+import { isNativefier } from 'src/app/app.component';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
@@ -84,8 +84,10 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.navCtrl.pop();
     }
     this.CreateHint();
-    this.QuickMainAddress = `${SERVER_PATH_ROOT}pjcone_pwa`;
-    this.QRCodeSRC = this.global.readasQRCodeFromString(this.QuickMainAddress);
+    this.global.GetHeaderAddress().then(address => {
+      this.QuickMainAddress = address;
+      this.QRCodeSRC = this.global.readasQRCodeFromString(this.QuickMainAddress);
+    });
   }
 
   Fallback_FS_input_element: HTMLInputElement;

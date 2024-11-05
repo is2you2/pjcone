@@ -5,7 +5,6 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
-import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
@@ -71,8 +70,10 @@ export class ServerDetailPage implements OnInit, OnDestroy {
   }
 
   GenerateQRCode() {
-    this.QRCodeSRC = this.global.readasQRCodeFromString(
-      `${SERVER_PATH_ROOT}pjcone_pwa/?server=${this.FilteredInfo.useSSL ? 'https' : 'http'}://${this.FilteredInfo.address || ''}${this.FilteredInfo.nakama_port ? `:${this.FilteredInfo.nakama_port}` : ''},${this.FilteredInfo.key || ''},${this.FilteredInfo.cdn_port || ''},${this.FilteredInfo.apache_port || ''},${this.FilteredInfo.square_port || ''},${this.FilteredInfo.webrtc_port || ''}`.replace(' ', '%20'));
+    this.global.GetHeaderAddress(undefined, true).then(address => {
+      this.QRCodeSRC = this.global.readasQRCodeFromString(
+        `${address}?server=${this.FilteredInfo.useSSL ? 'https' : 'http'}://${this.FilteredInfo.address || ''}${this.FilteredInfo.nakama_port ? `:${this.FilteredInfo.nakama_port}` : ''},${this.FilteredInfo.key || ''},${this.FilteredInfo.cdn_port || ''},${this.FilteredInfo.apache_port || ''},${this.FilteredInfo.square_port || ''},${this.FilteredInfo.webrtc_port || ''}`.replace(' ', '%20'));
+    });
   }
 
   /** 사설서버 SSL 체크용 페이지 열람 */
@@ -107,9 +108,11 @@ export class ServerDetailPage implements OnInit, OnDestroy {
 
   /** 시작 진입 주소 생성 */
   copy_startup_address() {
-    let startup_address =
-      `${SERVER_PATH_ROOT}pjcone_pwa/?server=${this.FilteredInfo.useSSL ? 'https' : 'http'}://${this.FilteredInfo.address || ''}${this.FilteredInfo.nakama_port ? `:${this.FilteredInfo.nakama_port}` : ''},${this.FilteredInfo.key || ''},${this.FilteredInfo.cdn_port || ''},${this.FilteredInfo.apache_port || ''},${this.FilteredInfo.square_port || ''},${this.FilteredInfo.webrtc_port || ''}`.replace(' ', '%20');
-    this.global.WriteValueToClipboard('text/plain', startup_address);
+    this.global.GetHeaderAddress(undefined, true).then(address => {
+      let startup_address =
+        `${address}?server=${this.FilteredInfo.useSSL ? 'https' : 'http'}://${this.FilteredInfo.address || ''}${this.FilteredInfo.nakama_port ? `:${this.FilteredInfo.nakama_port}` : ''},${this.FilteredInfo.key || ''},${this.FilteredInfo.cdn_port || ''},${this.FilteredInfo.apache_port || ''},${this.FilteredInfo.square_port || ''},${this.FilteredInfo.webrtc_port || ''}`.replace(' ', '%20');
+      this.global.WriteValueToClipboard('text/plain', startup_address);
+    })
   }
 
   async apply_changed_info() {

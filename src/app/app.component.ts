@@ -9,8 +9,6 @@ import { GlobalActService } from './global-act.service';
 export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' | 'MobilePWA' = 'DesktopPWA';
 /** Nativefier로 실행중인지 검토하기 */
 export var isNativefier = false;
-/** 이미지 등 자료 링크용(웹 사이트 host) */
-export const SERVER_PATH_ROOT: string = 'https://is2you2.github.io/';
 import * as p5 from 'p5';
 window['p5'] = p5;
 

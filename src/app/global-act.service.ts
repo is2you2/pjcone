@@ -1317,6 +1317,41 @@ export class GlobalActService {
     this.p5KeyShortCut = {};
   }
 
+  /** 지금 연결된 주소 받기 */
+  GetConnectedAddress() {
+    let address = `${location.protocol}//${location.host}${window['sub_path']}`;
+    return address;
+  }
+
+  /** QR코드 생성시 사용할 주소 검토
+   * @param address 사용할 주소, 없으면 현재 연결된 주소 사용
+   * @param [force=false] 강제로 github 주소 송출
+   * @returns 현재 연결 주소 또는 github 주소
+   */
+  async GetHeaderAddress(address?: string, force = false) {
+    let header_address: string;
+    try {
+      if (force) throw '강제로 github 주소 발생시키기';
+      if (!address) {
+        address = this.GetConnectedAddress();
+        return address;
+      }
+      let extract = `http://` + address.split('://')[1];
+      let HasLocalPage = `${extract}:12000${window['sub_path']}`;
+      const cont = new AbortController();
+      const id = setTimeout(() => {
+        cont.abort();
+      }, 250);
+      let res = await fetch(HasLocalPage, { signal: cont.signal });
+      clearTimeout(id);
+      if (res.ok) header_address = `${extract}:12000${window['sub_path']}`;
+      else throw '주소 없음';
+    } catch (e) {
+      header_address = 'https://is2you2.github.io/pjcone_pwa/';
+    }
+    return header_address;
+  }
+
   /** 마지막에 등록된 단축키 다시 사용하기  
    * @param [save=false] 가져오긴 하나 기록은 삭제하지 않을 경우 true
    */

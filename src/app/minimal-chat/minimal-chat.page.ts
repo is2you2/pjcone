@@ -5,7 +5,7 @@ import { LocalNotiService } from '../local-noti.service';
 import { MiniranchatClientService } from '../miniranchat-client.service';
 import { StatusManageService } from '../status-manage.service';
 import { LanguageSettingService } from '../language-setting.service';
-import { SERVER_PATH_ROOT, isPlatform } from '../app.component';
+import { isPlatform } from '../app.component';
 import { ContentCreatorInfo, FILE_BINARY_LIMIT, FileInfo, GlobalActService, isDarkMode } from '../global-act.service';
 import { P5ToastService } from '../p5-toast.service';
 import { IndexedDBService } from '../indexed-db.service';
@@ -414,21 +414,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   async CreateQRCode() {
     if (this.JoinedQuick) return;
     this.QRCodeSRC = '';
-    let header_address: string;
-    try {
-      let extract = `http://` + this.client.cacheAddress.split('://')[1];
-      let HasLocalPage = `${extract}:12000${window['sub_path']}`;
-      const cont = new AbortController();
-      const id = setTimeout(() => {
-        cont.abort();
-      }, 500);
-      let res = await fetch(HasLocalPage, { signal: cont.signal });
-      clearTimeout(id);
-      if (res.ok) header_address = `${extract}:12000${window['sub_path']}`;
-      else throw '주소 없음';
-    } catch (e) {
-      header_address = `${SERVER_PATH_ROOT}pjcone_pwa/`;
-    }
+    let header_address = await this.global.GetHeaderAddress(undefined, true);
     this.QRCodeTargetString = `${header_address}?group_dedi=${this.client.cacheAddress},${this.client.JoinedChannel || 'public'}`;
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRCodeTargetString.replace(' ', '%20'));
     this.focus_on_input();

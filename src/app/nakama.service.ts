@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Channel, ChannelMessage, Client, Group, GroupUser, Match, Notification, Session, Socket, User } from "@heroiclabs/nakama-js";
-import { SERVER_PATH_ROOT, isPlatform } from './app.component';
+import { isPlatform } from './app.component';
 import { IndexedDBService } from './indexed-db.service';
 import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
@@ -497,7 +497,7 @@ export class NakamaService {
   /** 공식 테스트 서버 접근 권한 생성 */
   async AccessToOfficialTestServer() {
     try {
-      let res = await fetch(`${SERVER_PATH_ROOT}assets/data/WSAddress.txt`);
+      let res = await fetch('https://is2you2.github.io/assets/data/WSAddress.txt');
       let address = (await res.text()).split('\n')[0];
       await this.add_group_server({
         isOfficial: 'official',
@@ -4222,8 +4222,9 @@ export class NakamaService {
 
   /** 주소를 검토하여 앱 행동을 하거나 링크 열기 */
   async open_url_link(url: string, open_link = true) {
+    let address = this.global.GetConnectedAddress();
     // 근데 주소가 메인 주소라면 QR행동으로 처리하기
-    if (url.indexOf('https://is2you2.github.io/pjcone_pwa/?') == 0) {
+    if (url.indexOf('https://is2you2.github.io/pjcone_pwa/?') == 0 || url.indexOf(`${address}?`) == 0) {
       let init = this.global.CatchGETs(url) || {};
       try {
         await this.AddressToQRCodeAct(init);

@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IonSelect, NavController, iosTransitionAnimation } from '@ionic/angular';
 import { VoiceRecorder } from '@langx/capacitor-voice-recorder';
 import * as p5 from 'p5';
-import { SERVER_PATH_ROOT } from 'src/app/app.component';
 import { FloatButtonService } from 'src/app/float-button.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -172,8 +171,11 @@ export class InstantCallPage implements OnInit, OnDestroy {
             channel: json.id,
           }));
           this.ChannelId = json.id;
-          this.QRCodeAsString = `${SERVER_PATH_ROOT}pjcone_pwa/?instc=${this.UserInputCustomAddress},${this.ChannelId},${this.Port || ''},${this.Username || ''},${this.Password || ''},${this.signalPort || ''}`;
-          this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRCodeAsString);
+          this.global.GetHeaderAddress(undefined, true)
+            .then(address => {
+              this.QRCodeAsString = `${address}?instc=${this.UserInputCustomAddress},${this.ChannelId},${this.Port || ''},${this.Username || ''},${this.Password || ''},${this.signalPort || ''}`;
+              this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRCodeAsString);
+            });
           break;
         case 'init_req':
           this.webrtc.StatusText = this.lang.text['InstantCall']['Connecting'];

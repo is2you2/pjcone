@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IonModal, LoadingController } from '@ionic/angular';
-import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
+import { isPlatform } from 'src/app/app.component';
 import * as p5 from "p5";
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -1942,12 +1942,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   /** 빠른 뷰어 링크 구성받기  
    * 이 링크를 사용하면 즉시 파일 뷰어로 해당 파일을 열 수 있음
    */
-  CopyQuickViewer() {
+  async CopyQuickViewer() {
     this.FileMenu.dismiss();
     this.ContentChanging = true;
     this.useP5Navigator = false;
     this.OpenModal = true;
-    this.QuickMainAddress = `${SERVER_PATH_ROOT}pjcone_pwa/?fileviewer=${this.FileInfo.url},${this.FileInfo.viewer}`.replace(' ', '%20');
+    let address = await this.global.GetHeaderAddress(undefined, true);
+    this.QuickMainAddress = `${address}?fileviewer=${this.FileInfo.url},${this.FileInfo.viewer}`.replace(' ', '%20');
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.QuickMainAddress);
     this.QuickFileViewer.onDidDismiss().then(() => {
       this.ContentChanging = false;
@@ -1961,8 +1962,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 빠른 진입 링크로 새로운 창에서 열기 */
   OpenNewWindow() {
-    let result = `${SERVER_PATH_ROOT}pjcone_pwa/?fileviewer=${this.FileInfo.url},${this.FileInfo.viewer}`;
-    window.open(result, '_blank');
+    let OpenWindow = async () => {
+      let address = await this.global.GetHeaderAddress(undefined, true);
+      let result = `${address}?fileviewer=${this.FileInfo.url},${this.FileInfo.viewer}`;
+      window.open(result, '_blank');
+    }
+    OpenWindow();
     return false;
   }
 

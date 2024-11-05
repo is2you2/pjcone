@@ -1,11 +1,11 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AlertController, IonSelect, LoadingController, NavController } from '@ionic/angular';
 import * as p5 from 'p5';
-import { SERVER_PATH_ROOT, isPlatform } from 'src/app/app.component';
+import { isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
-import { MatchOpCode, NakamaService } from 'src/app/nakama.service';
+import { NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { WebrtcService } from 'src/app/webrtc.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -1431,22 +1431,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   async init_gen_qrcode() {
     let extract = this.QRNavParams.address;
-    try { // 사용자 지정 서버 업로드 시도 우선
-      let sep = extract.split('://');
-      let only_address = sep.pop();
-      let HasLocalPage = `http://${only_address}:12000/`;
-      const cont = new AbortController();
-      const id = setTimeout(() => {
-        cont.abort();
-      }, 500);
-      let res = await fetch(HasLocalPage, { signal: cont.signal });
-      clearTimeout(id);
-      if (res.ok) this.SelectedAddress = `http://${only_address}:12000${window['sub_path']}?voidDraw=${extract},${this.QRNavParams.channel}`;
-      else throw '주소 없음';
-    } catch (e) {
-      this.SelectedAddress = `${SERVER_PATH_ROOT}pjcone_pwa/?voidDraw=${extract},${this.QRNavParams.channel}`;
-    }
-    this.QRCodeSRC = this.global.readasQRCodeFromString(this.SelectedAddress.replace(' ', '%20'));
+    this.SelectedAddress = `${await this.global.GetHeaderAddress(undefined, true)}?voidDraw=${extract},${this.QRNavParams.channel}`.replace(' ', '%20');
+    this.QRCodeSRC = this.global.readasQRCodeFromString(this.SelectedAddress);
   }
 
   /** 보여지는 QRCode 정보 복사 */

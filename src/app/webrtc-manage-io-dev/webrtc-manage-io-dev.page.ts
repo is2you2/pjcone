@@ -3,7 +3,6 @@ import { IonModal, IonRadioGroup, NavController } from '@ionic/angular';
 import { LanguageSettingService } from '../language-setting.service';
 import { IndexedDBService } from '../indexed-db.service';
 import { GlobalActService } from '../global-act.service';
-import { SERVER_PATH_ROOT } from '../app.component';
 import { P5ToastService } from '../p5-toast.service';
 import { NakamaService } from '../nakama.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -69,7 +68,8 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
       let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json');
       this.ServerInfos = JSON.parse(list);
       for (let i = 0, j = this.ServerInfos.length; i < j; i++) {
-        let address = `${SERVER_PATH_ROOT}pjcone_pwa/?rtcserver=[${this.ServerInfos[i].urls}],${this.ServerInfos[i].username},${this.ServerInfos[i].credential}`;
+        let header_address = await this.global.GetHeaderAddress(undefined, true);
+        let address = `${header_address}?rtcserver=[${this.ServerInfos[i].urls}],${this.ServerInfos[i].username},${this.ServerInfos[i].credential}`;
         let QRCode = this.global.readasQRCodeFromString(address);
         this.QRCodes[i] = QRCode;
       }
@@ -141,7 +141,8 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
       return;
     }
     let isExist = await this.nakama.SaveWebRTCServer(this.userInput);
-    let address = `${SERVER_PATH_ROOT}pjcone_pwa/?rtcserver=[${this.userInput.urls}],${this.userInput.username},${this.userInput.credential}`;
+    let header_address = await this.global.GetHeaderAddress(undefined, true);
+    let address = `${header_address}?rtcserver=[${this.userInput.urls}],${this.userInput.username},${this.userInput.credential}`;
     let QRCode = this.global.readasQRCodeFromString(address);
     this.QRCodes.push(QRCode);
     if (!isExist) this.ServerInfos.push(this.userInput);
@@ -155,8 +156,9 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
     this.RegisterServer.dismiss();
   }
 
-  copy_info(index: number) {
-    let address = `${SERVER_PATH_ROOT}pjcone_pwa/?rtcserver=[${this.ServerInfos[index].urls}],${this.ServerInfos[index].username},${this.ServerInfos[index].credential}`;
+  async copy_info(index: number) {
+    let header_address = await this.global.GetHeaderAddress(undefined, true);
+    let address = `${header_address}?rtcserver=[${this.ServerInfos[index].urls}],${this.ServerInfos[index].username},${this.ServerInfos[index].credential}`;
     this.global.WriteValueToClipboard('text/plain', address);
   }
 
