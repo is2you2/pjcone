@@ -362,45 +362,57 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   /** 첨부파일 우클릭시 빠른 이미지 편집 */
   AttachmentContextMenu(_FileInfo: FileInfo, index: number) {
-    let FileURL = _FileInfo.url ?? URL.createObjectURL(_FileInfo.blob);
-    new p5((p: p5) => {
-      p.setup = () => {
-        p.noCanvas();
-        p.loadImage(FileURL, v => {
-          let related_creators: ContentCreatorInfo[] = [];
-          if (_FileInfo['content_related_creator'])
-            related_creators = [..._FileInfo['content_related_creator']];
-          if (_FileInfo['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
-            let is_already_exist = false;
-            for (let i = 0, j = related_creators.length; i < j; i++)
-              if (related_creators[i].user_id !== undefined && _FileInfo['content_creator']['user_id'] !== undefined
-                && related_creators[i].user_id == _FileInfo['content_creator']['user_id']) {
-                is_already_exist = true;
-                break;
-              }
-            if (!is_already_exist) related_creators.push(_FileInfo['content_creator']);
-          }
-          this.global.PageDismissAct['quick-modify-image'] = (v: any) => {
-            if (v.data) this.voidDraw_fileAct_callback(v, related_creators, index);
-            delete this.global.PageDismissAct['quick-modify-image'];
-          }
-          this.global.ActLikeModal('void-draw', {
-            path: _FileInfo.alt_path || _FileInfo.path,
-            width: v.width,
-            height: v.height,
-            type: _FileInfo.type,
-            dismiss: 'quick-modify-image',
+    let LoadAct = async () => {
+      let FileURL = _FileInfo.url || URL.createObjectURL(_FileInfo.blob);
+      try { // 파일 없으면 생성하기
+        let check = await this.indexed.checkIfFileExist(_FileInfo.alt_path || _FileInfo.path);
+        if (check) throw '파일 있음';
+        let res = await fetch(_FileInfo.url);
+        if (!res.ok) throw '인터넷 연결 없음';
+        let blob = await res.blob();
+        await this.indexed.saveBlobToUserPath(blob, _FileInfo.alt_path || _FileInfo.path);
+      } catch (e) { }
+      new p5((p: p5) => {
+        p.setup = () => {
+          p.noCanvas();
+          p.loadImage(FileURL, v => {
+            let related_creators: ContentCreatorInfo[] = [];
+            if (_FileInfo['content_related_creator'])
+              related_creators = [..._FileInfo['content_related_creator']];
+            if (_FileInfo['content_creator']) { // 마지막 제작자가 이미 작업 참여자로 표시되어 있다면 추가하지 않음
+              let is_already_exist = false;
+              for (let i = 0, j = related_creators.length; i < j; i++)
+                if (related_creators[i].user_id !== undefined && _FileInfo['content_creator']['user_id'] !== undefined
+                  && related_creators[i].user_id == _FileInfo['content_creator']['user_id']) {
+                  is_already_exist = true;
+                  break;
+                }
+              if (!is_already_exist) related_creators.push(_FileInfo['content_creator']);
+            }
+            this.global.PageDismissAct['quick-modify-image'] = (v: any) => {
+              if (v.data) this.voidDraw_fileAct_callback(v, related_creators, index);
+              delete this.global.PageDismissAct['quick-modify-image'];
+            }
+            this.global.ActLikeModal('void-draw', {
+              path: _FileInfo.alt_path || _FileInfo.path,
+              width: v.width,
+              height: v.height,
+              type: _FileInfo.type,
+              dismiss: 'quick-modify-image',
+            });
+            if (!_FileInfo.url)
+              URL.revokeObjectURL(FileURL);
+            p.remove();
+          }, e => {
+            console.log('빠른 편집기 이동 실패: ', e);
+            if (!_FileInfo.url)
+              URL.revokeObjectURL(FileURL);
+            p.remove();
           });
-          if (!_FileInfo.url) URL.revokeObjectURL(FileURL);
-          p.remove();
-        }, e => {
-          console.log('빠른 편집기 이동 실패: ', e);
-          if (!_FileInfo.url)
-            URL.revokeObjectURL(FileURL);
-          p.remove();
-        });
-      }
-    });
+        }
+      });
+    }
+    LoadAct();
     return false;
   }
 
