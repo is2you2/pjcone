@@ -1934,14 +1934,29 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     }
   }
 
+  QRCodeSRC: any;
+  @ViewChild('QuickFileViewer') QuickFileViewer: IonModal;
+  QuickMainAddress = '';
   /** 빠른진입으로 들어온 경우 일부 메뉴 가려짐 */
   isQuickLaunchViewer = false;
   /** 빠른 뷰어 링크 구성받기  
    * 이 링크를 사용하면 즉시 파일 뷰어로 해당 파일을 열 수 있음
    */
   CopyQuickViewer() {
-    let result = `${SERVER_PATH_ROOT}pjcone_pwa/?fileviewer=${this.FileInfo.url},${this.FileInfo.viewer}`;
-    this.global.WriteValueToClipboard('text/plain', result.replace(' ', '%20'));
+    this.FileMenu.dismiss();
+    this.ContentChanging = true;
+    this.useP5Navigator = false;
+    this.OpenModal = true;
+    this.QuickMainAddress = `${SERVER_PATH_ROOT}pjcone_pwa/?fileviewer=${this.FileInfo.url},${this.FileInfo.viewer}`.replace(' ', '%20');
+    this.QRCodeSRC = this.global.readasQRCodeFromString(this.QuickMainAddress);
+    this.QuickFileViewer.onDidDismiss().then(() => {
+      this.ContentChanging = false;
+      this.useP5Navigator = true;
+      this.OpenModal = false;
+      this.global.RestoreShortCutAct('quicklink-fileviewer');
+    });
+    this.global.StoreShortCutAct('quicklink-fileviewer');
+    this.QuickFileViewer.present();
   }
 
   /** 빠른 진입 링크로 새로운 창에서 열기 */
