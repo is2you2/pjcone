@@ -185,7 +185,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       let ActualCanvasSizeHalf: p5.Vector;
       /** 배경이미지 캔버스, 복구 불가능한 이전 기록이 이곳에 같이 누적됨 */
       let ImageCanvas: p5.Graphics;
-      let canvas: p5.Renderer;
       let TopMenu: p5.Element;
       let BottomMenu: p5.Element;
       /** 되돌리기류 행동이 상황에 따라 동작하지 않음을 UI로 표시해야함 */
@@ -203,7 +202,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         p.noLoop();
         p.noFill();
         p.imageMode(p.CENTER);
-        canvas = p.createCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
+        let canvas = p.createCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
         canvas.parent(targetDiv);
         CamPosition.x = p.width / 2;
         CamPosition.y = p.height / 2;
@@ -436,9 +435,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         WeightCell.style.cursor = 'pointer';
         WeightCell.onclick = () => { this.change_line_weight() }
         this.p5SetCanvasViewportInit = () => {
-          canvas.hide();
           p.resizeCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
-          canvas.show();
           StartCamPos = CamPosition.copy();
           StartCamScale = CamScale;
           StartScaleCenter = ScaleCenter.copy();
