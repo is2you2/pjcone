@@ -23,9 +23,8 @@
     <div *ngIf="global.ShowHint && !isHTMLViewer && HaveRelevances" style="position: relative;" slot="end">
       <div class="shortcut_hint shortcut_change_viewer">D</div>
     </div>
-    <ion-icon *ngIf="HaveRelevances" class="relevance_change"
-      style="padding-right: 16px; padding-left: 4px;" slot="end" name="arrow-forward-circle-outline"
-      (click)="ChangeToAnother(1)"></ion-icon>
+    <ion-icon *ngIf="HaveRelevances" class="relevance_change" style="padding-right: 16px; padding-left: 4px;" slot="end"
+      name="arrow-forward-circle-outline" (click)="ChangeToAnother(1)"></ion-icon>
   </ion-toolbar>
 </ion-header>
 
@@ -53,14 +52,14 @@
             <ng-template>
               <ion-content>
                 <ion-list>
-                  <div *ngIf="!NeedDownloadFile && !isHTMLViewer && showEditText && showEdit">
-                    <ion-item button (click)="open_text_editor()">
-                      <ion-label>{{lang.text['ContentViewer']['EditText']}}</ion-label>
-                    </ion-item>
-                  </div>
                   <div *ngIf="!NeedDownloadFile && !isHTMLViewer && FileInfo['viewer'] != 'audio' && showEdit">
                     <ion-item button (click)="modify_image()">
                       <ion-label>{{lang.text['ContentViewer']['Edit']}}</ion-label>
+                    </ion-item>
+                  </div>
+                  <div *ngIf="!NeedDownloadFile && !isHTMLViewer && showEditText && showEdit">
+                    <ion-item button (click)="open_text_editor()">
+                      <ion-label>{{lang.text['ContentViewer']['EditText']}}</ion-label>
                     </ion-item>
                   </div>
                   <div *ngIf="!NeedDownloadFile && !isQuickLaunchViewer">
