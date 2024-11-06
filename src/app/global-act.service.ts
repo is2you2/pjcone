@@ -1169,10 +1169,10 @@ export class GlobalActService {
                       try {
                         let _BaseColor = obj.data.mat[i].nodetree.nodes.first.next.inputs.first.default_value.value;
                         base_color = p.color(
-                          _BaseColor[0] * 255,
-                          _BaseColor[1] * 255,
-                          _BaseColor[2] * 255,
-                          _BaseColor[3] * 255
+                          (_BaseColor[0] || 0) * 255,
+                          (_BaseColor[1] || 0) * 255,
+                          (_BaseColor[2] || 0) * 255,
+                          (_BaseColor[3] || 0) * 255
                         );
                       } catch (e) {
                         console.log('베이스 색상 가져오기 실패: ', e);
@@ -1182,10 +1182,10 @@ export class GlobalActService {
                         let _EmissionColor = obj.data.mat[i].nodetree.nodes.first.next.inputs.last.prev.default_value.value;
                         emission_strength = obj.data.mat[i].nodetree.nodes.first.next.inputs.last.default_value.value;
                         emission_color = p.color(
-                          _EmissionColor[0] * 255,
-                          _EmissionColor[1] * 255,
-                          _EmissionColor[2] * 255,
-                          _EmissionColor[3] * 255
+                          (_EmissionColor[0] || 0) * 255,
+                          (_EmissionColor[1] || 0) * 255,
+                          (_EmissionColor[2] || 0) * 255,
+                          (_EmissionColor[3] || 0) * 255
                         );
                       } catch (e) {
                         LogDiv.elt.innerHTML += `<div style="color: var(--ion-color-danger-shade)">${obj.aname}: ${this.lang.text['ContentViewer']['FailedGetEmitColor']}: ${e}</div>`;
