@@ -2,6 +2,12 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { IonModal, LoadingController } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import * as p5 from "p5";
+function import_p5sound() {
+  if (window.location.protocol != 'http:' || window.location.host.indexOf('localhost') == 0) {
+    import('p5/lib/addons/p5.sound');
+  }
+}
+import_p5sound();
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -717,9 +723,42 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       case 'audio': // 오디오
         this.p5canvas = new p5((p: p5) => {
           let mediaObject: p5.MediaElement;
+          let canvas: p5.Renderer;
+          let fft: p5.FFT;
+          let sound: p5.SoundFile;
+          let gainNode: p5.Gain;
+          let isSyncing = false;
+          /** 보안 페이지로 스펙트럼 표시가 가능한지 검토 */
+          let isSafePage = false;
           p.setup = () => {
-            p.noCanvas();
-            p.noLoop();
+            isSafePage = (window.location.protocol != 'http:' || window.location.host.indexOf('localhost') == 0);
+            if (isSafePage) {
+              canvas = p.createCanvas(this.canvasDiv.clientWidth, this.canvasDiv.clientHeight / 2);
+              canvas.parent(this.canvasDiv);
+              p.pixelDensity(.5);
+              fft = new p5.FFT();
+              gainNode = new p5.Gain();
+              gainNode.connect(null);
+              gainNode.amp(0);
+              p.loadSound(this.FileURL, v => {
+                this.ContentOnLoad = true;
+                this.ContentFailedLoad = false;
+                sound = v;
+                sound.disconnect();
+                sound.play();
+                sound.connect(gainNode);
+                fft.setInput(v);
+              }, e => {
+                console.log('음악 파일 읽기 실패: ', e);
+                this.ContentOnLoad = true;
+                this.ContentFailedLoad = true;
+              });
+              p.noStroke();
+              p.loop();
+            } else {
+              p.noCanvas();
+              p.noLoop();
+            }
             mediaObject = p.createAudio([this.FileURL], () => {
               this.canvasDiv.appendChild(mediaObject['elt']);
               mediaObject['elt'].onended = () => {
@@ -735,6 +774,26 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               }
               ResizeAudio();
               mediaObject['elt'].hidden = false;
+              mediaObject['elt'].onplay = () => {
+                if (sound)
+                  sound.play();
+              }
+              mediaObject['elt'].onpause = () => {
+                if (sound)
+                  sound.pause();
+              }
+              mediaObject['elt'].onseeked = () => {
+                if (sound)
+                  sound.jump(mediaObject.elt.currentTime, 0);
+              }
+              mediaObject['elt'].ontimeupdate = () => {
+                if (!isSyncing) {
+                  isSyncing = true;
+                  if (sound)
+                    sound.jump(mediaObject.elt.currentTime, 0);
+                  isSyncing = false;
+                }
+              }
               mediaObject['elt'].onloadedmetadata = () => {
                 ResizeAudio();
                 mediaObject['elt'].hidden = false;
@@ -746,17 +805,57 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               this.ContentFailedLoad = false;
             });
             mediaObject['elt'].hidden = true;
+            numBins = p.floor(p.width / 30);
+          }
+          /** 구간 수 (예: 8개의 구간으로 나누기) */
+          let numBins = 16;
+          /** 각 바간 간경 (옆으로) */
+          let BinMargin = 2;
+          /** 각 바의 파트 높이 (위로) */
+          let SepBarHeight = 16;
+          p.draw = () => {
+            if (!isSafePage) return;
+            p.clear(255, 255, 255, 0);
+            if (sound && mediaObject) {
+              let spectrum = fft.analyze();
+              let binSize = Math.floor(spectrum.length / numBins);  // 각 구간에 해당하는 스펙트럼 크기
+              let barWidth = p.width / numBins; // 바 너비 계산
+              for (let i = 0, j = spectrum.length; i < j; i++) {
+                let startBin = i * binSize;
+                let endBin = (i + 1) * binSize;
+
+                let avg = 0;
+                // 각 구간의 평균을 구하기
+                for (let j = startBin; j < endBin; j++)
+                  avg += spectrum[j];
+                avg /= binSize;
+                // 평균 값을 높이로 변환하여 바를 그림
+                let h = p.map(avg, 0, 255, 0, p.height);
+                // 높이별로 바를 추가로 분리시킴
+                for (let k = p.ceil(p.height / SepBarHeight), l = k; k >= 0; k--) {
+                  if (p.height - SepBarHeight * k > h) break;
+                  if (isDarkMode)
+                    p.fill(p.min((l - k) * 10, 255), p.min((l - k) * 4, 255));
+                  else p.fill(p.min(255 - (l - k) * 10, 255), p.min((l - k) * 4, 255));
+                  // 바를 그릴 때 각 구간에 대해 하나의 바를 그립니다
+                  p.rect(i * barWidth + BinMargin, SepBarHeight * k - BinMargin, barWidth - 2 * BinMargin, -SepBarHeight + BinMargin * 2);
+                }
+              }
+            }
+            return;
           }
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let ResizeAudio = () => {
-            let canvasWidth = this.ContentBox.offsetWidth;
-            mediaObject['elt'].setAttribute('style', 'position: relative; top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%);');
-            mediaObject['size'](canvasWidth, 25);
+            if (isSafePage) {
+              numBins = p.floor(p.width / 30);
+              p.resizeCanvas(this.canvasDiv.clientWidth, this.canvasDiv.clientHeight / 2);
+            }
+            mediaObject['elt'].setAttribute('style', 'position: absolute; top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%); width: 100%');
           }
           p.windowResized = () => {
             setTimeout(() => {
               ResizeAudio();
-            }, 50);
+            }, 100);
           }
           let startPos: p5.Vector = p.createVector();
           let touches: { [id: string]: p5.Vector } = {};
