@@ -744,6 +744,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               p.noLoop();
             }
             mediaObject = p.createAudio([this.FileURL], () => {
+              mediaObject['elt'].setAttribute('style', 'position: absolute; top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%); width: 100%');
               let audioElements = document.querySelectorAll('audio');
               for (let i = 0, j = audioElements.length; i < j; i++)
                 if (audioElements[i] != mediaObject.elt)
@@ -855,10 +856,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let ResizeAudio = () => {
             if (isSafePage) {
-              numBins = p.floor(p.width / 30);
               p.resizeCanvas(this.canvasDiv.clientWidth, this.canvasDiv.clientHeight / 2);
+              numBins = p.floor(p.width / 30);
             }
-            mediaObject['elt'].setAttribute('style', 'position: absolute; top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%); width: 100%');
           }
           p.windowResized = () => {
             setTimeout(() => {
