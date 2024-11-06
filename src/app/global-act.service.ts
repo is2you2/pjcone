@@ -1290,6 +1290,9 @@ export class GlobalActService {
             if (meshes[i].color) {
               p.noStroke();
               p.ambientMaterial(meshes[i].color);
+            } else {
+              p.stroke(0);
+              p.fill(0);
             }
           }
           if (meshes[i].emissionStrength) {
