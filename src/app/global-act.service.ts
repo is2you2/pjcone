@@ -1635,6 +1635,28 @@ export class GlobalActService {
     return aRet.join('');
   }
 
+  /** HTML 내 특수문자를 평문으로 변환 */
+  HTMLDecode(str: string): string {
+    // 이름 기반 HTML 엔티티 매핑
+    const htmlEntities: { [key: string]: string } = {
+      '&lt;': '<',
+      '&gt;': '>',
+      '&amp;': '&',
+      '&quot;': '"',
+      '&apos;': "'",
+      // 필요한 다른 HTML 엔티티들을 추가할 수 있습니다.
+    };
+    // 이름 기반 엔티티 디코딩
+    str = str.replace(/&[a-zA-Z]+;/g, match => {
+      return htmlEntities[match] || match;  // 매치되는 엔티티가 있으면 디코딩하고, 없으면 그대로 반환
+    });
+    // 숫자 기반 HTML 엔티티(&#<숫자>; 형식) 디코딩
+    str = str.replace(/&#(\d+);/g, (match, codePoint) => {
+      return String.fromCodePoint(Number(codePoint));  // 숫자 엔티티 처리
+    });
+    return str;
+  }
+
   /** 음성녹음을 멈추고 저장된 값을 돌려주기 */
   async StopAndSaveVoiceRecording() {
     try {

@@ -284,6 +284,10 @@ export class PostViewerPage implements OnInit, OnDestroy {
         // 내용
         if (this.PostInfo['content']) {
           let content: any[] = (await marked.marked(this.PostInfo['content'])).split('\n');
+          /** 내용이 전부 불러와지고나면 하는 행동  
+          * 보통 재생 가능한 콘텐츠가 준비될 때 해당 콘텐츠가 마지막에 로딩되는 것을 고려하여 구성됨
+          */
+          let AfterAllAct: Function[] = [];
           for (let i = 0, j = content.length; i < j; i++) {
             // 첨부파일인지 체크
             let is_attach = false;
@@ -537,6 +541,39 @@ export class PostViewerPage implements OnInit, OnDestroy {
                 }
                   break;
               }
+            } else {
+              // 일반 텍스트는 무시하고 음원 시간 UI 생성 시도
+              try {
+                let GetOriginal = this.global.HTMLDecode(content[i].replace('<p>', '').replace('</p>', ''));
+                let json = JSON.parse(GetOriginal);
+                let targetText = `[${json['i']}] ${this.PostInfo['attachments'][json['i']]['filename']} (${json['t']})`;
+                let TimeLink = p.createDiv(targetText);
+                TimeLink.style('background-color', '#8888');
+                TimeLink.style('width', 'fit-content');
+                TimeLink.style('height', 'fit-content');
+                TimeLink.style('border-radius', '16px');
+                TimeLink.style('padding', '8px 16px');
+                TimeLink.style('margin', '8px 0px');
+                TimeLink.style('cursor', 'pointer');
+                content[i] = TimeLink;
+                AfterAllAct.push(() => {
+                  let CatchMedia: HTMLAudioElement = this.PlayableElements[json['i']];
+                  let sep = json['t'].split(':');
+                  let targetSecond = 0;
+                  let ratio = 1;
+                  for (let i = sep.length - 1; i >= 0; i--) {
+                    let AsNumber = Number(sep.pop());
+                    targetSecond += AsNumber * ratio;
+                    ratio *= 60;
+                  }
+                  TimeLink.elt.onclick = () => {
+                    try { // 사용자가 직접 타이핑 치는 경우를 대비
+                      CatchMedia.currentTime = targetSecond;
+                      CatchMedia.play();
+                    } catch (e) { }
+                  }
+                });
+              } catch (e) { }
             }
           }
           let result = [];
@@ -559,6 +596,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
             }
           }
           CollectResult();
+          for (let i = 0, j = AfterAllAct.length; i < j; i++)
+            AfterAllAct[i]();
           for (let blenderfile of this.blenderViewers)
             blenderfile.windowResized();
         }
