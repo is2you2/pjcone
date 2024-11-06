@@ -630,8 +630,8 @@ export class AddPostPage implements OnInit, OnDestroy {
   /** 게시물 내용에 첨부파일 링크를 추가함 */
   AddAttachTextForm() {
     if (this.userInput.content)
-      this.userInput.content += `\n[${this.userInput.attachments.length}]\n`;
-    else this.userInput.content = `[${this.userInput.attachments.length}]\n`;
+      this.userInput.content += `\n{${this.userInput.attachments.length}}\n`;
+    else this.userInput.content = `{${this.userInput.attachments.length}}\n`;
     this.ContentTextArea.focus();
   }
 
@@ -763,7 +763,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       let index = 0;
       try {
         index = Number(sep_as_line[k].substring(1, content_len));
-        is_attach = sep_as_line[k].charAt(0) == '[' && sep_as_line[k].charAt(content_len) == ']' && !isNaN(index);
+        is_attach = sep_as_line[k].charAt(0) == '{' && sep_as_line[k].charAt(content_len) == '}' && !isNaN(index);
       } catch (e) { }
       if (is_attach) {
         if (i == index) { // 삭제된 파일에 해당하는 줄은 삭제
@@ -772,7 +772,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           } catch (e) { }
           sep_as_line.splice(k, 1);
         } else if (i < index) // 해당 파일보다 큰 순번은 숫자를 줄여 정렬처리
-          sep_as_line[k] = `[${index - 1}]`;
+          sep_as_line[k] = `{${index - 1}}`;
       }
     }
     this.userInput.content = sep_as_line.join('\n');

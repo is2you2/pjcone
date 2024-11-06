@@ -8,6 +8,7 @@ import { GlobalActService } from 'src/app/global-act.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonModal } from '@ionic/angular/common';
+import * as marked from "marked";
 
 @Component({
   selector: 'app-post-viewer',
@@ -227,11 +228,9 @@ export class PostViewerPage implements OnInit, OnDestroy {
         }
         title.style('font-size', '32px');
         title.style('font-weight', 'bold');
-        title.parent(contentDiv);
         // 작성일
         let datetime = p.createDiv();
         datetime.style('color', '#888');
-        datetime.parent(contentDiv);
         let create_time = p.createDiv(`${this.lang.text['PostViewer']['CreateTime']}: ${new Date(this.PostInfo['create_time']).toLocaleString()}`);
         create_time.parent(datetime);
         if (this.PostInfo['create_time'] != this.PostInfo['modify_time']) {
@@ -241,7 +240,6 @@ export class PostViewerPage implements OnInit, OnDestroy {
         // 작성자
         let creatorForm = p.createDiv();
         creatorForm.style('padding-bottom', '8px');
-        creatorForm.parent(contentDiv);
         let catch_name: string;
         try {
           catch_name = this.nakama.usernameOverride[this.PostInfo['server']['isOfficial']][this.PostInfo['server']['target']][this.PostInfo['creator_id']] || this.PostInfo['creator_name'];
@@ -282,29 +280,9 @@ export class PostViewerPage implements OnInit, OnDestroy {
             });
           }
         }
-        creator.parent(creatorForm);
-        // 첨부파일 불러오기
-        if (this.PostInfo['server']['local'])
-          for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++) {
-            try {
-              if (this.PostInfo['attachments'][i]['blob']) throw 'blob 준비되어있음';
-              let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][i]['path'], this.PostInfo['attachments'][i]['type']);
-              this.PostInfo['attachments'][i]['blob'] = blob;
-            } catch (e) { }
-          }
-        else for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++) {
-          try {
-            if (this.PostInfo['attachments'][i]['blob']) throw 'blob 준비되어있음';
-            this.PostInfo['attachments'][i].alt_path = `servers/${this.PostInfo['server']['isOfficial']}/${this.PostInfo['server']['target']}/posts/${this.PostInfo.creator_id}/${this.PostInfo.id}/[${i}]${this.PostInfo['attachments'][i].filename}`;
-            let blob = await this.nakama.sync_load_file(
-              this.PostInfo['attachments'][i], this.PostInfo['server']['isOfficial'], this.PostInfo['server']['target'], 'server_post',
-              this.PostInfo['creator_id'], `${this.PostInfo['id']}_attach_${i}`, false);
-            this.PostInfo['attachments'][i]['blob'] = blob.value;
-          } catch (e) { }
-        }
         // 내용
         if (this.PostInfo['content']) {
-          let content: string[] = this.PostInfo['content'].split('\n');
+          let content: string[] = (await marked.marked(this.PostInfo['content'])).split('\n');
           /** 내용이 전부 불러와지고나면 하는 행동  
            * 보통 재생 가능한 콘텐츠가 준비될 때 해당 콘텐츠가 마지막에 로딩되는 것을 고려하여 구성됨
            */
@@ -315,10 +293,26 @@ export class PostViewerPage implements OnInit, OnDestroy {
             let content_len = content[i].length - 1;
             let index = 0;
             try {
-              index = Number(content[i].substring(1, content_len));
-              is_attach = content[i].charAt(0) == '[' && content[i].charAt(content_len) == ']' && !isNaN(index);
+              let endOfContent = content[i].indexOf('}</p>');
+              index = Number(content[i].substring(4, endOfContent));
+              is_attach = content[i].indexOf('<p>{') == 0 && content[i].indexOf('}</p>') == (content_len - 4) && !isNaN(index);
             } catch (e) { }
             if (is_attach) {
+              // 첨부파일 불러오기
+              if (this.PostInfo['server']['local'])
+                try {
+                  if (this.PostInfo['attachments'][index]['blob']) throw 'blob 준비되어있음';
+                  let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][index]['path'], this.PostInfo['attachments'][index]['type']);
+                  this.PostInfo['attachments'][index]['blob'] = blob;
+                } catch (e) { }
+              else try {
+                if (this.PostInfo['attachments'][index]['blob']) throw 'blob 준비되어있음';
+                this.PostInfo['attachments'][index].alt_path = `servers/${this.PostInfo['server']['isOfficial']}/${this.PostInfo['server']['target']}/posts/${this.PostInfo.creator_id}/${this.PostInfo.id}/[${i}]${this.PostInfo['attachments'][i].filename}`;
+                let blob = await this.nakama.sync_load_file(
+                  this.PostInfo['attachments'][index], this.PostInfo['server']['isOfficial'], this.PostInfo['server']['target'], 'server_post',
+                  this.PostInfo['creator_id'], `${this.PostInfo['id']}_attach_${index}`, false);
+                this.PostInfo['attachments'][index]['blob'] = blob.value;
+              } catch (e) { }
               switch (this.PostInfo['attachments'][index]['viewer']) {
                 case 'image': {
                   let FileURL = this.PostInfo['attachments'][index]['url'];
@@ -349,7 +343,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       dismiss: 'post-viewer-image-view',
                     });
                   }
-                  img.parent(contentDiv);
+                  content[i] = `<p>${img.elt.outerHTML}</p>`;
+                  img.remove();
                 }
                   break;
                 case 'audio': {
@@ -369,7 +364,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
                           this.PlayableElements[i].pause();
                       } catch (e) { }
                   }
-                  audio.parent(contentDiv);
+                  content[i] = `<p>${audio.elt.outerHTML}</p>`;
+                  audio.remove();
                   this.PlayableElements[index] = audio.elt;
                 }
                   break;
@@ -385,7 +381,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   video.style('width', '100%');
                   video.style('height', 'auto');
                   video.showControls();
-                  video.parent(contentDiv);
+                  content[i] = `<p>${video.elt.outerHTML}</p>`;
+                  video.remove();
                   this.PlayableElements[index] = video.elt;
                 }
                   break;
@@ -395,7 +392,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   godot_frame.id(targetFrameId);
                   godot_frame.style('width', '100%');
                   godot_frame.style('height', '432px');
-                  godot_frame.parent(contentDiv);
+                  content[i] = `<p>${godot_frame.elt.outerHTML}</p>`;
+                  godot_frame.remove();
                   setTimeout(async () => {
                     let createDuplicate = false;
                     if (this.indexed.godotDB) {
@@ -486,7 +484,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   blender_frame.elt.oncontextmenu = () => {
                     return false;
                   }
-                  blender_frame.parent(contentDiv);
+                  content[i] = `<p>${blender_frame.elt.outerHTML}</p>`;
+                  blender_frame.remove();
                   let blender_viewer = this.global.load_blender_file(blender_frame.elt, this.PostInfo['attachments'][index],
                     () => { }, () => { }, this.cont);
                   this.blenderViewers.push(blender_viewer);
@@ -516,7 +515,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       HTMLDiv.style('border', '0');
                       HTMLDiv.style('height', '432px');
                       HTMLDiv.attribute('src', FileURL);
-                      HTMLDiv.parent(contentDiv);
+                      content[i] = `<p>${HTMLDiv.elt.outerHTML}</p>`;
+                      HTMLDiv.remove();
                       break;
                     } catch (e) {
                       console.log('HTML 파일 읽기 실패: ', e);
@@ -542,62 +542,18 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       dismiss: 'post-viewer-file-view',
                     });
                   }
+                  content[i] = `<p>${EmptyDiv.elt.outerHTML}</p>`;
+                  EmptyDiv.remove();
                 }
                   break;
               }
-            } else { // 일반 문자열
-              try { // 일반 문자열이 json 구성을 띈 기능 정보인 경우, 콘텐츠 시간 링크로 간주
-                let json = JSON.parse(content[i]);
-                let targetText = `[${json['i']}] ${this.PostInfo['attachments'][json['i']]['filename']} (${json['t']})`;
-                let TimeLink = p.createDiv(targetText);
-                TimeLink.style('background-color', '#8888');
-                TimeLink.style('width', 'fit-content');
-                TimeLink.style('height', 'fit-content');
-                TimeLink.style('border-radius', '16px');
-                TimeLink.style('padding', '8px 16px');
-                TimeLink.style('cursor', 'pointer');
-                TimeLink.parent(contentDiv);
-                AfterAllAct.push(() => {
-                  let CatchMedia: HTMLAudioElement = this.PlayableElements[json['i']];
-                  let sep = json['t'].split(':');
-                  let targetSecond = 0;
-                  let ratio = 1;
-                  for (let i = sep.length - 1; i >= 0; i--) {
-                    let AsNumber = Number(sep.pop());
-                    targetSecond += AsNumber * ratio;
-                    ratio *= 60;
-                  }
-                  TimeLink.elt.onclick = () => {
-                    try { // 사용자가 직접 타이핑 치는 경우를 대비
-                      CatchMedia.currentTime = targetSecond;
-                      CatchMedia.play();
-                    } catch (e) { }
-                  }
-                });
-              } catch (e) { // 정말로 일반 문자열
-                let line = p.createDiv();
-                line.parent(contentDiv);
-                // 문자열을 띄어쓰기 단위로 나누기
-                let sep = content[i].split(' ');
-                let normal_text = '';
-                for (let k = 0, l = sep.length; k < l; k++)
-                  // 웹 주소라면 하이퍼링크 처리
-                  if (sep[k].indexOf('http:') == 0 || sep[k].indexOf('https:') == 0) {
-                    let word = p.createSpan(normal_text);
-                    word.parent(line);
-                    normal_text = '';
-                    let link = p.createA(sep[k], sep[k]);
-                    link.attribute('target', '_blank');
-                    link.parent(line);
-                    normal_text += '&nbsp';
-                  } else normal_text += sep[k] + '&nbsp';
-                if (normal_text) {
-                  let word = p.createSpan(normal_text);
-                  word.parent(line);
-                }
-              }
             }
           }
+          content.unshift(creatorForm.elt.outerHTML);
+          content.unshift(datetime.elt.outerHTML);
+          content.unshift(title.elt.outerHTML);
+          console.log(content);
+          contentDiv.innerHTML = content.join('\n');
           for (let i = 0, j = AfterAllAct.length; i < j; i++)
             AfterAllAct[i]();
         }
