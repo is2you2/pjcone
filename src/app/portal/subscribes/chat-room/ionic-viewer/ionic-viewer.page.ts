@@ -256,6 +256,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   canvasDiv: HTMLElement;
   async reinit_content_data(msg: any) {
+    this.CacheMediaObject = null;
     this.CurrentFileSize = null;
     this.NewTextFileName = '';
     this.NeedDownloadFile = false;
@@ -464,7 +465,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     loading.dismiss();
   }
   /** p5.video 가 생성된 경우 여기에 기록 */
-  VideoMediaObject: any;
+  CacheMediaObject: any;
   /** 파일 읽기 멈추기 위한 컨트롤러 */
   cont: AbortController;
   /** 비디오/오디오 콘텐츠가 종료되면 끝에서 다음 콘텐츠로 자동 넘김 */
@@ -730,29 +731,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let isSyncing = false;
           /** 보안 페이지로 스펙트럼 표시가 가능한지 검토 */
           let isSafePage = false;
+          let CacheFileURL: any;
           p.setup = () => {
+            CacheFileURL = this.FileURL;
             isSafePage = (window.location.protocol != 'http:' || window.location.host.indexOf('localhost') == 0);
             if (isSafePage) {
               canvas = p.createCanvas(this.canvasDiv.clientWidth, this.canvasDiv.clientHeight / 2);
               canvas.parent(this.canvasDiv);
               p.pixelDensity(.5);
-              fft = new p5.FFT();
-              gainNode = new p5.Gain();
-              gainNode.connect(null);
-              gainNode.amp(0);
-              p.loadSound(this.FileURL, v => {
-                this.ContentOnLoad = true;
-                this.ContentFailedLoad = false;
-                sound = v;
-                sound.disconnect();
-                sound.play();
-                sound.connect(gainNode);
-                fft.setInput(v);
-              }, e => {
-                console.log('음악 파일 읽기 실패: ', e);
-                this.ContentOnLoad = true;
-                this.ContentFailedLoad = true;
-              });
               p.noStroke();
               p.loop();
             } else {
@@ -760,6 +746,37 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               p.noLoop();
             }
             mediaObject = p.createAudio([this.FileURL], () => {
+              if (this.CacheMediaObject != mediaObject && CacheFileURL != this.FileURL) {
+                mediaObject.remove();
+                p.remove();
+                return;
+              }
+              if (isSafePage) {
+                fft = new p5.FFT();
+                gainNode = new p5.Gain();
+                gainNode.connect(null);
+                gainNode.amp(0);
+                p.loadSound(this.FileURL, v => {
+                  sound = v;
+                  if (this.CacheMediaObject != mediaObject && CacheFileURL != this.FileURL) {
+                    sound.disconnect();
+                    gainNode.disconnect();
+                    mediaObject.remove();
+                    p.remove();
+                    return;
+                  }
+                  this.ContentOnLoad = true;
+                  this.ContentFailedLoad = false;
+                  sound.disconnect();
+                  sound.play();
+                  sound.connect(gainNode);
+                  fft.setInput(v);
+                }, e => {
+                  console.log('음악 파일 읽기 실패: ', e);
+                  this.ContentOnLoad = true;
+                  this.ContentFailedLoad = true;
+                });
+              }
               this.canvasDiv.appendChild(mediaObject['elt']);
               mediaObject['elt'].onended = () => {
                 if (this.AutoPlayNext) {
@@ -806,6 +823,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             });
             mediaObject['elt'].hidden = true;
             numBins = p.floor(p.width / 30);
+            this.CacheMediaObject = mediaObject;
           }
           /** 구간 수 (예: 8개의 구간으로 나누기) */
           let numBins = 16;
@@ -901,7 +919,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       case 'video': // 비디오
         this.p5canvas = new p5((p: p5) => {
           let mediaObject: p5.MediaElement;
+          let CacheFileURL: any;
           p.setup = () => {
+            CacheFileURL = this.FileURL;
             p.noCanvas();
             p.noLoop();
             mediaObject = p.createVideo([this.FileURL], () => {
@@ -943,6 +963,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 mediaObject['elt'].onloadedmetadata = null;
               }
               mediaObject['elt'].onended = () => {
+                if (this.CacheMediaObject != mediaObject && CacheFileURL != this.FileURL) {
+                  mediaObject.remove();
+                  p.remove();
+                }
                 if (this.AutoPlayNext) {
                   if (this.PageWillDestroy) {
                     SearchAndPlayNextVideo();
@@ -962,7 +986,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               this.ContentOnLoad = true;
               this.ContentFailedLoad = false;
             });
-            this.VideoMediaObject = mediaObject;
+            this.CacheMediaObject = mediaObject;
           }
           let SearchAndPlayNextVideo = async () => {
             let tmp_calced = this.RelevanceIndex + 1;
@@ -1961,10 +1985,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
           loading.present();
           this.p5canvas.pixelDensity(1);
-          this.VideoMediaObject.pause();
-          this.VideoMediaObject['size'](this.image_info['width'], this.image_info['height']);
+          this.CacheMediaObject.pause();
+          this.CacheMediaObject['size'](this.image_info['width'], this.image_info['height']);
           let canvas = this.p5canvas.createCanvas(this.image_info['width'], this.image_info['height']);
-          this.p5canvas.image(this.VideoMediaObject, 0, 0, this.p5canvas.width, this.p5canvas.height);
+          this.p5canvas.image(this.CacheMediaObject, 0, 0, this.p5canvas.width, this.p5canvas.height);
           let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
           try {
             loading.dismiss();
@@ -2154,7 +2178,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     switch (this.FileInfo.viewer) {
       case 'video':
         try {
-          let size = this.VideoMediaObject.size();
+          let size = this.CacheMediaObject.size();
           let width: number, height: number;
           if (size.width > size.height) {
             height = size.height / size.width * 192;
@@ -2166,7 +2190,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let canvas = this.p5canvas.createCanvas(width, height);
           this.p5canvas.pixelDensity(1);
           this.p5canvas.imageMode(this.p5canvas.CORNER);
-          this.p5canvas.image(this.VideoMediaObject, 0, 0, width, height);
+          this.p5canvas.image(this.CacheMediaObject, 0, 0, width, height);
           this.p5canvas.fill(255, 128);
           this.p5canvas.rect(0, 0, width, height);
           this.p5canvas.textWrap(this.p5canvas.CHAR);
@@ -2271,10 +2295,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   ionViewDidLeave() {
-    if (this.VideoMediaObject) {
-      if (this.VideoMediaObject.elt != document.pictureInPictureElement)
-        this.VideoMediaObject.remove();
-      this.VideoMediaObject = null;
+    if (this.CacheMediaObject) {
+      if (this.CacheMediaObject.elt != document.pictureInPictureElement)
+        this.CacheMediaObject.remove();
+      this.CacheMediaObject = null;
     }
     let vid_obj = document.getElementById('ionicviewer_vid_obj');
     if (vid_obj && vid_obj != document.pictureInPictureElement)
