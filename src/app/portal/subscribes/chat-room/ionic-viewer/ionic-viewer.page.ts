@@ -731,9 +731,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let isSyncing = false;
           /** 보안 페이지로 스펙트럼 표시가 가능한지 검토 */
           let isSafePage = false;
-          let CacheFileURL: any;
           p.setup = () => {
-            CacheFileURL = this.FileURL;
             isSafePage = (window.location.protocol != 'http:' || window.location.host.indexOf('localhost') == 0);
             if (isSafePage) {
               canvas = p.createCanvas(this.canvasDiv.clientWidth, this.canvasDiv.clientHeight / 2);
@@ -746,11 +744,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               p.noLoop();
             }
             mediaObject = p.createAudio([this.FileURL], () => {
-              if (this.CacheMediaObject != mediaObject && CacheFileURL != this.FileURL) {
-                mediaObject.remove();
-                p.remove();
-                return;
-              }
+              let audioElements = document.querySelectorAll('audio');
+              for (let i = 0, j = audioElements.length; i < j; i++)
+                if (audioElements[i] != mediaObject.elt)
+                  audioElements[i].remove();
               if (isSafePage) {
                 fft = new p5.FFT();
                 gainNode = new p5.Gain();
@@ -758,13 +755,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 gainNode.amp(0);
                 p.loadSound(this.FileURL, v => {
                   sound = v;
-                  if (this.CacheMediaObject != mediaObject && CacheFileURL != this.FileURL) {
-                    sound.disconnect();
-                    gainNode.disconnect();
-                    mediaObject.remove();
-                    p.remove();
-                    return;
-                  }
                   this.ContentOnLoad = true;
                   this.ContentFailedLoad = false;
                   sound.disconnect();
@@ -919,12 +909,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       case 'video': // 비디오
         this.p5canvas = new p5((p: p5) => {
           let mediaObject: p5.MediaElement;
-          let CacheFileURL: any;
           p.setup = () => {
-            CacheFileURL = this.FileURL;
             p.noCanvas();
             p.noLoop();
             mediaObject = p.createVideo([this.FileURL], () => {
+              let videoElements = document.querySelectorAll('video');
+              for (let i = 0, j = videoElements.length; i < j; i++)
+                if (videoElements[i] != mediaObject.elt)
+                  videoElements[i].remove();
               mediaObject.id('ionicviewer_vid_obj');
               if (this.global.PIPLinkedVideoElement) {
                 mediaObject.elt.remove();
@@ -963,10 +955,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 mediaObject['elt'].onloadedmetadata = null;
               }
               mediaObject['elt'].onended = () => {
-                if (this.CacheMediaObject != mediaObject && CacheFileURL != this.FileURL) {
-                  mediaObject.remove();
-                  p.remove();
-                }
                 if (this.AutoPlayNext) {
                   if (this.PageWillDestroy) {
                     SearchAndPlayNextVideo();
