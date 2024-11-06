@@ -228,6 +228,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
         }
         title.style('font-size', '32px');
         title.style('font-weight', 'bold');
+        title.parent(contentDiv);
         // 작성일
         let datetime = p.createDiv();
         datetime.style('color', '#888');
@@ -237,9 +238,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
           let modify_time = p.createDiv(`${this.lang.text['PostViewer']['ModifyTime']}: ${new Date(this.PostInfo['modify_time']).toLocaleString()}`);
           modify_time.parent(datetime);
         }
+        datetime.parent(contentDiv);
         // 작성자
-        let creatorForm = p.createDiv();
-        creatorForm.style('padding-bottom', '8px');
         let catch_name: string;
         try {
           catch_name = this.nakama.usernameOverride[this.PostInfo['server']['isOfficial']][this.PostInfo['server']['target']][this.PostInfo['creator_id']] || this.PostInfo['creator_name'];
@@ -280,13 +280,10 @@ export class PostViewerPage implements OnInit, OnDestroy {
             });
           }
         }
+        creator.parent(contentDiv);
         // 내용
         if (this.PostInfo['content']) {
-          let content: string[] = (await marked.marked(this.PostInfo['content'])).split('\n');
-          /** 내용이 전부 불러와지고나면 하는 행동  
-           * 보통 재생 가능한 콘텐츠가 준비될 때 해당 콘텐츠가 마지막에 로딩되는 것을 고려하여 구성됨
-           */
-          let AfterAllAct: Function[] = [];
+          let content: any[] = (await marked.marked(this.PostInfo['content'])).split('\n');
           for (let i = 0, j = content.length; i < j; i++) {
             // 첨부파일인지 체크
             let is_attach = false;
@@ -343,8 +340,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       dismiss: 'post-viewer-image-view',
                     });
                   }
-                  content[i] = `<p>${img.elt.outerHTML}</p>`;
-                  img.remove();
+                  content[i] = img;
                 }
                   break;
                 case 'audio': {
@@ -364,8 +360,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                           this.PlayableElements[i].pause();
                       } catch (e) { }
                   }
-                  content[i] = `<p>${audio.elt.outerHTML}</p>`;
-                  audio.remove();
+                  content[i] = audio;
                   this.PlayableElements[index] = audio.elt;
                 }
                   break;
@@ -381,8 +376,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   video.style('width', '100%');
                   video.style('height', 'auto');
                   video.showControls();
-                  content[i] = `<p>${video.elt.outerHTML}</p>`;
-                  video.remove();
+                  content[i] = video;
                   this.PlayableElements[index] = video.elt;
                 }
                   break;
@@ -392,8 +386,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   godot_frame.id(targetFrameId);
                   godot_frame.style('width', '100%');
                   godot_frame.style('height', '432px');
-                  content[i] = `<p>${godot_frame.elt.outerHTML}</p>`;
-                  godot_frame.remove();
+                  content[i] = godot_frame;
                   setTimeout(async () => {
                     let createDuplicate = false;
                     if (this.indexed.godotDB) {
@@ -484,8 +477,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   blender_frame.elt.oncontextmenu = () => {
                     return false;
                   }
-                  content[i] = `<p>${blender_frame.elt.outerHTML}</p>`;
-                  blender_frame.remove();
+                  content[i] = blender_frame;
                   let blender_viewer = this.global.load_blender_file(blender_frame.elt, this.PostInfo['attachments'][index],
                     () => { }, () => { }, this.cont);
                   this.blenderViewers.push(blender_viewer);
@@ -515,8 +507,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       HTMLDiv.style('border', '0');
                       HTMLDiv.style('height', '432px');
                       HTMLDiv.attribute('src', FileURL);
-                      content[i] = `<p>${HTMLDiv.elt.outerHTML}</p>`;
-                      HTMLDiv.remove();
+                      content[i] = HTMLDiv;
                       break;
                     } catch (e) {
                       console.log('HTML 파일 읽기 실패: ', e);
@@ -542,20 +533,34 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       dismiss: 'post-viewer-file-view',
                     });
                   }
-                  content[i] = `<p>${EmptyDiv.elt.outerHTML}</p>`;
-                  EmptyDiv.remove();
+                  content[i] = EmptyDiv;
                 }
                   break;
               }
             }
           }
-          content.unshift(creatorForm.elt.outerHTML);
-          content.unshift(datetime.elt.outerHTML);
-          content.unshift(title.elt.outerHTML);
-          console.log(content);
-          contentDiv.innerHTML = content.join('\n');
-          for (let i = 0, j = AfterAllAct.length; i < j; i++)
-            AfterAllAct[i]();
+          let result = [];
+          let CollectResult = () => {
+            if (result.length) {
+              let BeforeString = result.join('\n');
+              let part = p.createDiv();
+              part.style('width', '100%');
+              part.elt.innerHTML = BeforeString;
+              part.parent(contentDiv);
+              result.length = 0;
+            }
+          }
+          for (let i = 0, j = content.length; i < j; i++) {
+            if (typeof content[i] == 'string') {
+              result.push(content[i]);
+            } else {
+              CollectResult();
+              content[i].parent(contentDiv);
+            }
+          }
+          CollectResult();
+          for (let blenderfile of this.blenderViewers)
+            blenderfile.windowResized();
         }
         this.ContentChanging = false;
       }
