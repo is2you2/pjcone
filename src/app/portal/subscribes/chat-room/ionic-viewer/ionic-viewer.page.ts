@@ -24,6 +24,7 @@ import perl from 'highlight.js/lib/languages/perl';
 import basic from 'highlight.js/lib/languages/basic';
 import properties from 'highlight.js/lib/languages/properties';
 import { ActivatedRoute, Router } from '@angular/router';
+import * as marked from "marked";
 
 @Component({
   selector: 'app-ionic-viewer',
@@ -102,12 +103,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   /** 이미지 편집이 가능하다면 해당 메뉴를 보여주기 */
   showEdit = true;
   showEditText = false;
-  /** HTML이라면 보기 방식을 변경할 수 있음, 변경 가능한지 여부 */
-  isHTML = false;
+  /** HTML, Markdown 등의 경우 보기 방식을 변경할 수 있음, 변경 가능한지 여부 */
+  isConvertible = false;
   /** HTML 직접보기로 보는지 여부 */
   isHTMLViewer = false;
 
-  /** HTML 직접보기 전환 */
+  /** HTML 직접보기 전환  
+   * 마크다운 등 전환 보기가 필요한 녀석들은 전부 공유한다
+   */
   async ToggleHTMLViewer() {
     this.isHTMLViewer = !this.isHTMLViewer;
     if (this.isHTMLViewer) {
@@ -120,12 +123,26 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       }
       this.p5canvas = new p5((p: p5) => {
         p.setup = () => {
-          let iframe = p.createElement('iframe');
-          iframe.elt.src = this.FileURL;
-          iframe.style('width', '100%');
-          iframe.style('height', '100%');
-          iframe.style('border', '0');
-          iframe.parent(this.canvasDiv);
+          switch (this.FileInfo.file_ext) {
+            case 'html': {
+              let iframe = p.createElement('iframe');
+              iframe.elt.src = this.FileURL;
+              iframe.style('width', '100%');
+              iframe.style('height', '100%');
+              iframe.style('border', '0');
+              iframe.parent(this.canvasDiv);
+            } break;
+            case 'md':
+            case 'markdown': {
+              let div = p.createDiv();
+              div.style('width', '100%');
+              div.style('height', '100%');
+              div.style('padding', '16px');
+              let markdown_readable = marked.parse(this.p5TextArea.textContent);
+              div.elt.innerHTML = markdown_readable;
+              div.parent(this.canvasDiv);
+            } break;
+          }
         }
       });
     } else this.ChangeToAnother(0);
@@ -235,7 +252,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.ContentOnLoad = false;
     this.ContentFailedLoad = true;
     this.isTextEditMode = false;
-    this.isHTML = false;
+    this.isConvertible = false;
     this.isHTMLViewer = false;
     this.MessageInfo = msg;
     this.CurrentViewId = this.MessageInfo.message_id;
@@ -937,7 +954,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       case 'code':
       case 'text': // 텍스트 파일
         this.showEditText = !Boolean(this.navParams.noTextEdit);
-        this.isHTML = this.FileInfo.file_ext?.toLowerCase() == 'html';
+        let ext_lower = this.FileInfo.file_ext?.toLowerCase();
+        this.isConvertible = ext_lower == 'html' || ext_lower == 'markdown' || ext_lower == 'md';
         this.p5canvas = new p5((p: p5) => {
           p.setup = () => {
             p.noCanvas();

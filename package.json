@@ -42,6 +42,7 @@
     "highlight.js": "^11.9.0",
     "ionicons": "^7.4.0",
     "jetifier": "^2.0.0",
+    "marked": "^14.1.3",
     "p5": "^1.9.2",
     "qrcode-svg": "^1.1.0",
     "rxjs": "~7.8.0",

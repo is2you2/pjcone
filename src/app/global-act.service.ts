@@ -645,6 +645,7 @@ export class GlobalActService {
       case 'scss':
       case 'pl': // Perl
       case 'md': // 마크다운
+      case 'markdown': // 마크다운
       case 'prop': // 설정 파일
       case 'properties': // 설정 파일
       case 'json': // 코드는 아니지만 구문 강조가 있으면 좋음
