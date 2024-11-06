@@ -144,6 +144,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             } break;
           }
         }
+        p.keyPressed = (ev: any) => {
+          if (ev['code'] == 'Escape')
+            this.navCtrl.pop();
+        }
       });
     } else this.ChangeToAnother(0);
   }
