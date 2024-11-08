@@ -501,6 +501,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
       loading.present();
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
+        loading.message = `${this.lang.text['TodoDetail']['WIP']}: ${this.userInput.attach[i].filename}`;
         try {
           if (this.userInput.remote) {
             try {
