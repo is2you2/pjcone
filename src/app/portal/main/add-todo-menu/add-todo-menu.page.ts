@@ -1374,9 +1374,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         attach_changed = true;
       }
     }
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+    loading.present();
     if (has_attach && attach_changed) { // 첨부된 파일이 있다면
-      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-      loading.present();
       if (received_json) { // 진입시 받은 정보가 있다면 수정 전 내용임
         try {
           let path: string;
@@ -1483,7 +1483,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           });
         });
       }
-      loading.dismiss();
     }
     if (!has_attach && attach_changed) { // 첨부된게 전혀 없다면 모든 이미지 삭제
       if (received_json) { // 진입시 받은 정보가 있다면 수정 전 내용임
@@ -1523,8 +1522,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.userInput.remote.creator_id = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id;
     }
     if (this.userInput.remote) { // 서버에 저장한다면
-      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-      loading.present();
       try {
         this.userInput.attach.forEach(file => {
           URL.revokeObjectURL(file['thumbnail']);
@@ -1572,7 +1569,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               targetname = `${this.userInput.id}_${this.userInput.remote.creator_id}`;
             } catch (e) { }
             let savedAddress = await this.global.upload_file_to_storage(this.userInput.attach[i],
-              { user_id: targetname, apache_port: server_info['apache_port'], cdn_port: server_info['cdn_port'] }, protocol, address, this.useFirstCustomCDN == 1);
+              { user_id: targetname, apache_port: server_info['apache_port'], cdn_port: server_info['cdn_port'] }, protocol, address, this.useFirstCustomCDN == 1, loading);
             let isURL = Boolean(savedAddress);
             if (!isURL) throw '링크 만들기 실패';
             delete this.userInput.attach[i]['size'];
@@ -1635,10 +1632,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           });
         if (!this.isModify)
           await this.nakama.updateRemoteCounter(this.userInput.remote.isOfficial, this.userInput.remote.target);
-        loading.dismiss();
       } catch (e) {
         console.error('해야할 일이 서버에 전송되지 않음: ', e);
-        loading.dismiss();
         // 기존 할 일을 수정하다가 오류가 났다면 로컬에 변경사항을 저장
         if (this.isModify) {
           this.p5toast.show({
@@ -1662,6 +1657,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         return;
       }
     }
+    loading.dismiss();
     this.userInput['is_me'] = true;
     if (this.global.p5todoAddtodo)
       this.global.p5todoAddtodo(JSON.stringify(this.userInput));
