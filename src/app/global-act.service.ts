@@ -749,7 +749,7 @@ export class GlobalActService {
       innerLoading.message = this.lang.text['GlobalAct']['CancelingUpload'];
       console.warn('cdn 파일 업로드 단계 실패:', e);
     }
-    innerLoading.dismiss();
+    if (!loading) innerLoading.dismiss();
     return Catched ? CatchedAddress : undefined;
   }
 

@@ -1226,7 +1226,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     loading.present();
     for (let i = 0, j = Drops.length; i < j; i++) {
       await this.selected_blobFile_callback_act(Drops[i].file);
-      await this.send();
+      await this.send(undefined, loading);
     }
     loading.dismiss();
     setTimeout(() => {
@@ -1998,7 +1998,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   block_send = false;
-  async send(with_key = false) {
+  async send(with_key = false, loading?: HTMLIonLoadingElement) {
     if (with_key && (isPlatform == 'Android' || isPlatform == 'iOS')) return;
     this.userInputTextArea.focus();
     if (!this.userInput.text.trim() && !this.userInput['file'])
@@ -2090,7 +2090,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`;
         let server_info = this.nakama.servers[this.isOfficial][this.target].info;
         let savedAddress = await this.global.upload_file_to_storage(this.userInput.file,
-          { user_id: targetname, apache_port: server_info.apache_port, cdn_port: server_info.cdn_port }, protocol, address, this.useFirstCustomCDN == 1);
+          { user_id: targetname, apache_port: server_info.apache_port, cdn_port: server_info.cdn_port }, protocol, address, this.useFirstCustomCDN == 1, loading);
         isURL = Boolean(savedAddress);
         if (!isURL) throw '링크 만들기 실패';
         delete result['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
