@@ -497,10 +497,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     } catch (e) {
       has_thumbnail = await this.indexed.checkIfFileExist(`todo/${this.userInput.id}/thumbnail.png`);
     }
-    if (this.userInput.attach.length)
+    if (this.userInput.attach.length) {
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      loading.present();
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
-        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-        loading.present();
         try {
           if (this.userInput.remote) {
             try {
@@ -559,18 +559,16 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           } else if (this.userInput.attach[i].viewer == 'image' || this.userInput.attach[i].viewer == 'text')
             this.userInput.attach[i].blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
           else throw '번외 썸네일 필요';
-          if (!this.userInput.attach[i].blob) {
-            loading.dismiss();
-            continue;
-          }
+          if (!this.userInput.attach[i].blob) continue;
           let url = URL.createObjectURL(this.userInput.attach[i].blob);
           this.global.modulate_thumbnail(this.userInput.attach[i], url, this.cont);
         } catch (e) {
           this.global.modulate_thumbnail(this.userInput.attach[i], '', this.cont);
         }
-        loading.dismiss();
         this.userInput.attach[i]['exist'] = true;
       }
+      loading.dismiss();
+    }
     // 저장소 표기 적용
     try {
       if (this.userInput.storeAt == 'local') {
