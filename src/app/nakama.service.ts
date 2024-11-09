@@ -4318,14 +4318,12 @@ export class NakamaService {
       }
     }
     if (init['voidDraw']) {
-      if (window.location.protocol == 'http:') { // 보안 연결이 아닐 때에만 동작
-        let sep = init['voidDraw'][0].split(',');
-        json.push({
-          type: 'voidDraw',
-          address: sep[0],
-          channel: sep[1],
-        });
-      }
+      let sep = init['voidDraw'][0].split(',');
+      json.push({
+        type: 'voidDraw',
+        address: sep[0],
+        channel: sep[1],
+      });
     }
     if (init['postViewer']) {
       json.push({
