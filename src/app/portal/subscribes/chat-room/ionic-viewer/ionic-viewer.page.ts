@@ -307,6 +307,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 터치 상호작용 보완용 */
   ContentChanging = false;
+  /** 첨부파일 종류별 전환시 하려는 추가행동 */
+  ChangeToAnotherAdditionalAct: Function;
   async ChangeToAnother(direction: number) {
     if (this.ContentChanging) return;
     this.ContentChanging = true;
@@ -315,6 +317,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       this.ContentChanging = false;
       return;
     }
+    if (this.ChangeToAnotherAdditionalAct)
+      this.ChangeToAnotherAdditionalAct();
+    this.ChangeToAnotherAdditionalAct = null;
     this.RelevanceIndex = tmp_calced;
     this.FileInfo = { file_ext: '' };
     await this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
@@ -493,10 +498,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       }
     }
     this.forceWrite = false;
+    this.RemoveP5Relative();
     await new Promise((done) => setTimeout(done, 0));
     this.canvasDiv = document.getElementById('content_viewer_canvas');
     if (this.canvasDiv) this.canvasDiv.style.backgroundImage = '';
-    this.RemoveP5Relative();
     if (!this.WaitingLoaded) return;
     // 경우에 따라 로딩하는 캔버스를 구분
     switch (this.FileInfo['viewer']) {
@@ -743,7 +748,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               p.noCanvas();
               p.noLoop();
             }
+            let cacheURL = this.FileURL;
             mediaObject = p.createAudio([this.FileURL], () => {
+              if (cacheURL != this.FileURL) {
+                p.remove();
+                return;
+              }
               mediaObject['elt'].setAttribute('style', 'position: absolute; top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%); width: 100%');
               let audioElements = document.querySelectorAll('audio');
               for (let i = 0, j = audioElements.length; i < j; i++)
@@ -752,9 +762,16 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               if (isSafePage) {
                 fft = new p5.FFT();
                 gainNode = new p5.Gain();
-                gainNode.connect(null);
                 gainNode.amp(0);
                 p.loadSound(this.FileURL, v => {
+                  if (cacheURL != this.FileURL) {
+                    p.remove();
+                    return;
+                  }
+                  this.ChangeToAnotherAdditionalAct = () => {
+                    sound.disconnect();
+                    gainNode.disconnect();
+                  }
                   sound = v;
                   this.ContentOnLoad = true;
                   this.ContentFailedLoad = false;
@@ -912,7 +929,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           p.setup = () => {
             p.noCanvas();
             p.noLoop();
+            let cacheURL = this.FileURL;
             mediaObject = p.createVideo([this.FileURL], () => {
+              if (cacheURL != this.FileURL) {
+                p.remove();
+                return;
+              }
               let videoElements = document.querySelectorAll('video');
               for (let i = 0, j = videoElements.length; i < j; i++)
                 if (videoElements[i] != mediaObject.elt)
