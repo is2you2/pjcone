@@ -279,7 +279,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     if (this.FileInfo.url) {
       this.CreateContentInfo();
       this.NeedDownloadFile = false;
-      this.init_viewer();
+      await this.init_viewer();
     } else {
       let path = this.FileInfo['alt_path'] || this.FileInfo['path'] ||
         `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
@@ -288,7 +288,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       try {
         this.blob = await this.indexed.loadBlobFromUserPath(path, this.FileInfo['type']);
         this.CreateContentInfo();
-        this.init_viewer();
+        await this.init_viewer();
       } catch (e) {
         this.FileURL = null;
         this.blob = null;
@@ -307,7 +307,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 터치 상호작용 보완용 */
   ContentChanging = false;
-  ChangeToAnother(direction: number) {
+  async ChangeToAnother(direction: number) {
     if (this.ContentChanging) return;
     this.ContentChanging = true;
     let tmp_calced = this.RelevanceIndex + direction;
@@ -317,7 +317,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     }
     this.RelevanceIndex = tmp_calced;
     this.FileInfo = { file_ext: '' };
-    this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
+    await this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
     this.ContentChanging = false;
   }
 
@@ -1462,7 +1462,30 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       const highlightedCode = hljs.highlight(getText, { language: this.FileInfo.file_ext });
       hljs.unregisterLanguage(this.FileInfo.file_ext);
       let highlighted = highlightedCode.value;
-      let line = p.createDiv(highlighted);
+      let line = p.createDiv();
+      let updateTextInChunks = (text, chunkSize = 1000) => {
+        let index = 0;
+        const div = line.elt;
+        let insertChunk = () => {
+          const chunk = text.slice(index, index + chunkSize);
+          div.innerHTML += chunk;  // 텍스트를 계속 추가
+          index += chunkSize;
+
+          // 다음 덩어리를 삽입
+          if (index < 100000) {
+            if (!this.PageWillDestroy && !this.ContentChanging) {
+              // 비동기적으로 처리
+              if (index < text.length) {
+                requestAnimationFrame(insertChunk);
+              } else div.innerHTML = highlighted;
+            }
+          } else {
+            div.innerHTML = highlighted;
+          }
+        }
+        insertChunk();
+      }
+      updateTextInChunks(getText);
       line.id('ionic_viewer_text_content');
       line.style('white-space', 'pre-wrap');
       line.parent(this.p5SyntaxHighlightReader);
