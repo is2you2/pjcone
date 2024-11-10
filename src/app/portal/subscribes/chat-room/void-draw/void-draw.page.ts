@@ -986,6 +986,13 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   /** 원격 추가 버튼 눌릴 때 */
   ClickRemoteAddButton() {
+    if (this.IceWebRTCWsClient) {
+      this.isDrawServerCreated = true;
+      this.global.StoreShortCutAct('voiddraw-remote');
+      this.p5SetDrawable(false);
+      this.AddrQRShare.present();
+      return;
+    }
     if (this.isDrawServerCreated) return;
     // 웹 페이지에서는 모바일로 연결할 수 있도록 인터페이스 준비
     this.ServerList = this.nakama.get_all_online_server();
@@ -1131,6 +1138,11 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         uuid = json['uid'];
       } else if (uuid == json['uid']) return;
       switch (json.type) {
+        // 상대방 연결이 끊어지는게 확인되면 나도 연결 끊기
+        case 'leave':
+          this.RemoteLoadingCtrl.dismiss();
+          this.IceWebRTCWsClient.close();
+          break;
         // 채널 아이디 생성 후 수신
         case 'init_id':
           this.QRNavParams = {
@@ -1253,11 +1265,11 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     this.IceWebRTCWsClient.onerror = (e) => {
       console.log('그림판 기능 공유 연결 오류: ', e);
       this.IceWebRTCWsClient.close();
-      this.p5toast.show({
-        text: `${this.lang.text['TodoDetail']['Disconnected']}: ${e}`,
-      });
     }
     this.IceWebRTCWsClient.onclose = () => {
+      this.p5toast.show({
+        text: this.lang.text['TodoDetail']['Disconnected'],
+      });
       this.AddrQRShare.dismiss();
       this.isDrawServerCreated = false;
       this.webrtc.close_webrtc(false);
@@ -1265,6 +1277,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       this.IceWebRTCWsClient.onclose = null;
       this.IceWebRTCWsClient.onmessage = null;
       this.IceWebRTCWsClient.onerror = null;
+      this.IceWebRTCWsClient = null;
     }
   }
 
