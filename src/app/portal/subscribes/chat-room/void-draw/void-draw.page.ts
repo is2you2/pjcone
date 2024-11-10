@@ -984,12 +984,19 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     });
   }
 
+  /** 상대방과 연결되어있는지 여부 */
+  HasConnectedPeer = false;
   /** 원격 추가 버튼 눌릴 때 */
   ClickRemoteAddButton() {
     if (this.IceWebRTCWsClient) {
       this.isDrawServerCreated = true;
       this.global.StoreShortCutAct('voiddraw-remote');
       this.p5SetDrawable(false);
+      this.AddrQRShare.onDidDismiss().then(() => {
+        this.isDrawServerCreated = false;
+        this.global.RestoreShortCutAct('voiddraw-remote');
+        if (!this.HasConnectedPeer) this.p5SetDrawable(true);
+      });
       this.AddrQRShare.present();
       return;
     }
@@ -1044,7 +1051,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                 this.CreateOnMessageLink();
                 this.CreateOnOpenAct(false, async () => {
                   let crop_pos = this.p5getCropPos();
-                  this.nakama.VoidDrawInitCallBack = null;
                   await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
                   this.IceWebRTCWsClient.send(JSON.stringify({
                     type: 'size',
@@ -1079,7 +1085,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         this.CreateOnMessageLink();
         this.CreateOnOpenAct(false, async () => {
           let crop_pos = this.p5getCropPos();
-          this.nakama.VoidDrawInitCallBack = null;
           await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
           this.IceWebRTCWsClient.send(JSON.stringify({
             type: 'size',
@@ -1138,8 +1143,14 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         uuid = json['uid'];
       } else if (uuid == json['uid']) return;
       switch (json.type) {
+        case 'join':
+          this.HasConnectedPeer = true;
+          this.p5SetDrawable(false);
+          break;
         // 상대방 연결이 끊어지는게 확인되면 나도 연결 끊기
         case 'leave':
+          this.HasConnectedPeer = false;
+          this.p5SetDrawable(true);
           this.RemoteLoadingCtrl.dismiss();
           this.IceWebRTCWsClient.close();
           break;
@@ -1153,7 +1164,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           this.AddrQRShare.onDidDismiss().then(() => {
             this.isDrawServerCreated = false;
             this.global.RestoreShortCutAct('voiddraw-remote');
-            this.p5SetDrawable(true);
+            if (!this.HasConnectedPeer) this.p5SetDrawable(true);
           });
           this.global.StoreShortCutAct('voiddraw-remote');
           this.p5SetDrawable(false);
@@ -1165,14 +1176,11 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           channel_id = json.id;
           break;
         case 'init_req':
-          this.p5SetDrawable(false);
           this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Init'];
           this.webrtc.initialize('data')
             .then(async () => {
               this.CreateOnMessageLink();
-              this.CreateOnOpenAct(false, async () => {
-                this.nakama.VoidDrawInitCallBack = null;
-              });
+              this.CreateOnOpenAct(false);
               this.webrtc.CreateOffer();
               await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
               this.IceWebRTCWsClient.send(JSON.stringify({
@@ -1242,7 +1250,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             height: json.height,
           });
           this.p5setCropPos(json.cropX, json.cropY);
-          this.p5SetDrawable(false);
           this.p5voidDraw['redraw']();
           this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Init'];
           // 그림판이 준비되었다면 WebRTC 구성을 시도
@@ -1384,7 +1391,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       this.p5toast.show({
         text: this.lang.text['TodoDetail']['Disconnected'],
       });
-      this.nakama.VoidDrawInitCallBack = null;
     }
   }
 

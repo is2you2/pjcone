@@ -67,8 +67,6 @@ export enum MatchOpCode {
   WEBRTC_RECEIVED_CALL_SELF = 25,
   /** 통화 종료함 */
   WEBRTC_HANGUP = 30,
-  /** 그림판 기능 공유 초기 동작용 */
-  VOIDDRAW_INIT = 40,
   /** 사용자 프로필 변경됨 */
   USER_PROFILE_CHANGED = 100,
   /** 사용자 프로필 사진 변경됨 */
@@ -2808,14 +2806,7 @@ export class NakamaService {
               let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
               if (((this.WebRTCService && this.WebRTCService.TypeIn == 'data') || !is_me) && this.WebRTCService) {
                 await this.WebRTCService.close_webrtc();
-                this.VoidDrawInitCallBack = null;
               }
-            }
-              break;
-            case MatchOpCode.VOIDDRAW_INIT: {
-              let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
-              if (((this.WebRTCService && this.WebRTCService.TypeIn == 'data') || !is_me) && this.WebRTCService)
-                if (this.VoidDrawInitCallBack) this.VoidDrawInitCallBack(JSON.parse(m['data_str']));
             }
               break;
             default:
@@ -2842,8 +2833,6 @@ export class NakamaService {
         callback(socket);
       });
   }
-  /** 그림판 기능 공유시 초기 행동 유도 */
-  VoidDrawInitCallBack: Function;
 
   /** 소켓 닫힐 때 행동 */
   OnSocketDisconnect(_is_official: string, _target: string) {
