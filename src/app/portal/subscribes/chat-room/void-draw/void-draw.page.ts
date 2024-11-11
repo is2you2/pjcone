@@ -195,6 +195,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       let strokeWeight = Math.min(initData['width'], initData['height']) / 100;
       let strokeRatio = 1;
       let change_checkmark: Function;
+      /** 붓질 기록 최대 길이 제한 */
+      const MAX_HISTORY_LEN = 20;
       const PIXEL_DENSITY = 1;
       p.setup = async () => {
         p5ColorPicker.style('position', 'absolute');
@@ -464,16 +466,22 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             ImageCanvas.image(this.p5BaseImage, 0, 0);
             ImageCanvas.redraw();
             URL.revokeObjectURL(FileURL);
-            this.p5SetCanvasViewportInit();
+            setTimeout(() => {
+              this.p5SetCanvasViewportInit();
+            }, 100);
           }, e => {
             console.error('그림판 배경 이미지 불러오기 오류: ', e);
             ImageCanvas.redraw();
             URL.revokeObjectURL(FileURL);
-            this.p5SetCanvasViewportInit();
+            setTimeout(() => {
+              this.p5SetCanvasViewportInit();
+            }, 100);
           });
         } else {
           ImageCanvas.redraw();
-          this.p5SetCanvasViewportInit();
+          setTimeout(() => {
+            this.p5SetCanvasViewportInit();
+          }, 100);
         }
         if (initData['width'] < initData['height'])
           strokeWeight = strokeWeight / CamScale;
@@ -973,7 +981,12 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         this.p5DrawingStack.length = HistoryPointer;
         if (CurrentDraw) {
           this.p5DrawingStack.push(CurrentDraw);
-          updateDrawingCurve(ActualCanvas, CurrentDraw);
+          // 붓 기억 길이를 초과하면 배경에 포함시켜버림
+          if (this.p5DrawingStack.length > MAX_HISTORY_LEN) {
+            let oldStack = this.p5DrawingStack.shift();
+            updateDrawingCurve(ImageCanvas, oldStack);
+            updateActualCanvas();
+          } else updateDrawingCurve(ActualCanvas, CurrentDraw);
         }
         HistoryPointer = this.p5DrawingStack.length;
         MovementStartPosition = null;
