@@ -522,6 +522,10 @@ export class WebrtcService {
 
     this.PeerConnection.onicecandidate = (ev) => this.handleConnection(ev);
 
+    this.PeerConnection.oniceconnectionstatechange = (ev) => {
+      console.log('ICE Connection state: ', this.PeerConnection.iceConnectionState);
+    };
+
     this.PeerConnection.onconnectionstatechange = async (ev: any) => {
       switch (ev.target.connectionState) {
         case 'failed': // 실패
@@ -783,6 +787,7 @@ export class WebrtcService {
     if (this.PeerConnection) {
       this.PeerConnection.close();
       this.PeerConnection.onicecandidate = null;
+      this.PeerConnection.oniceconnectionstatechange = null;
       this.PeerConnection.onconnectionstatechange = null;
       this.PeerConnection.ontrack = null;
       this.PeerConnection.ondatachannel = null;

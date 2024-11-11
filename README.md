@@ -88,13 +88,6 @@ angular.json 파일의 40번째 줄에 BaseHref 인자를 추가하기 ("/pjcone
 - 12: 사설 그룹채팅
 - 13: EngineWorksPPT
 
-## Nodejs 서버 포트
-- 12000: 페이지 서버
-
-### 모바일 사설 서버 포트
-- 12011: 홈페이지 랜챗 서버 (사용 안함)
-- 12012: 원격 그리기 행동처리
-
 ## Code License
 MIT
 
