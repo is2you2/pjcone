@@ -79,7 +79,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       this.p5SyntaxHighlightReader = null;
     }
     if (this.p5canvas) {
-      this.p5canvas.remove();
+      try {
+        this.p5canvas.remove();
+      } catch (e) { }
       this.p5canvas = null;
     }
   }
