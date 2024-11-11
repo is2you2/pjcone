@@ -714,8 +714,7 @@ export class MainPage implements OnInit {
         /** 완료된 할 일로 처리 */
         async makeDone() {
           this.LifeTime = 1;
-          const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
-          await delay(500);
+          await new Promise((done) => setTimeout(done, 500));
           this.Velocity = VECTOR_ZERO.copy();
           this.Accel = VECTOR_ZERO.copy();
           this.OriginalEllipseSize = this.EllipseSize;
