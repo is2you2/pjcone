@@ -1271,7 +1271,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           this.webrtc.initialize('data')
             .then(() => {
               this.webrtc.HangUpCallBack = () => {
-                this.IceWebRTCWsClient.close();
+                if (this.IceWebRTCWsClient)
+                  this.IceWebRTCWsClient.close();
               }
               this.CreateOnOpenAct();
               this.CreateOnMessageLink();
