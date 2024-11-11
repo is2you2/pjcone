@@ -317,8 +317,10 @@ export class SubscribesPage implements OnInit {
       contentWindow['scan_result'] = async (result: any) => {
         try {
           this.QRScanResult = result.text;
-          if (this.QRScanResult)
-            await this.nakama.open_url_link(this.QRScanResult, false);
+          if (this.QRScanResult) {
+            let result = await this.nakama.open_url_link(this.QRScanResult, false);
+            if (result) this.InAppQRScanner.dismiss();
+          }
         } catch (e) {
           console.log('QR스캔 실패: ', e);
         }

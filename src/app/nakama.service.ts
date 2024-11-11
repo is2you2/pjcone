@@ -693,6 +693,9 @@ export class NakamaService {
     }
     if (!isExist) savedWebRTCData.push(info);
     await this.indexed.saveTextFileToUserPath(JSON.stringify(savedWebRTCData), 'servers/webrtc_server.json');
+    this.p5toast.show({
+      text: this.lang.text['Nakama']['SaveWebRTCServer'],
+    });
     return isExist;
   }
 
@@ -4209,7 +4212,9 @@ export class NakamaService {
     } catch (e) { }
   }
 
-  /** 주소를 검토하여 앱 행동을 하거나 링크 열기 */
+  /** 주소를 검토하여 앱 행동을 하거나 링크 열기
+   * @returns 빠른 진입 행동에 성공하면 true 반환
+   */
   async open_url_link(url: string, open_link = true) {
     let address = this.global.GetConnectedAddress();
     // 근데 주소가 메인 주소라면 QR행동으로 처리하기
@@ -4217,6 +4222,7 @@ export class NakamaService {
       let init = this.global.CatchGETs(url) || {};
       try {
         await this.AddressToQRCodeAct(init);
+        return true;
       } catch (e) {
         console.log('open_url_link: ', e);
         this.p5toast.show({
@@ -4422,11 +4428,7 @@ export class NakamaService {
         }
           break;
         case 'rtcserver':
-          let ServerInfos = [];
-          let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json');
-          ServerInfos = JSON.parse(list);
-          ServerInfos.push(json[i].value);
-          await this.indexed.saveTextFileToUserPath(JSON.stringify(ServerInfos), 'servers/webrtc_server.json');
+          this.SaveWebRTCServer(json[i].value);
           break;
         case 'voidDraw':
           this.global.PageDismissAct['voiddraw-remote'] = () => {

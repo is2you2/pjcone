@@ -469,6 +469,7 @@ AddChannelFailed_Code3,사용자 삭제됨,User deleted
 FailedUpload,업로드 실패,Failed to upload
 FailedDownload,다운로드 실패,Failed to download
 FailedToAddGroup,그룹 추가 실패,Failed to add group
+SaveWebRTCServer,WebRTC 서버 정보가 저장되었습니다,WebRTC server information has been saved
 GroupAllListDone,없는 그룹 정보,There is no group
 GroupAlreadyJoined,이미 참가한 그룹,Already joined group
 SessionLogout,로그아웃됨,Logged out
