@@ -1354,6 +1354,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         case 'background': // 그림판에 있는 배경그림 동기화
           switch (json.act) {
             case 'part':
+              this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_ShareBG'];
               this.RemoteBackgroundImage += json['data'];
               break;
             case 'EOF':
@@ -1369,6 +1370,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                 this.p5SetCanvasViewportInit();
                 this.RemoteBackgroundImage = '';
               });
+              this.RemoteLoadingCtrl.dismiss();
               break;
           }
           break;
