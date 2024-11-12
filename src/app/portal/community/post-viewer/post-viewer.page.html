@@ -38,10 +38,7 @@
       </div>
     </ng-template>
   </ion-modal>
-</ion-content>
-
-<ion-footer *ngIf="isOwner && CurrentIndex >= 0">
-  <table style="width: 100%; background-color: black;">
+  <table *ngIf="isOwner && CurrentIndex >= 0" style="width: 100%; background-color: black;">
     <tr>
       <td>
         <ion-button expand="block" (click)="EditPost()">
@@ -55,4 +52,4 @@
       </td>
     </tr>
   </table>
-</ion-footer>
+</ion-content>
