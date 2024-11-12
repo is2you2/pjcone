@@ -325,6 +325,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   } catch (e) {
                     console.log('게시물 image 첨부파일 불러오기 오류: ', e);
                   }
+                  let pimg = p.createP();
                   let img = p.createImg(FileURL, `${index}`);
                   img.style('cursor', 'pointer');
                   img.elt.onclick = () => {
@@ -344,7 +345,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       dismiss: 'post-viewer-image-view',
                     });
                   }
-                  content[i] = img;
+                  img.parent(pimg);
+                  content[i] = pimg;
                 }
                   break;
                 case 'audio': {
@@ -355,6 +357,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   } catch (e) {
                     console.log('게시물 audio 첨부파일 불러오기 오류: ', e);
                   }
+                  let paudio = p.createP();
                   let audio = p.createAudio([FileURL]);
                   audio.showControls();
                   audio.elt.onplay = () => {
@@ -364,7 +367,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
                           this.PlayableElements[i].pause();
                       } catch (e) { }
                   }
-                  content[i] = audio;
+                  audio.parent(paudio);
+                  content[i] = paudio;
                   this.PlayableElements[index] = audio.elt;
                 }
                   break;
@@ -376,11 +380,13 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   } catch (e) {
                     console.log('게시물 video 첨부파일 불러오기 오류: ', e);
                   }
+                  let pvideo = p.createP();
                   let video = p.createVideo([FileURL]);
                   video.style('width', '100%');
                   video.style('height', 'auto');
                   video.showControls();
-                  content[i] = video;
+                  video.parent(pvideo);
+                  content[i] = pvideo;
                   this.PlayableElements[index] = video.elt;
                 }
                   break;
