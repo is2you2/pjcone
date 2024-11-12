@@ -254,11 +254,11 @@ export class NakamaService {
 
   /** 할 일이 열린 상태에서 다른 할 일 열람시 행동 */
   AddTodoLinkAct: Function;
-  open_add_todo_page(info: string = '') {
+  open_add_todo_page(info: string = '', navTarget = 'add-todo-menu') {
     if (this.AddTodoLinkAct)
       this.AddTodoLinkAct(info);
     else this.global.RemoveAllModals(() => {
-      this.navCtrl.navigateForward('add-todo-menu', {
+      this.navCtrl.navigateForward(navTarget, {
         animation: mdTransitionAnimation,
         state: {
           data: info,
