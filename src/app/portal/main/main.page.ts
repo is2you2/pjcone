@@ -210,8 +210,7 @@ export class MainPage implements OnInit {
         // 캔버스 멈추기
         this.global.p5todoStopCanvas = () => {
           BlockInput = true;
-          if (!this.isPlayingCanvas.loop)
-            p.noLoop();
+          p.noLoop();
         }
         // 캔버스 계속 사용
         this.global.p5todoPlayCanvas = () => {
