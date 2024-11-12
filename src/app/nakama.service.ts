@@ -425,9 +425,9 @@ export class NakamaService {
   }
 
   /** 게시글 읽기 */
-  open_post(info: any, index: number) {
+  open_post(info: any, index: number, navTarget = 'post-viewer') {
     this.global.RemoveAllModals(() => {
-      this.navCtrl.navigateForward('post-viewer', {
+      this.navCtrl.navigateForward(navTarget, {
         animation: mdTransitionAnimation,
         state: {
           data: info,

@@ -10,7 +10,11 @@ const routes: Routes = [
   },
   {
     path: 'add-post',
-    loadChildren: () => import('./add-post/add-post.module').then( m => m.AddPostPageModule)
+    loadChildren: () => import('./add-post/add-post.module').then(m => m.AddPostPageModule)
+  },
+  {
+    path: 'post-viewer',
+    loadChildren: () => import('./post-viewer/post-viewer.module').then(m => m.PostViewerPageModule)
   },
 ];
 
@@ -18,4 +22,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class CommunityPageRoutingModule {}
+export class CommunityPageRoutingModule { }

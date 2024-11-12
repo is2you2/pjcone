@@ -46,6 +46,7 @@ export class CommunityPage implements OnInit {
   async ionViewDidEnter() {
     this.try_add_shortcut();
     this.is_loadable = true;
+    this.forceBlockLoadable = false;
     await this.nakama.load_posts_counter();
     this.nakama.has_new_post = false;
     await this.load_post_cycles();
@@ -63,13 +64,20 @@ export class CommunityPage implements OnInit {
     }
   }
 
+  forceBlockLoadable = false;
+  /** 게시물 열기 */
+  open_post(post: any, index: number) {
+    this.forceBlockLoadable = true;
+    this.nakama.open_post(post, index, 'portal/community/post-viewer');
+  }
+
   ContentScroll: HTMLDivElement;
   ContentDiv: HTMLDivElement;
   /** 스크롤이 생성되지 않았다면 계속해서 게시물 업데이트  
    * 또는 스크롤이 최하단인 경우 업데이트
    */
   async load_post_cycles() {
-    if (this.is_loadable)
+    if (!this.forceBlockLoadable && this.is_loadable)
       await this.load_posts();
     setTimeout(() => {
       try {
@@ -169,7 +177,7 @@ export class CommunityPage implements OnInit {
     if (this.global.p5KeyShortCut) {
       this.global.p5KeyShortCut['Digit'] = (index: number) => {
         if (this.nakama.posts.length > index)
-          this.nakama.open_post(this.nakama.posts[index], index);
+          this.open_post(this.nakama.posts[index], index);
         else this.add_post();
       };
     }
