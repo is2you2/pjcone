@@ -16,8 +16,10 @@ enum TodoFilterCategory {
   Importance = 1,
   /** 색상에 따라 필터링 */
   Color = 2,
+  /** 기한에 따라 */
+  Deadline = 3,
   /** 생성자에 따라 필터링 */
-  Creator = 3,
+  Creator = 4,
 }
 
 @Component({
@@ -67,7 +69,7 @@ export class MainPage implements OnInit {
   AllCategories = {}
   /** 필터 종류 변경하기 */
   SwitchTargetFilter(force?: number) {
-    this.TargetFilterName = force ?? ((this.TargetFilterName + 1) % 4);
+    this.TargetFilterName = force ?? ((this.TargetFilterName + 1) % 5);
     switch (this.TargetFilterName) {
       case TodoFilterCategory.None:
         this.TargetFilterDisplayName = 'FilterCat_0';
@@ -77,6 +79,9 @@ export class MainPage implements OnInit {
         break;
       case TodoFilterCategory.Color:
         this.TargetFilterDisplayName = 'CustomColor';
+        break;
+      case TodoFilterCategory.Deadline:
+        this.TargetFilterDisplayName = 'Deadline';
         break;
       case TodoFilterCategory.Creator:
         this.TargetFilterDisplayName = 'FilterByCreator';
@@ -321,6 +326,19 @@ export class MainPage implements OnInit {
           color: '#ff00ff88',
           value: [270, 330],
         }];
+        this.AllCategories[TodoFilterCategory.Deadline] = [{
+          name: 'TimeBefore',
+          color: '#bbbbbb88',
+          value: 'before',
+        }, {
+          name: 'TimeIn',
+          color: '#00ff0088',
+          value: 'ontime',
+        }, {
+          name: 'TimeOut',
+          color: '#b9543788',
+          value: 'after',
+        }];
         this.AllCategories[TodoFilterCategory.Creator] = [{
           name: 'CreatorLocal',
           color: '#bbbbbb88',
@@ -398,6 +416,26 @@ export class MainPage implements OnInit {
                 }
               } else Todos[TodoKeys[i]].isHidden = false;
             }
+            break;
+          case TodoFilterCategory.Deadline: {
+            if (this.CurrentFilterValue) {
+              for (let i = 0, j = TodoKeys.length; i < j; i++) {
+                if (Todos[TodoKeys[i]].json.id == 'AddButton') {
+                  Todos[TodoKeys[i]].isHidden = false;
+                } else switch (this.CurrentFilterValue) {
+                  case 'before': // 기한 전
+                    Todos[TodoKeys[i]].isHidden = !(Todos[TodoKeys[i]].json['startFrom'] && Todos[TodoKeys[i]].json['startFrom'] > Date.now());
+                    break;
+                  case 'ontime': // 기한 내
+                    Todos[TodoKeys[i]].isHidden = !(((Todos[TodoKeys[i]].json['startFrom'] || 0) < Date.now()) && (Todos[TodoKeys[i]].json['limit'] || Todos[TodoKeys[i]].json['written']) > Date.now());
+                    break;
+                  case 'after': // 만료됨
+                    Todos[TodoKeys[i]].isHidden = !(Todos[TodoKeys[i]].json['limit'] && Todos[TodoKeys[i]].json['limit'] <= Date.now());
+                    break;
+                }
+              }
+            } else FilteringTodos(TodoFilterCategory.None);
+          }
             break;
           case TodoFilterCategory.Creator:
             if (this.CurrentFilterValue)
