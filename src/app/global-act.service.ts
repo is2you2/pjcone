@@ -717,7 +717,6 @@ export class GlobalActService {
       CatchedAddress = await this.try_upload_to_user_custom_fs(file, info.user_id, innerLoading);
     innerLoading.message = this.lang.text['GlobalAct']['CheckCdnServer'];
     let progress: any;
-    let cont = new AbortController();
     try { // 사설 연계 서버에 업로드 시도
       if (CatchedAddress) {
         Catched = true;
@@ -728,7 +727,7 @@ export class GlobalActService {
       let filename = file.override_name || `${info.user_id}_${upload_time}_${only_filename}.${file.file_ext}`;
       CatchedAddress = `${protocol}//${address}:${info.apache_port || 9002}/cdn/${filename}`;
       progress = setInterval(async () => {
-        let res = await fetch(`${protocol}//${address}:${info.cdn_port || 9001}/filesize/${filename}`, { method: "POST", signal: cont.signal });
+        let res = await fetch(`${protocol}//${address}:${info.cdn_port || 9001}/filesize/${filename}`, { method: "POST" });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
         innerLoading.message = `${file.filename}: ${progressPercent || 0}%`;
@@ -739,13 +738,11 @@ export class GlobalActService {
       let up_res = await fetch(`${protocol}//${address}:${info.cdn_port || 9001}/cdn/${filename}`, { method: "POST", body: formData });
       if (!up_res.ok) throw '업로드 단계에서 실패';
       clearInterval(progress);
-      cont.abort();
       let res = await fetch(CatchedAddress);
       if (res.ok) Catched = true;
       else throw '요청 실패';
     } catch (e) {
       clearInterval(progress);
-      cont.abort();
       innerLoading.message = this.lang.text['GlobalAct']['CancelingUpload'];
       console.warn('cdn 파일 업로드 단계 실패:', e);
     }
@@ -799,7 +796,6 @@ export class GlobalActService {
     if (!override_ffs_str)
       override_ffs_str = localStorage.getItem('fallback_fs');
     let progress: any;
-    let cont = new AbortController();
     try { // 사용자 지정 서버 업로드 시도 우선
       if (!override_ffs_str) throw '사용자 지정 서버 없음';
       let split_fullAddress = override_ffs_str.split('://');
@@ -810,7 +806,7 @@ export class GlobalActService {
       } else protocol = this.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
       CatchedAddress = `${protocol}//${address[0]}:${address[1] || 9002}/cdn/${filename}`;
       progress = setInterval(async () => {
-        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST", signal: cont.signal });
+        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST" });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
         if (loading) loading.message = `${file.filename}: ${progressPercent || 0}%`;
@@ -818,14 +814,12 @@ export class GlobalActService {
       let up_res = await fetch(`${protocol}//${address[0]}:9001/cdn/${filename}`, { method: "POST", body: formData });
       if (!up_res.ok) throw '업로드 단계에서 실패';
       clearInterval(progress);
-      cont.abort();
       let res = await fetch(CatchedAddress);
       if (!loading) innerLoading.dismiss();
       if (res.ok) return CatchedAddress;
       else throw '요청 실패';
     } catch (e) {
       clearInterval(progress);
-      cont.abort();
       if (!loading) innerLoading.dismiss();
       return undefined;
     }
@@ -1342,9 +1336,10 @@ export class GlobalActService {
       }
       let extract = `http://` + address.split('://')[1];
       let HasLocalPage = `${extract}:12000${window['sub_path']}`;
-      const cont = new AbortController();
+      let cont = new AbortController();
       const id = setTimeout(() => {
         cont.abort();
+        cont = null;
       }, 250);
       let res = await fetch(HasLocalPage, { signal: cont.signal });
       clearTimeout(id);

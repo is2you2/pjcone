@@ -52,6 +52,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   ) { }
   ngOnDestroy() {
     this.cont.abort();
+    this.cont = null;
     if (this.FilenameElement) {
       this.FilenameElement.onblur = null;
       this.FilenameElement.onfocus = null;

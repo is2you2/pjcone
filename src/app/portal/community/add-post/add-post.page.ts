@@ -42,6 +42,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.p5StartVoiceTimer = null;
     this.p5StopVoiceTimer = null;
     this.cont.abort();
+    this.cont = null;
     if (this.p5canvas) this.p5canvas.remove();
     delete this.nakama.StatusBarChangedCallback;
     if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
