@@ -1430,13 +1430,13 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   /** 사용하기를 누른 경우 */
   dismiss_draw() {
-    if (this.navParams.dismiss == 'voiddraw-remote') {
-      this.navCtrl.pop();
-      return;
-    }
     if (this.isCropMode)
       this.p5apply_crop();
     else {
+      if (this.navParams.dismiss == 'voiddraw-remote') {
+        this.navCtrl.pop();
+        return;
+      }
       this.mainLoading.present();
       this.WithoutSave = false;
       this.p5save_image();
