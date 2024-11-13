@@ -72,7 +72,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
 
   /** 연결 대상 선택 */
   SelectAddressTarget(ev: any) {
-    this.title.setTitle(this.lang.text['InstantCall']['Title']);
+    this.title.setTitle(`Project: ${this.lang.text['InstantCall']['Title']}`);
     this.Port = undefined;
     this.signalPort = undefined;
     switch (ev.detail.value) {
@@ -354,6 +354,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
   }
 
   ionViewWillLeave() {
+    this.title.setTitle('Project: Cone');
     this.PageOut = true;
     if (this.global.WaitingConnect || this.global.InitEnd) {
       let float_button = this.floatbutton.AddFloatButton('instant-call', 'call-outline');
