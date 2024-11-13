@@ -1058,15 +1058,12 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             placeholder: '(wss://)0.0.0.0(:0)',
           }, {
             type: 'text',
-            placeholder: this.lang.text['voidDraw']['CreateChannel'],
-          }, {
-            type: 'text',
             placeholder: 'rtcport:username:password',
           }],
           buttons: [{
             text: this.lang.text['voidDraw']['Confirm'],
             handler: (ev: any) => {
-              let sep = ev[2].split(':');
+              let sep = ev[1].split(':');
               this.Port = sep[0];
               this.username = sep[1];
               this.password = sep[2];
@@ -1075,17 +1072,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                 this.p5SetDrawable(false);
                 is_ws_on = true;
                 this.CreateOnMessageLink();
-                this.CreateOnOpenAct(async () => {
-                  let crop_pos = this.p5getCropPos();
-                  await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
-                  this.IceWebRTCWsClient.send(JSON.stringify({
-                    type: 'size',
-                    width: this.p5ActualCanvas.width,
-                    height: this.p5ActualCanvas.height,
-                    cropX: crop_pos.x,
-                    cropY: crop_pos.y,
-                  }));
-                });
                 this.CreateRemoteLocalClient(ev[0], ev[1]);
               } else this.p5toast.show({
                 text: this.lang.text['voidDraw']['InputAddress'],
@@ -1108,17 +1094,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         this.InputCustomAddress = `${target.info.useSSL ? 'wss' : 'ws'}://${target.info.address}`;
         this.p5SetDrawable(false);
         this.CreateOnMessageLink();
-        this.CreateOnOpenAct(async () => {
-          let crop_pos = this.p5getCropPos();
-          await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
-          this.IceWebRTCWsClient.send(JSON.stringify({
-            type: 'size',
-            width: this.p5ActualCanvas.width,
-            height: this.p5ActualCanvas.height,
-            cropX: crop_pos.x,
-            cropY: crop_pos.y,
-          }));
-        });
         this.CreateRemoteLocalClient(this.InputCustomAddress, ev[1], target.info);
         break;
     }
@@ -1199,6 +1174,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             this.QRNavParams = {
               address: _address,
               channel: json.id,
+              user_id: json.uid,
             };
             this.init_gen_qrcode();
             this.AddrQRShare.onDidDismiss().then(() => {
@@ -1341,31 +1317,38 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     }
   }
 
-  /** 상대 기기 배경 이미지 (base64 누적) */
-  RemoteBackgroundImage = '';
   /** WEBRTC 시작시 행동 등록 */
   CreateOnOpenAct(AlternativeAct = async () => { }) {
     this.webrtc.dataChannelOpenAct = async () => {
       this.ReadyToShareAct = true;
-      if (this.RemoteLoadingCtrl) this.RemoteLoadingCtrl.dismiss();
       this.p5ClearCurrentDraw();
       if (AlternativeAct) await AlternativeAct();
       this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_ShareBG'];
       // 그리기 선 전부 삭제하기
       if (this.navParams.path) { // 배경이미지 공유
         try {
+          let file_ext = this.navParams.path.split('.').pop();
           let blob = await this.indexed.loadBlobFromUserPath(this.navParams.path, '');
-          let base64 = await this.global.GetBase64ThroughFileReader(blob);
-          let part = base64.match(/(.{1,64})/g);
-          for (let i = 0, j = part.length; i < j; i++)
-            this.webrtc.dataChannel.send(JSON.stringify({
-              type: 'background',
-              act: 'part',
-              data: part[i],
-            }));
+          console.log(this.navParams);
+          console.log(blob);
+          console.log(this.InputCustomAddress);
+          let sep = this.InputCustomAddress.split('://');
+          let address = sep.pop();
+          let protocol = sep.shift();
+          if (protocol) {
+            protocol = protocol == 'wss' ? 'https:' : 'http:';
+          } else protocol = this.global.checkProtocolFromAddress(this.InputCustomAddress) ? 'https' : 'http';
+          let uploaded_address = await this.global.upload_file_to_storage({
+            blob: blob,
+            size: blob.size,
+            file_ext: file_ext,
+            filename: `voidDrawRemoveImage.${file_ext}`,
+          }, {
+            user_id: `square_${this.QRNavParams.channel}_${this.QRNavParams.user_id}`,
+          }, protocol, address, false, this.RemoteLoadingCtrl);
           this.webrtc.dataChannel.send(JSON.stringify({
             type: 'background',
-            act: 'EOF',
+            data: uploaded_address,
           }));
         } catch (e) {
           this.p5toast.show({
@@ -1389,27 +1372,17 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           this.p5voidDraw.redraw();
           break;
         case 'background': // 그림판에 있는 배경그림 동기화
-          switch (json.act) {
-            case 'part':
-              this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_ShareBG'];
-              this.RemoteBackgroundImage += json['data'];
-              break;
-            case 'EOF':
-              this.p5voidDraw.loadImage(this.RemoteBackgroundImage, v => {
-                this.p5BaseImage = v;
-                this.p5ImageCanvas.image(this.p5BaseImage, 0, 0);
-                this.p5ImageCanvas.redraw();
-                this.p5SetCanvasViewportInit();
-                this.RemoteBackgroundImage = '';
-              }, e => {
-                console.error('그림판 배경 이미지 불러오기 오류: ', e);
-                this.p5ImageCanvas.redraw();
-                this.p5SetCanvasViewportInit();
-                this.RemoteBackgroundImage = '';
-              });
-              this.RemoteLoadingCtrl.dismiss();
-              break;
-          }
+          this.p5voidDraw.loadImage(json['data'], v => {
+            this.p5BaseImage = v;
+            this.p5ImageCanvas.image(this.p5BaseImage, 0, 0);
+            this.p5ImageCanvas.redraw();
+            this.p5SetCanvasViewportInit();
+          }, e => {
+            console.error('그림판 배경 이미지 불러오기 오류: ', e);
+            this.p5ImageCanvas.redraw();
+            this.p5SetCanvasViewportInit();
+          });
+          this.RemoteLoadingCtrl.dismiss();
           break;
         case 'draw':
           switch (json.act) {
