@@ -176,11 +176,11 @@ export class NakamaService {
           name: sep[2],
           target: sep[3],
           address: sep[4],
-          nakama_port: +sep[5],
-          cdn_port: +sep[7],
-          apache_port: +sep[8],
-          square_port: +sep[9],
-          webrtc_port: +sep[10],
+          nakama_port: sep[5] ? +sep[5] : undefined,
+          cdn_port: sep[7] ? +sep[7] : undefined,
+          apache_port: sep[8] ? +sep[8] : undefined,
+          square_port: sep[9] ? +sep[9] : undefined,
+          webrtc_port: sep[10] ? +sep[10] : undefined,
           useSSL: useSSL,
         }
         this.servers[info.isOfficial][info.target] = {};
