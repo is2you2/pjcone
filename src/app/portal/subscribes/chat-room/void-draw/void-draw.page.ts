@@ -1329,9 +1329,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         try {
           let file_ext = this.navParams.path.split('.').pop();
           let blob = await this.indexed.loadBlobFromUserPath(this.navParams.path, '');
-          console.log(this.navParams);
-          console.log(blob);
-          console.log(this.InputCustomAddress);
           let sep = this.InputCustomAddress.split('://');
           let address = sep.pop();
           let protocol = sep.shift();
