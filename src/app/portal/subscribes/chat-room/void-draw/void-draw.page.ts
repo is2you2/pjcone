@@ -191,6 +191,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       let ActualCanvasSizeHalf: p5.Vector;
       /** 배경이미지 캔버스, 복구 불가능한 이전 기록이 이곳에 같이 누적됨 */
       let ImageCanvas: p5.Graphics;
+      let DrawBeforeCanvas: p5.Graphics;
+      let DrawBeforeBaked: p5.Image;
       let TopMenu: p5.Element;
       let BottomMenu: p5.Element;
       /** 되돌리기류 행동이 상황에 따라 동작하지 않음을 UI로 표시해야함 */
@@ -248,6 +250,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
               sp.pixelDensity(PIXEL_DENSITY);
               if (ImageCanvas)
                 sp.image(ImageCanvas, 0, 0);
+              if (DrawBeforeCanvas)
+                sp.image(DrawBeforeCanvas, 0, 0);
               if (ActualCanvas)
                 sp.image(ActualCanvas, 0, 0);
               let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
@@ -334,6 +338,22 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             ImageCanvas.image(this.p5BaseImage, 0, 0);
           ImageCanvas.pop();
           ImageCanvas.redraw();
+          DrawBeforeCanvas.resizeCanvas(CropSize.x, CropSize.y);
+          DrawBeforeCanvas.push();
+          if (DrawBeforeBaked) {
+            DrawBeforeCanvas.translate(CropPosition);
+            DrawBeforeCanvas.image(DrawBeforeBaked, BakedPosition.x, BakedPosition.y);
+          }
+          DrawBeforeCanvas.pop();
+          DrawBeforeCanvas.redraw();
+          let base64 = DrawBeforeCanvas.elt.toDataURL('image/png');
+          p.loadImage(base64, v => {
+            BakedPosition.x = -CropPosition.x;
+            BakedPosition.y = -CropPosition.y;
+            DrawBeforeBaked = v;
+            DrawBeforeCanvas.image(DrawBeforeBaked, 0, 0);
+            DrawBeforeCanvas.redraw();
+          });
           this.isCropMode = false;
           change_checkmark();
           this.p5SetCanvasViewportInit();
@@ -463,6 +483,11 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         ImageCanvas.noFill();
         ImageCanvas.background(this.navParams.isDarkMode ? 26 : 255);
         this.p5ImageCanvas = ImageCanvas;
+        DrawBeforeCanvas = p.createGraphics(initData.width, initData.height);
+        DrawBeforeCanvas.pixelDensity(PIXEL_DENSITY);
+        DrawBeforeCanvas.noLoop();
+        DrawBeforeCanvas.noFill();
+        DrawBeforeCanvas.clear(255, 255, 255, 255);
         // 사용자 그리기 판넬 생성
         if (initData['path']) { // 배경 이미지 파일이 포함됨
           let blob = await this.indexed.loadBlobFromUserPath(initData['path'], initData['type']);
@@ -513,6 +538,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       let ScaleCenter = p.createVector(0, 0);
       /** 이미지 Crop 시 상대적 위치 기록 */
       let CropPosition = p.createVector();
+      /** 붓 기록 이미지의 상대 위치 기록 */
+      let BakedPosition = p.createVector();
       /** Crop 정보 편집시 사용됨 */
       let CropModePosition = p.createVector();
       let CropSize = p.createVector();
@@ -532,12 +559,14 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         CropPosition.x = x;
         CropPosition.y = y;
         ImageCanvas.translate(x, y);
+        DrawBeforeCanvas.translate(x, y);
         p.redraw();
       }
       let setCropSize = (x: number, y: number) => {
         CropSize.x = x;
         CropSize.y = y;
         ImageCanvas.translate(x, y);
+        DrawBeforeCanvas.translate(x, y);
         p.redraw();
       }
       let asSineGraph = (t: number) => {
@@ -569,6 +598,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         p.scale(CamScale);
         p.translate(CamPosition);
         p.image(ImageCanvas, 0, 0);
+        p.image(DrawBeforeCanvas, 0, 0);
         if (ActualCanvas)
           p.image(ActualCanvas, 0, 0);
         if (this.isCropMode) {
@@ -990,7 +1020,12 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           // 붓 기억 길이를 초과하면 배경에 포함시켜버림
           if (this.p5DrawingStack.length > MAX_HISTORY_LEN) {
             let oldStack = this.p5DrawingStack.shift();
-            updateDrawingCurve(ImageCanvas, oldStack);
+            updateDrawingCurve(DrawBeforeCanvas, oldStack);
+            let base64 = DrawBeforeCanvas.elt.toDataURL('image/png');
+            p.loadImage(base64, v => {
+              DrawBeforeBaked = v;
+              DrawBeforeCanvas.redraw();
+            });
             updateActualCanvas();
           } else updateDrawingCurve(ActualCanvas, CurrentDraw);
         }
