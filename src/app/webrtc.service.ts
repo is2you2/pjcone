@@ -547,7 +547,6 @@ export class WebrtcService {
     } else this.createDataChannel();
     this.PeerConnection.ondatachannel = (event: any) => {
       this.dataChannel = event.channel;
-      this.createDataChannelListener();
     };
     this.PeerConnection.onnegotiationneeded = async (_ev: any) => {
       // 스트림 설정 변경시 재협상 필요, sdp 재교환해야함
