@@ -121,6 +121,17 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
 
   @ViewChild('RegisterNewWebRTCServer') RegisterServer: IonModal;
 
+  /** 새 정보 만들기시 입력 정보 초기화 */
+  CreateNewServerInfo() {
+    this.userInput = {
+      urls: [''],
+      username: '',
+      credential: '',
+    }
+    this.UserInputUrlsLength.length = 1;
+    this.OpenNewWebRTCServerForm();
+  }
+
   OpenNewWebRTCServerForm() {
     this.global.StoreShortCutAct('webrtc-manage-io');
     this.RegisterServer.onDidDismiss().then(() => {
@@ -129,6 +140,8 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
     this.RegisterServer.present();
   }
 
+  /** 정보 수정시 순번 기억 */
+  index: number;
   async SaveServer() {
     this.userInput.urls.filter(v => v);
     for (let i = this.userInput.urls.length - 1; i >= 0; i--)
@@ -144,7 +157,9 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
     let header_address = await this.global.GetHeaderAddress(undefined, true);
     let address = `${header_address}?rtcserver=[${this.userInput.urls}],${this.userInput.username},${this.userInput.credential}`;
     let QRCode = this.global.readasQRCodeFromString(address);
-    this.QRCodes.push(QRCode);
+    if (this.index !== undefined)
+      this.QRCodes[this.index] = QRCode;
+    else this.QRCodes.push(QRCode);
     if (!isExist) this.ServerInfos.push(this.userInput);
     this.userInput = {
       urls: [''],
@@ -153,6 +168,7 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
     }
     this.UserInputUrlsLength.length = 0;
     this.UserInputUrlsLength.push(0);
+    this.index = undefined;
     this.RegisterServer.dismiss();
   }
 
@@ -163,6 +179,7 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
   }
 
   ModifyServer(index: number) {
+    this.index = index;
     this.userInput = this.ServerInfos[index];
     this.UserInputUrlsLength.length = 0;
     for (let i = 0, j = this.userInput.urls.length; i < j; i++)
@@ -171,6 +188,7 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
   }
 
   async RemoveServer(index: number) {
+    this.QRCodes.splice(index, 1);
     this.ServerInfos.splice(index, 1);
     await this.indexed.saveTextFileToUserPath(JSON.stringify(this.ServerInfos), 'servers/webrtc_server.json');
   }
