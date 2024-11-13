@@ -658,7 +658,6 @@ export class NakamaService {
 
   /** WebRTC 정보 자동 생성처리 (기본 정보 기반) */
   async AutoGenWebRTCInfo(info: ServerInfo) {
-    console.log(info);
     let auto_gen_server = {
       urls: [`stun:${info.address}:${info.webrtc_port || (info.useSSL ? 5349 : 3478)}`,
       `turn:${info.address}:${info.webrtc_port || (info.useSSL ? 5349 : 3478)}`],
@@ -4310,6 +4309,9 @@ export class NakamaService {
         type: 'voidDraw',
         address: sep[0],
         channel: sep[1],
+        port: sep[2],
+        username: sep[3],
+        password: sep[4],
       });
     }
     if (init['postViewer']) {
@@ -4430,6 +4432,9 @@ export class NakamaService {
             remote: {
               address: json[i].address,
               channel: json[i].channel,
+              port: json[i].port,
+              username: json[i].username,
+              password: json[i].password,
             },
             dismiss: 'voiddraw-remote',
           });
