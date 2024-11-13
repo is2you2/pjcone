@@ -1299,6 +1299,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       this.RemoteLoadingCtrl.dismiss();
       this.AddrQRShare.dismiss();
       this.isDrawServerCreated = false;
+      this.p5SetDrawable(true);
       this.webrtc.close_webrtc(false);
       this.IceWebRTCWsClient.onopen = null;
       this.IceWebRTCWsClient.onclose = null;
