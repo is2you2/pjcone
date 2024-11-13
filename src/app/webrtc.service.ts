@@ -509,14 +509,11 @@ export class WebrtcService {
       servers = {};
       servers.iceServers = JSON.parse(list);
     } catch (e) { }
-    // Create peer connections and add behavior.
-    if (this.TypeIn != 'data') {
-      if (!servers || !servers.iceServers || !servers.iceServers.length) {
-        this.p5toast.show({
-          text: this.lang.text['WebRTCDevManager']['NoRegServer'],
-        });
-        servers = null;
-      }
+    if (!servers || !servers.iceServers || !servers.iceServers.length) {
+      this.p5toast.show({
+        text: this.lang.text['WebRTCDevManager']['NoRegServer'],
+      });
+      servers = null;
     }
     this.PeerConnection = new RTCPeerConnection(servers);
 

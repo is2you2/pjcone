@@ -1130,7 +1130,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   /** WebRTC 서버가 이미 존재하는지 여부 */
   AlreadyExistServer = false;
   /** 누구든 이 코드를 사용하면 지정 주소로 진입하여 공유 그림판을 사용할 수 있음 */
-  CreateRemoteLocalClient(_address: string, channel_id?: string, hasServerInfo?: ServerInfo) {
+  async CreateRemoteLocalClient(_address: string, channel_id?: string, hasServerInfo?: ServerInfo) {
     let split_fullAddress = _address.split('://');
     let address = split_fullAddress.pop().split(':');
     this.TargetRemoteAddress = address[0];
@@ -1139,7 +1139,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       protocol += ':';
     } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'wss:' : 'ws:';
     if (!hasServerInfo)
-      this.nakama.SaveWebRTCServer({
+      await this.nakama.SaveWebRTCServer({
         urls: [`stun:${address[0]}:${this.Port || (protocol == 'wss:' ? 5349 : 3478)}`,
         `turn:${address[0]}:${this.Port || (protocol == 'wss' ? 5349 : 3478)}`],
         username: this.username || 'username',
