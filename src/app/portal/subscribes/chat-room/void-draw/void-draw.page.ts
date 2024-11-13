@@ -74,6 +74,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           }, 1000);
       } catch (e) {
         console.log('그림판 정보 받지 못함: ', e);
+        this.p5SetDrawable(true);
       }
     });
   }
