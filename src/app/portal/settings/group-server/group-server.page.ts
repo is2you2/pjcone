@@ -437,11 +437,11 @@ export class GroupServerPage implements OnInit, OnDestroy {
       protocol += ':';
     } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
     this.dedicated_info.address = address[0];
-    this.dedicated_info.nakama_port = Number(address[1]) || 7350;
-    this.dedicated_info.apache_port = Number(address[1]) || 9002;
-    this.dedicated_info.cdn_port = Number(address[1]) || 9001;
-    this.dedicated_info.square_port = Number(address[1]) || 12013;
-    this.dedicated_info.webrtc_port = Number(address[1]) || 3478;
+    this.dedicated_info.nakama_port = Number(address[1]);
+    this.dedicated_info.apache_port = Number(address[1]);
+    this.dedicated_info.cdn_port = Number(address[1]);
+    this.dedicated_info.square_port = Number(address[1]);
+    this.dedicated_info.webrtc_port = Number(address[1]);
     this.dedicated_info.useSSL = (window.location.protocol == 'https:') && !isNativefier;
     this.dedicated_info.useSSL = this.dedicated_info.useSSL || Boolean(protocol == 'https:');
     this.dedicated_info.key = this.dedicated_info.key || 'defaultkey';

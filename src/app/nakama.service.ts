@@ -170,17 +170,18 @@ export class NakamaService {
       let list: string[] = list_detail.split('\n');
       list.forEach(ele => {
         let sep = ele.split(',');
+        let useSSL = Boolean(sep[6] == 'true');
         let info: ServerInfo = {
           isOfficial: sep[1],
           name: sep[2],
           target: sep[3],
           address: sep[4],
-          nakama_port: +sep[5] || 7350,
-          cdn_port: +sep[7] || 9001,
-          apache_port: +sep[8] || 9002,
-          square_port: +sep[9] || 12013,
-          webrtc_port: +sep[10] || 3478,
-          useSSL: Boolean(sep[6] == 'true'),
+          nakama_port: +sep[5],
+          cdn_port: +sep[7],
+          apache_port: +sep[8],
+          square_port: +sep[9],
+          webrtc_port: +sep[10],
+          useSSL: useSSL,
         }
         this.servers[info.isOfficial][info.target] = {};
         this.servers[info.isOfficial][info.target].info = info;
@@ -353,17 +354,6 @@ export class NakamaService {
           break;
         }
       if (!noti_info['done'] && schedule_at > new Date().getTime()) {
-        let color = '58a192'; // 메모
-        switch (noti_info.importance) {
-          case '1': // 기억해야 함
-            color = 'ddbb41';
-            break;
-          case '2': // 중요함
-            color = 'b95437';
-            break;
-        }
-        if (noti_info['custom_color'])
-          color = noti_info['custom_color'].replace('#', '');
         this.noti.PushLocal({
           id: noti_info.noti_id,
           title: noti_info.title,
@@ -621,11 +611,11 @@ export class NakamaService {
     info.target = info.target || info.name;
     // 기능 추가전 임시처리
     info.address = info.address || '192.168.0.1';
-    info.nakama_port = info.nakama_port || 7350;
-    info.cdn_port = info.cdn_port || 9001;
-    info.apache_port = info.apache_port || 9002;
-    info.square_port = info.square_port || 12013;
-    info.webrtc_port = info.webrtc_port || 3478;
+    info.nakama_port = info.nakama_port;
+    info.cdn_port = info.cdn_port;
+    info.apache_port = info.apache_port;
+    info.square_port = info.square_port;
+    info.webrtc_port = info.webrtc_port;
     info.useSSL = info.useSSL || false;
     info.isOfficial = info.isOfficial || 'unofficial';
     info.key = info.key || 'defaultkey';
@@ -635,12 +625,12 @@ export class NakamaService {
     line += `,${info.name}`;
     line += `,${info.target}`;
     line += `,${info.address}`;
-    line += `,${info.nakama_port}`;
-    line += `,${info.useSSL}`;
-    line += `,${info.cdn_port}`;
-    line += `,${info.apache_port}`;
-    line += `,${info.square_port}`;
-    line += `,${info.webrtc_port}`;
+    line += `,${info.nakama_port || ''}`;
+    line += `,${info.useSSL || ''}`;
+    line += `,${info.cdn_port || ''}`;
+    line += `,${info.apache_port || ''}`;
+    line += `,${info.square_port || ''}`;
+    line += `,${info.webrtc_port || ''}`;
     return new Promise(async (done) => {
       await this.AutoGenWebRTCInfo(info);
       if (info.isOfficial != 'official')
@@ -668,8 +658,10 @@ export class NakamaService {
 
   /** WebRTC 정보 자동 생성처리 (기본 정보 기반) */
   async AutoGenWebRTCInfo(info: ServerInfo) {
+    console.log(info);
     let auto_gen_server = {
-      urls: [`stun:${info.address}:${info.webrtc_port || 3478}`, `turn:${info.address}:${info.webrtc_port || 3478}`],
+      urls: [`stun:${info.address}:${info.webrtc_port || (info.useSSL ? 5349 : 3478)}`,
+      `turn:${info.address}:${info.webrtc_port || (info.useSSL ? 5349 : 3478)}`],
       username: 'username',
       credential: 'password',
     }
@@ -4250,11 +4242,11 @@ export class NakamaService {
           value: {
             address: host || '192.168.0.1',
             useSSL: useSSL || false,
-            nakama_port: port || 7350,
-            cdn_port: sep[2] || 9001,
-            apache_port: sep[3] || 9002,
-            square_port: sep[4] || 12013,
-            webrtc_port: sep[5] || 3478,
+            nakama_port: port,
+            cdn_port: sep[2],
+            apache_port: sep[3],
+            square_port: sep[4],
+            webrtc_port: sep[5],
             key: sep[1] || 'defaultkey',
             isOfficial: 'unofficial',
           },

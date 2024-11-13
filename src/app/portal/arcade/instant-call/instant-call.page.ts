@@ -108,17 +108,17 @@ export class InstantCallPage implements OnInit, OnDestroy {
     }
     let sep_protocol = this.UserInputCustomAddress.split('://');
     let address_only = sep_protocol.pop();
+    let protocol = sep_protocol.pop();
+    if (!protocol) protocol = this.global.checkProtocolFromAddress(address_only) ? 'wss' : 'ws';
     // 즉석 참여 또는 사설 서버 진입인 경우 WebRTC 서버 등록
     this.isCustomServer = autoLink || !this.InstantCallServer || this.InstantCallServer.value == 'local';
     if (this.isCustomServer)
       this.nakama.SaveWebRTCServer({
-        urls: [`stun:${address_only}:${this.Port || 3478}`,
-        `turn:${address_only}:${this.Port || 3478}`],
+        urls: [`stun:${address_only}:${this.Port || (protocol == 'wss' ? 5349 : 3478)}`,
+        `turn:${address_only}:${this.Port || (protocol == 'wss' ? 5349 : 3478)}`],
         username: this.Username || 'username',
         credential: this.Password || 'password',
       });
-    let protocol = sep_protocol.pop();
-    if (!protocol) protocol = this.global.checkProtocolFromAddress(address_only) ? 'wss' : 'ws';
     this.global.InstantCallWSClient = new WebSocket(`${protocol}://${address_only}:${this.signalPort || 12013}`);
     /** 웹소켓에서 사용하는 내 아이디 기억 */
     let uuid: string;

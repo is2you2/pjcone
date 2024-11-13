@@ -61,7 +61,7 @@ export class ServerDetailPage implements OnInit, OnDestroy {
         delete this.FilteredInfo.apache_port;
       if (this.dedicated_info.square_port == 12013)
         delete this.FilteredInfo.square_port;
-      if (this.dedicated_info.webrtc_port == 3478)
+      if ((!this.dedicated_info.useSSL && this.dedicated_info.webrtc_port == 3478) || (this.dedicated_info.useSSL && this.dedicated_info.webrtc_port == 5349))
         delete this.FilteredInfo.webrtc_port;
       if (!this.dedicated_info.useSSL)
         delete this.FilteredInfo.useSSL;
@@ -128,11 +128,11 @@ export class ServerDetailPage implements OnInit, OnDestroy {
     this.dedicated_info.target = this.FilteredInfo.target || this.FilteredInfo.name;
     // 기능 추가전 임시처리
     this.dedicated_info.address = this.FilteredInfo.address || '192.168.0.1';
-    this.dedicated_info.nakama_port = this.FilteredInfo.nakama_port || 7350;
-    this.dedicated_info.cdn_port = this.FilteredInfo.nakama_port || 9001;
-    this.dedicated_info.apache_port = this.FilteredInfo.nakama_port || 9002;
-    this.dedicated_info.square_port = this.FilteredInfo.nakama_port || 12013;
-    this.dedicated_info.webrtc_port = this.FilteredInfo.nakama_port || 3478;
+    this.dedicated_info.nakama_port = this.FilteredInfo.nakama_port;
+    this.dedicated_info.cdn_port = this.FilteredInfo.nakama_port;
+    this.dedicated_info.apache_port = this.FilteredInfo.nakama_port;
+    this.dedicated_info.square_port = this.FilteredInfo.nakama_port;
+    this.dedicated_info.webrtc_port = this.FilteredInfo.nakama_port;
     this.dedicated_info.useSSL = this.ServerDetailuseSSL.checked || false;
     this.dedicated_info.isOfficial = this.FilteredInfo.isOfficial || 'unofficial';
     this.dedicated_info.key = this.FilteredInfo.key || 'defaultkey';
@@ -142,12 +142,12 @@ export class ServerDetailPage implements OnInit, OnDestroy {
     line += `,${this.dedicated_info.name}`;
     line += `,${this.dedicated_info.target}`;
     line += `,${this.dedicated_info.address}`;
-    line += `,${this.dedicated_info.nakama_port}`;
-    line += `,${this.dedicated_info.useSSL}`;
-    line += `,${this.dedicated_info.cdn_port}`;
-    line += `,${this.dedicated_info.apache_port}`;
-    line += `,${this.dedicated_info.square_port}`;
-    line += `,${this.dedicated_info.webrtc_port}`;
+    line += `,${this.dedicated_info.nakama_port || ''}`;
+    line += `,${this.dedicated_info.useSSL || ''}`;
+    line += `,${this.dedicated_info.cdn_port || ''}`;
+    line += `,${this.dedicated_info.apache_port || ''}`;
+    line += `,${this.dedicated_info.square_port || ''}`;
+    line += `,${this.dedicated_info.webrtc_port || ''}`;
     let v = await this.indexed.loadTextFromUserPath('servers/list_detail.csv');
     let list: string[] = [];
     if (v) list = v.split('\n');
