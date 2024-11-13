@@ -46,7 +46,7 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
     });
   }
 
-  ionViewWillEnter() {
+  ionViewDidEnter() {
     this.global.p5KeyShortCut['Digit'] = (index: number) => {
       if (this.nakama.channels.length > index)
         this.go_to_chatroom(this.nakama.channels[index]);
