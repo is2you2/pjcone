@@ -32,39 +32,11 @@ export class ServerDetailPage implements OnInit, OnDestroy {
 
   dedicated_info: ServerInfo = {};
   QRCodeSRC: any;
-  FilteredInfo: ServerInfo = {};
 
   ngOnInit() {
     this.route.queryParams.subscribe(_p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
       this.dedicated_info = navParams.data;
-      this.FilteredInfo = {
-        name: this.dedicated_info.name,
-        address: this.dedicated_info.address,
-        nakama_port: this.dedicated_info.nakama_port,
-        cdn_port: this.dedicated_info.cdn_port,
-        apache_port: this.dedicated_info.apache_port,
-        square_port: this.dedicated_info.square_port,
-        webrtc_port: this.dedicated_info.webrtc_port,
-        key: this.dedicated_info.key,
-        useSSL: this.dedicated_info.useSSL,
-      };
-      if (this.dedicated_info.address == '192.168.0.1')
-        delete this.FilteredInfo.address;
-      if (this.dedicated_info.key == 'defaultkey')
-        delete this.FilteredInfo.key;
-      if (this.dedicated_info.nakama_port == 7350)
-        delete this.FilteredInfo.nakama_port;
-      if (this.dedicated_info.cdn_port == 9001)
-        delete this.FilteredInfo.cdn_port;
-      if (this.dedicated_info.apache_port == 9002)
-        delete this.FilteredInfo.apache_port;
-      if (this.dedicated_info.square_port == 12013)
-        delete this.FilteredInfo.square_port;
-      if ((!this.dedicated_info.useSSL && this.dedicated_info.webrtc_port == 3478) || (this.dedicated_info.useSSL && this.dedicated_info.webrtc_port == 5349))
-        delete this.FilteredInfo.webrtc_port;
-      if (!this.dedicated_info.useSSL)
-        delete this.FilteredInfo.useSSL;
       this.GenerateQRCode();
     });
   }
@@ -72,7 +44,7 @@ export class ServerDetailPage implements OnInit, OnDestroy {
   GenerateQRCode() {
     this.global.GetHeaderAddress(undefined, true).then(address => {
       this.QRCodeSRC = this.global.readasQRCodeFromString(
-        `${address}?server=${this.FilteredInfo.useSSL ? 'https' : 'http'}://${this.FilteredInfo.address || ''}${this.FilteredInfo.nakama_port ? `:${this.FilteredInfo.nakama_port}` : ''},${this.FilteredInfo.key || ''},${this.FilteredInfo.cdn_port || ''},${this.FilteredInfo.apache_port || ''},${this.FilteredInfo.square_port || ''},${this.FilteredInfo.webrtc_port || ''}`.replace(' ', '%20'));
+        `${address}?server=${this.dedicated_info.useSSL ? 'https' : 'http'}://${this.dedicated_info.address || ''}${this.dedicated_info.nakama_port ? `:${this.dedicated_info.nakama_port}` : ''},${this.dedicated_info.key || ''},${this.dedicated_info.cdn_port || ''},${this.dedicated_info.apache_port || ''},${this.dedicated_info.square_port || ''},${this.dedicated_info.webrtc_port || ''}`.replace(' ', '%20'));
     });
   }
 
@@ -110,32 +82,32 @@ export class ServerDetailPage implements OnInit, OnDestroy {
   copy_startup_address() {
     this.global.GetHeaderAddress(undefined, true).then(address => {
       let startup_address =
-        `${address}?server=${this.FilteredInfo.useSSL ? 'https' : 'http'}://${this.FilteredInfo.address || ''}${this.FilteredInfo.nakama_port ? `:${this.FilteredInfo.nakama_port}` : ''},${this.FilteredInfo.key || ''},${this.FilteredInfo.cdn_port || ''},${this.FilteredInfo.apache_port || ''},${this.FilteredInfo.square_port || ''},${this.FilteredInfo.webrtc_port || ''}`.replace(' ', '%20');
+        `${address}?server=${this.dedicated_info.useSSL ? 'https' : 'http'}://${this.dedicated_info.address || ''}${this.dedicated_info.nakama_port ? `:${this.dedicated_info.nakama_port}` : ''},${this.dedicated_info.key || ''},${this.dedicated_info.cdn_port || ''},${this.dedicated_info.apache_port || ''},${this.dedicated_info.square_port || ''},${this.dedicated_info.webrtc_port || ''}`.replace(' ', '%20');
       this.global.WriteValueToClipboard('text/plain', startup_address);
     })
   }
 
   async apply_changed_info() {
     // 빈 이름 거르기
-    if (!this.FilteredInfo.name) {
+    if (!this.dedicated_info.name) {
       this.p5toast.show({
         text: this.lang.text['GroupServer']['NeedSetDIsplayName'],
       });
       return;
     }
 
-    this.dedicated_info.name = this.FilteredInfo.name;
-    this.dedicated_info.target = this.FilteredInfo.target || this.FilteredInfo.name;
+    this.dedicated_info.name = this.dedicated_info.name;
+    this.dedicated_info.target = this.dedicated_info.target || this.dedicated_info.name;
     // 기능 추가전 임시처리
-    this.dedicated_info.address = this.FilteredInfo.address || '192.168.0.1';
-    this.dedicated_info.nakama_port = this.FilteredInfo.nakama_port;
-    this.dedicated_info.cdn_port = this.FilteredInfo.nakama_port;
-    this.dedicated_info.apache_port = this.FilteredInfo.nakama_port;
-    this.dedicated_info.square_port = this.FilteredInfo.nakama_port;
-    this.dedicated_info.webrtc_port = this.FilteredInfo.nakama_port;
+    this.dedicated_info.address = this.dedicated_info.address || '192.168.0.1';
+    this.dedicated_info.nakama_port = this.dedicated_info.nakama_port;
+    this.dedicated_info.cdn_port = this.dedicated_info.nakama_port;
+    this.dedicated_info.apache_port = this.dedicated_info.nakama_port;
+    this.dedicated_info.square_port = this.dedicated_info.nakama_port;
+    this.dedicated_info.webrtc_port = this.dedicated_info.nakama_port;
     this.dedicated_info.useSSL = this.ServerDetailuseSSL.checked || false;
-    this.dedicated_info.isOfficial = this.FilteredInfo.isOfficial || 'unofficial';
-    this.dedicated_info.key = this.FilteredInfo.key || 'defaultkey';
+    this.dedicated_info.isOfficial = this.dedicated_info.isOfficial || 'unofficial';
+    this.dedicated_info.key = this.dedicated_info.key || 'defaultkey';
 
     let line = new Date().getTime().toString();
     line += `,${this.dedicated_info.isOfficial}`;

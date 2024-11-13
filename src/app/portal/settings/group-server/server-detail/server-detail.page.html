@@ -18,10 +18,10 @@
   </ion-item-divider>
   <ion-item button>
     <ion-input [label]="lang.text['GroupServer']['DisplayName']" class="ion-text-right" (ionInput)="GenerateQRCode()"
-      [(ngModel)]="FilteredInfo.name" [placeholder]="lang.text['GroupServer']['DisplayName_placeholder']"></ion-input>
+      [(ngModel)]="dedicated_info.name" [placeholder]="lang.text['GroupServer']['DisplayName_placeholder']"></ion-input>
   </ion-item>
   <ion-item button>
-    <ion-input [label]="lang.text['GroupServer']['Address']" class="ion-text-right" [(ngModel)]="FilteredInfo.address"
+    <ion-input [label]="lang.text['GroupServer']['Address']" class="ion-text-right" [(ngModel)]="dedicated_info.address"
       (ionInput)="GenerateQRCode()" placeholder="192.168.0.1"></ion-input>
     <ion-icon slot="end" name="open-outline" (click)="open_custom_check()"></ion-icon>
   </ion-item>
@@ -36,41 +36,41 @@
         </ion-item>
         <ion-item button>
           <ion-input [label]="lang.text['GroupServer']['DivisionName']" class="ion-text-right"
-            (ionInput)="GenerateQRCode()" [(ngModel)]="FilteredInfo.target"
-            [placeholder]="FilteredInfo.name || lang.text['GroupServer']['DivisionName_placeholder']"></ion-input>
+            (ionInput)="GenerateQRCode()" [(ngModel)]="dedicated_info.target"
+            [placeholder]="dedicated_info.name || lang.text['GroupServer']['DivisionName_placeholder']"></ion-input>
         </ion-item>
         <ion-item button>
-          <ion-input [label]="lang.text['GroupServer']['Key']" [(ngModel)]="FilteredInfo.key" class="ion-text-right"
+          <ion-input [label]="lang.text['GroupServer']['Key']" [(ngModel)]="dedicated_info.key" class="ion-text-right"
             (ionInput)="GenerateQRCode()" placeholder="defaultkey">
           </ion-input>
         </ion-item>
         <ion-item button>
-          <ion-input [label]="lang.text['GroupServer']['Port']" [(ngModel)]="FilteredInfo.nakama_port"
+          <ion-input [label]="lang.text['GroupServer']['Port']" [(ngModel)]="dedicated_info.nakama_port"
             class="ion-text-right" (ionInput)="GenerateQRCode()" type="number" placeholder="7350">
           </ion-input>
         </ion-item>
         <ion-item button>
-          <ion-input [label]="lang.text['GroupServer']['cdnPort']" [(ngModel)]="FilteredInfo.cdn_port"
+          <ion-input [label]="lang.text['GroupServer']['cdnPort']" [(ngModel)]="dedicated_info.cdn_port"
             class="ion-text-right" (ionInput)="GenerateQRCode()" type="number" placeholder="9001">
           </ion-input>
         </ion-item>
         <ion-item button>
-          <ion-input [label]="lang.text['GroupServer']['apachePort']" [(ngModel)]="FilteredInfo.apache_port"
+          <ion-input [label]="lang.text['GroupServer']['apachePort']" [(ngModel)]="dedicated_info.apache_port"
             class="ion-text-right" (ionInput)="GenerateQRCode()" type="number" placeholder="9002">
           </ion-input>
         </ion-item>
         <ion-item button>
-          <ion-input [label]="lang.text['GroupServer']['SquarePort']" [(ngModel)]="FilteredInfo.square_port"
+          <ion-input [label]="lang.text['GroupServer']['SquarePort']" [(ngModel)]="dedicated_info.square_port"
             class="ion-text-right" (ionInput)="GenerateQRCode()" type="number" placeholder="12013">
           </ion-input>
         </ion-item>
         <ion-item button>
-          <ion-input [label]="lang.text['GroupServer']['WebRTCPort']" [(ngModel)]="FilteredInfo.webrtc_port"
+          <ion-input [label]="lang.text['GroupServer']['WebRTCPort']" [(ngModel)]="dedicated_info.webrtc_port"
             class="ion-text-right" (ionInput)="GenerateQRCode()" type="number" placeholder="3478 (ssl: 5349)">
           </ion-input>
         </ion-item>
-        <ion-item button (click)="FilteredInfo.useSSL = !FilteredInfo.useSSL">
-          <ion-toggle #ServerDetailuseSSL [(ngModel)]="FilteredInfo.useSSL" (ionChange)="GenerateQRCode()"
+        <ion-item button (click)="dedicated_info.useSSL = !dedicated_info.useSSL">
+          <ion-toggle #ServerDetailuseSSL [(ngModel)]="dedicated_info.useSSL" (ionChange)="GenerateQRCode()"
             style="pointer-events: none;">{{lang.text['GroupServer']['isSSL']}}</ion-toggle>
         </ion-item>
       </div>
