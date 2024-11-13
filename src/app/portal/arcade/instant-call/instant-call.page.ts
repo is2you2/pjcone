@@ -83,8 +83,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
       default: // 다른 원격 서버
         let info = ev.detail.value.info;
         this.UserInputCustomAddress = `${info.useSSL ? 'wss' : 'ws'}://${info.address}`;
-        if (info.webrtc_port != 3478)
-          this.Port = info.webrtc_port;
+        this.Port = info.webrtc_port;
         if (info.square_port != 12013)
           this.signalPort = info.square_port;
         this.NeedInputCustomAddress = false;
@@ -92,6 +91,8 @@ export class InstantCallPage implements OnInit, OnDestroy {
     }
   }
 
+  /** WebRTC 서버가 이미 등록되어있던 것인지 검토 */
+  AlreadyExistServer = false;
   /** 통화를 사설서버로 하는지 여부 */
   isCustomServer = false;
   /** 웹 소켓 서버에 연결하기
@@ -118,7 +119,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
         `turn:${address_only}:${this.Port || (protocol == 'wss' ? 5349 : 3478)}`],
         username: this.Username || 'username',
         credential: this.Password || 'password',
-      });
+      }).then(b => this.AlreadyExistServer = b);
     this.global.InstantCallWSClient = new WebSocket(`${protocol}://${address_only}:${this.signalPort || 12013}`);
     /** 웹소켓에서 사용하는 내 아이디 기억 */
     let uuid: string;
@@ -368,7 +369,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.p5canvas) this.p5canvas.remove();
-    if (this.isCustomServer) this.nakama.RemoveWebRTCServer(this.UserInputCustomAddress.split('://').pop());
+    if (this.isCustomServer && !this.AlreadyExistServer) this.nakama.RemoveWebRTCServer(this.UserInputCustomAddress.split('://').pop());
     if (!this.global.InitEnd && !this.global.PeerConnected && this.global.InstantCallWSClient) this.global.InstantCallWSClient.close();
     this.route.queryParams['unsubscribe']();
   }
