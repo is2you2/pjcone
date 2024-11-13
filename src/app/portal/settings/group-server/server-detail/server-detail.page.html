@@ -66,7 +66,7 @@
         </ion-item>
         <ion-item button>
           <ion-input [label]="lang.text['GroupServer']['WebRTCPort']" [(ngModel)]="dedicated_info.webrtc_port"
-            class="ion-text-right" (ionInput)="GenerateQRCode()" type="number" placeholder="3478 (ssl: 5349)">
+            class="ion-text-right" (ionInput)="GenerateQRCode()" type="number" placeholder="3478">
           </ion-input>
         </ion-item>
         <ion-item button (click)="dedicated_info.useSSL = !dedicated_info.useSSL">

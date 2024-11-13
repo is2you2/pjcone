@@ -39,7 +39,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       this.p5ActualCanvas.remove();
       this.p5ActualCanvas = null;
     }
-    if (!this.AlreadyExistServer) this.nakama.RemoveWebRTCServer(this.TargetRemoteAddress.split('://').pop());
+    if (!this.AlreadyExistServer && this.TargetRemoteAddress)
+      this.nakama.RemoveWebRTCServer(this.TargetRemoteAddress.split('://').pop());
     if (this.p5ImageCanvas) {
       this.p5ImageCanvas.remove();
       this.p5ImageCanvas = null;
