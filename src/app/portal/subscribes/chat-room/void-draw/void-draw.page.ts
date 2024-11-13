@@ -1368,6 +1368,9 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             act: 'EOF',
           }));
         } catch (e) {
+          this.p5toast.show({
+            text: `${this.lang.text['voidDraw']['FailedGetBG']}: ${e}`,
+          });
           console.log('배경 그림 공유하기 오류: ', e);
         }
       }
