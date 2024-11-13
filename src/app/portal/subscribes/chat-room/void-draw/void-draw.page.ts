@@ -1144,6 +1144,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         username: this.username || 'username',
         credential: this.password || 'password',
       }).then(b => this.AlreadyExistServer = b);
+    else this.AlreadyExistServer = true;
     this.IceWebRTCWsClient = new WebSocket(`${protocol}//${address[0]}:${address[1] || 12013}/`);
     this.AddShortCut();
     this.isDrawServerCreated = true;
