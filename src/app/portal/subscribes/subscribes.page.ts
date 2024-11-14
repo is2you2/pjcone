@@ -328,6 +328,57 @@ export class SubscribesPage implements OnInit {
     }, 1000);
   }
 
+  /** 빠른 진입 링크 행동 즉시하기 */
+  async QuickLinkAct() {
+    let clipboard = await this.global.GetValueFromClipboard();
+    let viewer_type = 'image';
+    let file: File = clipboard.value;
+    switch (clipboard.type) {
+      // 텍스트인 경우 빠른 진입 시도, 실패하면 파일 뷰어 열기
+      case 'text/plain':
+        try {
+          let tryQR = await this.nakama.open_url_link(clipboard.value, false);
+          if (!tryQR) throw '빠른 진입 실패';
+          break;
+        } catch (e) {
+          let blob = new Blob([clipboard.value], { type: 'text/plain' });
+          file = new File([blob], "from_clipboard.txt", { type: "text/plain", lastModified: new Date().getTime() });
+          viewer_type = 'text';
+        }
+      // 이미지인 경우 파일 뷰어로 열기
+      case 'image/png':
+        const TMP_PATH = `tmp_files/quick_act/${file.name}`;
+        await this.indexed.saveBlobToUserPath(file, TMP_PATH);
+        this.global.PageDismissAct['quick-fileviewer'] = (_v: any) => {
+          delete this.global.PageDismissAct['quick-fileviewer'];
+        }
+        this.global.ActLikeModal('ionic-viewer', {
+          info: {
+            content: {
+              blob: file,
+              path: TMP_PATH,
+              filename: file.name,
+              file_ext: file.name.split('.').pop(),
+              viewer: viewer_type,
+            }
+          },
+          relevance: [{
+            content: {
+              filename: file.name,
+              file_ext: file.name.split('.').pop(),
+              path: TMP_PATH,
+              viewer: viewer_type,
+            }
+          }],
+          noEdit: true,
+          noTextEdit: true,
+          quick: true,
+          dismiss: 'quick-fileviewer',
+        });
+        break;
+    }
+  }
+
   /** QRCode 스캔 중 장치 변경하기 */
   ChangeScanDevice() {
     if (this.ChangeDeviceFunc) this.ChangeDeviceFunc();

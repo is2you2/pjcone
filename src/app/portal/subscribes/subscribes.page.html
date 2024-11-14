@@ -1,6 +1,9 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
     <ion-title>{{lang.text['Subscribes']['Title']}}</ion-title>
+    <div (click)="QuickLinkAct()" class="add_group top_icon_override_2">
+      <ion-icon button style="width: 24px; height: 24px;" name="clipboard-outline"></ion-icon>
+    </div>
     <div (click)="OpenScanner()" class="add_group top_icon_override_1">
       <ion-icon button style="width: 24px; height: 24px;" name="scan-circle-outline"></ion-icon>
     </div>

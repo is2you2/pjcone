@@ -1569,6 +1569,9 @@ export class GlobalActService {
       return result;
     } catch (e) {
       console.error('클립보드에서 불러오기 오류: ', e);
+      this.p5toast.show({
+        text: `${this.lang.text['GlobalAct']['FailedToReadClipboard']}: ${e}`,
+      });
       result.type = 'error';
       result.value = e;
       throw result;

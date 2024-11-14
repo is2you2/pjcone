@@ -4221,6 +4221,7 @@ export class NakamaService {
         });
       }
     } else if (open_link) this.global.open_link(url);
+    return false;
   }
 
   async AddressToQRCodeAct(init: any, NeedReturn = false) {
