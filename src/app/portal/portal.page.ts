@@ -88,9 +88,6 @@ export class PortalPage implements OnInit {
             break;
         }
       }
-    else setTimeout(() => {
-      this.try_add_shortcut();
-    }, 100);
   }
 
   /** 하단 탭을 눌러 알림 확인함 처리 */
