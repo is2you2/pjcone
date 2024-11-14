@@ -77,7 +77,7 @@ export class ArcadePage implements OnInit {
         this.global.PageDismissAct['voiddraw-remote'] = (v: any) => {
           delete this.global.PageDismissAct['voiddraw-remote'];
         }
-        this.global.ActLikeModal('void-draw', {
+        this.global.ActLikeModal('portal/arcade/void-draw', {
           dismiss: 'voiddraw-remote',
         });
         break;
@@ -95,7 +95,7 @@ export class ArcadePage implements OnInit {
               this.global.PageDismissAct['voiddraw-remote'] = (_v: any) => {
                 delete this.global.PageDismissAct['voiddraw-remote'];
               }
-              this.global.ActLikeModal('void-draw', {
+              this.global.ActLikeModal('portal/arcade/void-draw', {
                 path: TMP_PATH,
                 width: v.width,
                 height: v.height,
