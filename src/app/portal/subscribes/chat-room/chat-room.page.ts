@@ -2708,6 +2708,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 scrollHeight: v.data.scrollHeight,
                 dismiss: 'modify-image',
               });
+              delete this.global.PageDismissAct['chatroom-ionicviewer'];
               return;
             case 'text':
               this.selected_blobFile_callback_act(v.data.blob, v.data.contentRelated, 'textedit');
