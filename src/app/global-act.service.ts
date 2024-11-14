@@ -1546,8 +1546,8 @@ export class GlobalActService {
   async GetValueFromClipboard() {
     const clipboardItems = await navigator.clipboard.read();
     let result = {
-      type: undefined as 'image/png' | 'text/plain' | 'error',
-      value: undefined as any,
+      type: 'text/plain' as 'image/png' | 'text/plain' | 'error',
+      value: '' as any,
     };
     try {
       for (let item of clipboardItems) {
