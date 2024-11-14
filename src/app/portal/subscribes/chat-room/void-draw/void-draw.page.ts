@@ -60,6 +60,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         const navParams = this.router.getCurrentNavigation().extras.state;
         if (!navParams) throw '페이지 복귀';
         this.navParams = navParams || {};
+        this.voidDrawId = `voidDraw_${Date.now()}`;
         this.QueueAfterLoad = () => {
           this.create_new_canvas({
             width: navParams.width,
@@ -85,7 +86,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   voidDrawId = 'voidDraw';
   ionViewWillEnter() {
-    this.voidDrawId = `voidDraw_${Date.now()}`;
     if (this.QueueAfterLoad)
       this.QueueAfterLoad();
     this.QueueAfterLoad = null;
@@ -194,7 +194,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   isCropMode = false;
   @ViewChild('RemoteDraw') RemoteDraw: IonSelect;
   create_p5voidDraw(initData: any) {
-    let targetDiv = document.getElementById('voidDraw');
+    let targetDiv = document.getElementById(this.voidDrawId);
     this.isCropMode = false;
     this.p5voidDraw = new p5((p: p5) => {
       /** 스케일 조정 편의를 위해 모든게 여기서 작업됨 */
