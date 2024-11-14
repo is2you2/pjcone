@@ -1325,10 +1325,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         }
         if (this.FileInfo.viewer == 'godot') return;
         const FileMenu: Function[] = [];
-        if (!this.NeedDownloadFile && this.FileInfo['viewer'] != 'audio' && this.showEdit)
-          FileMenu.push(() => this.modify_image());
         if (!this.NeedDownloadFile && this.showEditText && this.showEdit)
           FileMenu.push(() => this.open_text_editor());
+        if (!this.NeedDownloadFile && this.FileInfo['viewer'] != 'audio' && this.showEdit)
+          FileMenu.push(() => this.modify_image());
         if (!this.NeedDownloadFile && !this.isQuickLaunchViewer)
           FileMenu.push(() => this.ShareContent());
         if (!this.NeedDownloadFile && this.isPWA)
