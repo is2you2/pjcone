@@ -51,6 +51,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     this.CancelRemoteAct();
   }
 
+  /** 페이지 진입 후 페이지가 준비되었을 때 행동시키기 */
+  QueueAfterLoad: Function;
   navParams: any;
   ngOnInit() {
     this.route.queryParams.subscribe(async _p => {
@@ -58,20 +60,21 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         const navParams = this.router.getCurrentNavigation().extras.state;
         if (!navParams) throw '페이지 복귀';
         this.navParams = navParams || {};
-        await new Promise(res => setTimeout(res, 100)); // init 지연
-        this.create_new_canvas({
-          width: navParams.width,
-          height: navParams.height,
-          path: navParams.path,
-          type: navParams.type,
-        });
-        if (navParams.remote)
-          setTimeout(() => {
-            this.Port = navParams.remote.port;
-            this.username = navParams.remote.username;
-            this.password = navParams.remote.password;
-            this.CreateRemoteLocalClient(navParams.remote.address, navParams.remote.channel);
-          }, 1000);
+        this.QueueAfterLoad = () => {
+          this.create_new_canvas({
+            width: navParams.width,
+            height: navParams.height,
+            path: navParams.path,
+            type: navParams.type,
+          });
+          if (navParams.remote)
+            setTimeout(() => {
+              this.Port = navParams.remote.port;
+              this.username = navParams.remote.username;
+              this.password = navParams.remote.password;
+              this.CreateRemoteLocalClient(navParams.remote.address, navParams.remote.channel);
+            }, 1000);
+        }
       } catch (e) {
         console.log('그림판 정보 받지 못함: ', e);
         this.p5SetDrawable(true);
@@ -79,6 +82,14 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     });
   }
   mainLoading: HTMLIonLoadingElement;
+
+  voidDrawId = 'voidDraw';
+  ionViewWillEnter() {
+    this.voidDrawId = `voidDraw_${Date.now()}`;
+    if (this.QueueAfterLoad)
+      this.QueueAfterLoad();
+    this.QueueAfterLoad = null;
+  }
 
   isMobile = false;
   async ionViewDidEnter() {

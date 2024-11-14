@@ -19,7 +19,7 @@
       <ion-select-option *ngFor="let server of ServerList" [value]="server">{{server.info.name}}</ion-select-option>
     </ion-select>
   </div>
-  <div id="voidDraw" class="full_screen" style="display: flex; overflow: hidden; background-color: black;">
+  <div [id]="voidDrawId" class="full_screen" style="display: flex; overflow: hidden; background-color: black;">
   </div>
   <ion-modal #AddrQRShare class="transparent-modal">
     <ng-template>
