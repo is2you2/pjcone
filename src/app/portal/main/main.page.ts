@@ -337,6 +337,18 @@ export class MainPage implements OnInit {
           name: 'TimeOut',
           color: '#b9543788',
           value: 'after',
+        }, {
+          name: 'Yesterday',
+          color: '#45678988',
+          value: 'yesterday',
+        }, {
+          name: 'Today',
+          color: '#789abc88',
+          value: 'today',
+        }, {
+          name: 'Tomorrow',
+          color: '#abcdef88',
+          value: 'tomorrow',
         }];
         this.AllCategories[TodoFilterCategory.Creator] = [{
           name: 'CreatorLocal',
@@ -429,7 +441,35 @@ export class MainPage implements OnInit {
                     Todos[TodoKeys[i]].isHidden = !(((Todos[TodoKeys[i]].json['startFrom'] || 0) < Date.now()) && (Todos[TodoKeys[i]].json['limit'] || Todos[TodoKeys[i]].json['written']) > Date.now());
                     break;
                   case 'after': // 만료됨
-                    Todos[TodoKeys[i]].isHidden = !(Todos[TodoKeys[i]].json['limit'] && Todos[TodoKeys[i]].json['limit'] <= Date.now());
+                    Todos[TodoKeys[i]].isHidden = !(Todos[TodoKeys[i]].json['limit'] <= Date.now());
+                    break;
+                  case 'yesterday': { // 어제까지
+                    const yesterdayStart = new Date();
+                    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+                    yesterdayStart.setHours(0, 0, 0, 0);
+                    const yesterdayEnd = new Date();
+                    yesterdayEnd.setDate(yesterdayEnd.getDate() - 1);
+                    yesterdayEnd.setHours(23, 59, 59, 999);
+                    Todos[TodoKeys[i]].isHidden = !(Todos[TodoKeys[i]].json['limit'] > yesterdayStart && Todos[TodoKeys[i]].json['limit'] <= yesterdayEnd);
+                  }
+                    break;
+                  case 'today': { // 오늘까지
+                    const todayStart = new Date();
+                    todayStart.setHours(0, 0, 0, 0);
+                    const todayEnd = new Date();
+                    todayEnd.setHours(23, 59, 59, 999);
+                    Todos[TodoKeys[i]].isHidden = !(Todos[TodoKeys[i]].json['limit'] > todayStart && Todos[TodoKeys[i]].json['limit'] <= todayEnd);
+                  }
+                    break;
+                  case 'tomorrow': { // 내일까지
+                    const tomorrowStart = new Date();
+                    tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+                    tomorrowStart.setHours(0, 0, 0, 0);
+                    const tomorrowEnd = new Date();
+                    tomorrowEnd.setDate(tomorrowEnd.getDate() + 1);
+                    tomorrowEnd.setHours(23, 59, 59, 999);
+                    Todos[TodoKeys[i]].isHidden = !(Todos[TodoKeys[i]].json['limit'] > tomorrowStart && Todos[TodoKeys[i]].json['limit'] <= tomorrowEnd);
+                  }
                     break;
                 }
               }
