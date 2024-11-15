@@ -1654,6 +1654,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           text: this.lang.text['TodoDetail']['CanAddToServer'],
         });
         this.isButtonClicked = false;
+        loading.dismiss();
         return;
       }
     }
