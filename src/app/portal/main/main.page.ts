@@ -826,8 +826,8 @@ export class MainPage implements OnInit {
         Clicked() {
           if (isClickable && !BlockInput && !this.json['done']) {
             if (this.isAddButton)
-              nakama.open_add_todo_page(undefined, 'portal/main/add-todo-menu');
-            else nakama.open_add_todo_page(JSON.stringify(this.json), 'portal/main/add-todo-menu');
+              nakama.open_add_todo_page();
+            else nakama.open_add_todo_page(JSON.stringify(this.json));
           }
         }
         RemoveTodo() {
@@ -1124,7 +1124,7 @@ export class MainPage implements OnInit {
   try_add_shortcut() {
     if (this.global.p5KeyShortCut) {
       this.global.p5KeyShortCut['AddAct'] = () => {
-        this.nakama.open_add_todo_page(undefined, 'portal/main/add-todo-menu');
+        this.nakama.open_add_todo_page();
       }
       this.global.p5KeyShortCut['Backquote'] = () => {
         this.SwitchTargetFilter();

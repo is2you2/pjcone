@@ -255,7 +255,7 @@ export class NakamaService {
 
   /** 할 일이 열린 상태에서 다른 할 일 열람시 행동 */
   AddTodoLinkAct: Function;
-  open_add_todo_page(info: string = '', navTarget = 'add-todo-menu') {
+  open_add_todo_page(info: string = '', navTarget = 'portal/main/add-todo-menu') {
     if (this.AddTodoLinkAct)
       this.AddTodoLinkAct(info);
     else this.global.RemoveAllModals(() => {
@@ -315,7 +315,7 @@ export class NakamaService {
             image: catch_image_attach,
             smallIcon_ln: 'todo',
           }, undefined, (_ev: any) => {
-            this.open_add_todo_page(JSON.stringify(noti_info));
+            this.open_add_todo_page(JSON.stringify(noti_info), 'add-todo-menu');
           });
           setTimeout(() => {
             try {
