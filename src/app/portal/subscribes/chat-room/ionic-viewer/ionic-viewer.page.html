@@ -97,6 +97,11 @@
                       <ion-label>{{lang.text['ContentViewer']['QuickViewerLink']}}</ion-label>
                     </ion-item>
                   </div>
+                  <div *ngIf="FileInfo.viewer == 'disabled'">
+                    <ion-item button (click)="ForceReadAsText()" (contextmenu)="OpenNewWindow()">
+                      <ion-label>{{lang.text['ContentViewer']['ForceReadAsText']}}</ion-label>
+                    </ion-item>
+                  </div>
                 </ion-list>
               </ion-content>
             </ng-template>

@@ -329,6 +329,17 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.ContentChanging = false;
   }
 
+  /** 지원하지 않는 파일에 대해 강제로 텍스트 읽기 시도 */
+  ForceReadAsText() {
+    if (this.ChangeToAnotherAdditionalAct)
+      this.ChangeToAnotherAdditionalAct();
+    this.ChangeToAnotherAdditionalAct = null;
+    let copied = JSON.parse(JSON.stringify(this.Relevances[this.RelevanceIndex - 1]));
+    copied.content['viewer'] = 'text';
+    this.FileInfo = { file_ext: '' };
+    this.reinit_content_data(copied);
+  }
+
   async DownloadCurrentFile(index?: number) {
     this.isDownloading = true;
     let startFrom = 0;
