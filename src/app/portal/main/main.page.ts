@@ -12,12 +12,12 @@ import { AlertController, IonicSafeString } from '@ionic/angular';
 enum TodoFilterCategory {
   /** 필터 없음: 전부 보여주기 */
   None = 0,
-  /** 중요도에 따라 필터링 */
-  Importance = 1,
-  /** 색상에 따라 필터링 */
-  Color = 2,
   /** 기한에 따라 */
-  Deadline = 3,
+  Deadline = 1,
+  /** 중요도에 따라 필터링 */
+  Importance = 2,
+  /** 색상에 따라 필터링 */
+  Color = 3,
   /** 생성자에 따라 필터링 */
   Creator = 4,
 }
