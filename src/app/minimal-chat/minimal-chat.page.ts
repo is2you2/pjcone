@@ -674,7 +674,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     let sep2 = address_without_protocol.split(':');
     let address = sep2.shift();
     let port = sep2.pop();
-    let check_prot = this.global.checkProtocolFromAddress(address);
+    let check_prot = sep.pop() || this.global.checkProtocolFromAddress(address);
     this.client.FFSClient = new WebSocket(`${check_prot ? 'wss:' : 'ws:'}//${address}:${port || 12013}`);
     this.client.FFSClient.onopen = () => {
       this.client.FFSClient.send(JSON.stringify({
