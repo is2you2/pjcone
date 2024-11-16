@@ -1387,7 +1387,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             file_ext: file_ext,
             filename: `voidDrawRemoveImage.${file_ext}`,
           }, {
-            user_id: `square_${this.QRNavParams.channel}_${this.QRNavParams.user_id}`,
+            user_id: `tmp_${this.QRNavParams.channel}_${this.QRNavParams.user_id}`,
           }, protocol, address, false, this.RemoteLoadingCtrl);
           this.webrtc.dataChannel.send(JSON.stringify({
             type: 'background',

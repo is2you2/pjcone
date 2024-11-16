@@ -733,7 +733,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     }
     try { // FFS 발송 시도
       if (!this.client.FallbackOverrideAddress) throw 'FFS 우선처리 지정되지 않음';
-      let url = await this.global.try_upload_to_user_custom_fs(FileInfo, `square_${this.client.JoinedChannel || 'public'}_${this.client.uuid}`,
+      let url = await this.global.try_upload_to_user_custom_fs(FileInfo, `tmp_${this.client.JoinedChannel || 'public'}_${this.client.uuid}`,
         undefined, this.client.FallbackOverrideAddress);
       if (!url) throw '분할 전송 시도 필요';
       else {
@@ -921,7 +921,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     // 첨부했던 파일들 삭제
     this.indexed.GetFileListFromDB('tmp_files/sqaure', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     for (let i = 0, j = this.client.FFS_Urls.length; i < j; i++)
-      this.global.remove_files_from_storage_with_key(this.client.FFS_Urls[i], `square_${this.client.JoinedChannel || 'public'}_${this.client.uuid}`, {});
+      this.global.remove_files_from_storage_with_key(this.client.FFS_Urls[i], `tmp_${this.client.JoinedChannel || 'public'}_${this.client.uuid}`, {});
     this.client.disconnect();
     this.client.FFS_Urls.length = 0;
     this.client.DownloadPartManager = {};
