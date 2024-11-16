@@ -1289,19 +1289,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (this.isStoreAtChanged && this.isModify) {
       // 첨부파일 복제 후 재등록
       for (let i = 0, j = received_json.attach.length; i < j; i++) {
-        if (received_json.attach[i].url) {
-          let filename = received_json.attach[i].filename;
-          let res = await fetch(received_json.attach[i].url, { signal: this.cont.signal });
-          let blob = await res.blob();
-          let tmp_path = `tmp_files/todo/${filename}`;
-          await this.indexed.saveBlobToUserPath(blob, tmp_path);
-          this.userInput.attach[i].path = tmp_path;
-          this.userInput.attach[i].blob = blob;
-          delete this.userInput.attach[i].thumbnail;
-          delete this.userInput.attach[i].alt_path;
-          delete this.userInput.attach[i].url;
-          delete this.userInput.attach[i]['exist'];
-        } else try {
+        try {
           let filename = received_json.attach[i].filename;
           let blob = await this.indexed.loadBlobFromUserPath(received_json.attach[i].path, received_json.attach[i].type);
           let tmp_path = `tmp_files/todo/${filename}`;
@@ -1309,7 +1297,21 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           this.userInput.attach[i].path = tmp_path;
           this.userInput.attach[i].blob = blob;
           delete this.userInput.attach[i]['exist'];
-        } catch (e) { }
+        } catch (e) {
+          if (received_json.attach[i].url) {
+            let filename = received_json.attach[i].filename;
+            let res = await fetch(received_json.attach[i].url, { signal: this.cont.signal });
+            let blob = await res.blob();
+            let tmp_path = `tmp_files/todo/${filename}`;
+            await this.indexed.saveBlobToUserPath(blob, tmp_path);
+            this.userInput.attach[i].path = tmp_path;
+            this.userInput.attach[i].blob = blob;
+            delete this.userInput.attach[i].thumbnail;
+            delete this.userInput.attach[i].alt_path;
+            delete this.userInput.attach[i].url;
+            delete this.userInput.attach[i]['exist'];
+          }
+        }
       }
       await this.nakama.deleteTodoFromStorage(true, received_json);
       this.isModify = false;
@@ -1379,13 +1381,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (has_attach && attach_changed) { // 첨부된 파일이 있다면
       if (received_json) { // 진입시 받은 정보가 있다면 수정 전 내용임
         try {
-          let path: string;
-          try {
-            path = `todo/${this.userInput.id}_${this.userInput.remote.isOfficial}_${this.userInput.remote.target}/thumbnail.png`;
-          } catch (e) {
-            path = `todo/${this.userInput.id}/thumbnail.png`;
-          }
-          await this.indexed.removeFileFromUserPath(path);
           for (let i = 0, j = received_json.attach.length; i < j; i++) {
             for (let k = 0, l = this.userInput.attach.length; k < l; k++) {
               if (this.userInput.attach[k]['path'] == received_json.attach[i]['path']) {
@@ -1437,6 +1432,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               this.userInput.attach[i]['path'] = `todo/${this.userInput.id}/${this.userInput.attach[i]['filename']}`;
             }
             try {
+              if (!blob) blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
               await this.indexed.saveBlobToUserPath(blob, this.userInput.attach[i]['path']);
             } catch (e) { }
           }
@@ -1618,18 +1614,19 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               console.log(e);
             }
           }
-        } else await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
-          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [{
-            collection: 'server_todo',
-            key: this.userInput.id,
-            permission_read: 2,
-            permission_write: 1,
-            value: this.userInput,
-          }]).then(v => {
-            this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-              .socket.sendMatchState(this.nakama.self_match[this.userInput.remote.isOfficial][this.userInput.remote.target].match_id, MatchOpCode.MANAGE_TODO,
-                encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
-          });
+        } else {
+          let v = await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.writeStorageObjects(
+            this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, [{
+              collection: 'server_todo',
+              key: this.userInput.id,
+              permission_read: 2,
+              permission_write: 1,
+              value: this.userInput,
+            }]);
+          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
+            .socket.sendMatchState(this.nakama.self_match[this.userInput.remote.isOfficial][this.userInput.remote.target].match_id, MatchOpCode.MANAGE_TODO,
+              encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
+        }
         if (!this.isModify)
           await this.nakama.updateRemoteCounter(this.userInput.remote.isOfficial, this.userInput.remote.target);
       } catch (e) {

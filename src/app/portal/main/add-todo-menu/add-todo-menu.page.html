@@ -11,7 +11,7 @@
   <div id="p5Drop_todo"
     style="position: absolute; width: 100%; height: 100%; display: flex; pointer-events: none; z-index: 500;">
   </div>
-  <table id="main_table">
+  <table id="main_table" style="width: 100%;">
     <tr style="height: 100%;">
       <td style="vertical-align: top;">
         <div id="p5timer" style="position: absolute; width: 100%; height: 8px; z-index: 2;"></div>
@@ -155,7 +155,7 @@
             </div>
           </div>
 
-          <div style="width: 100%; text-align: center; padding-bottom: 16px;">
+          <div *ngIf="isStoreAtChangable" style="width: 100%; text-align: center; padding-bottom: 16px;">
             <div *ngFor="let button of extended_buttons" style="display: inline-block;">
               <div class="ext_button ext_button_override" [style]="'cursor: ' + (button['cursor'] || 'pointer') + ';'"
                 (click)="button['act']()" (contextmenu)="button['context'] ? button['context']() : null"
