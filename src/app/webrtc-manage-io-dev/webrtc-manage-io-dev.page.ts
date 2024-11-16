@@ -68,7 +68,7 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
       let list = await this.indexed.loadTextFromUserPath('servers/webrtc_server.json');
       this.ServerInfos = JSON.parse(list);
       for (let i = 0, j = this.ServerInfos.length; i < j; i++) {
-        let header_address = await this.global.GetHeaderAddress(undefined, true);
+        let header_address = await this.global.GetHeaderAddress();
         let address = `${header_address}?rtcserver=[${this.ServerInfos[i].urls}],${this.ServerInfos[i].username},${this.ServerInfos[i].credential}`;
         let QRCode = this.global.readasQRCodeFromString(address);
         this.QRCodes[i] = QRCode;
@@ -154,7 +154,7 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
       return;
     }
     let isExist = await this.nakama.SaveWebRTCServer(this.userInput);
-    let header_address = await this.global.GetHeaderAddress(undefined, true);
+    let header_address = await this.global.GetHeaderAddress();
     let address = `${header_address}?rtcserver=[${this.userInput.urls}],${this.userInput.username},${this.userInput.credential}`;
     let QRCode = this.global.readasQRCodeFromString(address);
     if (this.index !== undefined)
@@ -173,7 +173,7 @@ export class WebrtcManageIoDevPage implements OnInit, OnDestroy {
   }
 
   async copy_info(index: number) {
-    let header_address = await this.global.GetHeaderAddress(undefined, true);
+    let header_address = await this.global.GetHeaderAddress();
     let address = `${header_address}?rtcserver=[${this.ServerInfos[index].urls}],${this.ServerInfos[index].username},${this.ServerInfos[index].credential}`;
     this.global.WriteValueToClipboard('text/plain', address);
   }

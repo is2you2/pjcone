@@ -216,7 +216,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
           link.onclick = async () => {
             this.ResultSharedAddress = '';
             // 사용자 지정 서버가 있는지 검토우회
-            this.ResultSharedAddress = `${await this.global.GetHeaderAddress(undefined, true)}?postViewer=${this.PostInfo['OutSource']}`;
+            this.ResultSharedAddress = `${await this.global.GetHeaderAddress()}?postViewer=${this.PostInfo['OutSource']}`;
             // QRCode 이미지 생성
             this.QRCodeSRC = this.global.readasQRCodeFromString(this.ResultSharedAddress);
             this.QuickPostView.onDidDismiss().then(() => {

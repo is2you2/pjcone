@@ -84,6 +84,12 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.navCtrl.pop();
     }
     this.CreateHint();
+    this.ToggleQRCodeForm();
+  }
+
+  /** QRCode 양식 전환 */
+  ToggleQRCodeForm(force?: boolean) {
+    localStorage.setItem('useQRCodeBasic', `${this.global.useLocalAddress}`);
     this.global.GetHeaderAddress().then(address => {
       this.QuickMainAddress = address;
       this.QRCodeSRC = this.global.readasQRCodeFromString(this.QuickMainAddress);

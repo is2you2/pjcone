@@ -57,7 +57,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         this.file_sel_id = `group_detail_${this.info.id}_${new Date().getTime()}}`;
         this.info_orig = JSON.parse(JSON.stringify(navParams.info));
         this.nakama.socket_reactive['group_detail'] = this;
-        this.global.GetHeaderAddress(undefined, true).then(address => {
+        this.global.GetHeaderAddress().then(address => {
           this.QRCodeSRC = this.global.readasQRCodeFromString(
             `${address}?group=${this.info.name},${this.info.id}`.replace(' ', '%20'));
         });

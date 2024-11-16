@@ -2139,7 +2139,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.ContentChanging = true;
     this.useP5Navigator = false;
     this.OpenModal = true;
-    let address = await this.global.GetHeaderAddress(undefined, true);
+    let address = await this.global.GetHeaderAddress();
     this.QuickMainAddress = `${address}?fileviewer=${this.FileInfo.url},${this.FileInfo.viewer}`.replace(' ', '%20');
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.QuickMainAddress);
     this.QuickFileViewer.onDidDismiss().then(() => {
@@ -2155,7 +2155,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   /** 빠른 진입 링크로 새로운 창에서 열기 */
   OpenNewWindow() {
     let OpenWindow = async () => {
-      let address = await this.global.GetHeaderAddress(undefined, true);
+      let address = await this.global.GetHeaderAddress();
       let result = `${address}?fileviewer=${this.FileInfo.url},${this.FileInfo.viewer}`;
       window.open(result, '_blank');
     }

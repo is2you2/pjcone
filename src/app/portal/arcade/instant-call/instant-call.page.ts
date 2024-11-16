@@ -172,7 +172,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
             channel: json.id,
           }));
           this.ChannelId = json.id;
-          this.global.GetHeaderAddress(undefined, true)
+          this.global.GetHeaderAddress()
             .then(address => {
               this.QRCodeAsString = `${address}?instc=${this.UserInputCustomAddress},${this.ChannelId},${this.Port || ''},${this.Username || ''},${this.Password || ''},${this.signalPort || ''}`;
               this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRCodeAsString);

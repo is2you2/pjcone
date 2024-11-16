@@ -42,7 +42,7 @@ export class ServerDetailPage implements OnInit, OnDestroy {
   }
 
   GenerateQRCode() {
-    this.global.GetHeaderAddress(undefined, true).then(address => {
+    this.global.GetHeaderAddress().then(address => {
       this.QRCodeSRC = this.global.readasQRCodeFromString(
         `${address}?server=${this.dedicated_info.useSSL ? 'https' : 'http'}://${this.dedicated_info.address || ''}${this.dedicated_info.nakama_port ? `:${this.dedicated_info.nakama_port}` : ''},${this.dedicated_info.key || ''},${this.dedicated_info.cdn_port || ''},${this.dedicated_info.apache_port || ''},${this.dedicated_info.square_port || ''},${this.dedicated_info.webrtc_port || ''}`.replace(' ', '%20'));
     });
@@ -80,7 +80,7 @@ export class ServerDetailPage implements OnInit, OnDestroy {
 
   /** 시작 진입 주소 생성 */
   copy_startup_address() {
-    this.global.GetHeaderAddress(undefined, true).then(address => {
+    this.global.GetHeaderAddress().then(address => {
       let startup_address =
         `${address}?server=${this.dedicated_info.useSSL ? 'https' : 'http'}://${this.dedicated_info.address || ''}${this.dedicated_info.nakama_port ? `:${this.dedicated_info.nakama_port}` : ''},${this.dedicated_info.key || ''},${this.dedicated_info.cdn_port || ''},${this.dedicated_info.apache_port || ''},${this.dedicated_info.square_port || ''},${this.dedicated_info.webrtc_port || ''}`.replace(' ', '%20');
       this.global.WriteValueToClipboard('text/plain', startup_address);

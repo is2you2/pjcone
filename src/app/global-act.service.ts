@@ -140,6 +140,7 @@ export class GlobalActService {
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
       isDarkMode = event.matches ? true : false;
     });
+    this.useLocalAddress = localStorage.getItem('useQRCodeBasic') == 'true';
   }
 
   /** 해야할 일 캔버스 */
@@ -1321,29 +1322,26 @@ export class GlobalActService {
     return address;
   }
 
+  /** QRCode 양식 사용 여부 */
+  useLocalAddress = false;
   /** QR코드 생성시 사용할 주소 검토
    * @param address 사용할 주소, 없으면 현재 연결된 주소 사용
    * @param [force=false] 강제로 github 주소 송출
    * @returns 현재 연결 주소 또는 github 주소
    */
-  async GetHeaderAddress(address?: string, force = false) {
+  async GetHeaderAddress() {
     let header_address: string;
     try {
-      if (force) throw '강제로 github 주소 발생시키기';
-      if (!address) {
-        address = this.GetConnectedAddress();
-        return address;
-      }
-      let extract = `http://` + address.split('://')[1];
-      let HasLocalPage = `${extract}:12000${window['sub_path']}`;
+      if (!this.useLocalAddress) throw '강제로 github 주소 발생시키기';
+      let address = this.GetConnectedAddress();
       let cont = new AbortController();
       const id = setTimeout(() => {
         cont.abort();
         cont = null;
       }, 250);
-      let res = await fetch(HasLocalPage, { signal: cont.signal });
+      let res = await fetch(address, { signal: cont.signal });
       clearTimeout(id);
-      if (res.ok) header_address = `${extract}:12000${window['sub_path']}`;
+      if (res.ok) header_address = address;
       else throw '주소 없음';
     } catch (e) {
       header_address = 'https://is2you2.github.io/pjcone_pwa/';

@@ -156,6 +156,10 @@
       <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
         <div
           style="width: 400px; min-height: 455px; background-color: var(--chatroom-background); text-align: center; padding: 16px">
+          <ion-item button (click)="ToggleQRCodeForm()">
+            <ion-toggle style="pointer-events: none;" [(ngModel)]="global.useLocalAddress">
+              {{lang.text['Settings']['QRCodeBasic']}}</ion-toggle>
+          </ion-item>
           <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy; margin-bottom: 8px;"
             (click)="copy_address(QuickMainAddress)" alt="QuickMainLink" />
           <ion-item button (click)="copy_address(QuickMainAddress)">
