@@ -4364,14 +4364,22 @@ export class NakamaService {
               text: `${this.lang.text['Nakama']['AlreadyHaveTargetName']}: ${json[i].value.name}`,
             });
           delete json[i].value.name;
+          let InputEnd = false;
           this.global.PageDismissAct['quick-server-detail'] = () => {
             this.global.RestoreShortCutAct('quick-server-detail');
             delete this.global.PageDismissAct['quick-server-detail'];
+            InputEnd = true;
           }
           this.global.StoreShortCutAct('quick-server-detail');
           this.global.ActLikeModal('server-detail', {
             data: json[i].value,
           });
+          let WaitingInput = async () => {
+            while (!InputEnd) {
+              await new Promise((done) => setTimeout(done, 0));
+            }
+          }
+          await WaitingInput();
           break;
         case 'group_dedi': // 그룹사설 채팅 접근
           await this.global.RemoveAllModals();
