@@ -393,7 +393,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               if (v.data) this.voidDraw_fileAct_callback(v, related_creators, index);
               delete this.global.PageDismissAct['quick-modify-image'];
             }
-            this.global.ActLikeModal('void-draw', {
+            this.global.ActLikeModal('portal/main/add-todo-menu/void-draw', {
               path: _FileInfo.alt_path || _FileInfo.path,
               width: v.width,
               height: v.height,
@@ -844,7 +844,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           if (v.data) this.voidDraw_fileAct_callback(v);
           delete this.global.PageDismissAct['todo-image-add'];
         }
-        this.global.ActLikeModal('void-draw', {
+        this.global.ActLikeModal('portal/main/add-todo-menu/void-draw', {
           dismiss: 'todo-image-add',
         });
         break;
@@ -1155,7 +1155,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               }
               delete this.global.PageDismissAct['todo-modify-image'];
             }
-            this.global.ActLikeModal('void-draw', {
+            this.global.ActLikeModal('portal/main/add-todo-menu/void-draw', {
               path: v.data.path || this.userInput.attach[v.data.index]['alt_path'] || this.userInput.attach[v.data.index]['path'],
               width: v.data.width,
               height: v.data.height,
