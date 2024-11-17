@@ -363,15 +363,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 첨부파일 우클릭시 빠른 이미지 편집 */
   AttachmentContextMenu(_FileInfo: FileInfo, index: number) {
     let LoadAct = async () => {
-      let FileURL = _FileInfo.url || URL.createObjectURL(_FileInfo.blob);
-      try { // 파일 없으면 생성하기
-        let check = await this.indexed.checkIfFileExist(_FileInfo.alt_path || _FileInfo.path);
-        if (check) throw '파일 있음';
-        let res = await fetch(_FileInfo.url);
-        if (!res.ok) throw '인터넷 연결 없음';
-        let blob = await res.blob();
-        await this.indexed.saveBlobToUserPath(blob, _FileInfo.alt_path || _FileInfo.path);
-      } catch (e) { }
+      let FileURL = URL.createObjectURL(_FileInfo.blob);
       new p5((p: p5) => {
         p.setup = () => {
           p.noCanvas();
@@ -400,13 +392,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               type: _FileInfo.type,
               dismiss: 'quick-modify-image',
             });
-            if (!_FileInfo.url)
-              URL.revokeObjectURL(FileURL);
+            URL.revokeObjectURL(FileURL);
             p.remove();
           }, e => {
             console.log('빠른 편집기 이동 실패: ', e);
-            if (!_FileInfo.url)
-              URL.revokeObjectURL(FileURL);
+            URL.revokeObjectURL(FileURL);
             p.remove();
           });
         }
@@ -499,10 +489,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       has_thumbnail = await this.indexed.checkIfFileExist(`todo/${this.userInput.id}/thumbnail.png`);
     }
     if (this.userInput.attach.length) {
-      let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SyncAttaches'] });
       loading.present();
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
-        loading.message = `${this.lang.text['TodoDetail']['WIP']}: ${this.userInput.attach[i].filename}`;
+        loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: ${this.userInput.attach[i].filename}`;
         try {
           if (this.userInput.remote) {
             try {
@@ -511,14 +501,28 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 this.userInput.remote.isOfficial, this.userInput.remote.target, 'todo_attach', this.userInput.remote.creator_id)).value;
               if (!this.userInput.attach[i].blob) throw '불러오기 실패함';
             } catch (e) {
-              if (this.userInput.attach[i].url)
+              if (this.userInput.attach[i].url) {
+                let checkFile = await this.indexed.checkIfFileExist(this.userInput.attach[i].alt_path || this.userInput.attach[i].path);
+                if (!checkFile) {
+                  let res = await fetch(this.userInput.attach[i].url);
+                  if (res.ok) {
+                    let blob = await res.blob();
+                    await this.indexed.saveBlobToUserPath(blob, this.userInput.attach[i].alt_path || this.userInput.attach[i].path);
+                    let loaded_blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i].path, this.userInput.attach[i].type);
+                    this.userInput.attach[i].blob = loaded_blob;
+                  } else {
+                    console.log('즉시 다운로드 실패: ', res);
+                    this.p5toast.show({
+                      text: `${this.lang.text['Nakama']['FailedDownload']}: ${res.statusText} (${res.status})`,
+                    });
+                  }
+                }
                 this.userInput.attach[i].thumbnail = this.userInput.attach[i].url;
+              }
             }
             if (!has_thumbnail) { // 썸네일 이미지가 없다면 만들기
               if (this.userInput.attach[i].viewer == 'image') {
-                let header_image = this.userInput.attach[i].url;
-                if (!header_image && this.userInput.attach[i].blob.size)
-                  header_image = URL.createObjectURL(this.userInput.attach[i].blob);
+                let header_image = URL.createObjectURL(this.userInput.attach[i].blob);
                 await new Promise((done: any) => {
                   new p5((p: p5) => {
                     p.setup = () => {
