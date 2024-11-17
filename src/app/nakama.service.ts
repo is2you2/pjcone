@@ -4345,6 +4345,13 @@ export class NakamaService {
     else await this.act_from_QRInfo(json);
   }
 
+  /** 서버 정보를 QR코드 문자열로 반환 */
+  async GenerateQRCode(dedicated_info: ServerInfo) {
+    let address = await this.global.GetHeaderAddress();
+    let QRCodeSRC = `${address}?server=${dedicated_info.useSSL ? 'https' : 'http'}://${dedicated_info.address || ''}${dedicated_info.nakama_port ? `:${dedicated_info.nakama_port}` : ''},${dedicated_info.key || ''},${dedicated_info.cdn_port || ''},${dedicated_info.apache_port || ''},${dedicated_info.square_port || ''},${dedicated_info.webrtc_port || ''}`.replace(' ', '%20');
+    return QRCodeSRC;
+  }
+
   async act_from_QRInfo(json: any) {
     // 번역 준비가 끝날 때까지 기다리기
     for (let i = 0, j = 20; i < j; i++) {
@@ -4373,6 +4380,9 @@ export class NakamaService {
           this.global.StoreShortCutAct('quick-server-detail');
           this.global.ActLikeModal('server-detail', {
             data: json[i].value,
+          });
+          this.p5toast.show({
+            text: this.lang.text['Nakama']['AddNewServer']
           });
           let WaitingInput = async () => {
             while (!InputEnd) {
@@ -4406,10 +4416,16 @@ export class NakamaService {
             if (this.AfterLoginActDone) {
               let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, info['isOfficial'], info['target'], true);
               this.go_to_chatroom_without_admob_act(c);
-            } else this.AfterLoginAct.push(async () => {
-              let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, info['isOfficial'], info['target'], true);
-              this.go_to_chatroom_without_admob_act(c);
-            });
+            } else {
+              this.AfterLoginAct.push(async () => {
+                let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, info['isOfficial'], info['target'], true);
+                this.go_to_chatroom_without_admob_act(c);
+              });
+              this.p5toast.show({
+                text: this.lang.text['Nakama']['NeedLogin'],
+              });
+              this.open_profile_page();
+            }
           } else this.p5toast.show({
             text: this.lang.text['Nakama']['NoLoginServer'],
           });
@@ -4421,10 +4437,16 @@ export class NakamaService {
             if (this.AfterLoginActDone) {
               let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, info['isOfficial'], info['target'], true);
               this.go_to_chatroom_without_admob_act(c);
-            } else this.AfterLoginAct.push(async () => {
-              let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, info['isOfficial'], info['target'], true);
-              this.go_to_chatroom_without_admob_act(c);
-            });
+            } else {
+              this.AfterLoginAct.push(async () => {
+                let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, info['isOfficial'], info['target'], true);
+                this.go_to_chatroom_without_admob_act(c);
+              });
+              this.p5toast.show({
+                text: this.lang.text['Nakama']['NeedLogin'],
+              });
+              this.open_profile_page();
+            }
           } else this.p5toast.show({
             text: this.lang.text['Nakama']['NoLoginServer'],
           });
@@ -4522,7 +4544,7 @@ export class NakamaService {
       for (let info of all_server)
         if (info.address == host
           && info.useSSL == useSSL
-          && info.nakama_port == port) {
+          && (info.nakama_port || 7350) == port) {
           result = info;
           break;
         }

@@ -41,11 +41,9 @@ export class ServerDetailPage implements OnInit, OnDestroy {
     });
   }
 
-  GenerateQRCode() {
-    this.global.GetHeaderAddress().then(address => {
-      this.QRCodeSRC = this.global.readasQRCodeFromString(
-        `${address}?server=${this.dedicated_info.useSSL ? 'https' : 'http'}://${this.dedicated_info.address || ''}${this.dedicated_info.nakama_port ? `:${this.dedicated_info.nakama_port}` : ''},${this.dedicated_info.key || ''},${this.dedicated_info.cdn_port || ''},${this.dedicated_info.apache_port || ''},${this.dedicated_info.square_port || ''},${this.dedicated_info.webrtc_port || ''}`.replace(' ', '%20'));
-    });
+  async GenerateQRCode() {
+    let QRString = await this.nakama.GenerateQRCode(this.dedicated_info);
+    this.QRCodeSRC = this.global.readasQRCodeFromString(QRString);
   }
 
   /** 사설서버 SSL 체크용 페이지 열람 */
