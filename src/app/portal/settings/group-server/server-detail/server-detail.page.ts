@@ -99,10 +99,10 @@ export class ServerDetailPage implements OnInit, OnDestroy {
     // 기능 추가전 임시처리
     this.dedicated_info.address = this.dedicated_info.address || '192.168.0.1';
     this.dedicated_info.nakama_port = this.dedicated_info.nakama_port;
-    this.dedicated_info.cdn_port = this.dedicated_info.nakama_port;
-    this.dedicated_info.apache_port = this.dedicated_info.nakama_port;
-    this.dedicated_info.square_port = this.dedicated_info.nakama_port;
-    this.dedicated_info.webrtc_port = this.dedicated_info.nakama_port;
+    this.dedicated_info.cdn_port = this.dedicated_info.cdn_port;
+    this.dedicated_info.apache_port = this.dedicated_info.apache_port;
+    this.dedicated_info.square_port = this.dedicated_info.square_port;
+    this.dedicated_info.webrtc_port = this.dedicated_info.webrtc_port;
     this.dedicated_info.useSSL = this.ServerDetailuseSSL.checked || false;
     this.dedicated_info.isOfficial = this.dedicated_info.isOfficial || 'unofficial';
     this.dedicated_info.key = this.dedicated_info.key || 'defaultkey';
