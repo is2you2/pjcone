@@ -828,8 +828,6 @@ export class NakamaService {
               console.error('이미지 버전 업데이트 오류: ', e);
             }
           }
-          let is_exist = await this.indexed.checkIfFileExist('servers/self/content.pck');
-          if (is_exist) this.sync_save_file({ path: 'servers/self/content.pck' }, info.isOfficial, info.target, 'user_public', 'main_content');
           await this.after_login(info.isOfficial, info.target, info.useSSL);
           break;
         default:
@@ -4365,31 +4363,29 @@ export class NakamaService {
           this.open_profile_page();
           break;
         case 'server': // 그룹 서버 자동등록처리
-          let hasAlreadyTargetKey = Boolean(this.statusBar.groupServer['unofficial'][json[i].value.name]);
-          if (hasAlreadyTargetKey)
-            this.p5toast.show({
-              text: `${this.lang.text['Nakama']['AlreadyHaveTargetName']}: ${json[i].value.name}`,
-            });
-          delete json[i].value.name;
-          let InputEnd = false;
-          this.global.PageDismissAct['quick-server-detail'] = () => {
-            this.global.RestoreShortCutAct('quick-server-detail');
-            delete this.global.PageDismissAct['quick-server-detail'];
-            InputEnd = true;
-          }
-          this.global.StoreShortCutAct('quick-server-detail');
-          this.global.ActLikeModal('server-detail', {
-            data: json[i].value,
-          });
-          this.p5toast.show({
-            text: this.lang.text['Nakama']['AddNewServer']
-          });
-          let WaitingInput = async () => {
-            while (!InputEnd) {
-              await new Promise((done) => setTimeout(done, 0));
+          let target_address: string = `${json[i].value.useSSL ? 'https' : 'http'}://${json[i].value.address}:${json[i].value.port || 7350}`;
+          let CheckIfAlreadyHaveServer = this.CheckIfHasServer(target_address);
+          if (!CheckIfAlreadyHaveServer) {
+            let InputEnd = false;
+            this.global.PageDismissAct['quick-server-detail'] = () => {
+              this.global.RestoreShortCutAct('quick-server-detail');
+              delete this.global.PageDismissAct['quick-server-detail'];
+              InputEnd = true;
             }
+            this.global.StoreShortCutAct('quick-server-detail');
+            this.global.ActLikeModal('server-detail', {
+              data: json[i].value,
+            });
+            this.p5toast.show({
+              text: this.lang.text['Nakama']['AddNewServer']
+            });
+            let WaitingInput = async () => {
+              while (!InputEnd) {
+                await new Promise((done) => setTimeout(done, 0));
+              }
+            }
+            await WaitingInput();
           }
-          await WaitingInput();
           break;
         case 'group_dedi': // 그룹사설 채팅 접근
           await this.global.RemoveAllModals();
@@ -4530,7 +4526,7 @@ export class NakamaService {
   /** 일반 웹 주소를 검토하여 등록된 서버인지 검토  
    * 서버에 대한 것이므로 프로토콜 검토는 http 선에서 한다
    * @param url 평문 모양새의 서버 주소 (proto://host:port)
-   * @returns 등록된 서버면 등록된 서버 정보 반환(ServerInfo), 등록되지 않았으면 신규 등록 후 반환
+   * @returns 등록된 서버면 등록된 서버 정보 반환(ServerInfo), 등록되지 않았으면 undefined 반환
    */
   CheckIfHasServer(url: string) {
     let result: any = false;
