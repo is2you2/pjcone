@@ -251,7 +251,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
         creator.style('font-weight', 'bold');
         creator.style('font-size', '17px');
         creator.style('cursor', 'pointer');
-        creator.elt.onclick = () => {
+        creator.mouseClicked(() => {
           if (this.PostInfo['creator_id'] == 'me') {
             this.nakama.open_profile_page();
           } else try {// 서버 사용자 검토
@@ -279,7 +279,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
               text: `${this.lang.text['PostViewer']['CannotOpenProfile']}: ${e}`,
             });
           }
-        }
+        });
         creator.parent(contentDiv);
         // 내용
         if (this.PostInfo['content']) {
@@ -328,7 +328,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   let pimg = p.createP();
                   let img = p.createImg(FileURL, `${index}`);
                   img.style('cursor', 'pointer');
-                  img.elt.onclick = () => {
+                  img.mouseClicked(() => {
                     let createRelevances = [];
                     for (let attach of this.PostInfo['attachments'])
                       createRelevances.push({ content: JSON.parse(JSON.stringify(attach)) });
@@ -344,7 +344,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       noEdit: true,
                       dismiss: 'post-viewer-image-view',
                     });
-                  }
+                  });
                   img.parent(pimg);
                   content[i] = pimg;
                 }
@@ -415,7 +415,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                         if (createDuplicate) {
                           try {
                             CreateClickPanel(godot_frame, index);
-                            godot_frame.elt.onclick = () => {
+                            godot_frame.mouseClicked(() => {
                               let createRelevances = [];
                               for (let attach of this.PostInfo['attachments'])
                                 createRelevances.push({ content: attach });
@@ -429,7 +429,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                                 noEdit: true,
                                 dismiss: 'post-viewer-file-view',
                               });
-                            }
+                            });
                           } catch (e) {
                             console.log('프레임 삭제 행동실패: ', e);
                           }
@@ -449,7 +449,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                         quit_ionic: () => {
                           try {
                             CreateClickPanel(godot_frame, index);
-                            godot_frame.elt.onclick = () => {
+                            godot_frame.mouseClicked(() => {
                               let createRelevances = [];
                               for (let attach of this.PostInfo['attachments'])
                                 createRelevances.push({ content: attach });
@@ -463,7 +463,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                                 noEdit: true,
                                 dismiss: 'post-viewer-file-view',
                               });
-                            }
+                            });
                           } catch (e) {
                             console.log('프레임 삭제 행동실패: ', e);
                           }
@@ -528,7 +528,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   let EmptyDiv = p.createDiv();
                   EmptyDiv.parent(contentDiv);
                   CreateClickPanel(EmptyDiv, index);
-                  EmptyDiv.elt.onclick = () => {
+                  EmptyDiv.mouseClicked(() => {
                     let createRelevances = [];
                     for (let attach of this.PostInfo['attachments'])
                       createRelevances.push({ content: attach });
@@ -542,7 +542,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       noEdit: true,
                       dismiss: 'post-viewer-file-view',
                     });
-                  }
+                  });
                   content[i] = EmptyDiv;
                 }
                   break;
@@ -572,12 +572,12 @@ export class PostViewerPage implements OnInit, OnDestroy {
                     targetSecond += AsNumber * ratio;
                     ratio *= 60;
                   }
-                  TimeLink.elt.onclick = () => {
+                  TimeLink.mouseClicked(() => {
                     try { // 사용자가 직접 타이핑 치는 경우를 대비
                       CatchMedia.currentTime = targetSecond;
                       CatchMedia.play();
                     } catch (e) { }
-                  }
+                  });
                 });
               } catch (e) { }
             }

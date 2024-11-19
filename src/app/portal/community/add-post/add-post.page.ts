@@ -562,12 +562,12 @@ export class AddPostPage implements OnInit, OnDestroy {
   CreateFloatingVoiceTimeHistoryAddButton() {
     this.floatButton.RemoveFloatButton('addpost-timer');
     let float_button = this.floatButton.AddFloatButton('addpost-timer', 'timer-outline');
-    float_button.elt.onclick = () => {
+    float_button.mouseClicked(() => {
       this.AddVoiceTimeHistory();
       this.p5toast.show({
         text: `${this.lang.text['AddPost']['RecordVoiceTime']}: ${this.extended_buttons[5].name}`,
       });
-    };
+    });
   }
 
   async StopAndSaveVoiceRecording() {

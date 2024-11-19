@@ -119,9 +119,9 @@ export class GroupServerPage implements OnInit, OnDestroy {
         imgDiv.style('background-size', 'cover');
         imgDiv.style('cursor', 'pointer');
         imgDiv.parent(this.gsCanvasDiv);
-        imgDiv.elt.onclick = () => {
+        imgDiv.mouseClicked(() => {
           this.change_img_from_file();
-        }
+        });
         imgDiv.elt.oncontextmenu = () => {
           let contextmenuAct = async () => {
             let clipboard = await this.global.GetValueFromClipboard();
@@ -150,9 +150,9 @@ export class GroupServerPage implements OnInit, OnDestroy {
         OnlineLamp.style('cursor', 'pointer');
         OnlineLamp.style('z-index', '1');
         OnlineLamp.parent(imgDiv);
-        OnlineLamp.elt.onclick = () => {
+        OnlineLamp.mouseClicked(() => {
           this.toggle_online();
-        }
+        });
         // 부드러운 이미지 전환
         selected_image = p.createImg(this.nakama.users.self['img'], 'profile_img');
         selected_image.style('width', `${IMAGE_SIZE}px`);
@@ -212,14 +212,14 @@ export class GroupServerPage implements OnInit, OnDestroy {
         nameSpan.parent(nameDiv);
         let editSpan = p.createSpan('<ion-icon name="pencil-outline" style="width: 24px; height: 24px; margin-left: 8px"></ion-icon>');
         editSpan.parent(nameDiv);
-        nameDiv.elt.onclick = () => { // 편집 모드로 변경
+        nameDiv.mouseClicked(() => { // 편집 모드로 변경
           this.EditingName = true;
           nameEditDiv.value(this.nakama.users.self['display_name'] ? nameSpan.html() : '');
           nameEditDiv.show();
           nameDiv.hide();
           nameEditDiv.elt.focus();
           this.isClickDisplayNameEdit = true;
-        }
+        });
         // 사용자 이름 (input)
         nameEditDiv = p.createInput();
         nameEditDiv.style('font-size', NAME_SIZE);
@@ -251,9 +251,9 @@ export class GroupServerPage implements OnInit, OnDestroy {
           uuidDiv.style('align-self', 'center');
           uuidDiv.style('cursor', 'copy');
           uuidDiv.parent(ExceptPic);
-          uuidDiv.elt.onclick = () => {
+          uuidDiv.mouseClicked(() => {
             this.copy_id();
-          }
+          });
         }
         // 사용자 정보 입력
         InputForm.style('margin-top', '60px');
@@ -323,10 +323,10 @@ export class GroupServerPage implements OnInit, OnDestroy {
         LoginButton.style('border-radius', '16px');
         LoginButton.style('padding', '12px 30px');
         LoginButton.parent(InputForm);
-        LoginButton.elt.onclick = () => {
+        LoginButton.mouseClicked(() => {
           LoginButton.elt.disabled = true;
           this.toggle_online();
-        }
+        });
       }
       p.draw = () => {
         if (FadeOutTrashedLerp > 0) {

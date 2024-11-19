@@ -132,9 +132,9 @@ export class MiniranchatClientService {
     this.p5OnDediMessage = (color: string) => {
       float_button.style(`background-color: #${color}88`);
     }
-    float_button.elt.onclick = () => {
+    float_button.mouseClicked(() => {
       this.RejoinGroupChat();
-    };
+    });
   }
 
   RemoveFloatButton() {

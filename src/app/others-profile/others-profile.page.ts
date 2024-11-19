@@ -178,7 +178,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         nameSpan.parent(nameDiv);
         let editSpan = p.createSpan('<ion-icon name="pencil-outline" style="width: 24px; height: 24px; margin-left: 8px"></ion-icon>');
         editSpan.parent(nameDiv);
-        nameDiv.elt.onclick = () => { // 편집 모드로 변경
+        nameDiv.mouseClicked(() => { // 편집 모드로 변경
           EditingName = true;
           nameEditDiv.value(nameSpan.html());
           nameEditDiv.attribute('placeholder', this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']);
@@ -186,7 +186,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
           nameDiv.hide();
           nameEditDiv.elt.focus();
           this.isClickDisplayNameEdit = true;
-        }
+        });
         nameDiv.parent(ExceptPic);
         // 사용자 이름 (input)
         nameEditDiv = p.createInput();
@@ -227,9 +227,9 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         uuidDiv.style('text-align', 'center');
         uuidDiv.style('cursor', 'copy');
         uuidDiv.parent(ExceptPic);
-        uuidDiv.elt.onclick = () => {
+        uuidDiv.mouseClicked(() => {
           this.copy_id();
-        }
+        });
       }
       p.draw = () => {
         if (FadeOutTrashedLerp > 0) {

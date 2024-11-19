@@ -1246,7 +1246,7 @@ export class GlobalActService {
           }
           this.BlenderLoadingCtrl.dismiss();
           setTimeout(() => {
-            LogDiv.elt.remove();
+            LogDiv.remove()
           }, 8000);
           OnLoaded();
           let keys = Object.keys(this.JSBlendCache);
