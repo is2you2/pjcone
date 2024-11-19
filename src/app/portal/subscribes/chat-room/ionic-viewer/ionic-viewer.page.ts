@@ -245,7 +245,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         break;
     }
     this.showEdit = !Boolean(this.navParams.noEdit);
-    this.isPWA = isPlatform != 'Android' && isPlatform != 'iOS';
     this.init_viewer();
   }
 
@@ -1381,8 +1380,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           FileMenu.push(() => this.modify_image());
         if (!this.NeedDownloadFile && !this.isQuickLaunchViewer)
           FileMenu.push(() => this.ShareContent());
-        if (!this.NeedDownloadFile && this.isPWA)
+        if (!this.NeedDownloadFile)
           FileMenu.push(() => this.download_file());
+        if (!this.NeedDownloadFile && this.FileInfo['viewer'] == 'image')
+          FileMenu.push(() => this.CopyImageToClipboard());
         FileMenu.push(() => this.open_bottom_modal());
         if (this.CurrentFileSize && this.FileInfo['url'])
           FileMenu.push(() => this.RemoveFile());
@@ -2137,9 +2138,25 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 클립보드에 이미지 복사하기 */
+  async CopyImageToClipboard() {
+    if (!this.blob) {
+      try {
+        let res = await fetch(this.FileInfo.url);
+        this.blob = await res.blob();
+      } catch (e) {
+        this.p5toast.show({
+          text: `${this.lang.text['GlobalAct']['ClipboardFailed']}`,
+        });
+        return;
+      }
+    }
+    if (this.blob)
+      this.global.WriteValueToClipboard(this.FileInfo.type, this.blob, 'image.png');
+  }
+
   /** 덮어쓰기 전단계 */
   forceWrite = false;
-  isPWA = false;
   async download_file() {
     if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
       let hasFile = await this.indexed.checkIfFileExist(this.FileInfo.alt_path || this.FileInfo.path);

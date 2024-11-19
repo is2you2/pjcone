@@ -68,10 +68,15 @@
                       <ion-label>{{lang.text['ContentViewer']['ShareContent']}}</ion-label>
                     </ion-item>
                   </div>
-                  <div *ngIf="!NeedDownloadFile && isPWA">
+                  <div *ngIf="!NeedDownloadFile">
                     <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">S</div>
                     <ion-item button (click)="download_file()">
                       <ion-label>{{lang.text['ContentViewer']['Download']}}</ion-label>
+                    </ion-item>
+                  </div>
+                  <div *ngIf="!NeedDownloadFile && FileInfo['viewer'] == 'image'">
+                    <ion-item button (click)="CopyImageToClipboard()">
+                      <ion-label>{{lang.text['ContentViewer']['CopyToClipboard']}}</ion-label>
                     </ion-item>
                   </div>
                   <div>
