@@ -68,7 +68,7 @@ export class ArcadePage implements OnInit {
     this.WillLeave = true;
   }
 
-  /** 빠른 진입 링크 행동 즉시하기 */
+  /** 그림판 열기 행동 */
   async QuickLinkAct() {
     let clipboard = await this.global.GetValueFromClipboard();
     switch (clipboard.type) {
@@ -84,34 +84,47 @@ export class ArcadePage implements OnInit {
       // 이미지인 경우 파일 뷰어로 열기
       case 'image/png':
         const file: File = clipboard.value;
-        const TMP_PATH = `tmp_files/quick_act/${file.name}`;
-        await this.indexed.saveBlobToUserPath(file, TMP_PATH);
-        let blob = await this.indexed.loadBlobFromUserPath(TMP_PATH, file.type);
-        let FileURL = URL.createObjectURL(blob);
-        new p5((p: p5) => {
-          p.setup = () => {
-            p.noCanvas();
-            p.loadImage(FileURL, v => {
-              this.global.PageDismissAct['voiddraw-remote'] = (_v: any) => {
-                delete this.global.PageDismissAct['voiddraw-remote'];
-              }
-              this.global.ActLikeModal('portal/arcade/void-draw', {
-                path: TMP_PATH,
-                width: v.width,
-                height: v.height,
-                type: file.type,
-                dismiss: 'voiddraw-remote',
-              });
-              URL.revokeObjectURL(FileURL);
-              p.remove();
-            }, e => {
-              console.log('빠른 편집기 이동 실패: ', e);
-              URL.revokeObjectURL(FileURL);
-              p.remove();
-            });
-          }
-        });
+        this.SelectVoidDrawBackgroundImage({ target: { files: [file] } });
     }
+  }
+
+  /** 그림판 우클릭 행동, 첨부파일 우선 불러오기 행동하기 */
+  QuickLinkContextmenu() {
+    document.getElementById('arcade_voiddraw_img').click();
+    return false;
+  }
+
+  /** 이미지를 불러온 후 즉시 그림판에 대입하기 */
+  async SelectVoidDrawBackgroundImage(ev: any) {
+    const file: File = ev.target.files[0];
+    const TMP_PATH = `tmp_files/quick_act/${file.name}`;
+    await this.indexed.saveBlobToUserPath(file, TMP_PATH);
+    let blob = await this.indexed.loadBlobFromUserPath(TMP_PATH, file.type);
+    let FileURL = URL.createObjectURL(blob);
+    new p5((p: p5) => {
+      p.setup = () => {
+        document.getElementById('arcade_voiddraw_img')['value'] = '';
+        p.noCanvas();
+        p.loadImage(FileURL, v => {
+          this.global.PageDismissAct['voiddraw-remote'] = (_v: any) => {
+            delete this.global.PageDismissAct['voiddraw-remote'];
+          }
+          this.global.ActLikeModal('portal/arcade/void-draw', {
+            path: TMP_PATH,
+            width: v.width,
+            height: v.height,
+            type: file.type,
+            dismiss: 'voiddraw-remote',
+          });
+          URL.revokeObjectURL(FileURL);
+          p.remove();
+        }, e => {
+          console.log('빠른 편집기 이동 실패: ', e);
+          URL.revokeObjectURL(FileURL);
+          p.remove();
+        });
+      }
+    });
   }
 
   /** 익명성 그룹 채널에 참가하기 */
