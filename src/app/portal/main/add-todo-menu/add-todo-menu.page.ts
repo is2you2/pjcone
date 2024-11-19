@@ -362,6 +362,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   /** 첨부파일 우클릭시 빠른 이미지 편집 */
   AttachmentContextMenu(_FileInfo: FileInfo, index: number) {
+    if (!this.isStoreAtChangable) return false;
     let LoadAct = async () => {
       let FileURL = URL.createObjectURL(_FileInfo.blob);
       new p5((p: p5) => {
