@@ -765,7 +765,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               musicList.style('height', '50%');
               musicList.style('max-height', `${this.canvasDiv.clientHeight / 2}px`);
               musicList.style('overflow-y', 'scroll');
-              musicList.style('padding', '40px 8px 8px 16px');
+              musicList.style('padding', '40px 16px 16px');
               musicList.parent(this.canvasDiv);
               /** 음악들만 모은 리스트 정보 */
               let playList = [];
