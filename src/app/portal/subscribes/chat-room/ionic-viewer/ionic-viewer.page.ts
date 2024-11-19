@@ -794,6 +794,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 item.parent(musicList);
               }
               if (FocusOnThis) FocusOnThis.elt.scrollIntoView({ block: 'center', behavior: 'smooth' });
+              p.frameRate(8);
               p.pixelDensity(.5);
               p.noStroke();
               p.loop();
