@@ -744,6 +744,11 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         this.p5canvas = new p5((p: p5) => {
           let mediaObject: p5.MediaElement;
           let canvas: p5.Renderer;
+          let musicList: p5.Element;
+          /** 음악 리스트에서의 현재 재생하는 음악의 순번 */
+          let CurrentIndex = -1;
+          /** 현재 재생중인 음악 표시용 */
+          let FocusOnThis = undefined;
           let fft: p5.FFT;
           let sound: p5.SoundFile;
           let gainNode: p5.Gain;
@@ -755,6 +760,41 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             if (isSafePage) {
               canvas = p.createCanvas(this.canvasDiv.clientWidth, this.canvasDiv.clientHeight / 2);
               canvas.parent(this.canvasDiv);
+              musicList = p.createDiv();
+              musicList.style('display', 'block');
+              musicList.style('width', '100%');
+              musicList.style('height', '50%');
+              musicList.style('max-height', `${this.canvasDiv.clientHeight / 2}px`);
+              musicList.style('overflow-y', 'scroll');
+              musicList.style('padding', '40px 8px 8px 16px');
+              musicList.parent(this.canvasDiv);
+              /** 음악들만 모은 리스트 정보 */
+              let playList = [];
+              for (let i = 0, j = this.Relevances.length; i < j; i++)
+                if (this.Relevances[i].content.viewer == 'audio') {
+                  if (i == this.RelevanceIndex - 1) CurrentIndex = playList.length;
+                  playList.push(this.Relevances[i]);
+                }
+              for (let i = 0, j = playList.length; i < j; i++) {
+                let item = p.createDiv(playList[i].content.filename);
+                item.style('padding', '10px');
+                item.style('border', '1px solid #ccc');
+                item.style('background-color', 'transparent');
+                item.style('margin-bottom', '5px');
+                item.style('border-radius', '5px');
+                item.style('cursor', 'pointer');
+                let targetIndex = i - CurrentIndex;
+                if (targetIndex == 0) {
+                  item.style('background-color', 'var(--list-shortcut-hint-background)');
+                  FocusOnThis = item;
+                }
+                item.mouseClicked(() => {
+                  if (CurrentIndex < 0) return;
+                  if (targetIndex != 0) this.ChangeToAnother(targetIndex);
+                });
+                item.parent(musicList);
+              }
+              if (FocusOnThis) FocusOnThis.elt.scrollIntoView({ block: 'center', behavior: 'smooth' });
               p.pixelDensity(.5);
               p.noStroke();
               p.loop();
@@ -814,22 +854,18 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               ResizeAudio();
               mediaObject['elt'].hidden = false;
               mediaObject['elt'].onplay = () => {
-                if (sound)
-                  sound.play();
+                if (sound) sound.play();
               }
               mediaObject['elt'].onpause = () => {
-                if (sound)
-                  sound.pause();
+                if (sound) sound.pause();
               }
               mediaObject['elt'].onseeked = () => {
-                if (sound)
-                  sound.jump(mediaObject.elt.currentTime, 0);
+                if (sound) sound.jump(mediaObject.elt.currentTime, 0);
               }
               mediaObject['elt'].ontimeupdate = () => {
                 if (!isSyncing) {
                   isSyncing = true;
-                  if (sound)
-                    sound.jump(mediaObject.elt.currentTime, 0);
+                  if (sound) sound.jump(mediaObject.elt.currentTime, 0);
                   isSyncing = false;
                 }
               }
@@ -888,10 +924,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let ResizeAudio = () => {
             if (isSafePage) {
               p.resizeCanvas(this.canvasDiv.clientWidth, this.canvasDiv.clientHeight / 2);
+              musicList.style('max-height', `${this.canvasDiv.clientHeight / 2}px`);
+              if (FocusOnThis) FocusOnThis.elt.scrollIntoView({ block: 'center', behavior: 'smooth' });
               numBins = p.floor(p.width / 30);
             }
           }
           p.windowResized = () => {
+            musicList.style('max-height', '46px');
             setTimeout(() => {
               ResizeAudio();
             }, 100);
