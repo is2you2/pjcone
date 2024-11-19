@@ -47,6 +47,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
 
   isOfficial: string;
   target: string
+  QRAddressAsString: string;
 
   ngOnInit() {
     this.route.queryParams.subscribe(_p => {
@@ -57,13 +58,15 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         this.file_sel_id = `group_detail_${this.info.id}_${new Date().getTime()}}`;
         this.info_orig = JSON.parse(JSON.stringify(navParams.info));
         this.nakama.socket_reactive['group_detail'] = this;
-        this.global.GetHeaderAddress().then(address => {
-          this.QRCodeSRC = this.global.readasQRCodeFromString(
-            `${address}?group=${this.info.name},${this.info.id}`.replace(' ', '%20'));
-        });
         if (!this.info.server) this.info.server = navParams.server;
         this.isOfficial = this.info.server['isOfficial'];
         this.target = this.info.server['target'];
+        this.nakama.GenerateQRCode(this.nakama.servers[this.isOfficial][this.target].info)
+          .then(result => {
+            result += `&group=${this.info.name},${this.info.id}`.replace(' ', '%20');
+            this.QRAddressAsString = result;
+            this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRAddressAsString);
+          });
         // 사용자 정보가 있다면 로컬 정보 불러오기 처리
         if (this.info['users'] && this.info['users'].length) {
           for (let i = 0, j = this.info['users'].length; i < j; i++)
@@ -495,8 +498,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
 
   /** 시작 진입 주소 생성 */
   copy_startup_address() {
-    let startup_address = encodeURI(`https://is2you2.github.io/pjcone_pwa/?group=${this.info['name']},${this.info['id']}`);
-    this.global.WriteValueToClipboard('text/plain', startup_address);
+    this.global.WriteValueToClipboard('text/plain', this.QRAddressAsString);
   }
 
   ionViewWillLeave() {
