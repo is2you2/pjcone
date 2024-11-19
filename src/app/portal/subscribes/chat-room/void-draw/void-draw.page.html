@@ -4,6 +4,8 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref=""></ion-back-button>
     </ion-buttons>
+    <ion-icon slot="end" name="clipboard-outline" class="top_icon" style="width: 24px; height: 24px;"
+      (click)="p5save_image(true, true)"></ion-icon>
     <div *ngIf="global.ShowHint" class="shortcut_hint"
       style="left: auto; right: 52px; top: 0px; padding: 2px 8px; border-radius: 8px;">Shift + S</div>
     <ion-icon slot="end" name="save-outline" class="top_icon" style="width: 24px; height: 24px;"

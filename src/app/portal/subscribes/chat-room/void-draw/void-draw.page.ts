@@ -254,7 +254,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         this.p5change_color = () => {
           p5ColorPicker.elt.click();
         }
-        this.p5save_image = (only_save = false) => {
+        this.p5save_image = (only_save = false, for_clipboard = false) => {
           new p5((sp: p5) => {
             sp.setup = () => {
               let canvas = sp.createCanvas(ActualCanvas.width, ActualCanvas.height);
@@ -267,6 +267,12 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                 sp.image(ActualCanvas, 0, 0);
               let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
               let tmp_filename = `voidDraw_${sp.year()}-${sp.nf(sp.month(), 2)}-${sp.nf(sp.day(), 2)}_${sp.nf(sp.hour(), 2)}-${sp.nf(sp.minute(), 2)}-${sp.nf(sp.second(), 2)}.png`;
+              // 결과물을 클립보드에 저장하기
+              if (for_clipboard) {
+                let blob = this.global.Base64ToBlob(base64, 'image/png');
+                this.global.WriteValueToClipboard('image/png', blob, 'image.png');
+                return;
+              }
               // 다른 환경과 연대하여 결과물을 돌려줌
               if (!only_save) {
                 if (this.navParams.dismiss)
@@ -279,10 +285,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                   });
                 this.navCtrl.pop();
               } else {
+                // 그냥 지금 그림 저장하기
                 this.p5toast.show({
                   text: `${this.lang.text['ContentViewer']['DownloadThisFile']}: ${tmp_filename}`,
                 });
-                // 그냥 지금 그림 저장하기
                 let link = sp.createA(base64, null);
                 link.elt.download = tmp_filename;
                 link.hide();
