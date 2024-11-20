@@ -1547,6 +1547,8 @@ export class GlobalActService {
       type: 'text/plain' as 'image/png' | 'text/plain' | 'error',
       value: '' as any,
     };
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['GlobalAct']['ClipboardPaste'] });
+    loading.present();
     try {
       for (let item of clipboardItems) {
         for (let type of item.types) {
@@ -1564,6 +1566,7 @@ export class GlobalActService {
           }
         }
       }
+      loading.dismiss();
       return result;
     } catch (e) {
       console.error('클립보드에서 불러오기 오류: ', e);
@@ -1572,6 +1575,7 @@ export class GlobalActService {
       });
       result.type = 'error';
       result.value = e;
+      loading.dismiss();
       throw result;
     }
   }
@@ -1587,6 +1591,8 @@ export class GlobalActService {
    */
   async WriteValueToClipboard(type: string, value: any, filename?: string) {
     if (!value) return;
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['GlobalAct']['ClipboardCopy'] });
+    loading.present();
     try {
       let data = {};
       let _value = value;
@@ -1602,11 +1608,13 @@ export class GlobalActService {
         this.p5toast.show({
           text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${filename || value}`,
         });
+      loading.dismiss();
     } catch (e) {
       console.log('클립보드에 복사하기 오류: ', e);
       this.p5toast.show({
         text: `${this.lang.text['GlobalAct']['ClipboardFailed']}: ${e}`
       });
+      loading.dismiss();
       throw e;
     }
   }
