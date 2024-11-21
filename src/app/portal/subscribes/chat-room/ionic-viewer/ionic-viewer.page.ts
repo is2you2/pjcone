@@ -918,7 +918,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 }
               }
             }
-            return;
           }
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let ResizeAudio = () => {
