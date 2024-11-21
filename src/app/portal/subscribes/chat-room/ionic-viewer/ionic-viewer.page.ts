@@ -322,6 +322,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     if (this.ChangeToAnotherAdditionalAct)
       this.ChangeToAnotherAdditionalAct();
     this.ChangeToAnotherAdditionalAct = null;
+    this.RemoveP5Relative();
     this.RelevanceIndex = tmp_calced;
     this.FileInfo = { file_ext: '' };
     await this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
@@ -511,7 +512,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       }
     }
     this.forceWrite = false;
-    this.RemoveP5Relative();
     await new Promise((done) => setTimeout(done, 0));
     this.canvasDiv = document.getElementById('content_viewer_canvas');
     if (this.canvasDiv) this.canvasDiv.style.backgroundImage = '';
