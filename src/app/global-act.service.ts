@@ -807,7 +807,7 @@ export class GlobalActService {
       } else protocol = this.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
       CatchedAddress = `${protocol}//${address[0]}:${address[1] || 9002}/cdn/${filename}`;
       progress = setInterval(async () => {
-        let res = await fetch(`${protocol}//${address}:9001/filesize/${filename}`, { method: "POST" });
+        let res = await fetch(`${protocol}//${address[0]}:9001/filesize/${filename}`, { method: "POST" });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
         if (loading) loading.message = `${file.filename}: ${progressPercent || 0}%`;

@@ -13,7 +13,7 @@ import * as p5 from 'p5';
 import { ActivatedRoute, Router } from '@angular/router';
 import { VoiceRecorder } from '@langx/capacitor-voice-recorder';
 import { ExtendButtonForm } from '../portal/subscribes/chat-room/chat-room.page';
-import { NakamaService } from '../nakama.service';
+import { NakamaService, ServerInfo } from '../nakama.service';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
 @Component({
@@ -138,6 +138,16 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     loading.dismiss();
     this.extended_buttons[4].icon = 'mic-circle-outline';
     this.extended_buttons[4].name = this.lang.text['ChatRoom']['Voice'];
+  }
+
+  /** FFS 주소를 선택된 서버의 주소로 자동으로 채우기 */
+  AutoFillFFSFromServer() {
+    try {
+      let info: ServerInfo = this.MinimalChatServer.value.info;
+      this.client.FallbackOverrideAddress = `${info.useSSL ? 'https' : 'http'}://${info.address}`;
+    } catch (e) {
+      this.client.FallbackOverrideAddress = '';
+    }
   }
 
   @ViewChild('MinimalChatServer') MinimalChatServer: IonSelect;
@@ -733,8 +743,13 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     }
     try { // FFS 발송 시도
       if (!this.client.FallbackOverrideAddress) throw 'FFS 우선처리 지정되지 않음';
+      let apache_port: number;
+      try {
+        let info: ServerInfo = this.MinimalChatServer.value.info;
+        apache_port = info.apache_port;
+      } catch (e) { }
       let url = await this.global.try_upload_to_user_custom_fs(FileInfo, `tmp_${this.client.JoinedChannel || 'public'}_${this.client.uuid}`,
-        undefined, this.client.FallbackOverrideAddress);
+        undefined, `${this.client.FallbackOverrideAddress}:${apache_port || 9002}`);
       if (!url) throw '분할 전송 시도 필요';
       else {
         FileInfo.url = url;

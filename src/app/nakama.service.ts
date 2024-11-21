@@ -18,9 +18,13 @@ export interface ServerInfo {
   /** 앱 내에서 구성하는 key 이름 */
   target?: string;
   nakama_port?: number;
+  /** 파일 공유 서버 기본 포트 9001 */
   cdn_port?: number;
+  /** 아파치 서버 기본 포트 9002 */
   apache_port?: number;
+  /** 광장 채널 기본 포트 12013 */
   square_port?: number;
+  /** WebRTC 기본 포트 3478 (ssl: 5349) */
   webrtc_port?: number;
   useSSL?: boolean;
   isOfficial?: string;
