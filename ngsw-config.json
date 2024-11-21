@@ -14,8 +14,13 @@
           "/**/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2|csv|txt|json|html|pck|wasm|js)",
           "/assets/html/**/*.*",
           "/assets/js.blend/**/*.*",
+          "!/assets/js.blend/package.json",
+          "!/assets/js.blend/*.blend*",
           "/assets/p5js/**/*.*",
-          "!/**/*.gdignore"
+          "!/assets/p5js/**/*.properties",
+          "!/**/*.gdignore",
+          "!/**/*.gitignore",
+          "!/**/*.md"
         ]
       }
     }
