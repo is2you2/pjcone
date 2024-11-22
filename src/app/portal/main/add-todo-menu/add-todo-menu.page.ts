@@ -181,7 +181,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     loading.present();
     try {
       let blob = await this.global.StopAndSaveVoiceRecording();
-      await this.selected_blobFile_callback_act(blob);
+      await this.selected_blobFile_callback_act(blob, false);
     } catch (e) { }
     loading.dismiss();
     this.extended_buttons[4].icon = 'mic-circle-outline';
@@ -301,7 +301,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         canvas.parent(parent);
         p.pixelDensity(.1);
         canvas.drop(async (file: any) => {
-          await this.selected_blobFile_callback_act(file.file);
+          await this.selected_blobFile_callback_act(file.file, false);
         });
       }
       p.mouseMoved = (ev: any) => {
@@ -316,9 +316,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     });
   }
 
-  async selected_blobFile_callback_act(blob: any) {
-    let saving_file = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-    saving_file.present();
+  async selected_blobFile_callback_act(blob: any, showLoading = true) {
+    let saving_file: HTMLIonLoadingElement;
+    if (showLoading) {
+      saving_file = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+      saving_file.present();
+    }
     let this_file: FileInfo = this.global.selected_blobFile_callback_act(blob, 'tmp_files/todo/', {
       display_name: this.nakama.users.self['display_name'],
     });
@@ -332,14 +335,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       setTimeout(() => {
         URL.revokeObjectURL(FileURL);
       }, 0);
-      saving_file.dismiss();
     } catch (e) {
       console.error('파일 올리기 실패: ', e);
       this.p5toast.show({
         text: this.lang.text['TodoDetail']['load_failed'],
       });
-      saving_file.dismiss();
     }
+    if (showLoading) saving_file.dismiss();
     this.auto_scroll_down();
   }
 
