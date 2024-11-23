@@ -332,6 +332,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             p.redraw();
           } else {
             this.isCropMode = true;
+            Drawable = true;
             CropSize.x = ActualCanvas.width;
             CropSize.y = ActualCanvas.height;
             CropModePosition.x = 0;
