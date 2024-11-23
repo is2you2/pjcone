@@ -373,6 +373,8 @@ export class AddPostPage implements OnInit, OnDestroy {
                 case 'image/png':
                   this.ChangeMainPostImage({ target: { files: [clipboard.value] } });
                   return;
+                case 'error':
+                  throw clipboard.value;
               }
             } catch (e) {
               throw e;
@@ -692,6 +694,8 @@ export class AddPostPage implements OnInit, OnDestroy {
               case 'image/png':
                 this.inputFileSelected({ target: { files: [clipboard.value] } });
                 return;
+              case 'error':
+                throw clipboard.value;
             }
           } catch (e) {
             throw e;

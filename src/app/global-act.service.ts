@@ -1542,7 +1542,6 @@ export class GlobalActService {
    * @returns 이미지 또는 텍스트
    */
   async GetValueFromClipboard() {
-    const clipboardItems = await navigator.clipboard.read();
     let result = {
       type: 'text/plain' as 'image/png' | 'text/plain' | 'error',
       value: '' as any,
@@ -1550,6 +1549,7 @@ export class GlobalActService {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['GlobalAct']['ClipboardPaste'] });
     loading.present();
     try {
+      const clipboardItems = await navigator.clipboard.read();
       for (let item of clipboardItems) {
         for (let type of item.types) {
           let value = await item.getType(type);
@@ -1576,7 +1576,7 @@ export class GlobalActService {
       result.type = 'error';
       result.value = e;
       loading.dismiss();
-      throw result;
+      return result;
     }
   }
 

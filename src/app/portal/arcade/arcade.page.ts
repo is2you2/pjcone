@@ -72,8 +72,11 @@ export class ArcadePage implements OnInit {
   async QuickLinkAct() {
     let clipboard = await this.global.GetValueFromClipboard();
     switch (clipboard.type) {
-      // 텍스트인 경우 새 그림판 생성하기
-      case 'text/plain':
+      // 이미지인 경우 파일 뷰어로 열기
+      case 'image/png':
+        const file: File = clipboard.value;
+        this.SelectVoidDrawBackgroundImage({ target: { files: [file] } });
+      default:
         this.global.PageDismissAct['voiddraw-remote'] = (v: any) => {
           delete this.global.PageDismissAct['voiddraw-remote'];
         }
@@ -81,10 +84,6 @@ export class ArcadePage implements OnInit {
           dismiss: 'voiddraw-remote',
         });
         break;
-      // 이미지인 경우 파일 뷰어로 열기
-      case 'image/png':
-        const file: File = clipboard.value;
-        this.SelectVoidDrawBackgroundImage({ target: { files: [file] } });
     }
   }
 

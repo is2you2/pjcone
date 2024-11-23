@@ -295,6 +295,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
               case 'image/png':
                 this.SendAttachAct({ target: { files: [clipboard.value] } });
                 return;
+              case 'error':
+                throw clipboard.value;
             }
           } catch (e) {
             throw e;

@@ -49,6 +49,8 @@ export class AddGroupPage implements OnInit, OnDestroy {
         case 'text/plain':
           copied = clipboard.value;
           break;
+        case 'error':
+          throw clipboard.value;
       }
     } catch (e) {
       return;

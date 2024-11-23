@@ -141,6 +141,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               case 'text/plain':
                 await this.check_if_clipboard_available(fromClipboard.value);
                 break;
+              case 'error':
+                throw fromClipboard.value;
             }
           } catch (e) {
             document.getElementById('local_channel').click();
@@ -170,6 +172,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               case 'text/plain':
                 await this.check_if_clipboard_available(fromClipboard.value);
                 break;
+              case 'error':
+                throw fromClipboard.value;
             }
           } catch (e) {
             document.getElementById('backgroundImage_sel').click();
@@ -539,6 +543,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 case 'image/png':
                   this.inputFileSelected({ target: { files: [clipboard.value] } });
                   return;
+                case 'error':
+                  throw clipboard.value;
               }
             } catch (e) {
               throw e;
