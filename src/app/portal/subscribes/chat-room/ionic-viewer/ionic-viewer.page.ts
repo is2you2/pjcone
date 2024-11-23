@@ -795,7 +795,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               }
               if (FocusOnThis) FocusOnThis.elt.scrollIntoView({ block: 'center', behavior: 'smooth' });
               p.frameRate(8);
-              p.pixelDensity(.5);
+              p.pixelDensity(.4);
               p.noStroke();
               p.loop();
             } else {
