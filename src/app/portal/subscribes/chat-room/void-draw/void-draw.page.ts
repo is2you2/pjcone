@@ -47,7 +47,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     }
     if (this.p5voidDraw) this.p5voidDraw.remove();
     if (this.IceWebRTCWsClient)
-      this.IceWebRTCWsClient.close();
+      this.IceWebRTCWsClient.close(1000);
     this.CancelRemoteAct();
   }
 
@@ -1197,6 +1197,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       } else // 새 채널 생성하기
         this.IceWebRTCWsClient.send(JSON.stringify({
           type: 'init',
+          max: 2,
         }));
     }
     /** 웹소켓 서버에서의 내 아이디 기록 */
@@ -1215,12 +1216,17 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             this.HasConnectedPeer = true;
             this.p5SetDrawable(false);
             break;
+          // 이미 연결된 사람이 있는 경우
+          case 'block':
+            console.error('이미 연결된 사용자 있음');
+            this.IceWebRTCWsClient.close(1000, 'block');
+            break;
           // 상대방 연결이 끊어지는게 확인되면 나도 연결 끊기
           case 'leave':
             this.HasConnectedPeer = false;
             this.p5SetDrawable(true);
             this.RemoteLoadingCtrl.dismiss();
-            this.IceWebRTCWsClient.close();
+            this.IceWebRTCWsClient.close(1000, 'leave_pair');
             break;
           // 채널 아이디 생성 후 수신
           case 'init_id':
@@ -1249,7 +1255,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             this.webrtc.initialize('data')
               .then(async () => {
                 this.webrtc.HangUpCallBack = () => {
-                  this.IceWebRTCWsClient.close();
+                  this.IceWebRTCWsClient.close(1000, 'hangup_webrtc');
                 }
                 this.CreateOnMessageLink();
                 this.CreateOnOpenAct();
@@ -1329,7 +1335,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
               .then(() => {
                 this.webrtc.HangUpCallBack = () => {
                   if (this.IceWebRTCWsClient)
-                    this.IceWebRTCWsClient.close();
+                    this.IceWebRTCWsClient.close(1000, 'hangup_callback');
                 }
                 this.CreateOnOpenAct();
                 this.CreateOnMessageLink();
@@ -1345,14 +1351,15 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             break;
         }
       } catch (e) {
-        this.IceWebRTCWsClient.close();
+        this.IceWebRTCWsClient.close(1000);
       }
     }
     this.IceWebRTCWsClient.onerror = (e) => {
       console.log('그림판 기능 공유 연결 오류: ', e);
-      this.IceWebRTCWsClient.close();
+      this.IceWebRTCWsClient.close(1000, 'error');
     }
-    this.IceWebRTCWsClient.onclose = () => {
+    this.IceWebRTCWsClient.onclose = (ev: any) => {
+      console.log('연결이 끊기는 이유: ', ev);
       this.p5toast.show({
         text: this.lang.text['TodoDetail']['Disconnected'],
       });

@@ -139,7 +139,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
         this.webrtc.initialize('audio')
           .then(() => {
             this.webrtc.HangUpCallBack = () => {
-              if (this.global.InstantCallWSClient) this.global.InstantCallWSClient.close();
+              if (this.global.InstantCallWSClient) this.global.InstantCallWSClient.close(1000, 'hangup_webrtc');
             }
             this.ShowWaiting();
             this.webrtc.CreateOffer();
@@ -152,6 +152,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
       } else // 새 채널 생성하기
         this.global.InstantCallSend(JSON.stringify({
           type: 'init',
+          max: 2,
         }));
     }
     this.global.InstantCallWSClient.onmessage = (ev: any) => {
@@ -163,7 +164,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
       } else if (uuid == json['uid']) return;
       switch (json.type) {
         case 'leave':
-          this.global.InstantCallWSClient.close();
+          this.global.InstantCallWSClient.close(1000, 'leave_pair');
           break;
         // 채널 아이디 생성 후 수신
         case 'init_id':
@@ -178,13 +179,18 @@ export class InstantCallPage implements OnInit, OnDestroy {
               this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRCodeAsString);
             });
           break;
+        // 이미 연결된 사람이 있는 경우
+        case 'block':
+          console.error('이미 연결된 통화가 있음');
+          this.global.InstantCallWSClient.close(1000, 'block');
+          break;
         case 'init_req':
           this.webrtc.StatusText = this.lang.text['InstantCall']['Connecting'];
           this.global.PeerConnected = true;
           this.webrtc.initialize('audio')
             .then(async () => {
               this.webrtc.HangUpCallBack = () => {
-                if (this.global.InstantCallWSClient) this.global.InstantCallWSClient.close();
+                if (this.global.InstantCallWSClient) this.global.InstantCallWSClient.close(1000, 'hangup_callback');
               }
               this.ShowWaiting();
               this.webrtc.CreateOffer();
@@ -240,7 +246,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
     }
     this.global.InstantCallWSClient.onerror = (e: any) => {
       console.error('즉석 통화 웹소켓 오류: ', e);
-      this.global.InstantCallWSClient.close();
+      this.global.InstantCallWSClient.close(1000, 'error');
     }
     this.global.InstantCallWSClient.onclose = () => {
       this.p5toast.show({
@@ -371,7 +377,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.p5canvas) this.p5canvas.remove();
     if (this.isCustomServer && !this.AlreadyExistServer) this.nakama.RemoveWebRTCServer(this.UserInputCustomAddress.split('://').pop());
-    if (!this.global.InitEnd && !this.global.PeerConnected && this.global.InstantCallWSClient) this.global.InstantCallWSClient.close();
+    if (!this.global.InitEnd && !this.global.PeerConnected && this.global.InstantCallWSClient) this.global.InstantCallWSClient.close(1000);
     this.route.queryParams['unsubscribe']();
   }
 }
