@@ -45,6 +45,22 @@ export interface NakamaGroup {
   socket?: Socket;
 }
 
+/** 아케이드 정보 양식 */
+interface ArcadeForm {
+  /** 분류를 위한 게임 id */
+  id?: string;
+  /** 게임 이름 (가운데 배치됨) */
+  name: string;
+  /** 실행을 위한 pck 또는 html 파일의 온라인 주소 */
+  url?: string;
+  /** 파일 형식 */
+  file_ext?: 'pck' | 'html';
+  /** 게임 소개용 대표 이미지 URL 정보 */
+  cover?: string;
+  /** 게임 설명글 */
+  desc?: string;
+}
+
 /** 주로 셀프 매칭에 동기화할 때 사용하나 다른 곳에도 사용하고 있는 중 */
 export enum MatchOpCode {
   /** 해야할 일 생성/수정/삭제/완료 */
@@ -921,6 +937,7 @@ export class NakamaService {
     });
     // 사용자 이름 재설정 정보 불러오기
     this.LoadOverrideName(_is_official, _target);
+    this.load_server_arcade_list(_is_official, _target);
     // 통신 소켓 연결하기
     this.connect_to(_is_official, _target, (socket: Socket) => {
       this.servers[_is_official][_target].client.readStorageObjects(
@@ -976,6 +993,31 @@ export class NakamaService {
     this.load_posts_counter();
     this.update_notifications(_is_official, _target);
     this.set_group_statusBar('online', _is_official, _target);
+  }
+
+  /** 아케이드 정보 수집 */
+  ArcadeList: ArcadeForm[] = [{
+    name: 'testGame',
+  }];
+  async load_server_arcade_list(_is_official: string, _target: string) {
+    // 아래 코드는 서버에 연결하면 after_login 자리에서 진행되어야함
+    // nakama.service 에서 아케이드 리스트를 서버별로 관리하기
+    try {
+      let v = await this.servers[_is_official][_target].client.readStorageObjects(
+        this.servers[_is_official][_target].session, {
+        object_ids: [{
+          collection: 'arcade',
+          key: 'url',
+        }]
+      });
+      if (v.objects.length) {
+        let TargetURL = v.objects[0].value['data'];
+        let res = await fetch(TargetURL);
+        console.log('읽어보기 경과: ', res);
+      }
+    } catch (e) {
+      console.log('리스트 불러오기 실패: ', e);
+    }
   }
 
   /** 원격 할 일 카운터  

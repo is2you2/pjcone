@@ -1,3 +1,24 @@
+.list_form {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+    padding: 16px;
+    gap: 16px;
+}
+
+.list_add_btn {
+    flex: 0 1;
+}
+
+.list_ele {
+    cursor: pointer;
+    border: 1px solid var(--list-shortcut-hint-background);
+    border-radius: 8px;
+    min-width: 135px;
+    min-height: 90px;
+    text-align: center;
+    align-content: center;
+}
+
 .md .add_group {
     position: absolute;
     right: 68px;

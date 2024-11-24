@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild, viewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AlertController, IonInput, IonModal, NavController } from '@ionic/angular';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';

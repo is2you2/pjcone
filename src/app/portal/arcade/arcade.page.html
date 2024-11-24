@@ -3,7 +3,8 @@
     <ion-title>{{lang.text['Arcade']['Title']}}</ion-title>
     <img (click)="QuickLinkAct()" (contextmenu)="QuickLinkContextmenu()" class="add_group top_icon_override_2"
       style="width: 32px; height: 32px;" src="assets/icon/voidDraw.png" />
-    <input hidden type="file" id="arcade_voiddraw_img" accept="image/*" (change)="SelectVoidDrawBackgroundImage($event)">
+    <input hidden type="file" id="arcade_voiddraw_img" accept="image/*"
+      (change)="SelectVoidDrawBackgroundImage($event)">
     <div (click)="JoinInstantCall()" class="add_group top_icon_override_1">
       <ion-icon button style="width: 24px; height: 24px; " name="call-outline"></ion-icon>
     </div>
@@ -24,16 +25,50 @@
       <ion-label color="medium">{{lang.text['Arcade']['Preparing']}}</ion-label>
     </div>
   </div>
+  <div>
+    <ion-item-divider>
+      <ion-label>{{lang.text['Arcade']['AddCustom']}}</ion-label>
+    </ion-item-divider>
+    <div style="display: flex; flex-direction: row; gap: 16px; overflow-x: auto; margin: 16px 0px 16px 16px;">
+      <input hidden type="file" id="arcade_file_input" accept="*" (change)="inputFileSelected($event)">
+      <div class="list_ele list_add_btn" (click)="AddCustomGame()">
+        test
+      </div>
+    </div>
+    <div *ngIf="nakama.ArcadeList.length">
+      <ion-item-divider>
+        <ion-label>{{lang.text['Arcade']['AddedCustom']}}</ion-label>
+      </ion-item-divider>
+      <ion-item>
+        <ion-input [label]="lang.text['Arcade']['Search']" class="ion-text-end"
+          [placeholder]="lang.text['Arcade']['InputKeyword']"></ion-input>
+        <ion-icon slot="end" name="search-outline" style="cursor: pointer;"></ion-icon>
+      </ion-item>
+      <div class="list_form">
+        <div *ngFor="let arcade of nakama.ArcadeList" class="list_ele" (click)="ShowGameInfo()"></div>
+      </div>
+    </div>
+  </div>
+  <ion-modal #ArcadeDetail class="transparent-modal" [enterAnimation]="enterAnimation"
+    [leaveAnimation]="leaveAnimation">
+    <ng-template>
+      <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+        <div
+          style="width: 400px; height: 455px; background-color: var(--chatroom-background); text-align: center; padding: 16px; border-radius: 16px;">
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
   <ion-modal #ArcadeQRShare class="transparent-modal">
     <ng-template>
       <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
         <div
           style="width: 400px; height: 455px; background-color: var(--chatroom-background); text-align: center; padding: 16px">
-          <!-- <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;"
-            (click)="copy_address(SelectedAddress)" alt="QuickLink" />
-          <ion-item button (click)="copy_address(QRNavParams.channel)">
-            <ion-label class="ion-text-center">{{QRNavParams.channel}}</ion-label>
-          </ion-item> -->
+          <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy;"
+            (click)="copy_address(TargetQRAddress)" alt="QuickLink" />
+          <ion-item button (click)="copy_address(TargetQRAddress)">
+            <ion-label class="ion-text-center">{{TargetQRAddress}}</ion-label>
+          </ion-item>
         </div>
       </div>
     </ng-template>

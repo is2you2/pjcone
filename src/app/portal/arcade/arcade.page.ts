@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { NavController, iosTransitionAnimation } from '@ionic/angular';
+import { AnimationController, NavController, iosTransitionAnimation } from '@ionic/angular';
 import { IonModal } from '@ionic/angular/common';
 import * as p5 from 'p5';
 import { GlobalActService } from 'src/app/global-act.service';
@@ -7,6 +7,7 @@ import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MiniranchatClientService } from 'src/app/miniranchat-client.service';
 import { NakamaService } from 'src/app/nakama.service';
+import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 
 @Component({
@@ -24,36 +25,14 @@ export class ArcadePage implements OnInit {
     private client: MiniranchatClientService,
     public global: GlobalActService,
     private indexed: IndexedDBService,
+    private animationCtrl: AnimationController,
+    private p5toast: P5ToastService,
   ) { }
-
-  /** 아케이드 정보 수집 */
-  ArcadeList = [];
 
   ngOnInit() { }
 
   async ionViewWillEnter() {
     this.WillLeave = false;
-    let servers = this.nakama.get_all_online_server();
-    let TmpList = [];
-    for (let i = 0, j = servers.length; i < j; i++) {
-      try {
-        let v = await servers[i].client.readStorageObjects(
-          servers[i].session, {
-          object_ids: [{
-            collection: 'arcade',
-            key: 'url',
-          }]
-        });
-        if (v.objects.length) {
-          let TargetURL = v.objects[0].value['data'];
-          let res = await fetch(TargetURL);
-          console.log('읽어보기 경과: ', res);
-        }
-      } catch (e) {
-        console.log('리스트 불러오기 실패: ', e);
-      }
-    }
-    this.ArcadeList = TmpList;
   }
 
   WillLeave = false;
@@ -86,6 +65,73 @@ export class ArcadePage implements OnInit {
         break;
     }
   }
+
+  @ViewChild('ArcadeDetail') ArcadeDetail: IonModal;
+
+  /** pck 파일 업로드하기 */
+  AddCustomGame() {
+    document.getElementById('arcade_file_input').click();
+  }
+  inputFileSelected(ev: any) {
+    try {
+      let targetFile = ev.target.files[0];
+      const FileEXT = targetFile.name.split('.').pop();
+      switch (FileEXT) {
+        // pck 파일을 고도엔진 뷰어에서 열기
+        case 'pck':
+        // html 파일을 iframe 에서 열기
+        case 'html':
+        // 파일 리스트 정보를 추가 등록하기
+        case 'json':
+        // 나머지는 무시
+        default:
+          throw FileEXT;
+      }
+    } catch (e) {
+      this.p5toast.show({
+        text: `${this.lang.text['Arcade']['InputError']}: ${e}`,
+      });
+      console.log('아케이드 파일 입력 실패: ', e);
+    }
+    document.getElementById('arcade_file_input')['value'] = null;
+  }
+
+  /** 게임 정보 보기 */
+  ShowGameInfo() {
+    this.ArcadeDetail.onDidDismiss().then(() => {
+      this.global.RestoreShortCutAct('arcade_detail');
+    });
+    this.global.StoreShortCutAct('arcade_detail');
+    this.ArcadeDetail.present();
+  }
+
+  enterAnimation = (baseEl: HTMLElement) => {
+    const root = baseEl.shadowRoot;
+
+    const backdropAnimation = this.animationCtrl
+      .create()
+      .addElement(root.querySelector('ion-backdrop')!)
+      .fromTo('opacity', '0.01', 'var(--backdrop-opacity)');
+
+    const wrapperAnimation = this.animationCtrl
+      .create()
+      .addElement(root.querySelector('.modal-wrapper')!)
+      .keyframes([
+        { offset: 0, opacity: '0', transform: 'scale(0)' },
+        { offset: 1, opacity: '1', transform: 'scale(1)' },
+      ]);
+
+    return this.animationCtrl
+      .create()
+      .addElement(baseEl)
+      .easing('ease-out')
+      .duration(250)
+      .addAnimation([backdropAnimation, wrapperAnimation]);
+  };
+
+  leaveAnimation = (baseEl: HTMLElement) => {
+    return this.enterAnimation(baseEl).direction('reverse');
+  };
 
   /** 그림판 우클릭 행동, 첨부파일 우선 불러오기 행동하기 */
   QuickLinkContextmenu() {
@@ -142,4 +188,9 @@ export class ArcadePage implements OnInit {
   }
 
   @ViewChild('ArcadeQRShare') ArcadeQRShare: IonModal;
+  QRCodeSRC: any;
+  TargetQRAddress: string;
+  copy_address(target: string) {
+    this.global.WriteValueToClipboard('text/plain', target);
+  }
 }
