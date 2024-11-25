@@ -836,7 +836,17 @@ export class GlobalActService {
     let result = null;
     // FFS 가 준비되어있다면 해당 서버에 먼저 요청 시도
     try {
-      throw 'test';
+      let ffs_stored = localStorage.getItem('fallback_fs');
+      let sep = ffs_stored.split('://');
+      let sep_header = sep.shift();
+      let sep_address = sep.pop();
+      let getOnlyAddress = sep_address.split(':').pop();
+      if (!getOnlyAddress) throw '지정된 FFS 없음';
+      let res = await fetch(`${sep_header || this.checkProtocolFromAddress(getOnlyAddress) ? 'https' : 'http'}://${getOnlyAddress}:9001/get-page-info?url=${encodeURIComponent(url)}`);
+      if (res.ok) {
+        let json = await res.json();
+        result = json;
+      } else throw 'FFS 우회 실패';
     } catch (e) {
       if (!reqAddress) throw '대상 서버 없음';
       // 그게 아니라면 해당 서버에 요청 시도
