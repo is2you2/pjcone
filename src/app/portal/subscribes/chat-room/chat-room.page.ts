@@ -2425,9 +2425,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                     } catch (e) { }
                     loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${msg.content['filename']}_${msg.content['partsize'] - i}`;
                   } // 서버에서 삭제되지 않았을 경우 파일을 남겨두기
-                  await this.indexed.removeFileFromUserPath(path);
                 }
-                await this.indexed.removeFileFromUserPath(`${path}_thumbnail.png`);
+                let list = await this.indexed.GetFileListFromDB(path);
+                for (let path of list)
+                  await this.indexed.removeFileFromUserPath(path);
                 loading.dismiss();
               }
             } catch (e) {
@@ -2439,14 +2440,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               if (msg.content.url) { // 링크된 파일인 경우
                 if (msg.content.url.indexOf(msg.group_id) >= 0 && msg.content.url.indexOf(msg.sender_id) >= 0)
                   this.global.remove_file_from_storage(msg.content.url, server_info);
-              } else { // 파트 업로드 파일인 경우
-                try {
-                  await this.indexed.removeFileFromUserPath(path);
-                } catch (e) { }
               }
-              try {
-                await this.indexed.removeFileFromUserPath(`${path}_thumbnail.png`);
-              } catch (e) { }
+              let list = await this.indexed.GetFileListFromDB(path);
+              for (let path of list)
+                await this.indexed.removeFileFromUserPath(path);
             }
           }
           this.ViewableMessage.splice(index, 1);
