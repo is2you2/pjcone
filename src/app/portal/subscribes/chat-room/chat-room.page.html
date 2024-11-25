@@ -140,6 +140,17 @@
                     </td>
                   </tr>
                 </table>
+                <!-- 하이퍼링크 정보 일부 발췌하여 보여주기 -->
+                <div *ngIf="msg.content['hasLink']" class="file_message_form href_thumbnail">
+                  <div class="quickShare_form qouteDiv cursor_pointer qouteOnChatBalloon"
+                    (click)="open_url_link(msg.content['hasLink'].url)">
+                    {{msg.content['hasLink'].title}}
+                    <img *ngIf="msg.content['hasLink'].imageUrl" [src]="msg.content['hasLink'].imageUrl"
+                      class="qouteImage qouteImageHeight href_image_margin"
+                      [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
+                      [alt]="msg.content['hasLink'].imageAlt" />
+                  </div>
+                </div>
                 <div style="width: 100%; text-align: -webkit-center;">
                   <div *ngIf="msg['isLastRead']" class="read_last_here">
                     {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
