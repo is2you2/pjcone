@@ -3320,7 +3320,7 @@ export class NakamaService {
     if (!msg.content['msg'] || typeof msg.content['msg'] == 'object') return;
     let sep_msg = msg.content['msg'].split('\n');
     msg.content['msg'] = [];
-    sep_msg.forEach(_msg => {
+    sep_msg.forEach((_msg: any) => {
       let currentPart = { text: _msg };
       msg.content['msg'].push([currentPart]);
       try {
@@ -3355,22 +3355,40 @@ export class NakamaService {
             result_msg.push({ text: end_msg });
           }
           msg.content['msg'][i] = result_msg;
-          if (!msg.content['hasLink']) {
-            let servInfo: ServerInfo;
-            try {
-              servInfo = this.servers[_is_official][_target].info;
-            } catch (e) { }
-            let reqAddress: string;
-            try {
-              reqAddress = `${servInfo.useSSL ? 'https' : 'http'}://${servInfo.address}:${servInfo.cdn_port || 9001}`;
-            } catch (e) { }
-            this.global.GetHrefThumbnail(result, reqAddress)
-              .then(json => {
-                msg.content['hasLink'] = json;
-              });
-          }
-        } else delete msg.content['hasLink'];
+        }
       }
+  }
+
+  /** 간략한 하이퍼링크 정보 수집 */
+  async CreateHyperLinkDesc(msg: any, _is_official: string, _target: string, cont: AbortController) {
+    let getMsg: any[] = msg.content.msg;
+    let targetURL: string;
+    let HasHref = false;
+    for (let line of getMsg) {
+      for (let sep of line)
+        if (sep.href) {
+          targetURL = sep.text;
+          HasHref = true;
+          break;
+        }
+      if (HasHref) break;
+    }
+    let servInfo: ServerInfo;
+    let reqAddress: string;
+    try {
+      servInfo = this.servers[_is_official][_target].info;
+      reqAddress = `${servInfo.useSSL ? 'https' : 'http'}://${servInfo.address}:${servInfo.cdn_port || 9001}`;
+    } catch (e) { }
+    if (HasHref) {
+      if (msg.content['hasLink']) return;
+      try {
+        let json = await this.global.GetHrefThumbnail(targetURL, reqAddress, cont)
+        msg.content['hasLink'] = json;
+      } catch (e) {
+        console.log('href 간략정보 받아오기 실패: ', e);
+      }
+    } else delete msg.content['hasLink'];
+    this.saveListedMessage([msg], this.channels_orig[_is_official][_target][msg.channel_id], _is_official, _target);
   }
 
   /** 발신인 표시를 위한 메시지 추가 가공 */

@@ -832,7 +832,7 @@ export class GlobalActService {
    * @param reqAddress 요청하려는 서버 주소 (FFS 이후에 동작)
    * @returns 서버로부터 받은 정보 json
    */
-  async GetHrefThumbnail(url: string, reqAddress?: string) {
+  async GetHrefThumbnail(url: string, reqAddress?: string, cont?: AbortController) {
     let result = null;
     // FFS 가 준비되어있다면 해당 서버에 먼저 요청 시도
     try {
@@ -842,7 +842,7 @@ export class GlobalActService {
       let sep_address = sep.pop();
       let getOnlyAddress = sep_address.split(':').pop();
       if (!getOnlyAddress) throw '지정된 FFS 없음';
-      let res = await fetch(`${sep_header || this.checkProtocolFromAddress(getOnlyAddress) ? 'https' : 'http'}://${getOnlyAddress}:9001/get-page-info?url=${encodeURIComponent(url)}`);
+      let res = await fetch(`${sep_header || this.checkProtocolFromAddress(getOnlyAddress) ? 'https' : 'http'}://${getOnlyAddress}:9001/get-page-info?url=${encodeURIComponent(url)}`, { signal: cont.signal });
       if (res.ok) {
         let json = await res.json();
         result = json;
@@ -851,7 +851,7 @@ export class GlobalActService {
       if (!reqAddress) throw '대상 서버 없음';
       // 그게 아니라면 해당 서버에 요청 시도
       try {
-        let res = await fetch(`${reqAddress}/get-page-info?url=${encodeURIComponent(url)}`);
+        let res = await fetch(`${reqAddress}/get-page-info?url=${encodeURIComponent(url)}`, { signal: cont.signal });
         if (res.ok) {
           let json = await res.json();
           result = json;

@@ -1384,6 +1384,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             if (this.messages[i].message_id == c['message_id']) {
               this.messages[i].content = c.content;
               this.global.modulate_thumbnail(this.messages[i].content, this.messages[i].content.url, this.cont);
+              this.nakama.CreateHyperLinkDesc(this.messages[i], this.isOfficial, this.target, this.cont);
               break;
             }
           return;
@@ -1410,6 +1411,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
         // 인용 메시지가 경로로 구성된 이미지 파일을 따르는 경우
         if (c.content.qoute) this.OpenQouteThumbnail(c);
+        this.nakama.CreateHyperLinkDesc(c, this.isOfficial, this.target, this.cont);
         if (this.ViewMsgIndex + this.ViewCount == this.messages.length - 1)
           this.ViewMsgIndex++;
         this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
@@ -1718,6 +1720,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.nakama.CatchQouteMsgUserName(msg, this.isOfficial, this.target);
           this.nakama.ModulateTimeDate(msg);
           this.nakama.content_to_hyperlink(msg, this.isOfficial, this.target);
+          this.nakama.CreateHyperLinkDesc(msg, this.isOfficial, this.target, this.cont);
           // 삭제한 메시지가 아니라면 추가
           if (msg.code != 2) {
             // 중복 추가되는 메시지 검토
@@ -1869,6 +1872,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             json[i] = this.nakama.modulation_channel_message(json[i], this.isOfficial, this.target);
             this.nakama.CatchQouteMsgUserName(json[i], this.isOfficial, this.target);
             this.nakama.ModulateTimeDate(json[i]);
+            this.nakama.content_to_hyperlink(json[i], this.isOfficial, this.target);
             json[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${json[i].message_id}.${json[i].content['file_ext']}`;
             if (json[i]['code'] != 2) {
               ExactAddedChatCount++;
@@ -2256,6 +2260,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     await this.nakama.open_url_link(url);
     this.make_ext_hidden();
     this.userInputTextArea.focus();
+    this.userInputTextArea.blur();
     this.SetOtherAct();
   }
 
@@ -2264,6 +2269,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     let MsgText = this.deserialize_text(msg);
     this.nakama.CatchQouteMsgUserName(msg, this.isOfficial, this.target);
     this.nakama.ModulateTimeDate(msg);
+    this.nakama.content_to_hyperlink(msg, this.isOfficial, this.target);
     this.nakama.channels_orig[this.isOfficial][this.target][msg.channel_id]['last_comment_time'] = msg.update_time;
     this.nakama.channels_orig[this.isOfficial][this.target][this.info.id]['last_comment_id'] = msg.message_id;
     this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'](msg);
