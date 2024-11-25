@@ -57,9 +57,9 @@
                 <table>
                   <tr>
                     <td class="avatar_form">
-                      <div *ngIf="msg['showInfo'] && msg['showInfo']['sender']" class="avatar_image"
+                      <div *ngIf="msg['showInfo'] && msg['showInfo']['sender']" class="avatar_image cursor_pointer"
                         (click)="user_detail(msg)">
-                        <img class="avatar_image"
+                        <img class="avatar_image cursor_pointer"
                           [src]="nakama.users[isOfficial][target][msg.sender_id].img || 'assets/data/avatar.svg'"
                           alt="img"
                           [style]="nakama.users[isOfficial][target][msg.sender_id]['online'] ? 'filter: grayscale(0) contrast(1);' : 'filter: grayscale(.9) contrast(1.4);'" />
@@ -84,7 +84,7 @@
                         (click)="JoinWebRTCMatch(msg)">
                         {{lang.text['ChatRoom']['JoinWebRTCMatch']}}
                       </div>
-                      <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background imageForm"
+                      <div *ngIf="msg.content['qoute']" class="cursor_pointer qoute_text qoute_background imageForm"
                         (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
                         <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg'] + ': ' +
                           (msg.content['qoute']['username'] || msg.content['qoute']['display_name'])}}</div>
@@ -96,8 +96,9 @@
                           {{msg.content['qoute'].text}}</div>
                       </div>
                       <div *ngIf="msg.content['filename']" class="file_message_form">
-                        <div *ngIf="!msg.content['thumbnail']" class="file_button imageForm borderRadiusDefault"
-                          (click)="file_detail(msg)" [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
+                        <div *ngIf="!msg.content['thumbnail']"
+                          class="cursor_pointer file_button imageForm borderRadiusDefault" (click)="file_detail(msg)"
+                          [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
                           <div
                             *ngIf="global.ShowHint && !CheckIfFocusOnInput && ((ChatLogs.scrollTop == 0 && CheckIfHasScroll && msg == Attach.first) || ((ChatLogs.scrollTop != 0 || !CheckIfHasScroll) && msg == Attach.last))"
                             class="shortcut_hint">Q</div>
@@ -111,7 +112,7 @@
                           <div
                             *ngIf="global.ShowHint && !CheckIfFocusOnInput && ((ChatLogs.scrollTop == 0 && CheckIfHasScroll && msg == Attach.first) || ((ChatLogs.scrollTop != 0 || !CheckIfHasScroll) && msg == Attach.last))"
                             class="shortcut_hint">Q</div>
-                          <img class="file_thumbnail imageForm"
+                          <img class="file_thumbnail imageForm cursor_pointer"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
                             [src]="msg.content['thumbnail']" [alt]="msg.content['filename']" />
                         </div>
@@ -170,7 +171,7 @@
                           {{lang.text['ChatRoom']['JoinWebRTCMatch']}}
                         </div>
                       </div>
-                      <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background imageForm"
+                      <div *ngIf="msg.content['qoute']" class="cursor_pointer qoute_text qoute_background imageForm"
                         (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
                         <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg'] + ': ' +
                           (msg.content['qoute']['username'] || msg.content['qoute']['display_name'])}}</div>
@@ -182,8 +183,9 @@
                           {{msg.content['qoute'].text}}</div>
                       </div>
                       <div *ngIf="msg.content['filename']" class="my_file_message_form">
-                        <div *ngIf="!msg.content['thumbnail']" class="file_button imageForm borderRadiusDefault"
-                          (click)="file_detail(msg)" [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
+                        <div *ngIf="!msg.content['thumbnail']"
+                          class="cursor_pointer file_button imageForm borderRadiusDefault" (click)="file_detail(msg)"
+                          [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
                           <div
                             *ngIf="global.ShowHint && !CheckIfFocusOnInput && ((ChatLogs.scrollTop == 0 && CheckIfHasScroll && msg == Attach.first) || ((ChatLogs.scrollTop != 0 || !CheckIfHasScroll) && msg == Attach.last))"
                             class="shortcut_hint">Q</div>
@@ -197,7 +199,7 @@
                           <div
                             *ngIf="global.ShowHint && !CheckIfFocusOnInput && ((ChatLogs.scrollTop == 0 && CheckIfHasScroll && msg == Attach.first) || ((ChatLogs.scrollTop != 0 || !CheckIfHasScroll) && msg == Attach.last))"
                             class="shortcut_hint">Q</div>
-                          <img class="file_thumbnail imageForm"
+                          <img class="file_thumbnail imageForm cursor_pointer"
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
                             [src]="msg.content['thumbnail']" [alt]="msg.content['filename']" />
                         </div>
@@ -224,15 +226,26 @@
                       </div>
                     </td>
                     <td class="avatar_form my_avatar_form">
-                      <div *ngIf="msg['showInfo'] && msg['showInfo']['sender']" class="avatar_image"
+                      <div *ngIf="msg['showInfo'] && msg['showInfo']['sender']" class="avatar_image cursor_pointer"
                         (click)="user_detail(msg)">
-                        <img class="avatar_image" [src]="nakama.users.self['img'] || 'assets/data/avatar.svg'"
-                          alt="my_img"
+                        <img class="avatar_image cursor_pointer"
+                          [src]="nakama.users.self['img'] || 'assets/data/avatar.svg'" alt="my_img"
                           [style]="nakama.users.self['online'] ? 'filter: grayscale(0) contrast(1);' : 'filter: grayscale(.9) contrast(1.4);'" />
                       </div>
                     </td>
                   </tr>
                 </table>
+                <!-- 하이퍼링크 정보 일부 발췌하여 보여주기 -->
+                <div *ngIf="msg.content['hasLink']" class="my_file_message_form href_thumbnail_self">
+                  <div class="quickShare_form qouteDiv cursor_pointer qouteOnChatBalloon"
+                    (click)="open_url_link(msg.content['hasLink'].url)">
+                    {{msg.content['hasLink'].title}}
+                    <img *ngIf="msg.content['hasLink'].imageUrl" [src]="msg.content['hasLink'].imageUrl"
+                      class="qouteImage qouteImageHeight href_image_margin"
+                      [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
+                      [alt]="msg.content['hasLink'].imageAlt" />
+                  </div>
+                </div>
                 <div style="width: 100%; text-align: -webkit-center;">
                   <div *ngIf="msg['isLastRead']" class="read_last_here" (click)="SetOtherAct()">
                     {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
@@ -243,7 +256,7 @@
               </div>
             </div>
             <div *ngFor="let msg of sending_msg" class="my_message_right my_sending_msg">
-              <div *ngIf="msg.content['qoute']" class="qoute_text qoute_background imageForm"
+              <div *ngIf="msg.content['qoute']" class="cursor_pointer qoute_text qoute_background imageForm"
                 (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
                 <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg'] + ': ' +
                   (msg.content['qoute']['username'] || msg.content['qoute']['display_name'])}}</div>
@@ -255,15 +268,16 @@
                   {{msg.content['qoute'].text}}</div>
               </div>
               <div *ngIf="msg.content['filename']" class="my_file_message_form">
-                <div *ngIf="!msg.content['thumbnail']" class="file_button imageForm borderRadiusDefault"
+                <div *ngIf="!msg.content['thumbnail']" class="cursor_pointer file_button imageForm borderRadiusDefault"
                   [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''">
                   <p class="file_info"> {{msg.content['filename']}} </p>
                   <div *ngIf="msg.content['text']" class="text_seperator"></div>
                   <span *ngFor="let line of msg.content['text']" class="file_info file_text_thumbnail"> {{line}} </span>
                 </div>
                 <div *ngIf="msg.content['thumbnail']" class="file_name_form imageForm borderRadiusDefault">
-                  <img class="file_thumbnail imageForm" [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
-                    [src]="msg.content['thumbnail']" [alt]="msg.content['filename']" />
+                  <img class="file_thumbnail imageForm cursor_pointer"
+                    [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''" [src]="msg.content['thumbnail']"
+                    [alt]="msg.content['filename']" />
                 </div>
               </div>
               <div *ngIf="msg.content['msg']" class="message_content_form my_file_message_form">
@@ -286,7 +300,7 @@
           </div>
         </div>
         <table class="thumbnails imageForm" style="cursor: pointer;">
-          <tr *ngIf="userInput['qoute']" class="qoute_text" (click)="RemoveQoute()">
+          <tr *ngIf="userInput['qoute']" class="cursor_pointer qoute_text" (click)="RemoveQoute()">
             <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg'] + ': ' + (userInput['qoute']['username'] ||
               userInput['qoute']['display_name'])}}
             </div>
@@ -297,7 +311,7 @@
                 [style]="'max-height: 84px;' + (info['HideAutoThumbnail'] ? 'filter: blur(6px);' : '')" alt="" />
             </div>
           </tr>
-          <tr *ngIf="IsMsgEditMode" class="qoute_text" (click)="IsMsgEditMode = undefined">
+          <tr *ngIf="IsMsgEditMode" class="cursor_pointer qoute_text" (click)="IsMsgEditMode = undefined">
             <div class="qouteDiv">{{lang.text['ChatRoom']['EditChat'] + ': ' + IsMsgEditMode['msg_string']}}
             </div>
             <div *ngIf="IsMsgEditMode.thumbnail" class="imageForm borderRadiusDefault qouteImageHeight"

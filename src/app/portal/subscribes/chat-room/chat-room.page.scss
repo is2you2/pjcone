@@ -63,6 +63,18 @@
     text-align: -webkit-right;
 }
 
+.href_thumbnail_self {
+    padding-right: 56px;
+}
+
+.cursor_pointer {
+    cursor: pointer;
+}
+
+.href_image_margin {
+    margin-top: 8px;
+}
+
 .file_name_form {
     margin-top: 4px;
     max-width: 192px;
@@ -74,7 +86,6 @@
     max-height: 192px;
     width: auto;
     height: auto;
-    cursor: pointer;
     display: block;
 }
 
@@ -104,7 +115,6 @@
 .qoute_text {
     text-align: initial;
     margin: 4px 0px 0px 0px;
-    cursor: pointer;
 }
 
 .msg_parent {
@@ -186,7 +196,6 @@
     height: 48px;
     border-radius: 64px;
     object-fit: cover;
-    cursor: pointer;
 }
 
 // 발송하였으나 재수신되지 않은, 발신중으로 판단되는 메시지들을 위한 클래스
@@ -208,7 +217,6 @@
     // 테스트용 배경색
     background-color: grey;
     margin-top: 4px;
-    cursor: pointer;
 }
 
 .bottom_thumbnail {

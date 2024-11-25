@@ -1717,7 +1717,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           if (msg.content['filename']) this.ModulateFileEmbedMessage(msg);
           this.nakama.CatchQouteMsgUserName(msg, this.isOfficial, this.target);
           this.nakama.ModulateTimeDate(msg);
-          this.nakama.content_to_hyperlink(msg);
+          this.nakama.content_to_hyperlink(msg, this.isOfficial, this.target);
           // 삭제한 메시지가 아니라면 추가
           if (msg.code != 2) {
             // 중복 추가되는 메시지 검토
@@ -2039,7 +2039,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (!edit_well) return;
         if (this.info['local']) {
           this.IsMsgEditMode['code'] = 1;
-          this.nakama.content_to_hyperlink(this.IsMsgEditMode);
+          this.nakama.content_to_hyperlink(this.IsMsgEditMode, this.isOfficial, this.target);
           this.IsMsgEditMode['update_time'] = Date.now();
           this.SendLocalMessage(this.IsMsgEditMode);
         }
@@ -2130,7 +2130,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
     result['local_comp'] = Math.random();
     let tmp = { content: JSON.parse(JSON.stringify(result)) };
-    this.nakama.content_to_hyperlink(tmp);
+    this.nakama.content_to_hyperlink(tmp, this.isOfficial, this.target);
     if (this.info['local']) { // 로컬 채널 전용 행동 (셀프 보내기)
       /** 업로드가 진행중인 메시지 개체 */
       let local_msg_id = new Date().getTime().toString();
@@ -2372,17 +2372,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       message: new IonicSafeString(result_form),
       buttons: [{
         text: this.lang.text['ChatRoom']['EditChat'],
-        handler: () => {
+        handler: async () => {
           this.userInput.qoute = undefined;
           let copied = JSON.parse(JSON.stringify(msg));
           copied['msg_string'] = MsgText;
           this.IsMsgEditMode = copied;
           // 파일이 첨부된 메시지라면 썸네일 보여주기
-          if (copied.content.path)
-            this.indexed.loadBlobFromUserPath(copied.content.path, copied.content.type, blob => {
-              let FileURL = URL.createObjectURL(blob);
-              copied['thumbnail'] = FileURL;
-            });
+          try {
+            let blob = await this.indexed.loadBlobFromUserPath(copied.content.path, copied.content.type);
+            let FileURL = URL.createObjectURL(blob);
+            copied['thumbnail'] = FileURL;
+          } catch (e) { }
           this.userInput.text = orig_msg;
           setTimeout(() => {
             this.ResizeTextArea();

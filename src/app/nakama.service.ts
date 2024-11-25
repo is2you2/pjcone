@@ -3143,7 +3143,7 @@ export class NakamaService {
     this.ModulateTimeDate(c);
     this.check_sender_and_show_name(c, _is_official, _target);
     let original_msg = msg.content['msg'];
-    this.content_to_hyperlink(c);
+    this.content_to_hyperlink(c, _is_official, _target);
     if (!isNewChannel && this.channels_orig[_is_official][_target][c.channel_id]['update'])
       this.channels_orig[_is_official][_target][c.channel_id]['update'](c);
     if (!is_systemMsg) {
@@ -3316,7 +3316,7 @@ export class NakamaService {
   /** 메시지를 엔터 단위로 분리, 메시지 내 하이퍼링크가 있는 경우 검토  
    * 이 곳에서 메시지가 작은 단위별로 쪼개지며 메시지에 필요한 정보가 구성된다
    */
-  content_to_hyperlink(msg: any) {
+  content_to_hyperlink(msg: any, _is_official: string, _target: string) {
     if (!msg.content['msg'] || typeof msg.content['msg'] == 'object') return;
     let sep_msg = msg.content['msg'].split('\n');
     msg.content['msg'] = [];
@@ -3355,7 +3355,21 @@ export class NakamaService {
             result_msg.push({ text: end_msg });
           }
           msg.content['msg'][i] = result_msg;
-        }
+          if (!msg.content['hasLink']) {
+            let servInfo: ServerInfo;
+            try {
+              servInfo = this.servers[_is_official][_target].info;
+            } catch (e) { }
+            let reqAddress: string;
+            try {
+              reqAddress = `${servInfo.useSSL ? 'https' : 'http'}://${servInfo.address}:${servInfo.cdn_port || 9001}`;
+            } catch (e) { }
+            this.global.GetHrefThumbnail(result, reqAddress)
+              .then(json => {
+                msg.content['hasLink'] = json;
+              });
+          }
+        } else delete msg.content['hasLink'];
       }
   }
 

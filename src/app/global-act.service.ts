@@ -826,6 +826,33 @@ export class GlobalActService {
     }
   }
 
+  /** 웹 페이지 링크와 관련된 간단한 정보 수집 (서버 요청)  
+   * 서버 주소와 무관하게 FFS 에서 우선적으로 처리를 시도함
+   * @param msg 메시지 양식
+   * @param reqAddress 요청하려는 서버 주소 (FFS 이후에 동작)
+   * @returns 서버로부터 받은 정보 json
+   */
+  async GetHrefThumbnail(url: string, reqAddress?: string) {
+    let result = null;
+    // FFS 가 준비되어있다면 해당 서버에 먼저 요청 시도
+    try {
+      throw 'test';
+    } catch (e) {
+      if (!reqAddress) throw '대상 서버 없음';
+      // 그게 아니라면 해당 서버에 요청 시도
+      try {
+        let res = await fetch(`${reqAddress}/get-page-info?url=${encodeURIComponent(url)}`);
+        if (res.ok) {
+          let json = await res.json();
+          result = json;
+        } else throw `${res.statusText} (${res.status})`;
+      } catch (e) {
+        console.log('GetHrefThumbnail: ', e);
+      }
+    }
+    return result;
+  }
+
   /** 입력된 주소가 IP주소로 구성되어있는지 검토
    * @returns boolean: 주소가 dns 형식으로 ssl 사용이 예상되면 true, 주소가 ip 주소로 비보안이 예상되면 false
    */
