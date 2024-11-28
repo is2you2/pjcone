@@ -704,7 +704,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               for (let i = 0, j = ev.target.files.length; i < j; i++) {
                 loading.message = `${j - i}: ${ev.target.files[i].name}`;
                 await this.selected_blobFile_callback_act(ev.target.files[i]);
-                await this.send();
+                await this.send(undefined, loading);
               }
               this.noti.ClearNoti(7);
               loading.dismiss();
