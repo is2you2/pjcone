@@ -2410,7 +2410,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 loading.present();
                 let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
                 if (msg.content.url) { // 링크된 파일인 경우
-                  if (msg.content.url.indexOf(msg.group_id) >= 0 && msg.content.url.indexOf(msg.sender_id) >= 0)
+                  if (msg.content.url.indexOf(msg.group_id) >= 0 && msg.content.url.indexOf(msg.sender_id) >= 0 && msg.content.type)
                     this.global.remove_file_from_storage(msg.content.url, server_info);
                 } else { // 파트 업로드 파일인 경우
                   for (let i = 0; i < msg.content['partsize']; i++) {
@@ -2437,10 +2437,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           } else { // 로컬 채널인경우 첨부파일을 즉시 삭제
             if (FileURL) {
               let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
-              if (msg.content.url) { // 링크된 파일인 경우
-                if (msg.content.url.indexOf(msg.group_id) >= 0 && msg.content.url.indexOf(msg.sender_id) >= 0)
-                  this.global.remove_file_from_storage(msg.content.url, server_info);
-              }
+              if (msg.content.url && msg.content.type) // 링크된 파일인 경우
+                this.global.remove_file_from_storage(msg.content.url, server_info);
               let list = await this.indexed.GetFileListFromDB(path);
               for (let path of list)
                 await this.indexed.removeFileFromUserPath(path);
