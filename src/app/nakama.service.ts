@@ -308,78 +308,72 @@ export class NakamaService {
     });
   }
 
+  /** p5 할 일의 정확한 알림 동작 유도를 위해 구성됨 */
+  p5todotimer: p5;
+  /** 알림이 필요하다고 판단되는 할 일들을 기억함 */
+  NeedLocalPush = [];
   /** 해야할 일 알림 추가하기 */
-  async set_todo_notification(noti_info: any) {
-    // 시작 시간이 있으면 시작할 때 알림, 시작시간이 없으면 끝날 때 알림
-    let targetTime = noti_info.startFrom || noti_info.limit;
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') { // 웹은 예약 발송이 없으므로 지금부터 수를 세야함
-      let ScheduleAt = new Date(targetTime).getTime() - new Date().getTime();
-      if (ScheduleAt > 0 && ScheduleAt < 2000000000) { // settimeout 최댓값이 있는 것 같다
-        let schedule = setTimeout(async () => {
-          let catch_image_attach: string;
-          for (let attach of noti_info['attach']) {
-            if (attach['viewer'] == 'image') {
-              if (attach['url']) {
-                catch_image_attach = attach['url'];
-              } else {
-                let blob = await this.indexed.loadBlobFromUserPath(attach['path'], attach['type']);
-                catch_image_attach = URL.createObjectURL(blob);
-              }
-              break;
-            }
-          }
-          await this.noti.PushLocal({
-            id: noti_info.noti_id,
-            title: noti_info.title,
-            body: noti_info.description,
-            image: catch_image_attach,
-            smallIcon_ln: 'todo',
-          }, undefined, (_ev: any) => {
-            this.open_add_todo_page(JSON.stringify(noti_info), 'add-todo-menu');
-          });
-          setTimeout(() => {
-            try {
-              URL.revokeObjectURL(catch_image_attach);
-            } catch (e) { }
-          }, 1000);
-        }, ScheduleAt);
-        this.web_noti_id[noti_info.noti_id] = schedule;
-      }
-    } else { // 모바일은 예약 발송을 설정
-      let schedule_at = new Date(targetTime).getTime();
-      for (let i = 0, j = this.registered_id.length; i < j; i++)
-        if (this.registered_id[i] == noti_info.id) {
-          this.registered_id.splice(i, 1);
-          noti_info.id = this.get_noti_id();
-          if (!noti_info['done'] && noti_info['remote']) { // 서버 할 일이라면 알림 재등록
-            let isOfficial = noti_info['remote']['isOfficial'];
-            let target = noti_info['remote']['target'];
-            try {
-              await this.servers[isOfficial][target].client.writeStorageObjects(
-                this.servers[isOfficial][target].session, [{
-                  collection: 'server_todo',
-                  key: noti_info['id'],
-                  permission_read: 2,
-                  permission_write: 1,
-                  value: noti_info,
-                }]).then(v => {
-                  this.servers[isOfficial][target]
-                    .socket.sendMatchState(this.self_match[isOfficial][target].match_id, MatchOpCode.MANAGE_TODO,
-                      encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
-                });
-            } catch (e) {
-              console.log('서버 알림 재등록 실패: ', e);
-            }
-          }
-          break;
+  async set_todo_notification(json: any) {
+    // 중복된 알림 등록시 기존 알림을 제거
+    this.RemoveLocalPushSchedule(json);
+    // 알림이 필요해 보이는 경우 알림이 필요한 할 일로 분류하기
+    let targetTime = json.startFrom || json.limit;
+    if (targetTime > Date.now()) this.NeedLocalPush.push(json);
+    if (!this.p5todotimer && this.NeedLocalPush.length) {
+      this.p5todotimer = new p5((p: p5) => {
+        p.setup = () => {
+          p.noCanvas();
+          p.frameRate(.5);
         }
-      if (!noti_info['done'] && schedule_at > new Date().getTime()) {
-        this.noti.PushLocal({
-          id: noti_info.noti_id,
-          title: noti_info.title,
-          body: noti_info.description,
-          smallIcon_ln: 'todo',
-        });
+        p.draw = async () => {
+          const GETnow = Date.now();
+          for (let i = this.NeedLocalPush.length - 1; i >= 0; i--) {
+            let targetTime = this.NeedLocalPush[i]['startFrom'] || this.NeedLocalPush[i]['limit'];
+            if (targetTime < GETnow) {
+              let catch_image_attach: string;
+              for (let attach of this.NeedLocalPush[i]['attach']) {
+                if (attach['viewer'] == 'image') {
+                  if (attach['url']) {
+                    catch_image_attach = attach['url'];
+                  } else {
+                    let blob = await this.indexed.loadBlobFromUserPath(attach['path'], attach['type']);
+                    catch_image_attach = URL.createObjectURL(blob);
+                  }
+                  break;
+                }
+              }
+              let stringified = JSON.stringify(this.NeedLocalPush[i]);
+              await this.noti.PushLocal({
+                id: this.NeedLocalPush[i].noti_id,
+                title: this.NeedLocalPush[i].title,
+                body: this.NeedLocalPush[i].description,
+                image: catch_image_attach,
+                smallIcon_ln: 'todo',
+              }, undefined, (_ev: any) => {
+                this.open_add_todo_page(stringified, 'add-todo-menu');
+              });
+              setTimeout(() => {
+                try {
+                  URL.revokeObjectURL(catch_image_attach);
+                } catch (e) { }
+              }, 1000);
+              this.NeedLocalPush.splice(i, 1);
+            }
+          }
+          if (!this.NeedLocalPush.length) {
+            p.remove();
+            this.p5todotimer = null;
+          }
+        }
+      });
+    }
+  }
+  /** 대기중인 할 일 알림에서 삭제하기 */
+  RemoveLocalPushSchedule(json: any) {
+    for (let i = this.NeedLocalPush.length - 1; i >= 0; i--) {
+      if (this.NeedLocalPush[i]['id'] == json.id) {
+        this.NeedLocalPush.splice(i, 1);
+        break;
       }
     }
   }
@@ -1081,11 +1075,7 @@ export class NakamaService {
                 if (!check.objects.length) { // 원격에서 삭제된 할 일임
                   let list = await this.indexed.GetFileListFromDB(`todo/${json.id}_${_is_official}_${_target}`);
                   list.forEach(path => this.indexed.removeFileFromUserPath(path));
-                  if (json.noti_id)
-                    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
-                      clearTimeout(this.web_noti_id[json.noti_id]);
-                      delete this.web_noti_id[json.noti_id];
-                    }
+                  this.RemoveLocalPushSchedule(json);
                   this.noti.ClearNoti(json.id);
                   if (this.global.p5removeTodo)
                     this.global.p5removeTodo(todo);
@@ -1389,12 +1379,7 @@ export class NakamaService {
     }
     let list = await this.indexed.GetFileListFromDB(path);
     list.forEach(_path => this.indexed.removeFileFromUserPath(_path));
-    // 해당 할 일의 알림 삭제
-    if (targetInfo.noti_id)
-      if (!(isPlatform == 'Android' || isPlatform == 'iOS')) {
-        clearTimeout(this.web_noti_id[targetInfo.noti_id]);
-        delete this.web_noti_id[targetInfo.noti_id];
-      }
+    this.RemoveLocalPushSchedule(targetInfo);
     this.removeRegisteredId(targetInfo.noti_id);
     this.noti.ClearNoti(targetInfo.noti_id);
     if (isDelete && this.global.p5todo)
@@ -1760,10 +1745,6 @@ export class NakamaService {
    * 새 할 일이 생성될 때마다 추가됨  
    * 2000부터 시작 */
   noti_id = 2000;
-  /** 웹용 지연 알림 구성 보조용  
-   * { noti_id: settimeout }
-   */
-  web_noti_id = {};
   /** 로컬알림에 사용될 채널별 id 구성용 */
   get_noti_id(): number {
     this.noti_id = this.check_If_RegisteredId(this.noti_id + 1);
@@ -2656,11 +2637,7 @@ export class NakamaService {
                       await this.modify_remote_info_as_local(todo_info, _is_official, _target);
                       this.indexed.GetFileListFromDB(`todo/${todo_info.id}`, (v) => {
                         v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
-                        if (todo_info.noti_id)
-                          if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
-                            clearTimeout(this.web_noti_id[todo_info.noti_id]);
-                            delete this.web_noti_id[todo_info.noti_id];
-                          }
+                        this.RemoveLocalPushSchedule(todo_info);
                         this.removeRegisteredId(todo_info.noti_id);
                         this.noti.ClearNoti(todo_info.noti_id);
                         this.SyncTodoCounter(_is_official, _target);
@@ -2673,11 +2650,7 @@ export class NakamaService {
                           await this.modify_remote_info_as_local(todo_info, _is_official, _target);
                           this.indexed.GetFileListFromDB(`todo/${todo_info.id}`, (v) => {
                             v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
-                            if (todo_info.noti_id)
-                              if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
-                                clearTimeout(this.web_noti_id[todo_info.noti_id]);
-                                delete this.web_noti_id[todo_info.noti_id];
-                              }
+                            this.RemoveLocalPushSchedule(todo_info);
                             this.removeRegisteredId(todo_info.noti_id);
                             this.noti.ClearNoti(todo_info.noti_id);
                             this.SyncTodoCounter(_is_official, _target);
@@ -2693,11 +2666,7 @@ export class NakamaService {
                       let todo_info = JSON.parse(v);
                       this.indexed.GetFileListFromDB(`todo/${todo_info.id}`, (v) => {
                         v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
-                        if (todo_info.noti_id)
-                          if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
-                            clearTimeout(this.web_noti_id[todo_info.noti_id]);
-                            delete this.web_noti_id[todo_info.noti_id];
-                          }
+                        this.RemoveLocalPushSchedule(todo_info);
                         this.removeRegisteredId(todo_info.noti_id);
                         this.noti.ClearNoti(todo_info.noti_id);
                         if (this.global.p5removeTodo)
@@ -2710,11 +2679,7 @@ export class NakamaService {
                           let todo_info = JSON.parse(v);
                           this.indexed.GetFileListFromDB(`todo/${todo_info.id}`, (v) => {
                             v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
-                            if (todo_info.noti_id)
-                              if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
-                                clearTimeout(this.web_noti_id[todo_info.noti_id]);
-                                delete this.web_noti_id[todo_info.noti_id];
-                              }
+                            this.RemoveLocalPushSchedule(todo_info);
                             this.removeRegisteredId(todo_info.noti_id);
                             this.noti.ClearNoti(todo_info.noti_id);
                             if (this.global.p5removeTodo)

@@ -1340,15 +1340,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
     // 알림 예약 생성
     if (this.userInput.noti_id) {  // 알림 아이디가 있다면 삭제 후 재배정
-      if (!this.isMobile) {
-        clearTimeout(this.nakama.web_noti_id[this.userInput.noti_id]);
-        delete this.nakama.web_noti_id[this.userInput.noti_id];
-      }
+      this.nakama.RemoveLocalPushSchedule(this.userInput);
       this.nakama.removeRegisteredId(this.userInput.noti_id);
       this.noti.ClearNoti(this.userInput.noti_id);
     } // 알림 아이디가 없다면 새로 배정
     this.userInput.noti_id = this.nakama.get_noti_id();
-    this.nakama.set_todo_notification(this.userInput);
     let attach_changed = false;
     if (!this.isModify && this.userInput.workers) { // 작업자 지정처리
       this.userInput.workers.length = 0;
@@ -1527,6 +1523,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       else this.userInput.startFrom = input_value;
     }
     this.userInput.limit = new Date(this.userInput.limit).getTime();
+    this.nakama.set_todo_notification(this.userInput);
     if (!this.isModify) { // 새로 만들 때
       if (this.userInput.remote && !this.userInput.remote.creator_id) // 원격 생성이면서 최초 생성
         this.userInput.remote.creator_id = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id;
