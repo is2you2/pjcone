@@ -81,14 +81,12 @@ export class LocalNotiService {
     vibrate: false,
   }
   /** 현재 바라보고 있는 화면 이름, 비교하여 같으면 알림을 보내지 않음 */
-  Current: string;
+  Current = '';
   /** 웹에서 앱 아이디를 따라 알림 관리  
    * { id: Notification }
    */
   WebNoties = {} as { [id: string]: Notification };
 
-  /** 모바일 웹 로컬 푸쉬를 위해 서비스워커를 기억함 */
-  MobileSWReg: ServiceWorkerRegistration;
   /** 광장 채널 채팅 클라이언트, 순환 코드 참조 우회용 */
   Sq_client: any;
   /** 권한 요청 처리 */
@@ -96,7 +94,6 @@ export class LocalNotiService {
     // 사설 그룹 채팅 알림은 즉시 무시하기
     this.ClearNoti(11);
     if ('serviceWorker' in navigator) {
-      this.MobileSWReg = window['swReg'];
       Notification.requestPermission().then(v => {
         if (v === 'granted') {
           console.log('알림 권한이 허용됨.');
@@ -136,7 +133,7 @@ export class LocalNotiService {
    */
   async PushLocal(opt: TotalNotiForm, header?: string, _action_wm: Function = () => { }) {
     // 창을 바라보는 중이라면 무시됨, 바라보는 중이면서 같은 화면이면 무시됨
-    if (document.hasFocus() && this.Current == header) return;
+    if (document.hasFocus() && this.Current === header) return;
     if (!this.settings.silent[opt.smallIcon_ln || header || 'icon_mono']) return;
     /** 기본 알림 옵션 (교체될 수 있음) */
     const input: any = {
@@ -157,8 +154,8 @@ export class LocalNotiService {
         } catch (e) { }
         delete this.WebNoties[opt.id];
       }
-      await this.MobileSWReg.showNotification(opt.title, { ...input });
-      let getNoties = await this.MobileSWReg.getNotifications();
+      await window['swReg'].showNotification(opt.title, { ...input });
+      let getNoties = await window['swReg'].getNotifications();
       for (let i = 0, j = getNoties.length; i < j; i++)
         if (getNoties[i].tag == `${opt.id}`) {
           this.WebNoties[opt.id] = getNoties[i];
@@ -169,7 +166,9 @@ export class LocalNotiService {
         window.focus();
         this.WebNoties[opt.id].close();
       }
-    } catch (e) { }
+    } catch (e) {
+      console.log('알림 생성 오류: ', e);
+    }
   }
 
   /** 알림 제거하기 */

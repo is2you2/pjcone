@@ -949,7 +949,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     this.title.setTitle('Project: Cone');
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', 'assets/icon/favicon.png');
-    this.noti.Current = undefined;
+    this.noti.Current = '';
     if (this.client.IsConnected) this.client.CreateRejoinButton();
     delete this.global.p5KeyShortCut['EnterAct'];
     delete this.global.p5KeyShortCut['Escape'];

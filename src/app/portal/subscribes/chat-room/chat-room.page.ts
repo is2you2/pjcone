@@ -2781,7 +2781,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   ionViewWillLeave() {
     this.WillLeave = true;
-    this.noti.Current = undefined;
+    this.noti.Current = '';
     this.removeShortCutKey();
     window.onfocus = null;
     this.userInputTextArea.onpaste = null;
