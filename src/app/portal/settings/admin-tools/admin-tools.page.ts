@@ -166,6 +166,7 @@ export class AdminToolsPage implements OnInit {
             this.all_users[i] = { ...this.all_users[i], ...user };
             let original_time = new Date(this.all_users[i].create_time).getTime() - new Date().getTimezoneOffset() * 60 * 1000;
             this.all_users[i]['display_created'] = new Date(original_time).toISOString().split('.')[0];
+            this.all_users[i]['is_me'] = user_id == this.nakama.servers[this.isOfficial][this.target].session.user_id;
           }, true);
           if (this.all_users[i]['online']) this.CurrentOnlineUser++;
         }

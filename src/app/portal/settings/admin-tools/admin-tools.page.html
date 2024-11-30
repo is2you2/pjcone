@@ -86,7 +86,9 @@
           </div>
           <ion-label class="form_margin">{{nakama.usernameOverride[isOfficial][target][all_users[i].id] ||
             all_users[i].display_name ||
-            lang.text['Profile']['noname_user']}}</ion-label>
+            lang.text['Profile']['noname_user']}} <span *ngIf="all_users[i]['is_me']" class="server_target">{{'(' +
+              lang.text['AdminTools']['AboutMe']
+              + ')'}}</span> </ion-label>
           <ion-icon class="ion-accordion-toggle-icon hide_accordion_icon"></ion-icon>
         </ion-item>
         <div slot="content">
