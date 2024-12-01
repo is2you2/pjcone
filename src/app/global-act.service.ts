@@ -457,8 +457,8 @@ export class GlobalActService {
             }
           });
         }
-      keys['exit'] = () => {
-        this.ArcadeWithFullScreen = !this.ArcadeWithFullScreen;
+      keys['fullscr_tog'] = (force?: boolean) => {
+        this.ArcadeWithFullScreen = force ?? !this.ArcadeWithFullScreen;
       }
       let frame = document.getElementById(_frame_name);
       frame.appendChild(_godot);
@@ -475,11 +475,15 @@ export class GlobalActService {
   ArcadeWithFullScreen = false;
   async CreateArcadeFrame(FileInfo: FileInfo) {
     this.ArcadeLoaded = true;
-    this.ArcadeWithFullScreen = true;
+    // 데스크탑에서는 전체화면으로 진입
+    // 모바일에서는 앱에서 준비된 메뉴가 있는 경우, 개발자가 버튼을 준비한 후 진입
+    if (isPlatform == 'DesktopPWA') {
+      this.ArcadeWithFullScreen = true;
+      this.p5toast.show({
+        text: this.lang.text['Arcade']['ESCToExit'],
+      });
+    }
     const CachePath = `tmp_files/duplicate/arcade.pck`;
-    this.p5toast.show({
-      text: this.lang.text['Arcade']['ESCToExit'],
-    });
     await this.CreateGodotIFrameWithDuplicateAct(FileInfo, 'arcade_pck_loaded', {
       path: CachePath,
       force: true,

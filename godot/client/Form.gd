@@ -26,9 +26,9 @@ func _ready():
 		window.download_url = download_url_func
 
 func _input(event):
-	if event.is_action_pressed("exit"):
+	if event.is_action_pressed("fullscr_tog"):
 		if OS.has_feature('web'):
-			window.exit()
+			window.fullscr_tog()
 
 # 주소로부터 다운받기
 func download_url(args):
