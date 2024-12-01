@@ -473,6 +473,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         ColorCell.style.textAlign = 'center';
         ColorCell.style.cursor = 'pointer';
         ColorCell.onclick = () => { p5ColorPicker.elt.click() }
+        ColorCell.oncontextmenu = () => {
+          console.log('우클릭됨');
+          return false;
+        }
         let WeightCell = bottom_row.insertCell(3); // 선 두께 변경
         if (this.global.ShowHint)
           WeightCell.innerHTML = `<div><div class="shortcut_hint shortcut_voiddraw">V</div><ion-icon style="width: 27px; height: 27px" name="pencil"></ion-icon></div>`;
@@ -820,10 +824,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         p.redraw();
       }
       p.mouseDragged = (ev: any) => {
-        if (!Drawable) return;
+        if (!Drawable || isClickOnMenu) return;
         switch (ev['which']) {
           case 1: // 왼쪽
-            if (this.isCropMode && !isClickOnMenu) {
+            if (this.isCropMode) {
               let CurrentPosition = p.createVector(p.mouseX, p.mouseY);
               if (isCropSizing) {
                 CropSize = CropStartSize.copy().add(CropStartScalePos.copy().sub(CurrentPosition).div(-CamScale));
