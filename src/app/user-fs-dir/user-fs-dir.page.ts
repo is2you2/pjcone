@@ -523,6 +523,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
       },
       path: info.path,
       relevance: createRelevances,
+      dismiss: 'userfs-viewer',
     });
   }
 
