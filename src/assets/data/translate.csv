@@ -93,8 +93,6 @@ AddCustom,즉시 실행,Run immediately
 AddedCustom,이 기기에 추가됨,Added to this device
 FromFile,파일 선택,Select file
 FromLink,복사된 링크,Copied link
-Search,검색,Search
-InputKeyword,키워드 입력,Enter keyword
 InputError,파일 입력 오류,File input error
 AlertTitle,아케이드 종료,Arcade exit
 AlertMsg,실행중인 게임을 종료합니다,Quit the running game

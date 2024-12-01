@@ -423,6 +423,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       }
                     } else {
                       this.AlreadyHaveGodot = true;
+                      this.PostInfo['attachments'][index].cont = this.cont;
                       this.global.CreateGodotIFrameWithDuplicateAct(this.PostInfo['attachments'][index], targetFrameId, {
                         path: `tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`,
                         url: this.PostInfo['attachments'][index].url,

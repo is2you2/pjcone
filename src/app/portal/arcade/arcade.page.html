@@ -40,19 +40,14 @@
         </div>
       </div>
     </div>
-    <div *ngIf="nakama.ArcadeList.length">
+    <!-- <div *ngIf="nakama.ArcadeList.length">
       <ion-item-divider>
         <ion-label>{{lang.text['Arcade']['AddedCustom']}}</ion-label>
       </ion-item-divider>
-      <ion-item>
-        <ion-input [label]="lang.text['Arcade']['Search']" class="ion-text-end"
-          [placeholder]="lang.text['Arcade']['InputKeyword']"></ion-input>
-        <ion-icon slot="end" name="search-outline" style="cursor: pointer;"></ion-icon>
-      </ion-item>
       <div class="list_form">
         <div *ngFor="let arcade of nakama.ArcadeList" class="list_ele" (click)="ShowGameInfo()"></div>
       </div>
-    </div>
+    </div> -->
   </div>
   <div *ngIf="global.ArcadeLoaded">
     <div id="arcade_pck_loaded" class="full_screen" style="position: fixed;"></div>

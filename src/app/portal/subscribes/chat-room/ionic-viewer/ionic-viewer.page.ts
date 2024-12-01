@@ -1236,11 +1236,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           try {
             this.FileInfo.blob = await this.indexed.loadBlobFromUserPath(
               this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.path, '', undefined, this.indexed.ionicDB);
-          } catch (e) {
-            console.log('내부 파일 없음: ', e);
-          }
+          } catch (e) { }
         if (!this.NeedDownloadFile && this.CurrentViewId == GetViewId)
           setTimeout(() => {
+            this.FileInfo.cont = this.cont;
             this.global.CreateGodotIFrameWithDuplicateAct(this.FileInfo, 'content_viewer_canvas', {
               path: 'tmp_files/duplicate/viewer.pck',
               alt_path: this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.path,

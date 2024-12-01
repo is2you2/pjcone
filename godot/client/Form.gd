@@ -10,7 +10,6 @@ var quit_godot_func = JavaScriptBridge.create_callback(quit_godot)
 var modify_image_func = JavaScriptBridge.create_callback(modify_image)
 var create_thumbnail_func = JavaScriptBridge.create_callback(create_thumbnail)
 var start_load_pck_func = JavaScriptBridge.create_callback(start_load_pck)
-var download_url_func = JavaScriptBridge.create_callback(download_url)
 
 # 앱 시작과 동시에 동작하려는 pck 정보를 받아옴
 func _ready():
@@ -23,25 +22,11 @@ func _ready():
 		window.modify_image = modify_image_func
 		window.create_thumbnail = create_thumbnail_func
 		window.start_load_pck = start_load_pck_func
-		window.download_url = download_url_func
 
 func _input(event):
 	if event.is_action_pressed("fullscr_tog"):
 		if OS.has_feature('web'):
 			window.fullscr_tog()
-
-# 주소로부터 다운받기
-func download_url(args):
-	var dir:= DirAccess.open('user://')
-	if not dir.dir_exists('user://tmp_files/') or not dir.dir_exists('user://tmp_files/duplicate'):
-		dir.make_dir_recursive('user://tmp_files/duplicate/')
-	var file:= FileAccess.open('user://%s' % window['path'], FileAccess.WRITE)
-	file.close()
-	var http_req:= HTTPRequest.new()
-	http_req.download_file = 'user://%s' % window['path']
-	add_child(http_req)
-	http_req.connect("request_completed", Callable(self, 'download_complete'))
-	http_req.request(window.url)
 
 func download_complete(result, res_code, header, body):
 	start_load_pck([])

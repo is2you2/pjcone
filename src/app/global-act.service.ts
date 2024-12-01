@@ -74,6 +74,8 @@ export interface FileInfo {
   viewer?: string;
   /** 직접 파일이 아닌 url 링크로 받은 경우 */
   url?: string;
+  /** 요청을 취소하기 위해 연결시킴 */
+  cont?: AbortController;
 }
 
 /** 고도엔진과 공유되는 키값 */
@@ -476,7 +478,7 @@ export class GlobalActService {
   async CreateArcadeFrame(FileInfo: FileInfo) {
     this.ArcadeLoaded = true;
     // 데스크탑에서는 전체화면으로 진입
-    // 모바일에서는 앱에서 준비된 메뉴가 있는 경우, 개발자가 버튼을 준비한 후 진입
+    // 모바일에서는 앱에서 준비된 메뉴가 있는 경우, 개발자가 고도엔진 결과물에서 준비한 후 진입
     if (isPlatform == 'DesktopPWA') {
       this.ArcadeWithFullScreen = true;
       this.p5toast.show({
@@ -502,6 +504,17 @@ export class GlobalActService {
       });
       if (FailedCallback) FailedCallback();
     } else {
+      let loading = await this.loadingCtrl.create({ message: this.lang.text['Arcade']['TryingDownload'] });
+      loading.present();
+      try {
+        if (target.blob) throw '준비된 blob 정보';
+        if (!target.url) throw '파일 정보에 URL이 없음';
+        let res = await fetch(target.url, { signal: target.cont?.signal });
+        if (res.ok) {
+          target.blob = await res.blob();
+        } else throw `${res.statusText} (${res.status})`;
+      } catch (e) { }
+      loading.dismiss();
       const SavePath = `godot/app_userdata/Client/${keys.path}`;
       let SuccessCreateIndexedDB = false;
       if (this.indexed.godotDB) {
@@ -522,9 +535,7 @@ export class GlobalActService {
         await this.CreateGodotIFrame(_frame_name, keys);
       }
       if (AfterCallback) AfterCallback();
-      if (target.url)
-        this.godot_window['download_url']();
-      else this.godot_window['start_load_pck']();
+      this.godot_window['start_load_pck']();
     }
   }
 
