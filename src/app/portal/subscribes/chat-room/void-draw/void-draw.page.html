@@ -37,4 +37,39 @@
       </div>
     </ng-template>
   </ion-modal>
+  <ion-modal #ChangeTransparent class="transparent-modal">
+    <ng-template>
+      <div id="colordetailOuter" style="display: flex; justify-content: center; align-items: center; height: 100%;"
+        (click)="CheckIfDismissAct($event)">
+        <div id="colordetailInner"
+          style="width: 400px; min-height: 240px; background-color: var(--chatroom-background); text-align: center; padding: 16px;">
+          <h4>{{lang.text['voidDraw']['ColorpickDetail']}}</h4>
+          <ion-range [(ngModel)]="colorPickRed" (ionInput)="ColorSliderUpdate()" max="255">
+            <div slot="label" class="slider_title">{{lang.text['voidDraw']['ColorpickRed']}}</div>
+            <div slot="end" class="slider_end">
+              <input type="text" class="slider_input" [(ngModel)]="colorPickRed">
+            </div>
+          </ion-range>
+          <ion-range [(ngModel)]="colorPickGreen" (ionInput)="ColorSliderUpdate()" max="255">
+            <div slot="label" class="slider_title">{{lang.text['voidDraw']['ColorpickGreen']}}</div>
+            <div slot="end" class="slider_end">
+              <input type="text" class="slider_input" [(ngModel)]="colorPickGreen">
+            </div>
+          </ion-range>
+          <ion-range [(ngModel)]="colorPickBlue" (ionInput)="ColorSliderUpdate()" max="255">
+            <div slot="label" class="slider_title">{{lang.text['voidDraw']['ColorpickBlue']}}</div>
+            <div slot="end" class="slider_end">
+              <input type="text" class="slider_input" [(ngModel)]="colorPickBlue">
+            </div>
+          </ion-range>
+          <ion-range [(ngModel)]="colorPickAlpha" (ionInput)="ColorSliderUpdate()" max="255">
+            <div slot="label" class="slider_title">{{lang.text['voidDraw']['ColorpickAlpha']}}</div>
+            <div slot="end" class="slider_end">
+              <input type="text" class="slider_input" [(ngModel)]="colorPickAlpha">
+            </div>
+          </ion-range>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
 </ion-content>

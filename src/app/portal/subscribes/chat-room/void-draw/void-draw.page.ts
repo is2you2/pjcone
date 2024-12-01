@@ -89,6 +89,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     if (this.QueueAfterLoad)
       this.QueueAfterLoad();
     this.QueueAfterLoad = null;
+    this.p5SetDrawable(true);
   }
 
   isMobile = false;
@@ -190,9 +191,21 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   p5CancelCurrentDraw: Function;
   p5ClearCurrentDraw: Function;
 
+  // 색상 상세 조정용
+  colorPickRed = 0;
+  colorPickGreen = 0;
+  colorPickBlue = 0;
+  colorPickAlpha = 255;
+  ColorSliderUpdate: Function;
+  CheckIfDismissAct(ev: any) {
+    if (ev.target.id == 'colordetailOuter')
+      this.ChangeTransparent.dismiss();
+  }
+
   QRCode: any;
   isCropMode = false;
   @ViewChild('RemoteDraw') RemoteDraw: IonSelect;
+  @ViewChild('ChangeTransparent') ChangeTransparent: IonModal;
   create_p5voidDraw(initData: any) {
     let targetDiv = document.getElementById(this.voidDrawId);
     this.isCropMode = false;
@@ -300,7 +313,9 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           });
         }
         this.p5history_act = (direction: number, fromRemote = false) => {
-          HistoryPointer = p.min(p.max(0, HistoryPointer + direction), this.p5DrawingStack.length);
+          let preCalced = HistoryPointer + direction;
+          if (preCalced > this.p5DrawingStack.length) return;
+          HistoryPointer = p.min(p.max(0, preCalced), this.p5DrawingStack.length);
           switch (direction) {
             case 1: // Redo
               if (this.p5DrawingStack.length)
@@ -465,6 +480,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           let color = p5ColorPicker['color']().levels;
           let color_hex = `#${p.hex(color[0], 2)}${p.hex(color[1], 2)}${p.hex(color[2], 2)}`;
           ColorCell.childNodes[0].style.color = color_hex;
+          this.colorPickRed = color[0];
+          this.colorPickGreen = color[1];
+          this.colorPickBlue = color[2];
+          this.colorPickAlpha = color[3];
         }
         if (initData['path']) {
           p5ColorPicker.value('#ff0000');
@@ -474,8 +493,21 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         ColorCell.style.cursor = 'pointer';
         ColorCell.onclick = () => { p5ColorPicker.elt.click() }
         ColorCell.oncontextmenu = () => {
-          console.log('우클릭됨');
+          this.ChangeTransparent.onDidDismiss().then(() => {
+            Drawable = true;
+            isClickOnMenu = false;
+            this.global.RestoreShortCutAct('draw-transparent');
+          });
+          Drawable = false;
+          this.global.StoreShortCutAct('draw-transparent');
+          this.ChangeTransparent.present();
           return false;
+        }
+        this.ColorSliderUpdate = () => {
+          let color_hex = `#${p.hex(this.colorPickRed, 2)}${p.hex(this.colorPickGreen, 2)}${p.hex(this.colorPickBlue, 2)}`;
+          p5ColorPicker.value(color_hex);
+          let color_hex_with_alpha = `#${p.hex(this.colorPickRed, 2)}${p.hex(this.colorPickGreen, 2)}${p.hex(this.colorPickBlue, 2)}${p.hex(this.colorPickAlpha, 2)}`;
+          ColorCell.childNodes[0].style.color = color_hex_with_alpha;
         }
         let WeightCell = bottom_row.insertCell(3); // 선 두께 변경
         if (this.global.ShowHint)
@@ -807,7 +839,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         pos.add(ActualCanvasSizeHalf);
         let _pos = { x: pos.x, y: pos.y };
         let color = p5ColorPicker['color']().levels;
-        let color_hex = `#${p.hex(color[0], 2)}${p.hex(color[1], 2)}${p.hex(color[2], 2)}`;
+        let color_hex = `#${p.hex(color[0], 2)}${p.hex(color[1], 2)}${p.hex(color[2], 2)}${p.hex(this.colorPickAlpha, 2)}`;
         CurrentDraw = {
           pos: [],
           color: color_hex,
@@ -1523,6 +1555,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   WillLeaveHere = false;
   ionViewWillLeave() {
+    this.p5SetDrawable(false);
     this.WillLeaveHere = true;
     this.RemoveShortCut();
     this.global.RestoreShortCutAct('void-draw')
