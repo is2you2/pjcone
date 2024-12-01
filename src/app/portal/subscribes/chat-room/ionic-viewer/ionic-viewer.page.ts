@@ -1232,21 +1232,16 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             + '_thumbnail.png', '');
           ThumbnailURL = URL.createObjectURL(thumbnail);
         } catch (e) { }
+        if (!this.FileInfo.blob)
+          try {
+            this.FileInfo.blob = await this.indexed.loadBlobFromUserPath(
+              this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.path, '', undefined, this.indexed.ionicDB);
+          } catch (e) {
+            console.log('내부 파일 없음: ', e);
+          }
         if (!this.NeedDownloadFile && this.CurrentViewId == GetViewId)
-          setTimeout(async () => {
-            let createDuplicate = false;
-            if (this.indexed.godotDB) {
-              try {
-                let blob = await this.indexed.loadBlobFromUserPath(
-                  this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.path, '', undefined, this.indexed.ionicDB);
-                await this.indexed.GetGodotIndexedDB();
-                await this.indexed.saveBlobToUserPath(blob, 'godot/app_userdata/Client/tmp_files/duplicate/viewer.pck', undefined, this.indexed.godotDB);
-                createDuplicate = true;
-              } catch (e) {
-                console.log('내부 파일 없음: ', e);
-              }
-            }
-            await this.global.CreateGodotIFrame('content_viewer_canvas', {
+          setTimeout(() => {
+            this.global.CreateGodotIFrameWithDuplicateAct(this.FileInfo, 'content_viewer_canvas', {
               path: 'tmp_files/duplicate/viewer.pck',
               alt_path: this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.path,
               url: this.FileInfo.url,
@@ -1267,43 +1262,11 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                   });
                 this.navCtrl.pop();
               }
-            }, 'start_load_pck');
-            if (!createDuplicate) {
-              try { // 내부에 파일이 있는지 검토
-                let blob = await this.indexed.loadBlobFromUserPath(
-                  this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.path, '', undefined, this.indexed.ionicDB);
-                await this.indexed.GetGodotIndexedDB();
-                await this.indexed.saveBlobToUserPath(blob, 'godot/app_userdata/Client/tmp_files/duplicate/viewer.pck', undefined, this.indexed.godotDB);
-              } catch (e) { }
-              await this.global.CreateGodotIFrame('content_viewer_canvas', {
-                path: 'tmp_files/duplicate/viewer.pck',
-                alt_path: this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.path,
-                url: this.FileInfo.url,
-                background: ThumbnailURL,
-                receive_image: async (base64: string, width: number, height: number) => {
-                  let tmp_path = 'tmp_files/modify_image.png';
-                  await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path);
-                  if (this.global.PageDismissAct[this.navParams.dismiss])
-                    this.global.PageDismissAct[this.navParams.dismiss]({
-                      data: {
-                        type: 'image',
-                        path: tmp_path,
-                        width: width,
-                        height: height,
-                        msg: this.MessageInfo,
-                        index: this.RelevanceIndex - 1,
-                      }
-                    });
-                  this.navCtrl.pop();
-                }
-              }, 'start_load_pck');
-            }
-            this.ContentOnLoad = true;
-            this.ContentFailedLoad = false;
-            if (ThumbnailURL) URL.revokeObjectURL(ThumbnailURL);
-            if (this.FileInfo.url)
-              this.global.godot_window['download_url']();
-            else this.global.godot_window['start_load_pck']();
+            }, () => {
+              this.ContentOnLoad = true;
+              this.ContentFailedLoad = false;
+              if (ThumbnailURL) URL.revokeObjectURL(ThumbnailURL);
+            });
           }, 100);
         break;
       case 'blender':

@@ -332,19 +332,16 @@ export class GlobalActService {
   GodotCache = {};
   /** 고도엔진이 시작하자마자 로딩할 내용과 고도 결과물을 담을 iframe id를 전달  
    * 이 함수는 고도엔진이 실행되는 페이지의 ionViewWillEnter()에서 진행되어야 합니다
-   * @param _act_name 로딩할 pck 파일의 이름
    * @param _frame_name 고도 결과물을 담으려는 div id
    * @param keys 고도엔진 iframe.window에 작성될 값들
-   * @param [without_splash=false] 스플래시를 끄는 경우 사용(게시물 내 로딩시)
-   * @returns iframe 개체 돌려주기
    */
-  CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys, waiting_key = ''): Promise<any> {
+  private CreateGodotIFrame(_frame_name: string, keys: GodotFrameKeys, run_quit_act = false): Promise<any> {
     return new Promise(async (done: any) => {
       let refresh_it_loading = async () => {
         try {
           if (window['godot'] != 'godot')
             throw 'No godot';
-          if (waiting_key && !this.godot_window[waiting_key])
+          if (!this.godot_window['start_load_pck'])
             throw 'No act ready';
           await this.indexed.GetGodotIndexedDB();
           done();
@@ -356,7 +353,7 @@ export class GlobalActService {
       }
       if (this.godot_window && this.godot_window['quit_godot'])
         this.godot_window.quit_godot();
-      if (this.godot_window && this.godot_window['quit_ionic'])
+      if (this.godot_window && this.godot_window['quit_ionic'] && run_quit_act)
         this.godot_window.quit_ionic();
       if (this.godot_splash) this.godot_splash.remove();
       if (this.godot) this.godot.remove();
@@ -411,6 +408,7 @@ export class GlobalActService {
       _godot.setAttribute('scrolling', 'no');
       _godot.setAttribute('withCredentials', 'true');
       keys['isMobile'] = isPlatform != 'DesktopPWA';
+      // ionic-viewer 로부터 받은 경우 썸네일 만들기 행동 추가
       if (_frame_name == 'content_viewer_canvas')
         keys['create_thumbnail_p5'] = async (base64: string, info: FileInfo = undefined) => {
           {
@@ -465,6 +463,45 @@ export class GlobalActService {
       this.godot = _godot;
       await refresh_it_loading();
     });
+  }
+
+  /** Arcade 페이지에서 게임이 불러와졌는지 여부 검토 */
+  ArcadeLoaded = false;
+  /** 고도엔진 IFrame 생성하기 (IndexedDB 구현 오류를 )
+   * @param targetFile 생성하려는 대상 파일 (고도엔진 IndexedDB에 복제하게됨)
+   * @param _frame_name 고도 결과물을 담으려는 div id
+   * @param keys 고도엔진 iframe.window에 작성될 값들
+   */
+  async CreateGodotIFrameWithDuplicateAct(target: FileInfo, _frame_name: string, keys: GodotFrameKeys, AfterCallback?: Function): Promise<any> {
+    if (this.ArcadeLoaded) {
+      this.p5toast.show({
+        text: '아케이드가 열려있어서 열지 못함',
+      });
+    } else {
+      const SavePath = `godot/app_userdata/Client/${keys.path}`;
+      let SuccessCreateIndexedDB = false;
+      if (this.indexed.godotDB) {
+        try {
+          await this.indexed.GetGodotIndexedDB();
+          await this.indexed.saveBlobToUserPath(target.blob, SavePath, undefined, this.indexed.godotDB);
+          SuccessCreateIndexedDB = true;
+        } catch (e) {
+          console.log('내부 파일 없음: ', e);
+        }
+      }
+      await this.CreateGodotIFrame(_frame_name, keys, true);
+      if (!SuccessCreateIndexedDB) {
+        try { // 내부에 파일이 있는지 검토
+          await this.indexed.GetGodotIndexedDB();
+          await this.indexed.saveBlobToUserPath(target.blob, SavePath, undefined, this.indexed.godotDB);
+        } catch (e) { }
+        await this.CreateGodotIFrame(_frame_name, keys);
+      }
+      if (AfterCallback) AfterCallback();
+      if (target.url)
+        this.godot_window['download_url']();
+      else this.godot_window['start_load_pck']();
+    }
   }
 
   /** 파일 경로를 큐에 추가하고 계속하여 정보를 받습니다  

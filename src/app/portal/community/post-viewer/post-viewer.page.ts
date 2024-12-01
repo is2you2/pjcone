@@ -203,6 +203,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
   ResultSharedAddress: any;
   @ViewChild('QuickPostView') QuickPostView: IonModal;
   p5canvas: p5;
+  AlreadyHaveGodot = false;
   /** 내용에 파일 뷰어를 포함한 구성 만들기 */
   create_content() {
     let contentDiv = document.getElementById('PostContent');
@@ -396,54 +397,33 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   godot_frame.id(targetFrameId);
                   godot_frame.style('width', '100%');
                   godot_frame.style('height', '432px');
+                  godot_frame.style('margin-top', '8px');
                   content[i] = godot_frame;
-                  setTimeout(async () => {
-                    let createDuplicate = false;
-                    if (this.indexed.godotDB) {
+                  setTimeout(() => {
+                    if (this.AlreadyHaveGodot) {
                       try {
-                        await this.indexed.GetGodotIndexedDB();
-                        await this.indexed.saveBlobToUserPath(this.PostInfo['attachments'][index]['blob'], `godot/app_userdata/Client/tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`, undefined, this.indexed.godotDB);
-                        createDuplicate = true;
-                      } catch (e) {
-                        console.log('내부 파일 없음: ', e);
-                      }
-                    }
-                    await this.global.CreateGodotIFrame(targetFrameId, {
-                      path: `tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`,
-                      url: this.PostInfo['attachments'][index].url,
-                      quit_ionic: () => {
-                        if (createDuplicate) {
-                          try {
-                            CreateClickPanel(godot_frame, index);
-                            godot_frame.mouseClicked(() => {
-                              let createRelevances = [];
-                              for (let attach of this.PostInfo['attachments'])
-                                createRelevances.push({ content: attach });
-                              this.global.PageDismissAct['post-viewer-file-view'] = () => {
-                                delete this.global.PageDismissAct['post-viewer-file-view'];
-                              }
-                              this.global.ActLikeModal('ionic-viewer', {
-                                info: { content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])) },
-                                path: this.PostInfo['attachments'][index]['path'],
-                                relevance: createRelevances,
-                                noEdit: true,
-                                dismiss: 'post-viewer-file-view',
-                              });
-                            });
-                          } catch (e) {
-                            console.log('프레임 삭제 행동실패: ', e);
+                        CreateClickPanel(godot_frame, index);
+                        godot_frame.mouseClicked(() => {
+                          let createRelevances = [];
+                          for (let attach of this.PostInfo['attachments'])
+                            createRelevances.push({ content: attach });
+                          this.global.PageDismissAct['post-viewer-file-view'] = () => {
+                            delete this.global.PageDismissAct['post-viewer-file-view'];
                           }
-                        }
+                          this.global.ActLikeModal('ionic-viewer', {
+                            info: { content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])) },
+                            path: this.PostInfo['attachments'][index]['path'],
+                            relevance: createRelevances,
+                            noEdit: true,
+                            dismiss: 'post-viewer-file-view',
+                          });
+                        });
+                      } catch (e) {
+                        console.log('프레임 삭제 행동실패: ', e);
                       }
-                    }, 'start_load_pck');
-                    if (!createDuplicate) {
-                      try { // 내부에 파일이 있는지 검토
-                        let blob = await this.indexed.loadBlobFromUserPath(
-                          this.PostInfo['attachments'][index]['path'], '', undefined, this.indexed.ionicDB);
-                        await this.indexed.GetGodotIndexedDB();
-                        await this.indexed.saveBlobToUserPath(blob, `godot/app_userdata/Client/tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`, undefined, this.indexed.godotDB);
-                      } catch (e) { }
-                      await this.global.CreateGodotIFrame(targetFrameId, {
+                    } else {
+                      this.AlreadyHaveGodot = true;
+                      this.global.CreateGodotIFrameWithDuplicateAct(this.PostInfo['attachments'][index], targetFrameId, {
                         path: `tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`,
                         url: this.PostInfo['attachments'][index].url,
                         quit_ionic: () => {
@@ -468,12 +448,9 @@ export class PostViewerPage implements OnInit, OnDestroy {
                             console.log('프레임 삭제 행동실패: ', e);
                           }
                         }
-                      }, 'start_load_pck');
+                      });
                     }
-                    if (this.PostInfo['attachments'][index].url)
-                      this.global.godot_window['download_url']();
-                    else this.global.godot_window['start_load_pck']();
-                  }, 100);
+                  }, 100 * index);
                 }
                   break;
                 case 'blender': {
@@ -615,7 +592,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
         target.style('height', '112px');
         target.style('overflow', 'hidden');
         target.style('background-color', 'grey');
-        target.style('margin-top', '4px');
+        target.style('margin-top', '8px');
         target.style('border-radius', '8px');
         target.style('cursor', 'pointer');
         let FileName = p.createP(this.PostInfo['attachments'][index]['filename']);
