@@ -1266,6 +1266,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               this.ContentOnLoad = true;
               this.ContentFailedLoad = false;
               if (ThumbnailURL) URL.revokeObjectURL(ThumbnailURL);
+            }, () => {
+              this.ContentOnLoad = true;
+              this.ContentFailedLoad = true;
+              if (ThumbnailURL) URL.revokeObjectURL(ThumbnailURL);
             });
           }, 100);
         break;
@@ -2293,14 +2297,15 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         }
         break;
       case 'godot':
-        try {
-          this.global.godot_window['filename'] = this.FileInfo.filename || this.FileInfo.name;
-          this.global.godot_window['create_thumbnail'](this.FileInfo);
-          let list = await this.indexed.GetFileListFromDB('tmp_files', undefined, this.indexed.godotDB);
-          list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB))
-        } catch (e) {
-          console.log('godot 썸네일 저장 오류: ', e);
-        }
+        if (!this.ContentFailedLoad)
+          try {
+            this.global.godot_window['filename'] = this.FileInfo.filename || this.FileInfo.name;
+            this.global.godot_window['create_thumbnail'](this.FileInfo);
+            let list = await this.indexed.GetFileListFromDB('tmp_files', undefined, this.indexed.godotDB);
+            list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB))
+          } catch (e) {
+            console.log('godot 썸네일 저장 오류: ', e);
+          }
         break;
       case 'blender':
         let base64 = this.global.BlenderCanvasInside['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");

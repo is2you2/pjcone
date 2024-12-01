@@ -492,6 +492,7 @@ export class GlobalActService {
   /** 고도엔진 IFrame 생성하기 (IndexedDB 구현 오류를 )
    * @param targetFile 생성하려는 대상 파일 (고도엔진 IndexedDB에 복제하게됨)
    * @param _frame_name 고도 결과물을 담으려는 div id
+   * @param FailedCallback 아케이드에서 미리 열람한 경우, 열람 실패 콜백
    * @param keys 고도엔진 iframe.window에 작성될 값들
    */
   async CreateGodotIFrameWithDuplicateAct(target: FileInfo, _frame_name: string, keys: GodotFrameKeys, AfterCallback?: Function, FailedCallback?: Function): Promise<any> {
