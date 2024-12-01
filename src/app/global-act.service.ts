@@ -513,7 +513,9 @@ export class GlobalActService {
         if (res.ok) {
           target.blob = await res.blob();
         } else throw `${res.statusText} (${res.status})`;
-      } catch (e) { }
+      } catch (e) {
+        console.log('pck 열람 오류: ', e);
+      }
       loading.dismiss();
       const SavePath = `godot/app_userdata/Client/${keys.path}`;
       let SuccessCreateIndexedDB = false;
