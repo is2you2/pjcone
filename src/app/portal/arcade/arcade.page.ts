@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { AnimationController, LoadingController, NavController, iosTransitionAnimation } from '@ionic/angular';
+import { AnimationController, NavController, iosTransitionAnimation } from '@ionic/angular';
 import { IonModal } from '@ionic/angular/common';
 import * as p5 from 'p5';
 import { GlobalActService } from 'src/app/global-act.service';
@@ -27,7 +27,6 @@ export class ArcadePage implements OnInit {
     private indexed: IndexedDBService,
     private animationCtrl: AnimationController,
     private p5toast: P5ToastService,
-    private loadingCtrl: LoadingController,
   ) { }
 
   ngOnInit() { }
@@ -86,7 +85,7 @@ export class ArcadePage implements OnInit {
           break;
         // html 파일을 iframe 에서 열기
         case 'html':
-        // 파일 리스트 정보를 추가 등록하기
+        // 파일 리스트 정보를 통해 추가 등록하기
         case 'json':
         // 나머지는 무시
         default:
@@ -103,6 +102,7 @@ export class ArcadePage implements OnInit {
 
   /** 클립보드에 복사된 주소 URL을 다운받아서 열기 */
   AddCustomGameFromClipboard() {
+    this.global.ArcadeObject.QRCode = this.ArcadeQRShare;
     this.global.OpenGodotFromURL();
     return false;
   }
@@ -199,8 +199,8 @@ export class ArcadePage implements OnInit {
   }
 
   @ViewChild('ArcadeQRShare') ArcadeQRShare: IonModal;
+
   QRCodeSRC: any;
-  TargetQRAddress: string;
   copy_address(target: string) {
     this.global.WriteValueToClipboard('text/plain', target);
   }

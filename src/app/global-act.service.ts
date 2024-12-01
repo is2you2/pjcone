@@ -9,6 +9,7 @@ import { LoadingController, ModalController, NavController, mdTransitionAnimatio
 import { isPlatform } from './app.component';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { VoiceRecorder } from '@langx/capacitor-voice-recorder';
+import { IonModal } from '@ionic/angular/common';
 
 export var isDarkMode = false;
 /** 파일 입출 크기 제한 */
@@ -485,12 +486,13 @@ export class GlobalActService {
         text: this.lang.text['Arcade']['ESCToExit'],
       });
     }
-    const CachePath = `tmp_files/duplicate/arcade.pck`;
+    const CachePath = 'tmp_files/duplicate/arcade.pck';
     await this.CreateGodotIFrameWithDuplicateAct(FileInfo, 'arcade_pck_loaded', {
       path: CachePath,
       force: true,
     });
   }
+
   /** 고도엔진 IFrame 생성하기 (IndexedDB 구현 오류를 )
    * @param targetFile 생성하려는 대상 파일 (고도엔진 IndexedDB에 복제하게됨)
    * @param _frame_name 고도 결과물을 담으려는 div id
@@ -557,6 +559,7 @@ export class GlobalActService {
             this.CreateArcadeFrame({
               blob: blob,
             });
+            this.CreateInfoSocket(targetURL);
           } else throw `${res.statusText} (${res.status})`;
           break;
         default:
@@ -569,6 +572,105 @@ export class GlobalActService {
       });
     }
     loading.dismiss();
+  }
+
+
+  /** 아케이드용 웹소켓 클라이언트 */
+  ArcadeWS: WebSocket;
+  /** 주소가 있어 공유 가능한 pck 인 경우  
+   * 서버측 regInfo 에 등록하여 다른 사람과 공유할 수 있도록 구성하기
+   */
+  CreateInfoSocket(url: string) {
+    this.ArcadeWS = new WebSocket('wss://127.0.0.1:12013');
+    this.ArcadeWS.onopen = () => {
+      let json = {
+        type: 'initInfo',
+        arcade_url: url,
+      }
+      this.ArcadeWS.send(JSON.stringify(json));
+    }
+    this.ArcadeWS.onmessage = (ev) => {
+      let data: string;
+      if (typeof ev.data == 'string')
+        data = ev.data;
+      else data = ev.data.text();
+      let json = JSON.parse(data);
+      console.log('메시지 받음: ', json);
+      switch (json.type) {
+        case 'init_id':
+          this.GetHeaderAddress().then(address => {
+            this.ArcadeQRAddress = `${address}?arcade=https://127.0.0.1:12013,${json.socketId}`;
+            this.ArcadeQRCodeSRC = this.readasQRCodeFromString(this.ArcadeQRAddress);
+            this.OpenArcadeQRCode();
+          });
+          this.ArcadeWS.send(JSON.stringify({
+            type: 'join',
+            channel: json.id,
+          }));
+          break;
+        default:
+          break;
+      }
+    }
+    this.ArcadeWS.onclose = () => {
+      this.ArcadeQRAddress = null;
+      this.ArcadeQRCodeSRC = null;
+      this.ArcadeWS.onopen = null;
+      this.ArcadeWS.onmessage = null;
+      this.ArcadeWS.onclose = null;
+      this.ArcadeWS = null;
+    }
+  }
+
+  /** 글로벌에서 사용할 수 있도록 개체를 기억함 */
+  ArcadeObject = {
+    QRCode: undefined as IonModal,
+  };
+  ArcadeQRAddress: string;
+  ArcadeQRCodeSRC: any;
+
+  /** 아케이드 페이지 QRCode 모달 생성하기 */
+  OpenArcadeQRCode() {
+    this.ArcadeObject['QRCode'].onDidDismiss().then(() => {
+      this.RestoreShortCutAct('arcade-qrcode');
+    });
+    this.StoreShortCutAct('arcade-qrcode');
+    this.ArcadeObject['QRCode'].present();
+  }
+
+  /** 빠른 진입 등으로 소켓 정보를 아는 경우 소켓 정보로 참여하기 */
+  JoinArcadeWithSocketInfo(json: any) {
+    const socketId = json.socketId;
+    if (this.ArcadeWS) {
+      this.p5toast.show({
+        text: this.lang.text['Arcade']['AlreadyUseWS'],
+      });
+      return;
+    }
+    this.ArcadeWS = new WebSocket('wss://127.0.0.1:12013');
+    this.ArcadeWS.onopen = () => {
+      let json = {
+        type: 'reqInfo',
+        socketId: socketId,
+      }
+      this.ArcadeWS.send(JSON.stringify(json));
+    }
+    this.ArcadeWS.onmessage = (ev) => {
+      let data: string;
+      if (typeof ev.data == 'string')
+        data = ev.data;
+      else data = ev.data.text();
+      let json = JSON.parse(data);
+      console.log('진입측 메시지 수신: ', json);
+    }
+    this.ArcadeWS.onclose = () => {
+      this.ArcadeQRAddress = null;
+      this.ArcadeQRCodeSRC = null;
+      this.ArcadeWS.onopen = null;
+      this.ArcadeWS.onmessage = null;
+      this.ArcadeWS.onclose = null;
+      this.ArcadeWS = null;
+    }
   }
 
   /** 파일 경로를 큐에 추가하고 계속하여 정보를 받습니다  

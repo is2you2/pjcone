@@ -4384,6 +4384,14 @@ export class NakamaService {
         square_port: sep[5],
       })
     }
+    if (init['arcade']) {
+      let sep = init['arcade'][0].split(',');
+      json.push({
+        type: 'arcade',
+        server: sep[0],
+        socketId: sep[1],
+      });
+    }
     if (NeedReturn) return json;
     else await this.act_from_QRInfo(json);
   }
@@ -4535,6 +4543,9 @@ export class NakamaService {
               }
             });
           });
+          break;
+        case 'arcade':
+          this.global.JoinArcadeWithSocketInfo(json[i]);
           break;
         case 'fileviewer':
           this.global.PageDismissAct['quick-fileviewer'] = (v: any) => {

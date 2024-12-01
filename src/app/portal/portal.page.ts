@@ -146,6 +146,8 @@ export class PortalPage implements OnInit {
         text: this.lang.text['Arcade']['AlertOK'],
         handler: () => {
           this.global.ArcadeLoaded = false;
+          if (this.global.ArcadeWS)
+            this.global.ArcadeWS.close(1000, 'user_quit');
         },
         cssClass: 'redfont',
       }];
