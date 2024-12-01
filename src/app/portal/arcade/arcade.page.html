@@ -31,8 +31,13 @@
     </ion-item-divider>
     <div style="display: flex; flex-direction: row; gap: 16px; overflow-x: auto; margin: 16px 0px 16px 16px;">
       <input hidden type="file" id="arcade_file_input" accept="*" (change)="inputFileSelected($event)">
-      <div class="list_ele list_add_btn" (click)="AddCustomGame()">
-        test
+      <div class="list_ele list_add_btn" (click)="AddCustomGame()" (contextmenu)="AddCustomGameFromClipboard()">
+        <div class="disconnect_info">
+          <ion-icon style="width: 36px; height: 36px;" color="medium" name="file-tray-full-outline"></ion-icon>
+          <div>
+            <ion-label color="medium">{{lang.text['Arcade']['FromFile']}}</ion-label>
+          </div>
+        </div>
       </div>
     </div>
     <div *ngIf="nakama.ArcadeList.length">

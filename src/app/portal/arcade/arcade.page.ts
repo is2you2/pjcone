@@ -1,8 +1,8 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { AnimationController, NavController, iosTransitionAnimation } from '@ionic/angular';
+import { AnimationController, LoadingController, NavController, iosTransitionAnimation } from '@ionic/angular';
 import { IonModal } from '@ionic/angular/common';
 import * as p5 from 'p5';
-import { FileInfo, GlobalActService } from 'src/app/global-act.service';
+import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MiniranchatClientService } from 'src/app/miniranchat-client.service';
@@ -27,6 +27,7 @@ export class ArcadePage implements OnInit {
     private indexed: IndexedDBService,
     private animationCtrl: AnimationController,
     private p5toast: P5ToastService,
+    private loadingCtrl: LoadingController,
   ) { }
 
   ngOnInit() { }
@@ -98,6 +99,12 @@ export class ArcadePage implements OnInit {
       console.log('아케이드 파일 입력 실패: ', e);
     }
     document.getElementById('arcade_file_input')['value'] = null;
+  }
+
+  /** 클립보드에 복사된 주소 URL을 다운받아서 열기 */
+  AddCustomGameFromClipboard() {
+    this.global.OpenGodotFromURL();
+    return false;
   }
 
   /** 게임 정보 보기 */

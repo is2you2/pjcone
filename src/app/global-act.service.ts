@@ -528,6 +528,36 @@ export class GlobalActService {
     }
   }
 
+  /** URL 주소로부터 pck 파일 열기, 빠른 진입 공유용으로 이곳에 구성됨 */
+  async OpenGodotFromURL() {
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['Arcade']['TryingDownload'] });
+    loading.present();
+    let clipboardURL = await this.GetValueFromClipboard();
+    try {
+      switch (clipboardURL.type) {
+        case 'text/plain':
+          let targetURL = clipboardURL.value;
+          if (targetURL.split('.').pop() != 'pck') throw 'Invalid type';
+          let res = await fetch(targetURL)
+          if (res.ok) {
+            let blob = await res.blob();
+            this.CreateArcadeFrame({
+              blob: blob,
+            });
+          } else throw `${res.statusText} (${res.status})`;
+          break;
+        default:
+          throw 'Invalid type';
+      }
+    } catch (e) {
+      console.log('URL 고도파일 실행 실패: ', e);
+      this.p5toast.show({
+        text: `${this.lang.text['Arcade']['FailedToDownloadGodot']}: ${e}`,
+      });
+    }
+    loading.dismiss();
+  }
+
   /** 파일 경로를 큐에 추가하고 계속하여 정보를 받습니다  
    * 여기서 추가한 것은 반드시 큐를 제거해야함
    * @returns 파일 전체 길이 (number) / FILE_BINARY_LIMIT 기준
