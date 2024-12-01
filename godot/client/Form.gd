@@ -25,6 +25,11 @@ func _ready():
 		window.start_load_pck = start_load_pck_func
 		window.download_url = download_url_func
 
+func _input(event):
+	if event.is_action_pressed("exit"):
+		if OS.has_feature('web'):
+			window.exit()
+
 # 주소로부터 다운받기
 func download_url(args):
 	var dir:= DirAccess.open('user://')

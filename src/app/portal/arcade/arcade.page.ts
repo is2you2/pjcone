@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { AnimationController, NavController, iosTransitionAnimation } from '@ionic/angular';
 import { IonModal } from '@ionic/angular/common';
 import * as p5 from 'p5';
-import { GlobalActService } from 'src/app/global-act.service';
+import { FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MiniranchatClientService } from 'src/app/miniranchat-client.service';
@@ -56,7 +56,7 @@ export class ArcadePage implements OnInit {
         const file: File = clipboard.value;
         this.SelectVoidDrawBackgroundImage({ target: { files: [file] } });
       default:
-        this.global.PageDismissAct['voiddraw-remote'] = (v: any) => {
+        this.global.PageDismissAct['voiddraw-remote'] = (_v: any) => {
           delete this.global.PageDismissAct['voiddraw-remote'];
         }
         this.global.ActLikeModal('portal/arcade/void-draw', {
@@ -79,6 +79,10 @@ export class ArcadePage implements OnInit {
       switch (FileEXT) {
         // pck 파일을 고도엔진 뷰어에서 열기
         case 'pck':
+          this.global.CreateArcadeFrame({
+            blob: targetFile,
+          });
+          break;
         // html 파일을 iframe 에서 열기
         case 'html':
         // 파일 리스트 정보를 추가 등록하기

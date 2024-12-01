@@ -1,10 +1,11 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonTabs, iosTransitionAnimation, NavController } from '@ionic/angular';
+import { IonAlert, IonTabs, iosTransitionAnimation, NavController } from '@ionic/angular';
 import { NakamaService } from '../nakama.service';
 import { GlobalActService } from '../global-act.service';
 import { IndexedDBService } from '../indexed-db.service';
 import { WebrtcService } from '../webrtc.service';
 import { StatusManageService } from '../status-manage.service';
+import { LanguageSettingService } from '../language-setting.service';
 
 @Component({
   selector: 'app-portal',
@@ -22,6 +23,7 @@ export class PortalPage implements OnInit {
     public indexed: IndexedDBService,
     private _webrtc: WebrtcService, // constructor 단계 수행을 위해 로드만 함
     public statusBar: StatusManageService,
+    public lang: LanguageSettingService,
   ) { }
 
   ngOnInit() { }
@@ -129,12 +131,28 @@ export class PortalPage implements OnInit {
     this.ArcadeIcon = 'game-controller-outline';
   }
 
+  @ViewChild('QuitArcade') QuitArcade: IonAlert;
+  QuitArcadeButtons = [];
   arcade_tab_selected() {
     this.SubscribesIcon = 'chatbubble-outline';
     this.TodoIcon = 'checkbox-outline';
     if (this.ArcadeIcon == 'game-controller') {
       if (this.global.PortalBottonTabAct.Arcade)
         this.global.PortalBottonTabAct.Arcade();
+    }
+    if (this.global.ArcadeLoaded && this.ArcadeIcon == 'game-controller') {
+      this.global.StoreShortCutAct('quit-arcade');
+      this.QuitArcadeButtons = [{
+        text: this.lang.text['Arcade']['AlertOK'],
+        handler: () => {
+          this.global.ArcadeLoaded = false;
+        },
+        cssClass: 'redfont',
+      }];
+      this.QuitArcade.onDidDismiss().then(() => {
+        this.global.RestoreShortCutAct('quit-arcade');
+      });
+      this.QuitArcade.present();
     }
     this.ArcadeIcon = 'game-controller';
     this.CommunityIcon = 'notifications-outline';

@@ -1,4 +1,4 @@
-<ion-header class="ion-no-border">
+<ion-header *ngIf="!global.ArcadeLoaded" class="ion-no-border">
   <ion-toolbar>
     <ion-title>{{lang.text['Arcade']['Title']}}</ion-title>
     <img (click)="QuickLinkAct()" (contextmenu)="QuickLinkContextmenu()" class="add_group top_icon_override_2"
@@ -25,7 +25,7 @@
       <ion-label color="medium">{{lang.text['Arcade']['Preparing']}}</ion-label>
     </div>
   </div>
-  <div>
+  <div *ngIf="!global.ArcadeLoaded">
     <ion-item-divider>
       <ion-label>{{lang.text['Arcade']['AddCustom']}}</ion-label>
     </ion-item-divider>
@@ -48,6 +48,9 @@
         <div *ngFor="let arcade of nakama.ArcadeList" class="list_ele" (click)="ShowGameInfo()"></div>
       </div>
     </div>
+  </div>
+  <div *ngIf="global.ArcadeLoaded">
+    <div id="arcade_pck_loaded" class="full_screen" style="position: fixed;"></div>
   </div>
   <ion-modal #ArcadeDetail class="transparent-modal" [enterAnimation]="enterAnimation"
     [leaveAnimation]="leaveAnimation">

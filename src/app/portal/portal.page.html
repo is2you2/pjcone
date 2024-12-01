@@ -1,6 +1,6 @@
 <ion-content>
   <ion-tabs>
-    <ion-tab-bar slot="bottom">
+    <ion-tab-bar *ngIf="!global.ArcadeWithFullScreen" slot="bottom">
       <ion-tab-button [disabled]="!indexed.ionicDB" tab="main" (click)="bottom_tab_selected()">
         <div *ngIf="global.ShowHint" class="shortcut_hint shortcut_main">Q</div>
         <ion-icon [name]="TodoIcon"></ion-icon>
@@ -13,6 +13,7 @@
       <ion-tab-button [disabled]="!indexed.ionicDB" (click)="arcade_tab_selected()" tab="arcade">
         <div *ngIf="global.ShowHint" class="shortcut_hint shortcut_main">E</div>
         <ion-icon [name]="ArcadeIcon"></ion-icon>
+        <ion-badge *ngIf="global.ArcadeLoaded && ArcadeIcon == 'game-controller'" color="danger" mode="md"></ion-badge>
       </ion-tab-button>
       <ion-tab-button [disabled]="!indexed.ionicDB" (click)="community_tab_selected()" tab="community">
         <div *ngIf="global.ShowHint" class="shortcut_hint shortcut_main">R</div>
@@ -25,4 +26,6 @@
       </ion-tab-button>
     </ion-tab-bar>
   </ion-tabs>
+  <ion-alert #QuitArcade [header]="lang.text['Arcade']['AlertTitle']" [message]="lang.text['Arcade']['AlertMsg']"
+    [buttons]="QuitArcadeButtons"></ion-alert>
 </ion-content>

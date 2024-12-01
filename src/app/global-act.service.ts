@@ -105,6 +105,8 @@ interface GodotFrameKeys {
    * received_msg(_msg) => { ...수신된 메시지로 고도엔진에서 행동함 }
    */
   received_msg?: Function;
+  /** 아케이드 열람 전용, 아케이드용 프레임 생성을 위해 존재함 */
+  force?: boolean;
   /** **사용금지**  
    * 플랫폼 검토: 데스크탑/모바일 여부
    */
@@ -455,6 +457,9 @@ export class GlobalActService {
             }
           });
         }
+      keys['exit'] = () => {
+        this.ArcadeWithFullScreen = !this.ArcadeWithFullScreen;
+      }
       let frame = document.getElementById(_frame_name);
       frame.appendChild(_godot);
       this.godot_window = _godot.contentWindow || _godot.contentDocument;
@@ -467,16 +472,30 @@ export class GlobalActService {
 
   /** Arcade 페이지에서 게임이 불러와졌는지 여부 검토 */
   ArcadeLoaded = false;
+  ArcadeWithFullScreen = false;
+  async CreateArcadeFrame(FileInfo: FileInfo) {
+    this.ArcadeLoaded = true;
+    this.ArcadeWithFullScreen = true;
+    const CachePath = `tmp_files/duplicate/arcade.pck`;
+    this.p5toast.show({
+      text: this.lang.text['Arcade']['ESCToExit'],
+    });
+    await this.CreateGodotIFrameWithDuplicateAct(FileInfo, 'arcade_pck_loaded', {
+      path: CachePath,
+      force: true,
+    });
+  }
   /** 고도엔진 IFrame 생성하기 (IndexedDB 구현 오류를 )
    * @param targetFile 생성하려는 대상 파일 (고도엔진 IndexedDB에 복제하게됨)
    * @param _frame_name 고도 결과물을 담으려는 div id
    * @param keys 고도엔진 iframe.window에 작성될 값들
    */
-  async CreateGodotIFrameWithDuplicateAct(target: FileInfo, _frame_name: string, keys: GodotFrameKeys, AfterCallback?: Function): Promise<any> {
-    if (this.ArcadeLoaded) {
+  async CreateGodotIFrameWithDuplicateAct(target: FileInfo, _frame_name: string, keys: GodotFrameKeys, AfterCallback?: Function, FailedCallback?: Function): Promise<any> {
+    if (this.ArcadeLoaded && !keys.force) {
       this.p5toast.show({
-        text: '아케이드가 열려있어서 열지 못함',
+        text: this.lang.text['Arcade']['ArcadeOpened'],
       });
+      if (FailedCallback) FailedCallback();
     } else {
       const SavePath = `godot/app_userdata/Client/${keys.path}`;
       let SuccessCreateIndexedDB = false;
