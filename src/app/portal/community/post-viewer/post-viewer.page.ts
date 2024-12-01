@@ -400,7 +400,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   godot_frame.style('margin-top', '8px');
                   content[i] = godot_frame;
                   setTimeout(() => {
-                    if (this.AlreadyHaveGodot) {
+                    if (this.AlreadyHaveGodot || this.global.ArcadeLoaded) {
                       try {
                         CreateClickPanel(godot_frame, index);
                         godot_frame.mouseClicked(() => {
@@ -588,6 +588,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
       }
       /** 클릭하여 파일 뷰어에 진입할 수 있도록 구조 구성해주기 */
       let CreateClickPanel = (target: p5.Element, index: number) => {
+        this.PostInfo['attachments'][index]['blob'] = null;
         target.style('width', '160px');
         target.style('height', '112px');
         target.style('overflow', 'hidden');
