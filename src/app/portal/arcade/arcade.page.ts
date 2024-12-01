@@ -55,6 +55,7 @@ export class ArcadePage implements OnInit {
       case 'image/png':
         const file: File = clipboard.value;
         this.SelectVoidDrawBackgroundImage({ target: { files: [file] } });
+        break;
       default:
         this.global.PageDismissAct['voiddraw-remote'] = (_v: any) => {
           delete this.global.PageDismissAct['voiddraw-remote'];
