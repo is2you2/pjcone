@@ -102,7 +102,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   AddShortCut() {
     delete this.global.p5KeyShortCut['Digit'];
-    this.global.p5KeyShortCut['HistoryAct'] = (key: string) => {
+    this.global.p5KeyShortCut['HistoryAct'] = (ev: any) => {
+      let key = ev['code'].slice(-1);
       switch (key) {
         case 'Z':
           this.p5history_act(-1);
@@ -113,10 +114,16 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         case 'C':
           if (this.isCropMode) {
             this.p5apply_crop();
-          } else this.p5change_color();
+          } else {
+            if (ev['shiftKey'])
+              this.p5change_color_contextmenu();
+            else this.p5change_color();
+          }
           break;
         case 'V':
-          this.p5set_line_weight();
+          if (ev['shiftKey'])
+            this.p5set_line_weight_contextmenu();
+          else this.p5set_line_weight();
           break;
       }
     }
@@ -125,7 +132,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     }
     this.global.p5KeyShortCut['SKeyAct'] = (ev: any) => {
       if (ev['shiftKey']) {
-        this.p5save_image(true);
+        this.open_crop_tool_contextmenu();
       } else this.open_crop_tool();
     }
     this.global.p5KeyShortCut['DeleteAct'] = () => {
@@ -169,7 +176,9 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   p5voidDraw: p5;
   p5set_line_weight: Function;
+  p5set_line_weight_contextmenu: Function;
   p5change_color: Function;
+  p5change_color_contextmenu: Function;
   p5save_image: Function;
   p5history_act: Function;
   p5DrawingStack: any[] = [];
@@ -225,7 +234,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       /** 임시방편 색상 선택기 */
       let p5ColorPicker = p.createColorPicker('#000');
       let strokeWeight = Math.min(initData['width'], initData['height']) / 100;
-      let strokeRatio = 1;
+      let strokeRatio = Number(localStorage.getItem('voiddraw-lineweight')) || 1;
       let change_checkmark: Function;
       /** 붓질 기록 최대 길이 제한 */
       const MAX_HISTORY_LEN = 20;
@@ -264,8 +273,46 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             v.present();
           });
         }
+        this.p5set_line_weight_contextmenu = () => {
+          const Default = localStorage.getItem('voiddraw-lineweight') || 1;
+          this.alertCtrl.create({
+            header: this.lang.text['voidDraw']['changeDefaultWeight'],
+            inputs: [{
+              label: this.lang.text['voidDraw']['weight'],
+              name: 'weight',
+              placeholder: `${Default}`,
+              type: 'number',
+            }],
+            buttons: [{
+              text: this.lang.text['voidDraw']['apply'],
+              handler: (ev: any) => {
+                if (ev['weight']) {
+                  localStorage.setItem('voiddraw-lineweight', ev['weight']);
+                  strokeRatio = Number(ev['weight']);
+                }
+              }
+            }]
+          }).then(v => {
+            Drawable = false;
+            v.onWillDismiss().then(() => {
+              Drawable = true;
+              isClickOnMenu = false;
+            });
+            v.present();
+          });
+        }
         this.p5change_color = () => {
           p5ColorPicker.elt.click();
+        }
+        this.p5change_color_contextmenu = () => {
+          this.ChangeTransparent.onDidDismiss().then(() => {
+            Drawable = true;
+            isClickOnMenu = false;
+            this.global.RestoreShortCutAct('draw-transparent');
+          });
+          Drawable = false;
+          this.global.StoreShortCutAct('draw-transparent');
+          this.ChangeTransparent.present();
         }
         this.p5save_image = (only_save = false, for_clipboard = false) => {
           new p5((sp: p5) => {
@@ -355,6 +402,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             p.redraw();
           }
           change_checkmark();
+          isClickOnMenu = false;
+        }
+        this.open_crop_tool_contextmenu = () => {
+          console.log('crop context sample');
         }
         this.p5apply_crop = (is_host = true) => {
           if (is_host && this.isMobile)
@@ -493,14 +544,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         ColorCell.style.cursor = 'pointer';
         ColorCell.onclick = () => { p5ColorPicker.elt.click() }
         ColorCell.oncontextmenu = () => {
-          this.ChangeTransparent.onDidDismiss().then(() => {
-            Drawable = true;
-            isClickOnMenu = false;
-            this.global.RestoreShortCutAct('draw-transparent');
-          });
-          Drawable = false;
-          this.global.StoreShortCutAct('draw-transparent');
-          this.ChangeTransparent.present();
+          this.p5change_color_contextmenu();
           return false;
         }
         this.ColorSliderUpdate = () => {
@@ -516,6 +560,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         WeightCell.style.textAlign = 'center';
         WeightCell.style.cursor = 'pointer';
         WeightCell.onclick = () => { this.change_line_weight() }
+        WeightCell.oncontextmenu = () => { this.p5set_line_weight_contextmenu() }
         this.p5SetCanvasViewportInit = () => {
           p.resizeCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
           StartCamPos = CamPosition.copy();
@@ -1520,6 +1565,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   open_crop_tool() {
     this.p5open_crop_tool();
   }
+  /** 이건 그림판 해상도를 조정하기 위해 준비됩니다 */
+  open_crop_tool_contextmenu: Function;
 
   /** 사용하기를 누른 경우 */
   dismiss_draw() {

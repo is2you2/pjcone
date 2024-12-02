@@ -256,7 +256,7 @@ export class GlobalActService {
           case 'KeyC':
           case 'KeyV':
             if (this.p5KeyShortCut['HistoryAct'])
-              this.p5KeyShortCut['HistoryAct'](ev['code'].slice(-1));
+              this.p5KeyShortCut['HistoryAct'](ev);
             break;
         }
         switch (ev['key']) {
