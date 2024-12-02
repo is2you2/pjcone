@@ -419,7 +419,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           this.ChangeResolution.present();
         }
         this.ResolutionSliderUpdate = () => {
-          p.pixelDensity(PIXEL_DENSITY * this.resolutionRatio / 100);
+          p.pixelDensity(p.min(1, PIXEL_DENSITY * this.resolutionRatio / 100 / CamScale));
           p.redraw();
           this.resolutionEffectedWidth = p.floor(ActualCanvas.width * this.resolutionRatio / 100);
           this.resolutionEffectedHeight = p.floor(ActualCanvas.height * this.resolutionRatio / 100);
@@ -708,6 +708,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           if (windowRatio < canvasRatio)
             CamScale = p.lerp(StartCamScale, targetDiv.clientWidth / ActualCanvas.width, asSineGraph(ReinitLerp));
           else CamScale = p.lerp(StartCamScale, HeightExceptMenu / ActualCanvas.height, asSineGraph(ReinitLerp));
+          p.pixelDensity(p.min(1, PIXEL_DENSITY * this.resolutionRatio / 100 / CamScale));
         }
         p.clear(255, 255, 255, 255);
         p.push();
@@ -962,6 +963,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         if (delta < 0)
           CamScale *= 1.1;
         else CamScale *= .9;
+        p.pixelDensity(p.min(1, PIXEL_DENSITY * this.resolutionRatio / 100 / CamScale));
         p.redraw();
       }
       p.mouseReleased = (ev: any) => {
@@ -1085,6 +1087,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             let dist = One.dist(Two);
             CamScale = dist / TouchBetween * ScaleStartRatio;
             CamPosition = TempStartCamPosition.copy().add(CenterPos.sub(MovementStartPosition).div(CamScale));
+            p.pixelDensity(p.min(1, PIXEL_DENSITY * this.resolutionRatio / 100 / CamScale));
             p.redraw();
           }
             break;
