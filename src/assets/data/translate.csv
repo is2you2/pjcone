@@ -506,6 +506,8 @@ ColorpickRed,빨강,Red
 ColorpickGreen,초록,Green
 ColorpickBlue,파랑,Blue
 ColorpickAlpha,투명도,Alpha
+ResolutionDetail,해상도 조정,Adjust resolution
+ResolutionRatio,비율,Ratio
 width,가로,Width
 height,세로,Height
 weight,선 두께,Stroke weight

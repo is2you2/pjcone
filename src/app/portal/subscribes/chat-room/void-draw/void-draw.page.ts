@@ -209,6 +209,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   CheckIfDismissAct(ev: any) {
     if (ev.target.id == 'colordetailOuter')
       this.ChangeTransparent.dismiss();
+    if (ev.target.id == 'resolutiondetailOuter')
+      this.ChangeResolution.dismiss();
   }
 
   QRCode: any;
@@ -317,14 +319,14 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         this.p5save_image = (only_save = false, for_clipboard = false) => {
           new p5((sp: p5) => {
             sp.setup = () => {
-              let canvas = sp.createCanvas(ActualCanvas.width, ActualCanvas.height);
+              let canvas = sp.createCanvas(this.resolutionEffectedWidth, this.resolutionEffectedHeight);
               sp.pixelDensity(PIXEL_DENSITY);
               if (ImageCanvas)
-                sp.image(ImageCanvas, 0, 0);
+                sp.image(ImageCanvas, 0, 0, this.resolutionEffectedWidth, this.resolutionEffectedHeight);
               if (DrawBeforeCanvas)
-                sp.image(DrawBeforeCanvas, 0, 0);
+                sp.image(DrawBeforeCanvas, 0, 0, this.resolutionEffectedWidth, this.resolutionEffectedHeight);
               if (ActualCanvas)
-                sp.image(ActualCanvas, 0, 0);
+                sp.image(ActualCanvas, 0, 0, this.resolutionEffectedWidth, this.resolutionEffectedHeight);
               let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
               let tmp_filename = `voidDraw_${sp.year()}-${sp.nf(sp.month(), 2)}-${sp.nf(sp.day(), 2)}_${sp.nf(sp.hour(), 2)}-${sp.nf(sp.minute(), 2)}-${sp.nf(sp.second(), 2)}.png`;
               // 결과물을 클립보드에 저장하기
@@ -404,8 +406,23 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           change_checkmark();
           isClickOnMenu = false;
         }
+        this.resolutionEffectedWidth = initData.width;
+        this.resolutionEffectedHeight = initData.height;
         this.open_crop_tool_contextmenu = () => {
-          console.log('crop context sample');
+          this.ChangeResolution.onDidDismiss().then(() => {
+            Drawable = true;
+            isClickOnMenu = false;
+            this.global.RestoreShortCutAct('resolution-detail');
+          });
+          Drawable = false;
+          this.global.StoreShortCutAct('resolution-detail');
+          this.ChangeResolution.present();
+        }
+        this.ResolutionSliderUpdate = () => {
+          p.pixelDensity(PIXEL_DENSITY * this.resolutionRatio / 100);
+          p.redraw();
+          this.resolutionEffectedWidth = p.floor(ActualCanvas.width * this.resolutionRatio / 100);
+          this.resolutionEffectedHeight = p.floor(ActualCanvas.height * this.resolutionRatio / 100);
         }
         this.p5apply_crop = (is_host = true) => {
           if (is_host && this.isMobile)
@@ -478,6 +495,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         CropCell.style.textAlign = 'center';
         CropCell.style.cursor = 'pointer';
         CropCell.onclick = () => { this.open_crop_tool() }
+        CropCell.oncontextmenu = () => { this.open_crop_tool_contextmenu() }
         let ApplyCell = top_row.insertCell(2);
         if (this.global.ShowHint)
           ApplyCell.innerHTML = `<div><div class="shortcut_hint shortcut_voiddraw">D</div><ion-icon style="width: 27px; height: 27px" name="checkmark"></ion-icon></div>`;
@@ -1565,8 +1583,14 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   open_crop_tool() {
     this.p5open_crop_tool();
   }
+  @ViewChild('ChangeResolution') ChangeResolution: IonModal;
   /** 이건 그림판 해상도를 조정하기 위해 준비됩니다 */
   open_crop_tool_contextmenu: Function;
+  ResolutionSliderUpdate: Function;
+  /** 이미지 출력 배율 */
+  resolutionRatio = 100;
+  resolutionEffectedWidth = 0;
+  resolutionEffectedHeight = 0;
 
   /** 사용하기를 누른 경우 */
   dismiss_draw() {
