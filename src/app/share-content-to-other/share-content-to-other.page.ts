@@ -58,11 +58,13 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
   }
 
   go_to_chatroom(channel: any) {
-    let FileInfo = this.navParams.file;
-    delete FileInfo['db'];
-    this.nakama.go_to_chatroom_without_admob_act(channel, FileInfo);
+    try {
+      let FileInfo = this.navParams.file;
+      delete FileInfo['db'];
+      this.nakama.go_to_chatroom_without_admob_act(channel, FileInfo);
+    } catch (e) { }
     if (this.global.PageDismissAct['share'])
-      this.global.PageDismissAct['share']({ data: true });
+      this.global.PageDismissAct['share']({ data: channel });
     this.navCtrl.pop();
     this.Done = true;
   }

@@ -349,12 +349,117 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
       }
     }, { // 10
+      icon: 'copy-outline',
+      name: this.lang.text['ChatRoom']['ShareToOther'],
+      act: async () => {
+        let rootChannelInfo = JSON.parse(JSON.stringify(this.info));
+        let channels = this.nakama.rearrange_channels();
+        for (let i = channels.length - 1; i >= 0; i--) {
+          if (channels[i]['status'] == 'missing'
+            || channels[i]['status'] == 'offline'
+            || channels[i]['status'] == 'certified'
+            || channels[i]['info'].max_count != 1)
+            channels.splice(i, 1);
+        }
+        let channel_copied = JSON.parse(JSON.stringify(channels));
+        this.global.PageDismissAct['share'] = async (v: any) => {
+          await this.WaitingCurrent();
+          if (v.data) {
+            let loading = await this.loadingCtrl.create({ message: this.lang.text['ChatRoom']['CopyingChats'] });
+            loading.present();
+            this.nakama.go_to_chatroom_without_admob_act(v.data);
+            let list = await this.indexed.GetFileListFromDB(`servers/${rootChannelInfo.info.isOfficial}/${rootChannelInfo.info.target}/channels/${rootChannelInfo.id}/chats`);
+            for (let path of list) {
+              let info = await this.indexed.GetFileInfoFromDB(path);
+              if (info.mode != 33206) continue;
+              let blob = await this.indexed.loadBlobFromUserPath(path, '');
+              let asText = await blob.text();
+              let json = JSON.parse(asText);
+              for (let msg of json) {
+                // 로컬에서 삭제된 메시지는 발송하지 않음
+                if (msg.code == 2) continue;
+                // 편집된 메시지는 편집됨 여부를 삭제함
+                if (msg.code == 1) delete msg.content.edited;
+                /** 준비된 파일이자 파일 여부 */
+                let blob: Blob;
+                let FileInfo: FileInfo;
+                try {
+                  blob = await this.indexed.loadBlobFromUserPath(`servers/${rootChannelInfo.info.isOfficial}/${rootChannelInfo.info.target}/channels/${rootChannelInfo.id}/files/msg_${msg.message_id}.${msg.content.file_ext}`, msg.content.type);
+                  FileInfo = {
+                    blob: blob,
+                    filename: msg.content.filename,
+                    content_creator: msg.content.content_creator,
+                    content_related_creator: msg.content.content_related_creator,
+                    file_ext: msg.content.file_ext,
+                    size: msg.content.filesize,
+                    partsize: msg.content.partsize,
+                    type: msg.content.type,
+                    viewer: msg.content.viewer,
+                  }
+                } catch (e) { }
+                let getContent = msg.content;
+                let textmsg = this.deserialize_text(msg)
+                getContent['msg'] = textmsg;
+                loading.message = `${this.lang.text['ChatRoom']['CopyingChats']}: ${textmsg}`;
+                if (blob && this.useFirstCustomCDN != 2) try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
+                  let address = this.nakama.servers[this.isOfficial][this.target].info.address;
+                  let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
+                  let targetname = `${this.info['group_id'] ||
+                    (this.info['user_id_one'] == this.nakama.servers[this.isOfficial][this.target].session.user_id ? this.info['user_id_two'] : this.info['user_id_one'])
+                    }_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`;
+                  let server_info = this.nakama.servers[this.isOfficial][this.target].info;
+                  let savedAddress = await this.global.upload_file_to_storage(FileInfo,
+                    { user_id: targetname, apache_port: server_info.apache_port, cdn_port: server_info.cdn_port }, protocol, address, this.useFirstCustomCDN == 1, loading);
+                  if (!savedAddress) throw '링크 만들기 실패';
+                  getContent['url'] = savedAddress;
+                } catch (e) {
+                  console.log('cdn 업로드 처리 실패: ', e);
+                }
+                try {
+                  let v = await this.nakama.servers[this.isOfficial][this.target].socket
+                    .writeChatMessage(this.info['id'], getContent);
+                  /** 업로드가 진행중인 메시지 개체 */
+                  if (!getContent['url']) { // 링크는 아닌 경우
+                    // 로컬에 파일을 저장
+                    let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${FileInfo.file_ext}`;
+                    await this.indexed.saveBlobToUserPath(blob, path);
+                  }
+                  this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
+                } catch (e) {
+                  switch (e.code) {
+                    case 3: // 채널 연결 실패 (삭제된 경우)
+                      this.p5toast.show({
+                        text: this.lang.text['ChatRoom']['FailedToJoinChannel'],
+                      });
+                      break;
+                    default: // 검토 필요 오류
+                      console.log('오류 검토 필요: ', e);
+                      this.p5toast.show({
+                        text: `${this.lang.text['ChatRoom']['FailedToSend']}: ${typeof e == 'string' ? e : e.message}`,
+                      });
+                      break;
+                  }
+                }
+                await new Promise((done) => setTimeout(done, 1000));
+              }
+            }
+            loading.dismiss();
+          }
+          this.ionViewDidEnter();
+          delete this.global.PageDismissAct['share'];
+        }
+        delete channel_copied['update'];
+        this.global.ActLikeModal('share-content-to-other', {
+          channels: channel_copied,
+        });
+      }
+    }, { // 11
       icon: 'volume-mute-outline',
       name: this.lang.text['ChatRoom']['ReadText'],
       act: async () => {
         this.toggle_speakermode();
       }
-    }, { // 11
+    }, { // 12
       icon: 'log-out-outline',
       name: this.lang.text['ChatRoom']['LogOut'],
       act: async () => {
@@ -365,15 +470,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.extended_buttons.forEach(button => {
               button.isHide = true;
             });
-            this.extended_buttons[12].isHide = false;
+            this.extended_buttons[13].isHide = false;
           } catch (e) {
             console.error('채널에서 나오기 실패: ', e);
           }
         } else {
-          this.extended_buttons[11].isHide = true;
+          this.extended_buttons[12].isHide = true;
         }
       }
-    }, { // 12
+    }, { // 13
       isHide: true,
       name: this.lang.text['ChatRoom']['RemoveHistory'],
       icon: 'close-circle-outline',
@@ -642,7 +747,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   async toggle_speakermode(force?: boolean) {
     this.useSpeaker = force ?? !this.useSpeaker;
-    this.extended_buttons[10].icon = this.useSpeaker
+    this.extended_buttons[11].icon = this.useSpeaker
       ? 'volume-high-outline' : 'volume-mute-outline';
     if (this.useSpeaker)
       localStorage.setItem('useChannelSpeaker', `${this.useSpeaker}`);
@@ -1519,7 +1624,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.extended_buttons[0].isHide = true;
           this.extended_buttons[1].isHide = true;
           this.extended_buttons[9].isHide = false;
-          this.extended_buttons[12].isHide = true;
+          this.extended_buttons[10].isHide = true;
+          this.extended_buttons[13].isHide = true;
         }
         break;
       case 3: // 그룹 대화라면
@@ -1529,12 +1635,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.extended_buttons[11].isHide = true;
         delete this.extended_buttons[0].isHide;
         this.extended_buttons[9].isHide = true;
-        this.extended_buttons[12].isHide = true;
+        this.extended_buttons[10].isHide = true;
+        this.extended_buttons[13].isHide = true;
         break;
       case 0: // 로컬 채널형 기록
         this.extended_buttons[0].isHide = true;
         this.extended_buttons[9].isHide = true;
-        this.extended_buttons[11].isHide = true;
+        this.extended_buttons[12].isHide = true;
         break;
     }
     // 오프라인 상태라면 메뉴를 간소화한다
@@ -1542,10 +1649,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.extended_buttons.forEach(button => {
         button.isHide = true;
       });
-      this.extended_buttons[12].isHide = false;
+      this.extended_buttons[13].isHide = false;
       if (this.info['redirect']['type'] == 3)
         this.extended_buttons[0].isHide = false;
-    } else this.extended_buttons[10].isHide = isNativefier || this.info['status'] == 'missing';
+    } else this.extended_buttons[11].isHide = isNativefier || this.info['status'] == 'missing';
     this.extended_buttons[2].isHide = false;
     let startFrom = 1;
     this.extended_buttons.forEach(button => {
