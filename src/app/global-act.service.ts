@@ -916,7 +916,7 @@ export class GlobalActService {
    * @param address 해당 서버 주소
    * @returns 등록된 주소 반환
    */
-  async upload_file_to_storage(file: FileInfo, info: ServerInfoShort, protocol: string, address: string, useCustomServer: boolean, loading?: HTMLIonLoadingElement): Promise<string> {
+  async upload_file_to_storage(file: FileInfo, info: ServerInfoShort, protocol: string, address: string, useCustomServer: boolean, loading?: HTMLIonLoadingElement, override_try_msg?: string): Promise<string> {
     let innerLoading: HTMLIonLoadingElement;
     if (!loading) innerLoading = await this.loadingCtrl.create({ message: this.lang.text['Settings']['TryToFallbackFS'] });
     else innerLoading = loading;
@@ -925,7 +925,7 @@ export class GlobalActService {
     let CatchedAddress: string;
     if (useCustomServer)
       CatchedAddress = await this.try_upload_to_user_custom_fs(file, info.user_id, innerLoading);
-    innerLoading.message = this.lang.text['GlobalAct']['CheckCdnServer'];
+    innerLoading.message = override_try_msg ?? this.lang.text['GlobalAct']['CheckCdnServer'];
     let progress: any;
     try { // 사설 연계 서버에 업로드 시도
       if (CatchedAddress) {

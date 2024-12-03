@@ -381,7 +381,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               let json = JSON.parse(asText);
               let index = 0;
               let length = json.length;
-              console.log(json);
               for (let msg of json) {
                 index++;
                 // 로컬에서 삭제된 메시지는 발송하지 않음
@@ -425,7 +424,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                     }_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`;
                   let server_info = this.nakama.servers[this.isOfficial][this.target].info;
                   let savedAddress = await this.global.upload_file_to_storage(FileInfo,
-                    { user_id: targetname, apache_port: server_info.apache_port, cdn_port: server_info.cdn_port }, protocol, address, this.useFirstCustomCDN == 1, loading);
+                    { user_id: targetname, apache_port: server_info.apache_port, cdn_port: server_info.cdn_port }, protocol, address, this.useFirstCustomCDN == 1, loading,
+                    `${this.lang.text['GlobalAct']['CheckCdnServer']} (${index}/${length})`);
                   if (!savedAddress) throw '링크 만들기 실패';
                   getContent['url'] = savedAddress;
                 } catch (e) {
