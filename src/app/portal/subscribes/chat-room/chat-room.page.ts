@@ -457,6 +457,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                       break;
                   }
                 }
+                this.scroll_down_logs();
                 await new Promise((done) => setTimeout(done, 1000));
               }
             }
