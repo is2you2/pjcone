@@ -259,10 +259,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         CamPosition.x = p.width / 2;
         CamPosition.y = p.height / 2;
         this.ChangeCurrentLineWeight = () => {
-          strokeRatio = Number(this.LineCurrentWeight);
+          strokeRatio = Number(this.LineCurrentWeight) || 1;
         }
         this.ChangeDefaultLineWeight = () => {
-          localStorage.setItem('voiddraw-lineweight', `${this.LineDefaultWeight}`);
+          localStorage.setItem('voiddraw-lineweight', `${this.LineDefaultWeight || 1}`);
         }
         this.p5set_line_weight = () => {
           this.LineDefaultWeight = Number(DefaultStrokeWeight);
@@ -401,10 +401,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           } else localStorage.removeItem('voidDraw-auto-adjust-res');
         }
         this.ResolutionSliderUpdate = () => {
-          p.pixelDensity(p.min(1, PIXEL_DENSITY * this.resolutionRatio / 100 / CamScale));
+          p.pixelDensity(p.min(1, PIXEL_DENSITY * (Number(this.resolutionRatio) || 1) / 100 / CamScale));
           p.redraw();
-          this.resolutionEffectedWidth = p.floor(ActualCanvas.width * this.resolutionRatio / 100);
-          this.resolutionEffectedHeight = p.floor(ActualCanvas.height * this.resolutionRatio / 100);
+          this.resolutionEffectedWidth = p.floor(ActualCanvas.width * (Number(this.resolutionRatio) || 1) / 100);
+          this.resolutionEffectedHeight = p.floor(ActualCanvas.height * (Number(this.resolutionRatio) || 1) / 100);
         }
         this.p5apply_crop = (is_host = true) => {
           if (is_host && this.isMobile)
@@ -551,9 +551,9 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           return false;
         }
         this.ColorSliderUpdate = () => {
-          let color_hex = `#${p.hex(Number(this.colorPickRed), 2)}${p.hex(Number(this.colorPickGreen), 2)}${p.hex(Number(this.colorPickBlue), 2)}`;
+          let color_hex = `#${p.hex((Number(this.colorPickRed) || 0), 2)}${p.hex((Number(this.colorPickGreen) || 0), 2)}${p.hex((Number(this.colorPickBlue) || 0), 2)}`;
           p5ColorPicker.value(color_hex);
-          let color_hex_with_alpha = `#${p.hex(Number(this.colorPickRed), 2)}${p.hex(Number(this.colorPickGreen), 2)}${p.hex(Number(this.colorPickBlue), 2)}${p.hex(Number(this.colorPickAlpha), 2)}`;
+          let color_hex_with_alpha = `#${p.hex((Number(this.colorPickRed) || 0), 2)}${p.hex((Number(this.colorPickGreen) || 0), 2)}${p.hex((Number(this.colorPickBlue) || 0), 2)}${p.hex((Number(this.colorPickAlpha) || 0), 2)}`;
           ColorCell.childNodes[0].style.color = color_hex_with_alpha;
         }
         let WeightCell = bottom_row.insertCell(3); // 선 두께 변경
