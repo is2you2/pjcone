@@ -116,7 +116,7 @@
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
                             [src]="msg.content['thumbnail']" [alt]="msg.content['filename']" />
                         </div>
-                        <div *ngIf="msg.content['transfer_index']" class="transfer_count">
+                        <div *ngIf="msg.content['transfer_index']" style="align-self: flex-end; margin-left: 4px;">
                           {{msg.content['transfer_index']['index']}}</div>
                       </div>
                       <div *ngIf="msg.content['msg']" class="message_content_form">
@@ -214,7 +214,7 @@
                             [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
                             [src]="msg.content['thumbnail']" [alt]="msg.content['filename']" />
                         </div>
-                        <div *ngIf="msg.content['transfer_index']" class="transfer_count">
+                        <div *ngIf="msg.content['transfer_index']" style="align-self: flex-end; margin-left: 4px;">
                           {{msg.content['transfer_index']['index']}}</div>
                       </div>
                       <div *ngIf="msg.content['msg']" class="message_content_form my_file_message_form">
