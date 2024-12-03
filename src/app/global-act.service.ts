@@ -169,6 +169,8 @@ export class GlobalActService {
   /** 페이지별 단축키 관리자 */
   p5key: p5;
   p5KeyShortCut: any;
+  /** 단축키 동작 막기 */
+  BlockMainShortcut = false;
   initialize() {
     let load_env = localStorage.getItem('ShowHint');
     if (load_env !== null) this.ShowHint = load_env == '1';
@@ -186,6 +188,7 @@ export class GlobalActService {
         this.p5KeyShortCut = {};
       }
       p.keyPressed = (ev) => {
+        if (this.BlockMainShortcut) return;
         if (!this.p5KeyShortCut) return;
         switch (ev['code']) {
           case 'Backspace':

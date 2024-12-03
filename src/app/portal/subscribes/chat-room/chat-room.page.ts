@@ -355,11 +355,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         let rootChannelInfo = JSON.parse(JSON.stringify(this.info));
         let channels = this.nakama.rearrange_channels();
         for (let i = channels.length - 1; i >= 0; i--) {
-          if (channels[i]['status'] == 'missing'
-            || channels[i]['status'] == 'offline'
-            || channels[i]['status'] == 'certified'
+          if (channels[i]['status'] != 'online'
             || channels[i]['info'].max_count != 1)
             channels.splice(i, 1);
+        }
+        if (!channels.length) {
+          this.p5toast.show({
+            text: this.lang.text['ChatRoom']['NoCopyChannelAvailable'],
+          });
+          return;
         }
         let channel_copied = JSON.parse(JSON.stringify(channels));
         this.global.PageDismissAct['share'] = async (v: any) => {
@@ -422,7 +426,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   let v = await this.nakama.servers[this.isOfficial][this.target].socket
                     .writeChatMessage(this.info['id'], getContent);
                   /** 업로드가 진행중인 메시지 개체 */
-                  if (!getContent['url']) { // 링크는 아닌 경우
+                  if (blob && !getContent['url']) { // 링크는 아닌 경우
                     // 로컬에 파일을 저장
                     let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${FileInfo.file_ext}`;
                     await this.indexed.saveBlobToUserPath(blob, path);
@@ -448,7 +452,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }
             loading.dismiss();
           }
-          this.ionViewDidEnter();
+          if (!this.WillLeave) this.ionViewDidEnter();
           delete this.global.PageDismissAct['share'];
         }
         delete channel_copied['update'];
