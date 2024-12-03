@@ -457,6 +457,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           });
           this.isCropMode = false;
           change_checkmark();
+          this.resolutionEffectedWidth = p.floor(CropSize.x);
+          this.resolutionEffectedHeight = p.floor(CropSize.y);
           this.p5SetCanvasViewportInit();
           if (is_host && this.ReadyToShareAct) {
             let crop_pos = this.p5getCropPos();
