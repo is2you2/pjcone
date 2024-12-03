@@ -406,8 +406,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           change_checkmark();
           isClickOnMenu = false;
         }
-        this.resolutionEffectedWidth = initData.width;
-        this.resolutionEffectedHeight = initData.height;
+        this.ToggleAutoResolution = Boolean(localStorage.getItem('voidDraw-auto-adjust-res'));
+        if (this.ToggleAutoResolution) this.resolutionRatio = p.min(100, CamScale * 100);
+        this.resolutionEffectedWidth = p.floor(initData.width * this.resolutionRatio / 100);
+        this.resolutionEffectedHeight = p.floor(initData.height * this.resolutionRatio / 100);
         this.open_crop_tool_contextmenu = () => {
           this.ChangeResolution.onDidDismiss().then(() => {
             Drawable = true;
@@ -417,6 +419,13 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           Drawable = false;
           this.global.StoreShortCutAct('resolution-detail');
           this.ChangeResolution.present();
+        }
+        this.UserToggleAutoResolution = () => {
+          if (this.ToggleAutoResolution) {
+            this.resolutionRatio = p.min(100, CamScale * 100);
+            this.ResolutionSliderUpdate();
+            localStorage.setItem('voidDraw-auto-adjust-res', '1');
+          } else localStorage.removeItem('voidDraw-auto-adjust-res');
         }
         this.ResolutionSliderUpdate = () => {
           p.pixelDensity(p.min(1, PIXEL_DENSITY * this.resolutionRatio / 100 / CamScale));
@@ -457,6 +466,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           });
           this.isCropMode = false;
           change_checkmark();
+          if (this.ToggleAutoResolution) this.resolutionRatio = p.min(100, CamScale * 100);
           this.resolutionEffectedWidth = p.floor(CropSize.x * this.resolutionRatio / 100);
           this.resolutionEffectedHeight = p.floor(CropSize.y * this.resolutionRatio / 100);
           this.p5SetCanvasViewportInit();
@@ -710,6 +720,11 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           if (windowRatio < canvasRatio)
             CamScale = p.lerp(StartCamScale, targetDiv.clientWidth / ActualCanvas.width, asSineGraph(ReinitLerp));
           else CamScale = p.lerp(StartCamScale, HeightExceptMenu / ActualCanvas.height, asSineGraph(ReinitLerp));
+          if (this.ToggleAutoResolution) {
+            this.resolutionRatio = p.min(100, CamScale * 100);
+            this.resolutionEffectedWidth = p.floor(ActualCanvas.width * this.resolutionRatio / 100);
+            this.resolutionEffectedHeight = p.floor(ActualCanvas.height * this.resolutionRatio / 100);
+          }
           p.pixelDensity(p.min(1, PIXEL_DENSITY * this.resolutionRatio / 100 / CamScale));
         }
         p.clear(255, 255, 255, 255);
@@ -965,6 +980,11 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         if (delta < 0)
           CamScale *= 1.1;
         else CamScale *= .9;
+        if (this.ToggleAutoResolution) {
+          this.resolutionRatio = p.min(100, CamScale * 100);
+          this.resolutionEffectedWidth = p.floor(ActualCanvas.width * this.resolutionRatio / 100);
+          this.resolutionEffectedHeight = p.floor(ActualCanvas.height * this.resolutionRatio / 100);
+        }
         p.pixelDensity(p.min(1, PIXEL_DENSITY * this.resolutionRatio / 100 / CamScale));
         p.redraw();
       }
@@ -1089,6 +1109,11 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             let dist = One.dist(Two);
             CamScale = dist / TouchBetween * ScaleStartRatio;
             CamPosition = TempStartCamPosition.copy().add(CenterPos.sub(MovementStartPosition).div(CamScale));
+            if (this.ToggleAutoResolution) {
+              this.resolutionRatio = p.min(100, CamScale * 100);
+              this.resolutionEffectedWidth = p.floor(ActualCanvas.width * this.resolutionRatio / 100);
+              this.resolutionEffectedHeight = p.floor(ActualCanvas.height * this.resolutionRatio / 100);
+            }
             p.pixelDensity(p.min(1, PIXEL_DENSITY * this.resolutionRatio / 100 / CamScale));
             p.redraw();
           }
@@ -1596,6 +1621,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   resolutionRatio = 100;
   resolutionEffectedWidth = 0;
   resolutionEffectedHeight = 0;
+  /** 화면에 맞는 해상도로 자동 조정하기 */
+  ToggleAutoResolution = false;
+  /** 사용자가 자동 해상도 조정을 토글한 경우 행동 */
+  UserToggleAutoResolution: Function;
 
   /** 사용하기를 누른 경우 */
   dismiss_draw() {

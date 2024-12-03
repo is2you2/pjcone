@@ -79,12 +79,15 @@
         <div id="resolutiondetailInner"
           style="width: 400px; min-height: 160px; background-color: var(--chatroom-background); text-align: center; padding: 16px;">
           <h4>{{lang.text['voidDraw']['ResolutionDetail']}}</h4>
-          <ion-range [(ngModel)]="resolutionRatio" (ionInput)="ResolutionSliderUpdate()" min="1">
+          <ion-range [(ngModel)]="resolutionRatio" [disabled]="ToggleAutoResolution"
+            (ionInput)="ResolutionSliderUpdate()" min="1">
             <div slot="label" class="slider_title">{{lang.text['voidDraw']['ResolutionRatio']}}</div>
             <div slot="end" class="slider_end">
               <input type="text" class="slider_input" [(ngModel)]="resolutionRatio">
             </div>
           </ion-range>
+          <ion-toggle (ionChange)="UserToggleAutoResolution()"
+            [(ngModel)]="ToggleAutoResolution">{{lang.text['voidDraw']['AutoResolution']}}</ion-toggle>
           <div>{{resolutionEffectedWidth}} x {{resolutionEffectedHeight}}</div>
         </div>
       </div>
