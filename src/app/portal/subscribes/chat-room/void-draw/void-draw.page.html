@@ -93,4 +93,29 @@
       </div>
     </ng-template>
   </ion-modal>
+  <ion-modal #ChangeLineWeight class="transparent-modal">
+    <ng-template>
+      <div id="strokeweightOuter" style="display: flex; justify-content: center; align-items: center; height: 100%;"
+        (click)="CheckIfDismissAct($event)">
+        <div id="strokeweightInner"
+          style="width: 400px; min-height: 160px; background-color: var(--chatroom-background); text-align: center; padding: 16px;">
+          <h4>{{lang.text['voidDraw']['changeWeight']}}</h4>
+          <ion-range [(ngModel)]="LineCurrentWeight" (ionInput)="ChangeCurrentLineWeight()" min="1" max="30">
+            <div slot="label" class="slider_title">{{lang.text['voidDraw']['weight']}}</div>
+            <div slot="end" class="slider_end">
+              <input type="text" class="slider_input" [(ngModel)]="LineCurrentWeight"
+                (change)="ChangeCurrentLineWeight()">
+            </div>
+          </ion-range>
+          <ion-range [(ngModel)]="LineDefaultWeight" (ionInput)="ChangeDefaultLineWeight()" min="1" max="30">
+            <div slot="label" class="slider_title">{{lang.text['voidDraw']['changeDefaultWeight']}}</div>
+            <div slot="end" class="slider_end">
+              <input type="text" class="slider_input" [(ngModel)]="LineDefaultWeight"
+                (change)="ChangeDefaultLineWeight()">
+            </div>
+          </ion-range>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
 </ion-content>

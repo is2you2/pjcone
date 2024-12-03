@@ -89,7 +89,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     if (this.QueueAfterLoad)
       this.QueueAfterLoad();
     this.QueueAfterLoad = null;
-    this.p5SetDrawable(true);
+    if (this.p5SetDrawable) this.p5SetDrawable(true);
   }
 
   isMobile = false;
@@ -121,9 +121,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           }
           break;
         case 'V':
-          if (ev['shiftKey'])
-            this.p5set_line_weight_contextmenu();
-          else this.p5set_line_weight();
+          this.p5set_line_weight();
           break;
       }
     }
@@ -175,8 +173,14 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   }
 
   p5voidDraw: p5;
+  @ViewChild('ChangeLineWeight') ChangeLineWeight: IonModal;
   p5set_line_weight: Function;
-  p5set_line_weight_contextmenu: Function;
+  /** 현재 선의 굵기 지정 */
+  LineCurrentWeight: number;
+  ChangeCurrentLineWeight: Function;
+  /** 선의 시작 굵기 지정 */
+  LineDefaultWeight: number;
+  ChangeDefaultLineWeight: Function;
   p5change_color: Function;
   p5change_color_contextmenu: Function;
   p5save_image: Function;
@@ -211,6 +215,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       this.ChangeTransparent.dismiss();
     if (ev.target.id == 'resolutiondetailOuter')
       this.ChangeResolution.dismiss();
+    if (ev.target.id == 'strokeweightOuter')
+      this.ChangeLineWeight.dismiss();
   }
 
   QRCode: any;
@@ -236,7 +242,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       /** 임시방편 색상 선택기 */
       let p5ColorPicker = p.createColorPicker('#000');
       let strokeWeight = Math.min(initData['width'], initData['height']) / 100;
-      let strokeRatio = Number(localStorage.getItem('voiddraw-lineweight')) || 1;
+      const DefaultStrokeWeight = localStorage.getItem('voiddraw-lineweight') || 1;
+      let strokeRatio = Number(DefaultStrokeWeight);
       let change_checkmark: Function;
       /** 붓질 기록 최대 길이 제한 */
       const MAX_HISTORY_LEN = 20;
@@ -251,57 +258,23 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         canvas.parent(targetDiv);
         CamPosition.x = p.width / 2;
         CamPosition.y = p.height / 2;
-        this.p5set_line_weight = () => {
-          this.alertCtrl.create({
-            header: this.lang.text['voidDraw']['changeWeight'],
-            inputs: [{
-              label: this.lang.text['voidDraw']['weight'],
-              name: 'weight',
-              placeholder: `${strokeRatio}`,
-              type: 'number',
-            }],
-            buttons: [{
-              text: this.lang.text['voidDraw']['apply'],
-              handler: (ev: any) => {
-                if (ev['weight'])
-                  strokeRatio = Number(ev['weight']);
-              }
-            }]
-          }).then(v => {
-            Drawable = false;
-            v.onWillDismiss().then(() => {
-              Drawable = true;
-            });
-            v.present();
-          });
+        this.ChangeCurrentLineWeight = () => {
+          strokeRatio = Number(this.LineCurrentWeight);
         }
-        this.p5set_line_weight_contextmenu = () => {
-          const Default = localStorage.getItem('voiddraw-lineweight') || 1;
-          this.alertCtrl.create({
-            header: this.lang.text['voidDraw']['changeDefaultWeight'],
-            inputs: [{
-              label: this.lang.text['voidDraw']['weight'],
-              name: 'weight',
-              placeholder: `${Default}`,
-              type: 'number',
-            }],
-            buttons: [{
-              text: this.lang.text['voidDraw']['apply'],
-              handler: (ev: any) => {
-                if (ev['weight']) {
-                  localStorage.setItem('voiddraw-lineweight', ev['weight']);
-                  strokeRatio = Number(ev['weight']);
-                }
-              }
-            }]
-          }).then(v => {
-            Drawable = false;
-            v.onWillDismiss().then(() => {
-              Drawable = true;
-              isClickOnMenu = false;
-            });
-            v.present();
+        this.ChangeDefaultLineWeight = () => {
+          localStorage.setItem('voiddraw-lineweight', `${this.LineDefaultWeight}`);
+        }
+        this.p5set_line_weight = () => {
+          this.LineDefaultWeight = Number(DefaultStrokeWeight);
+          this.LineCurrentWeight = strokeRatio;
+          this.ChangeLineWeight.onDidDismiss().then(() => {
+            Drawable = true;
+            isClickOnMenu = false;
+            this.global.RestoreShortCutAct('draw-stroke-weight-change');
           });
+          Drawable = false;
+          this.global.StoreShortCutAct('draw-stroke-weight-change');
+          this.ChangeLineWeight.present();
         }
         this.p5change_color = () => {
           p5ColorPicker.elt.click();
@@ -590,7 +563,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         WeightCell.style.textAlign = 'center';
         WeightCell.style.cursor = 'pointer';
         WeightCell.onclick = () => { this.change_line_weight() }
-        WeightCell.oncontextmenu = () => { this.p5set_line_weight_contextmenu() }
         this.p5SetCanvasViewportInit = () => {
           p.resizeCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
           StartCamPos = CamPosition.copy();
