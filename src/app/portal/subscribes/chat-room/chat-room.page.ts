@@ -375,7 +375,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               let blob = await this.indexed.loadBlobFromUserPath(path, '');
               let asText = await blob.text();
               let json = JSON.parse(asText);
+              let index = 0;
+              let length = json.length;
               for (let msg of json) {
+                index++;
                 // 로컬에서 삭제된 메시지는 발송하지 않음
                 if (msg.code == 2) continue;
                 // 편집된 메시지는 편집됨 여부를 삭제함
@@ -400,7 +403,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 let getContent = msg.content;
                 let textmsg = this.deserialize_text(msg)
                 getContent['msg'] = textmsg;
-                loading.message = `${this.lang.text['ChatRoom']['CopyingChats']}: ${textmsg}`;
+                loading.message = `${this.lang.text['ChatRoom']['CopyingChats']}: ${this.global.truncateString(textmsg, 12)} (${index}/${length})`;
                 if (blob && this.useFirstCustomCDN != 2) try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
                   let address = this.nakama.servers[this.isOfficial][this.target].info.address;
                   let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
