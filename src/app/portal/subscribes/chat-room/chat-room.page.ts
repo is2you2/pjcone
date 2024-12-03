@@ -381,6 +381,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               let json = JSON.parse(asText);
               let index = 0;
               let length = json.length;
+              console.log(json);
               for (let msg of json) {
                 index++;
                 // 로컬에서 삭제된 메시지는 발송하지 않음
@@ -405,8 +406,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   }
                 } catch (e) { }
                 let getContent = msg.content;
-                let textmsg = this.deserialize_text(msg)
+                let textmsg = this.deserialize_text(msg);
                 getContent['msg'] = textmsg;
+                // 인용이 달려있다면 원본 메시지로부터 정보 받아보기
+                if (getContent['qoute'])
+                  for (let _msg of json) {
+                    if (_msg['complete_send'] && _msg.message_id == getContent['qoute'].id) {
+                      getContent['qoute'].id = _msg['complete_send'].message_id;
+                      getContent['qoute'].url = _msg['content'].url;
+                    }
+                  }
                 loading.message = `${this.lang.text['ChatRoom']['CopyingChats']}: ${this.global.truncateString(textmsg, 12)} (${index}/${length})`;
                 if (blob && this.useFirstCustomCDN != 2) try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
                   let address = this.nakama.servers[this.isOfficial][this.target].info.address;
@@ -425,6 +434,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 try {
                   let v = await this.nakama.servers[this.isOfficial][this.target].socket
                     .writeChatMessage(this.info['id'], getContent);
+                  msg['complete_send'] = v;
                   /** 업로드가 진행중인 메시지 개체 */
                   if (blob && !getContent['url']) { // 링크는 아닌 경우
                     // 로컬에 파일을 저장
