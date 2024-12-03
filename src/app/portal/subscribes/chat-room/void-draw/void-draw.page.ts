@@ -551,9 +551,9 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           return false;
         }
         this.ColorSliderUpdate = () => {
-          let color_hex = `#${p.hex(this.colorPickRed, 2)}${p.hex(this.colorPickGreen, 2)}${p.hex(this.colorPickBlue, 2)}`;
+          let color_hex = `#${p.hex(Number(this.colorPickRed), 2)}${p.hex(Number(this.colorPickGreen), 2)}${p.hex(Number(this.colorPickBlue), 2)}`;
           p5ColorPicker.value(color_hex);
-          let color_hex_with_alpha = `#${p.hex(this.colorPickRed, 2)}${p.hex(this.colorPickGreen, 2)}${p.hex(this.colorPickBlue, 2)}${p.hex(this.colorPickAlpha, 2)}`;
+          let color_hex_with_alpha = `#${p.hex(Number(this.colorPickRed), 2)}${p.hex(Number(this.colorPickGreen), 2)}${p.hex(Number(this.colorPickBlue), 2)}${p.hex(Number(this.colorPickAlpha), 2)}`;
           ColorCell.childNodes[0].style.color = color_hex_with_alpha;
         }
         let WeightCell = bottom_row.insertCell(3); // 선 두께 변경
@@ -1632,7 +1632,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   WillLeaveHere = false;
   ionViewWillLeave() {
-    this.p5SetDrawable(false);
+    if (this.p5SetDrawable) this.p5SetDrawable(false);
     this.WillLeaveHere = true;
     this.RemoveShortCut();
     this.global.RestoreShortCutAct('void-draw')
