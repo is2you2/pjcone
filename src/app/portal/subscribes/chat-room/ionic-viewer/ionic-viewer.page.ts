@@ -1383,6 +1383,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             if (ev['ctrlKey'])
               this.open_bottom_modal();
             break;
+          case 'KeyC': // 파일 정보 보기
+            if (ev['shiftKey'])
+              this.CopyImageToClipboard();
+            break;
           case 'Digit1':
           case 'Digit2':
           case 'Digit3':

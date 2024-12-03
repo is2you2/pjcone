@@ -75,6 +75,7 @@
                     </ion-item>
                   </div>
                   <div *ngIf="!NeedDownloadFile && FileInfo['viewer'] == 'image'">
+                    <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">Shift + C</div>
                     <ion-item button (click)="CopyImageToClipboard()">
                       <ion-label>{{lang.text['ContentViewer']['CopyToClipboard']}}</ion-label>
                     </ion-item>
