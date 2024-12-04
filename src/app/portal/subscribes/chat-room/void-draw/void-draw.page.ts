@@ -379,7 +379,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           change_checkmark();
           isClickOnMenu = false;
         }
-        this.ToggleAutoResolution = Boolean(localStorage.getItem('voidDraw-auto-adjust-res'));
         if (this.ToggleAutoResolution) this.resolutionRatio = p.min(100, CamScale * 100);
         this.resolutionEffectedWidth = p.floor(initData.width * this.resolutionRatio / 100);
         this.resolutionEffectedHeight = p.floor(initData.height * this.resolutionRatio / 100);
@@ -395,10 +394,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         }
         this.UserToggleAutoResolution = () => {
           if (this.ToggleAutoResolution) {
-            this.resolutionRatio = p.min(100, CamScale * 100);
-            this.ResolutionSliderUpdate();
-            localStorage.setItem('voidDraw-auto-adjust-res', '1');
-          } else localStorage.removeItem('voidDraw-auto-adjust-res');
+            this.p5SetCanvasViewportInit();
+          }
         }
         this.ResolutionSliderUpdate = () => {
           p.pixelDensity(p.min(1, PIXEL_DENSITY * (Number(this.resolutionRatio) || 1) / 100 / CamScale));
@@ -952,11 +949,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         if (delta < 0)
           CamScale *= 1.1;
         else CamScale *= .9;
-        if (this.ToggleAutoResolution) {
-          this.resolutionRatio = p.min(100, CamScale * 100);
-          this.resolutionEffectedWidth = p.floor(ActualCanvas.width * this.resolutionRatio / 100);
-          this.resolutionEffectedHeight = p.floor(ActualCanvas.height * this.resolutionRatio / 100);
-        }
         p.pixelDensity(p.min(1, PIXEL_DENSITY * this.resolutionRatio / 100 / CamScale));
         p.redraw();
       }
@@ -1081,11 +1073,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             let dist = One.dist(Two);
             CamScale = dist / TouchBetween * ScaleStartRatio;
             CamPosition = TempStartCamPosition.copy().add(CenterPos.sub(MovementStartPosition).div(CamScale));
-            if (this.ToggleAutoResolution) {
-              this.resolutionRatio = p.min(100, CamScale * 100);
-              this.resolutionEffectedWidth = p.floor(ActualCanvas.width * this.resolutionRatio / 100);
-              this.resolutionEffectedHeight = p.floor(ActualCanvas.height * this.resolutionRatio / 100);
-            }
             p.pixelDensity(p.min(1, PIXEL_DENSITY * this.resolutionRatio / 100 / CamScale));
             p.redraw();
           }
@@ -1594,7 +1581,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   resolutionEffectedWidth = 0;
   resolutionEffectedHeight = 0;
   /** 화면에 맞는 해상도로 자동 조정하기 */
-  ToggleAutoResolution = false;
+  ToggleAutoResolution = true;
   /** 사용자가 자동 해상도 조정을 토글한 경우 행동 */
   UserToggleAutoResolution: Function;
 
