@@ -18,6 +18,10 @@ config/quit_on_go_back=false
 config/features=PackedStringArray("4.3")
 config/icon="res://icon.png"
 
+[autoload]
+
+Root="*res://Root.gd"
+
 [display]
 
 window/size/viewport_width=360

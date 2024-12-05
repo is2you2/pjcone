@@ -110,6 +110,15 @@ interface GodotFrameKeys {
   received_msg?: Function;
   /** 아케이드 열람 전용, 아케이드용 프레임 생성을 위해 존재함 */
   force?: boolean;
+  /** 아케이드 전용, 아케이드 웹 소켓으로 서버에 전송  
+   * @param string 문자열 보내기
+   */
+  ws_send?: Function;
+  /** **사용금지**  
+   * 아케이드 전용, 아케이드 웹 소켓으로부터 받음  
+   * @param string 문자열 받기
+   */
+  ws_recv?: Function;
   /** **사용금지**  
    * 플랫폼 검토: 데스크탑/모바일 여부
    */
@@ -493,6 +502,13 @@ export class GlobalActService {
     await this.CreateGodotIFrameWithDuplicateAct(FileInfo, 'arcade_pck_loaded', {
       path: CachePath,
       force: true,
+      ws_send: (msg: string) => {
+        if (this.ArcadeWS) try {
+          this.ArcadeWS.send(msg);
+        } catch (e) {
+          console.log('아케이드 WS 메시지 발송 실패: ', e);
+        }
+      }
     });
   }
 
@@ -597,23 +613,26 @@ export class GlobalActService {
       if (typeof ev.data == 'string')
         data = ev.data;
       else data = ev.data.text();
-      let json = JSON.parse(data);
-      console.log('메시지 받음: ', json);
-      switch (json.type) {
-        case 'init_id':
-          this.GetHeaderAddress().then(address => {
-            this.ArcadeQRAddress = `${address}?arcade=https://127.0.0.1:12013,${json.socketId}`;
-            this.ArcadeQRCodeSRC = this.readasQRCodeFromString(this.ArcadeQRAddress);
-            this.OpenArcadeQRCode();
-          });
-          this.ArcadeWS.send(JSON.stringify({
-            type: 'join',
-            channel: json.id,
-          }));
-          break;
-        default:
-          break;
-      }
+      if (this.godot_window && this.godot_window['ws_recv'])
+        this.godot_window['ws_recv'](data);
+      try {
+        let json = JSON.parse(data);
+        switch (json.type) {
+          case 'init_id':
+            this.GetHeaderAddress().then(address => {
+              this.ArcadeQRAddress = `${address}?arcade=https://127.0.0.1:12013,${json.socketId}`;
+              this.ArcadeQRCodeSRC = this.readasQRCodeFromString(this.ArcadeQRAddress);
+              this.OpenArcadeQRCode();
+            });
+            this.ArcadeWS.send(JSON.stringify({
+              type: 'join',
+              channel: json.id,
+            }));
+            break;
+          default:
+            break;
+        }
+      } catch (e) { }
     }
     this.ArcadeWS.onclose = () => {
       this.ArcadeQRAddress = null;

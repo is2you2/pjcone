@@ -76,11 +76,11 @@ func load_next_scene(path:String, targetNode:Node = self):
 	var progress:= [0]
 	while progress[0] == 1:
 		ResourceLoader.load_threaded_get_status(path, progress)
-		if OS.has_feature('JavaScript') and window.update_load:
+		if OS.has_feature('web') and window.update_load:
 			window.update_load(progress[0], 1)
 		await get_tree().physics_frame
 	# 로딩이 종료되고나면
-	if OS.has_feature('JavaScript') and window.update_load:
+	if OS.has_feature('web') and window.update_load:
 		window.update_load(1, 1)
 	await get_tree().create_timer(.4).timeout
 	var _resource:= ResourceLoader.load_threaded_get(path)
