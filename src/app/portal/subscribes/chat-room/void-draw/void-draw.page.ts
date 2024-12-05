@@ -417,8 +417,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           this.resolutionEffectedHeight = p.floor(ActualCanvas.height * (Number(this.resolutionRatio) || 1) / 100);
         }
         this.p5apply_crop = (is_host = true) => {
-          if (is_host && this.isMobile)
-            CropModePosition.div(CamScale);
           ActualCanvas.resizeCanvas(CropSize.x, CropSize.y);
           ActualCanvasSizeHalf = p.createVector(ActualCanvas.width / 2, ActualCanvas.height / 2);
           if (is_host) CropPosition.sub(CropModePosition);
