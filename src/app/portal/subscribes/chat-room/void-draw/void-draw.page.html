@@ -81,7 +81,7 @@
             (ionInput)="ResolutionSliderUpdate()" min="1">
             <div slot="label" class="slider_title">{{lang.text['voidDraw']['ResolutionRatio']}}</div>
             <div slot="end" class="slider_end">
-              <input type="text" class="slider_input" (input)="ResolutionSliderUpdate()" [(ngModel)]="resolutionRatio">
+              <input id="voiddraw_resolution" type="text" class="slider_input" (input)="ResolutionSliderUpdate()" [(ngModel)]="resolutionRatio">
             </div>
           </ion-range>
           <ion-toggle (ionChange)="UserToggleAutoResolution()"

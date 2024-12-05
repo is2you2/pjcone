@@ -395,6 +395,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           });
           Drawable = false;
           this.global.StoreShortCutAct('resolution-detail');
+          this.global.p5KeyShortCut['EnterAct'] = () => {
+            if (document.activeElement == document.getElementById('voiddraw_resolution'))
+              this.ChangeResolution.dismiss();
+          }
           this.ChangeResolution.present();
         }
         this.UserToggleAutoResolution = () => {
