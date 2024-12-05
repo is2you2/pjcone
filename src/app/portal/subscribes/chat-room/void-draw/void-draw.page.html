@@ -101,14 +101,14 @@
           <ion-range [(ngModel)]="LineCurrentWeight" (ionInput)="ChangeCurrentLineWeight()" min="1" max="30">
             <div slot="label" class="slider_title">{{lang.text['voidDraw']['weight']}}</div>
             <div slot="end" class="slider_end">
-              <input id="voiddraw_current_weight" type="text" class="slider_input" [(ngModel)]="LineCurrentWeight"
+              <input type="text" class="slider_input" [(ngModel)]="LineCurrentWeight"
                 (input)="ChangeCurrentLineWeight()">
             </div>
           </ion-range>
           <ion-range [(ngModel)]="LineDefaultWeight" (ionInput)="ChangeDefaultLineWeight()" min="1" max="30">
             <div slot="label" class="slider_title">{{lang.text['voidDraw']['changeDefaultWeight']}}</div>
             <div slot="end" class="slider_end">
-              <input type="text" class="slider_input" [(ngModel)]="LineDefaultWeight"
+              <input id="voiddraw_default_weight" type="text" class="slider_input" [(ngModel)]="LineDefaultWeight"
                 (input)="ChangeDefaultLineWeight()">
             </div>
           </ion-range>
