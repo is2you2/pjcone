@@ -3278,9 +3278,7 @@ export class NakamaService {
     }
   }
 
-  /** 메시지를 엔터 단위로 분리, 메시지 내 하이퍼링크가 있는 경우 검토  
-   * 이 곳에서 메시지가 작은 단위별로 쪼개지며 메시지에 필요한 정보가 구성된다
-   */
+  /** 메시지 내 하이퍼링크와 일반 메시지를 분리 */
   content_to_hyperlink(msg: any, _is_official: string, _target: string) {
     if (!msg.content['msg'] || typeof msg.content['msg'] == 'object') return;
     let sep_msg = msg.content['msg'].split('\n');
@@ -3296,30 +3294,33 @@ export class NakamaService {
     });
     for (let i = 0, j = msg.content['msg'].length; i < j; i++)
       if (msg.content['msg'][i][0]['text']) { // 메시지가 포함되어있는 경우에 한함
-        let index = msg.content['msg'][i][0]['text'].indexOf('http://');
-        if (index < 0)
-          index = msg.content['msg'][i][0]['text'].indexOf('https://');
-        if (index >= 0) { // 주소가 있는 경우 추출
+        // URL을 찾기 위한 개선된 정규식
+        const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/g;
+        // 입력 메시지 (예시)
+        const message: string = msg.content['msg'][i][0]['text'];
+        // URL 추출
+        const urls = message.match(urlRegex);
+        // URL이 있다면 메시지에서 URL을 분리
+        if (urls) {
+          const SEPERATOR = '%extractURL';
+          const messageWithoutUrls = message.replace(urlRegex, SEPERATOR);  // URL을 제외한 메시지
+          const sep = messageWithoutUrls.split(SEPERATOR);
           let result_msg = [];
-          let front_msg: string;
-          if (index != 0) {
-            front_msg = msg.content['msg'][i][0]['text'].substring(0, index);
-            result_msg.push({ text: front_msg });
-          }
-          let AddrHead = msg.content['msg'][i][0]['text'].substring(index);
-          let EndOfAddress = AddrHead.indexOf(' ');
-          let result: string;
-          let end_msg: string;
-          if (EndOfAddress < 0) {
-            result = AddrHead;
-            result_msg.push({ text: result, href: true });
-          } else {
-            result = AddrHead.substring(0, EndOfAddress);
-            result_msg.push({ text: result, href: true });
-            end_msg = AddrHead.substring(EndOfAddress);
-            result_msg.push({ text: end_msg });
+          while (sep.length || urls.length) {
+            {
+              let getShift = sep.shift();
+              if (getShift)
+                result_msg.push({ text: getShift });
+            }
+            {
+              let getShift = urls.shift();
+              if (getShift)
+                result_msg.push({ text: getShift, href: true });
+            }
           }
           msg.content['msg'][i] = result_msg;
+        } else {
+          msg.content['msg'][i] = [{ text: message }];
         }
       }
   }
