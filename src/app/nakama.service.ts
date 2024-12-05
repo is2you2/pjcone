@@ -1252,7 +1252,7 @@ export class NakamaService {
     if (targetInfo.attach && targetInfo.attach.length)
       for (let i = 0, j = targetInfo.attach.length; i < j; i++) // 로컬 FFS 사용을 대비하여 중복 처리
         if (targetInfo.attach[i].url) {
-          if (targetInfo.attach[i].url.indexOf(targetInfo.id) >= 0 && targetInfo.attach[i].type)
+          if (targetInfo.attach[i].url.indexOf(targetInfo.id) >= 0 && targetInfo.attach[i].type !== '')
             this.global.remove_file_from_storage(targetInfo.attach[i].url, {});
         }
     if (targetInfo.remote) {
@@ -1272,7 +1272,7 @@ export class NakamaService {
           if (targetInfo.attach)
             for (let i = 0, j = targetInfo.attach.length; i < j; i++)
               if (targetInfo.attach[i].url) {
-                if (targetInfo.attach[i].url.indexOf(targetInfo.id) >= 0 && targetInfo.attach[i].type) {
+                if (targetInfo.attach[i].url.indexOf(targetInfo.id) >= 0 && targetInfo.attach[i].type !== '') {
                   let info = this.servers[isOfficial][target].info;
                   this.global.remove_file_from_storage(targetInfo.attach[i].url, { apache_port: info.apache_port, cdn_port: info.cdn_port });
                 }
@@ -3199,7 +3199,7 @@ export class NakamaService {
       for (let i = 0, j = info['attachments'].length; i < j; i++)
         try {
           if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`;
-          if (info['attachments'][i].url && info['attachments'][i].type) {
+          if (info['attachments'][i].url && info['attachments'][i].type !== '') {
             if (!slient) this.global.remove_file_from_storage(info['attachments'][i].url, server_info);
           } else {
             try {
@@ -3211,7 +3211,7 @@ export class NakamaService {
     // 메인 사진 삭제
     if (info['mainImage'])
       try {
-        if (info['mainImage'].url && info['mainImage'].type) {
+        if (info['mainImage'].url && info['mainImage'].type !== '') {
           if (!slient) this.global.remove_file_from_storage(info['mainImage'].url, server_info);
         } else {
           try {
