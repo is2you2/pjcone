@@ -66,8 +66,9 @@
     <ng-template>
       <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
         <div
-          style="width: 400px; height: 455px; background-color: var(--chatroom-background); text-align: center; padding: 16px">
-          <img *ngIf="global.ArcadeQRAddress" [src]="global.ArcadeQRAddress" style="width: 100%; height: auto; cursor: copy;"
+          style="width: 400px; min-height: 455px; background-color: var(--chatroom-background); text-align: center; padding: 16px">
+          <img *ngIf="global.ArcadeQRCodeSRC" [src]="global.ArcadeQRCodeSRC"
+            style="width: 100%; height: auto; cursor: copy; margin-bottom: 8px;"
             (click)="copy_address(global.ArcadeQRAddress)" alt="ArcadeQuickLink" />
           <ion-item button (click)="copy_address(global.ArcadeQRAddress)">
             <ion-label class="ion-text-center">{{global.ArcadeQRAddress}}</ion-label>
