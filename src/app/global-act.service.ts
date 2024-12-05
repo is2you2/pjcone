@@ -620,7 +620,7 @@ export class GlobalActService {
         switch (json.type) {
           case 'init_id':
             this.GetHeaderAddress().then(address => {
-              this.ArcadeQRAddress = `${address}?arcade=https://127.0.0.1:12013,${json.socketId}`;
+              this.ArcadeQRAddress = `${address}?arcade=wss://127.0.0.1:12013,${json.socketId}`;
               this.ArcadeQRCodeSRC = this.readasQRCodeFromString(this.ArcadeQRAddress);
               this.OpenArcadeQRCode();
             });
@@ -669,7 +669,7 @@ export class GlobalActService {
       });
       return;
     }
-    this.ArcadeWS = new WebSocket('wss://127.0.0.1:12013');
+    this.ArcadeWS = new WebSocket(json.server);
     this.ArcadeWS.onopen = () => {
       let json = {
         type: 'reqInfo',
@@ -683,6 +683,7 @@ export class GlobalActService {
         data = ev.data;
       else data = ev.data.text();
       let json = JSON.parse(data);
+      // 이 후 행동 진행해야함
       console.log('진입측 메시지 수신: ', json);
     }
     this.ArcadeWS.onclose = () => {
