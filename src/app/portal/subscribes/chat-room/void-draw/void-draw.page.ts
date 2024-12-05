@@ -292,6 +292,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           });
           Drawable = false;
           this.global.StoreShortCutAct('draw-transparent');
+          this.global.p5KeyShortCut['EnterAct'] = () => {
+            if (document.activeElement == document.getElementById('voiddraw_color_detail'))
+              this.ChangeTransparent.dismiss();
+          }
           this.ChangeTransparent.present();
         }
         this.p5save_image = (only_save = false, for_clipboard = false) => {

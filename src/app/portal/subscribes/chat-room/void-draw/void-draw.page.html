@@ -63,7 +63,7 @@
           <ion-range [(ngModel)]="colorPickAlpha" (ionInput)="ColorSliderUpdate()" max="255">
             <div slot="label" class="slider_title">{{lang.text['voidDraw']['ColorpickAlpha']}}</div>
             <div slot="end" class="slider_end">
-              <input type="text" (input)="ColorSliderUpdate()" class="slider_input" [(ngModel)]="colorPickAlpha">
+              <input id="voiddraw_color_detail" type="text" (input)="ColorSliderUpdate()" class="slider_input" [(ngModel)]="colorPickAlpha">
             </div>
           </ion-range>
         </div>
