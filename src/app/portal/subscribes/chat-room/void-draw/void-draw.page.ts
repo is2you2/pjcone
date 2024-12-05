@@ -9,7 +9,7 @@ import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { WebrtcService } from 'src/app/webrtc.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonModal } from '@ionic/angular/common';
+import { IonModal, Platform } from '@ionic/angular/common';
 
 @Component({
   selector: 'app-void-draw',
@@ -30,6 +30,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private navCtrl: NavController,
+    private platform: Platform,
   ) { }
   ngOnDestroy(): void {
     this.route.queryParams['unsubscribe']();
@@ -828,7 +829,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         RemoteDraw = null;
         p.redraw();
       }
-      const BUTTON_HEIGHT = 56;
+      const BUTTON_HEIGHT = this.platform.is('iphone') ? 50 : 56;
       /** 모든 터치 또는 마우스 포인터의 현재 지점 */
       let MouseAct: p5.Vector;
       /** 이동 연산용 시작점 */
@@ -1002,12 +1003,12 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       let SetDrawable = (tog: boolean) => {
         Drawable = tog;
       }
-      const HEADER_HEIGHT = 56;
+      const HEADER_HEIGHT = this.platform.is('iphone') ? 44 : 56;
       p.touchStarted = (ev: any) => {
         if (!Drawable) return;
         touches = ev['touches'];
-        if (ev['changedTouches'][0].clientY < BUTTON_HEIGHT
-          || ev['changedTouches'][0].clientY > p.height - BUTTON_HEIGHT) {
+        if (ev['changedTouches'][0].clientY < BUTTON_HEIGHT + HEADER_HEIGHT
+          || ev['changedTouches'][0].clientY > p.height) {
           isClickOnMenu = true;
           return;
         }
@@ -1015,8 +1016,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         switch (touches.length) {
           case 1: // 그리기
             if (this.isCropMode) {
-              CropModeStartAct(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
-            } else DrawStartAct(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
+              CropModeStartAct(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - HEADER_HEIGHT);
+            } else DrawStartAct(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - HEADER_HEIGHT);
             break;
           case 2: // 패닝, 스케일
             let One = p.createVector(touches[0].clientX, touches[0].clientY - HEADER_HEIGHT);
@@ -1044,13 +1045,13 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         switch (touches.length) {
           case 1: { // 그리기
             if (this.isCropMode && !isClickOnMenu) {
-              let CurrentPosition = p.createVector(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
+              let CurrentPosition = p.createVector(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - HEADER_HEIGHT);
               if (isCropSizing) {
                 CropSize = CropStartSize.copy().add(CropStartScalePos.copy().sub(CurrentPosition).div(-CamScale));
               } else CropModePosition = CropStartPosition.copy().sub(CurrentPosition).div(-CamScale);
               p.redraw();
             } else {
-              let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
+              let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - HEADER_HEIGHT);
               pos.sub(CropPosition);
               pos.add(ActualCanvasSizeHalf);
               let _pos = { x: pos.x, y: pos.y };
@@ -1089,7 +1090,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             if (this.isCropMode) {
             } else if (!isClickOnMenu) {
               if (CurrentDraw) {
-                let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - BUTTON_HEIGHT);
+                let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - HEADER_HEIGHT);
                 pos.sub(CropPosition);
                 pos.add(ActualCanvasSizeHalf);
                 let _pos = { x: pos.x, y: pos.y };
