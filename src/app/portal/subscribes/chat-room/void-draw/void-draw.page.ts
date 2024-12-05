@@ -275,6 +275,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           });
           Drawable = false;
           this.global.StoreShortCutAct('draw-stroke-weight-change');
+          this.global.p5KeyShortCut['EnterAct'] = (ev: any) => {
+            if (document.activeElement == document.getElementById('voiddraw_current_weight'))
+              this.ChangeLineWeight.dismiss();
+          }
           this.ChangeLineWeight.present();
         }
         this.p5change_color = () => {
