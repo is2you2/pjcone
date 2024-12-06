@@ -1063,6 +1063,10 @@ export class GlobalActService {
    */
   async GetHrefThumbnail(url: string, reqAddress?: string, cont?: AbortController) {
     let result = null;
+    if (url.indexOf('https://') != 0 && url.indexOf('http://') != 0) {
+      let checkProt = this.checkProtocolFromAddress(url);
+      url = (checkProt ? 'https://' : 'http://') + url;
+    }
     // FFS 가 준비되어있다면 해당 서버에 먼저 요청 시도
     try {
       let ffs_stored = localStorage.getItem('fallback_fs');
