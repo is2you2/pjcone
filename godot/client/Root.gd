@@ -34,3 +34,8 @@ func webrtc_recv(args):
 func webrtc_send(str: String):
 	if OS.has_feature('web') and window.webrtc_send:
 		window.webrtc_send(str)
+
+# 앱에서 빠른 진입 QRCode 페이지 띄우기
+func open_qrcode_modal():
+	if OS.has_feature('web') and window.webrtc_send:
+		window.open_modal()

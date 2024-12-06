@@ -27,6 +27,7 @@ export class WebrtcService {
     private global: GlobalActService,
   ) {
     this.nakama.WebRTCService = this;
+    this.global.WebRTCService = this;
   }
 
   private p5canvas: p5;

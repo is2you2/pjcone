@@ -119,6 +119,16 @@ interface GodotFrameKeys {
    * @param string 문자열 받기
    */
   ws_recv?: Function;
+  /** 아케이드 전용, WebRTC 송신
+   * @param string 문자열 보내기
+   */
+  webrtc_send?: Function;
+  /** **사용금지**  
+   * 아케이드 전용, WebRTC 수신
+   */
+  webrtc_receive?: Function;
+  /** QRCode 빠른 진입 열기 */
+  open_modal?: Function;
   /** **사용금지**  
    * 플랫폼 검토: 데스크탑/모바일 여부
    */
@@ -488,6 +498,8 @@ export class GlobalActService {
   /** Arcade 페이지에서 게임이 불러와졌는지 여부 검토 */
   ArcadeLoaded = false;
   ArcadeWithFullScreen = false;
+  /** WebRTC 순환 참조 우회 */
+  WebRTCService: any;
   async CreateArcadeFrame(FileInfo: FileInfo) {
     this.ArcadeLoaded = true;
     // 데스크탑에서는 전체화면으로 진입
@@ -508,6 +520,16 @@ export class GlobalActService {
         } catch (e) {
           console.log('아케이드 WS 메시지 발송 실패: ', e);
         }
+      },
+      webrtc_send: (msg: string) => {
+        this.WebRTCService.send(msg);
+      },
+      open_modal: () => {
+        this.GetHeaderAddress().then(address => {
+          this.ArcadeQRAddress = `${address}?arcade=wss://127.0.0.1:12013,${this.ArcadeSocketId}`;
+          this.ArcadeQRCodeSRC = this.readasQRCodeFromString(this.ArcadeQRAddress);
+          this.OpenArcadeQRCode();
+        });
       }
     });
   }
@@ -558,6 +580,12 @@ export class GlobalActService {
         await this.CreateGodotIFrame(_frame_name, keys);
       }
       if (AfterCallback) AfterCallback();
+      // 아케이드에서 생성된거라면 WebRTC 행동받기 함수 생성
+      if (keys.force)
+        this.WebRTCService.dataChannelOnMsgAct = (msg: string) => {
+          if (this.godot_window && this.godot_window['webrtc_recv'])
+            this.godot_window['webrtc_recv'](msg);
+        }
       this.godot_window['start_load_pck']();
     }
   }
@@ -596,6 +624,8 @@ export class GlobalActService {
 
   /** 아케이드용 웹소켓 클라이언트 */
   ArcadeWS: WebSocket;
+  /** true 가 되면 ArcadeWS.onmessage 행동이 고도 엔진으로만 전달됨 */
+  BackgroundWorkDone = false;
   /** 주소가 있어 공유 가능한 pck 인 경우  
    * 서버측 regInfo 에 등록하여 다른 사람과 공유할 수 있도록 구성하기
    */
@@ -613,17 +643,14 @@ export class GlobalActService {
       if (typeof ev.data == 'string')
         data = ev.data;
       else data = ev.data.text();
-      if (this.godot_window && this.godot_window['ws_recv'])
+      if (this.godot_window && this.godot_window['ws_recv'] && this.BackgroundWorkDone) {
         this.godot_window['ws_recv'](data);
+        return;
+      }
       try {
         let json = JSON.parse(data);
         switch (json.type) {
           case 'init_id':
-            this.GetHeaderAddress().then(address => {
-              this.ArcadeQRAddress = `${address}?arcade=wss://127.0.0.1:12013,${json.socketId}`;
-              this.ArcadeQRCodeSRC = this.readasQRCodeFromString(this.ArcadeQRAddress);
-              this.OpenArcadeQRCode();
-            });
             this.ArcadeWS.send(JSON.stringify({
               type: 'join',
               channel: json.id,
@@ -635,6 +662,9 @@ export class GlobalActService {
       } catch (e) { }
     }
     this.ArcadeWS.onclose = () => {
+      this.ArcadeSocketId = null;
+      this.BackgroundWorkDone = false;
+      this.WebRTCService.close_webrtc(false);
       this.ArcadeQRAddress = null;
       this.ArcadeQRCodeSRC = null;
       this.ArcadeWS.onopen = null;
@@ -649,6 +679,7 @@ export class GlobalActService {
     QRCode: undefined as IonModal,
   };
   ArcadeQRAddress: string;
+  ArcadeSocketId: string;
   ArcadeQRCodeSRC: any;
 
   /** 아케이드 페이지 QRCode 모달 생성하기 */
@@ -662,7 +693,7 @@ export class GlobalActService {
 
   /** 빠른 진입 등으로 소켓 정보를 아는 경우 소켓 정보로 참여하기 */
   JoinArcadeWithSocketInfo(json: any) {
-    const socketId = json.socketId;
+    this.ArcadeSocketId = json.socketId;
     if (this.ArcadeWS) {
       this.p5toast.show({
         text: this.lang.text['Arcade']['AlreadyUseWS'],
@@ -673,7 +704,7 @@ export class GlobalActService {
     this.ArcadeWS.onopen = () => {
       let json = {
         type: 'reqInfo',
-        socketId: socketId,
+        socketId: this.ArcadeSocketId,
       }
       this.ArcadeWS.send(JSON.stringify(json));
     }
@@ -682,11 +713,32 @@ export class GlobalActService {
       if (typeof ev.data == 'string')
         data = ev.data;
       else data = ev.data.text();
-      let json = JSON.parse(data);
+      if (this.godot_window && this.godot_window['ws_recv'] && this.BackgroundWorkDone) {
+        this.godot_window['ws_recv'](data);
+        return;
+      }
       // 이 후 행동 진행해야함
-      console.log('진입측 메시지 수신: ', json);
+      let json = JSON.parse(data);
+      const arcade_url: string = json.arcade_url;
+      let start_from_url = async () => {
+        try {
+          let res = await fetch(arcade_url);
+          if (res.ok) {
+            let blob = await res.blob();
+            this.CreateArcadeFrame({
+              blob: blob,
+            });
+          } else throw res;
+        } catch (e) {
+          console.log('빠른 진입 시작 오류: ', e);
+        }
+      }
+      start_from_url();
     }
     this.ArcadeWS.onclose = () => {
+      this.ArcadeSocketId = null;
+      this.BackgroundWorkDone = false;
+      this.WebRTCService.close_webrtc(false);
       this.ArcadeQRAddress = null;
       this.ArcadeQRCodeSRC = null;
       this.ArcadeWS.onopen = null;
