@@ -26,7 +26,12 @@ export class PortalPage implements OnInit {
     public lang: LanguageSettingService,
   ) { }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.global.SelectArcadeTab = () => {
+      this.arcade_tab_selected();
+      this.ionTabs.select('arcade');
+    }
+  }
 
   OnInit = true;
 

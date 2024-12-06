@@ -624,6 +624,8 @@ export class GlobalActService {
 
   /** 아케이드용 웹소켓 클라이언트 */
   ArcadeWS: WebSocket;
+  SelectArcadeTab: Function;
+  ArcadeLoadingCtrl: HTMLIonLoadingElement;
   /** true 가 되면 ArcadeWS.onmessage 행동이 고도 엔진으로만 전달됨 */
   BackgroundWorkDone = false;
   /** 주소가 있어 공유 가능한 pck 인 경우  
@@ -638,6 +640,12 @@ export class GlobalActService {
       }
       this.ArcadeWS.send(JSON.stringify(json));
     }
+    this.CreateArcadeWSOnMsgAct();
+    this.CreateArcadeWSCloseAct();
+  }
+
+  CreateArcadeWSOnMsgAct() {
+    let channel_id: string;
     this.ArcadeWS.onmessage = (ev) => {
       let data: string;
       if (typeof ev.data == 'string')
@@ -650,16 +658,91 @@ export class GlobalActService {
       try {
         let json = JSON.parse(data);
         switch (json.type) {
+          case 'req_info':
+            const arcade_url: string = json.arcade_url;
+            let start_from_url = async () => {
+              try {
+                if (this.SelectArcadeTab) this.SelectArcadeTab();
+                let res = await fetch(arcade_url);
+                if (res.ok) {
+                  let blob = await res.blob();
+                  this.CreateArcadeFrame({
+                    blob: blob,
+                  });
+                } else throw res;
+              } catch (e) {
+                console.log('빠른 진입 시작 오류: ', e);
+              }
+            }
+            start_from_url();
+            break;
           case 'init_id':
+            channel_id = json.id;
             this.ArcadeWS.send(JSON.stringify({
               type: 'join',
-              channel: json.id,
+              channel: channel_id,
             }));
+            this.ArcadeSocketId = json.socketId;
+            // this.loadingCtrl.create({ message: this.lang.text['voidDraw']['WaitingConnection'] })
+            //   .then(v => {
+            //     this.ArcadeLoadingCtrl = v;
+            //     this.ArcadeLoadingCtrl.present();
+            //   });
+            break;
+          case 'socket_react': // nakama.socket_react
+            switch (json['act']) {
+              case 'WEBRTC_REPLY_INIT_SIGNAL':
+                if (this.ArcadeLoadingCtrl)
+                  this.ArcadeLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Reply'];
+                this.CallbackNakama.socket_reactive[json['act']](json['data_str']);
+                if (json['data_str'] == 'EOL') {
+                  if (this.ArcadeLoadingCtrl)
+                    this.ArcadeLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Offer'];
+                  this.WebRTCService.CreateAnswer({
+                    client: this.ArcadeWS,
+                    channel: channel_id,
+                  });
+                }
+                if (this.ArcadeLoadingCtrl)
+                  this.ArcadeLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Ice'];
+                break;
+              case 'WEBRTC_ICE_CANDIDATES':
+                this.CallbackNakama.socket_reactive[json['act']](json['data_str'], {
+                  client: this.ArcadeWS,
+                  channel: channel_id,
+                });
+                if (this.ArcadeLoadingCtrl)
+                  this.ArcadeLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_datachannel'];
+                this.ArcadeWS.send(JSON.stringify({
+                  type: 'init_end',
+                  channel: channel_id,
+                }));
+                break;
+              case 'WEBRTC_INIT_REQ_SIGNAL':
+                this.CallbackNakama.socket_reactive[json['act']]({
+                  client: this.ArcadeWS,
+                  channel: channel_id,
+                });
+                break;
+              case 'WEBRTC_RECEIVE_ANSWER':
+                this.CallbackNakama.socket_reactive[json['act']](json['data_str'], {
+                  client: this.ArcadeWS,
+                  channel: channel_id,
+                });
+                break;
+            }
             break;
           default:
             break;
         }
       } catch (e) { }
+    }
+  }
+
+  CreateArcadeWSCloseAct() {
+    this.ArcadeWS.onerror = (e) => {
+      console.log('아케이드 소켓 오류: ', e);
+      this.ArcadeWS.close();
     }
     this.ArcadeWS.onclose = () => {
       this.ArcadeSocketId = null;
@@ -708,44 +791,8 @@ export class GlobalActService {
       }
       this.ArcadeWS.send(JSON.stringify(json));
     }
-    this.ArcadeWS.onmessage = (ev) => {
-      let data: string;
-      if (typeof ev.data == 'string')
-        data = ev.data;
-      else data = ev.data.text();
-      if (this.godot_window && this.godot_window['ws_recv'] && this.BackgroundWorkDone) {
-        this.godot_window['ws_recv'](data);
-        return;
-      }
-      // 이 후 행동 진행해야함
-      let json = JSON.parse(data);
-      const arcade_url: string = json.arcade_url;
-      let start_from_url = async () => {
-        try {
-          let res = await fetch(arcade_url);
-          if (res.ok) {
-            let blob = await res.blob();
-            this.CreateArcadeFrame({
-              blob: blob,
-            });
-          } else throw res;
-        } catch (e) {
-          console.log('빠른 진입 시작 오류: ', e);
-        }
-      }
-      start_from_url();
-    }
-    this.ArcadeWS.onclose = () => {
-      this.ArcadeSocketId = null;
-      this.BackgroundWorkDone = false;
-      this.WebRTCService.close_webrtc(false);
-      this.ArcadeQRAddress = null;
-      this.ArcadeQRCodeSRC = null;
-      this.ArcadeWS.onopen = null;
-      this.ArcadeWS.onmessage = null;
-      this.ArcadeWS.onclose = null;
-      this.ArcadeWS = null;
-    }
+    this.CreateArcadeWSOnMsgAct();
+    this.CreateArcadeWSCloseAct();
   }
 
   /** 파일 경로를 큐에 추가하고 계속하여 정보를 받습니다  
