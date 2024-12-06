@@ -1799,6 +1799,10 @@ export class GlobalActService {
 
   /** 웹 사이트 주소 열기 */
   open_link(_link: string) {
+    if (_link.indexOf('https://') != 0 && _link.indexOf('http://') != 0) {
+      let checkProt = this.checkProtocolFromAddress(_link);
+      _link = (checkProt ? 'https://' : 'http://') + _link;
+    }
     if (_link) window.open(_link, '_blank');
     const activeElement = document.activeElement;
     if (activeElement) activeElement['blur']();
