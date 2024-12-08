@@ -160,7 +160,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
   userInput = {
     server: undefined,
     id: '',
-    volatile: false,
+    volatile: true,
     name: undefined,
     description: undefined,
     max_count: undefined,
