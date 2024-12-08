@@ -3287,7 +3287,7 @@ export class NakamaService {
     for (let i = 0, j = msg.content['msg'].length; i < j; i++)
       if (msg.content['msg'][i][0]['text']) { // 메시지가 포함되어있는 경우에 한함
         // URL을 찾기 위한 개선된 정규식
-        const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/g;
+        const urlRegex = /(https?:\/\/[^\s]+|[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})(\/[^\s]*)?/g;
         // 입력 메시지 (예시)
         const message: string = msg.content['msg'][i][0]['text'];
         // URL 추출
