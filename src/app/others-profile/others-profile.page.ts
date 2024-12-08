@@ -176,11 +176,11 @@ export class OthersProfilePage implements OnInit, OnDestroy {
         nameDiv.style('text-align', 'center');
         let nameSpan = p.createSpan(override || this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']);
         nameSpan.parent(nameDiv);
+        // 편집 연필 아이콘
         let editSpan = p.createSpan('<ion-icon name="pencil-outline" style="width: 24px; height: 24px; margin-left: 8px"></ion-icon>');
         editSpan.parent(nameDiv);
         nameDiv.mouseClicked(() => { // 편집 모드로 변경
           EditingName = true;
-          nameEditDiv.value(nameSpan.html());
           nameEditDiv.attribute('placeholder', this.info['user']['display_name'] || this.lang.text['Profile']['noname_user']);
           nameEditDiv.show();
           nameDiv.hide();
