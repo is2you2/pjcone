@@ -90,10 +90,6 @@ export enum MatchOpCode {
   USER_PROFILE_CHANGED = 100,
   /** 사용자 프로필 사진 변경됨 */
   USER_PROFILE_IMAGE_CHANGED = 101,
-  /** 그룹 정보 변경됨 */
-  GROUP_DATA_CHANGED = 200,
-  /** 그룹 사진 변경됨 */
-  GROUP_IMAGE_CHANGED = 201,
 }
 
 @Injectable({
@@ -3456,6 +3452,26 @@ export class NakamaService {
   update_group_info(c: ChannelMessage, _is_official: string, _target: string) {
     this.translate_updates(c);
     switch (c.content['gupdate']) {
+      case 'gimage_modify': // 그룹 이미지 변경
+        this.servers[_is_official][_target].client.readStorageObjects(
+          this.servers[_is_official][_target].session, {
+          object_ids: [{
+            collection: 'group_public',
+            key: `group_${c.group_id}`,
+            user_id: this.groups[_is_official][_target][c.group_id].creator_id,
+          }]
+        }).then(v => {
+          if (v.objects.length) {
+            this.groups[_is_official][_target][c.group_id]['img'] = v.objects[0].value['img'].replace(/"|=|\\/g, '');
+            this.indexed.saveTextFileToUserPath(v.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${c.group_id}.img`);
+          } else {
+            if (this.groups[_is_official][_target][c.group_id]['status'] != 'missing') {
+              delete this.groups[_is_official][_target][c.group_id]['img'];
+              this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${c.group_id}.img`);
+            }
+          }
+        });
+        break;
       case 'remove': // 그룹이 삭제됨
       case 'force_remove': // 그룹이 강제 삭제됨
         this.groups[_is_official][_target][c.group_id]['status'] = 'missing';
@@ -3482,6 +3498,9 @@ export class NakamaService {
       }
     if (msg.content['gupdate'])
       switch (msg.content['gupdate']) {
+        case 'gimage_modify': // 그룹 이미지 변경, 시스템 메시지는 남기지 않음
+          msg.content['noti'] = this.lang.text['GroupDetail']['GroupImageChanged'];
+          break;
         case 'remove': // 그룹이 삭제됨
           msg.content['noti'] = this.lang.text['GroupDetail']['GroupRemoved'];
           break;
@@ -3744,9 +3763,6 @@ export class NakamaService {
         }
       }
         return;
-      case MatchOpCode.GROUP_DATA_CHANGED:
-      case MatchOpCode.GROUP_IMAGE_CHANGED:
-        break;
       case 1: // 전체 알림 메시지 수신
         v['request'] = `${this.lang.text['Nakama']['ServerNoti']}: ${decodeURIComponent(v.content['msg'])}`;
         let decode_body = decodeURIComponent(v.content['msg']);

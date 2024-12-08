@@ -252,16 +252,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   async buttonClickInputFile() {
     if (this.nakama.PromotedGroup[this.isOfficial][this.target][this.info.id]) { // 권한이 있는 경우
       if (this.info.img) {
-        this.info.img = undefined;
-        this.nakama.servers[this.isOfficial][this.target].client.deleteStorageObjects(
-          this.nakama.servers[this.isOfficial][this.target].session, {
-          object_ids: [{
-            collection: 'group_public',
-            key: `group_${this.info.id}`,
-          }],
-        }).then(_info => {
-          this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info['id']}.img`);
-        });
+        this.RemoveGroupImageAct();
       } else document.getElementById(this.file_sel_id).click();
     }
   }
@@ -270,16 +261,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     let contextAct = async () => {
       if (this.nakama.PromotedGroup[this.isOfficial][this.target][this.info.id]) { // 권한이 있는 경우
         if (this.info.img) {
-          this.info.img = undefined;
-          this.nakama.servers[this.isOfficial][this.target].client.deleteStorageObjects(
-            this.nakama.servers[this.isOfficial][this.target].session, {
-            object_ids: [{
-              collection: 'group_public',
-              key: `group_${this.info.id}`,
-            }],
-          }).then(_info => {
-            this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info['id']}.img`);
-          });
+          this.RemoveGroupImageAct();
         } else try {
           let clipboard = await this.global.GetValueFromClipboard();
           switch (clipboard.type) {
@@ -297,6 +279,25 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     }
     contextAct();
     return false;
+  }
+
+  RemoveGroupImageAct() {
+    this.info.img = undefined;
+    this.nakama.servers[this.isOfficial][this.target].client.deleteStorageObjects(
+      this.nakama.servers[this.isOfficial][this.target].session, {
+      object_ids: [{
+        collection: 'group_public',
+        key: `group_${this.info.id}`,
+      }],
+    }).then(_info => {
+      this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info['id']}.img`);
+      this.nakama.servers[this.isOfficial][this.target].socket.writeChatMessage(
+        this.info['channel_id'], {
+        gupdate: 'gimage_modify',
+      }).catch(e => {
+        console.log('그룹 이미지 변경 업데이트 전파 실패: ', e);
+      });
+    });
   }
 
   async inputImageSelected(ev: any) {
@@ -318,7 +319,13 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         permission_read: 2,
         permission_write: 1,
       }]
-    ).then(_info => {
+    ).then(async _info => {
+      this.nakama.servers[this.isOfficial][this.target].socket.writeChatMessage(
+        this.info['channel_id'], {
+        gupdate: 'gimage_modify',
+      }).catch(e => {
+        console.log('그룹 이미지 변경 업데이트 전파 실패: ', e);
+      });
       this.indexed.saveTextFileToUserPath(JSON.stringify(uri), `servers/${this.isOfficial}/${this.target}/groups/${this.info['id']}.img`);
     });
   }
