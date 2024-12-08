@@ -3280,17 +3280,6 @@ export class NakamaService {
   /** 메시지 내 하이퍼링크와 일반 메시지를 분리 */
   content_to_hyperlink(msg: any, _is_official: string, _target: string) {
     if (!msg.content['msg'] || typeof msg.content['msg'] == 'object') return;
-    let sep_msg = msg.content['msg'].split('\n');
-    msg.content['msg'] = [];
-    sep_msg.forEach((_msg: any) => {
-      let currentPart = { text: _msg };
-      msg.content['msg'].push([currentPart]);
-      try {
-        let hasEmoji = currentPart.text.match(/\p{Emoji}+/gu)[0].replace(/[0-9]/g, '');
-        if (currentPart.text.length == hasEmoji.length)
-          currentPart['size'] = 48;
-      } catch (e) { }
-    });
     for (let i = 0, j = msg.content['msg'].length; i < j; i++)
       if (msg.content['msg'][i][0]['text']) { // 메시지가 포함되어있는 경우에 한함
         // URL을 찾기 위한 개선된 정규식
@@ -3322,6 +3311,17 @@ export class NakamaService {
           msg.content['msg'][i] = [{ text: message }];
         }
       }
+    let sep_msg = msg.content['msg'].split('\n');
+    msg.content['msg'] = [];
+    sep_msg.forEach((_msg: any) => {
+      let currentPart = { text: _msg };
+      msg.content['msg'].push([currentPart]);
+      try {
+        let hasEmoji = currentPart.text.match(/\p{Emoji}+/gu)[0].replace(/[0-9]/g, '');
+        if (currentPart.text.length == hasEmoji.length)
+          currentPart['size'] = 48;
+      } catch (e) { }
+    });
   }
 
   /** 간략한 하이퍼링크 정보 수집 */
