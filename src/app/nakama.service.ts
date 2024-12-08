@@ -1575,8 +1575,10 @@ export class NakamaService {
           user_id: userId,
         }]
       }).then(v => {
-        if (v.objects.length) this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
-        this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
+        if (v.objects.length && this.users[_is_official][_target][userId]['img'] != v.objects[0].value['img']) {
+          this.users[_is_official][_target][userId]['img'] = v.objects[0].value['img'];
+          this.save_other_user(this.users[_is_official][_target][userId], _is_official, _target);
+        }
       }).catch(_e => {
         failed_image_act();
       });
@@ -1602,6 +1604,7 @@ export class NakamaService {
     let keys = Object.keys(userInfo);
     keys.forEach(key => this.users[_is_official][_target][userInfo['id']][key] = userInfo[key]);
     this.indexed.saveTextFileToUserPath(JSON.stringify(copied), `servers/${_is_official}/${_target}/users/${copied['id']}/profile.json`);
+    console.warn('저장하겠지 뭐: ', userInfo['img']?.length);
     if (userInfo['img'])
       this.indexed.saveTextFileToUserPath(userInfo['img'], `servers/${_is_official}/${_target}/users/${userInfo['id']}/profile.img`);
     else if (userInfo['img'] === undefined)
@@ -2305,7 +2308,7 @@ export class NakamaService {
             let userId = this.groups[_is_official][_target][p['group_id']]['users'][i]['user']['id'] || this.servers[_is_official][_target].session.user_id;
             if (userId != this.servers[_is_official][_target].session.user_id) { // 다른 사람인 경우
               let user = await new Promise((done) => {
-                this.load_other_user(userId, _is_official, _target, user => done(user), true);
+                this.load_other_user(userId, _is_official, _target, user => done(user));
               });
               if (user['online']) {
                 result_status = 'online';
