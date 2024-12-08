@@ -435,6 +435,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     this.title.setTitle(this.lang.text['MinimalChat']['WebTitle_group']);
     switch (ev.detail.value) {
       case 'local':
+        this.client.cacheServerInfo = undefined;
         this.UserInputCustomAddress = '';
         this.NeedInputCustomAddress = true;
         break;
