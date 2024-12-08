@@ -41,7 +41,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   ) { }
   header_title: string;
   /** 페이지 구분자는 페이지에 사용될 아이콘 이름을 따라가도록 */
-  Header = 'ranchat';
+  Header = 'simplechat';
   iconColor = 'd8d8d8';
   lnId = 12;
   /** 새 대화 버튼 disabled 토글 */
@@ -188,6 +188,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   /** 하단 입력칸 */
   DomMinimalChatInput: HTMLElement;
   ionViewWillEnter() {
+    this.noti.Current = this.Header;
     this.WaitingLoaded = true;
     this.DomMinimalChatInput = document.getElementById('minimalchat_input').childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
     this.client.RemoveFloatButton();
@@ -454,7 +455,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     this.client.status = 'custom';
     this.Header = 'simplechat';
     this.noti.ClearNoti(this.lnId);
-    this.noti.Current = this.Header;
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', `assets/icon/simplechat.png`);
 
