@@ -1600,7 +1600,6 @@ export class NakamaService {
     let keys = Object.keys(userInfo);
     keys.forEach(key => this.users[_is_official][_target][userInfo['id']][key] = userInfo[key]);
     this.indexed.saveTextFileToUserPath(JSON.stringify(copied), `servers/${_is_official}/${_target}/users/${copied['id']}/profile.json`);
-    console.warn('저장하겠지 뭐: ', userInfo['img']?.length);
     if (userInfo['img'])
       this.indexed.saveTextFileToUserPath(userInfo['img'], `servers/${_is_official}/${_target}/users/${userInfo['id']}/profile.img`);
     else if (userInfo['img'] === undefined)
