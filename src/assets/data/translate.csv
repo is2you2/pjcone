@@ -147,7 +147,6 @@ ShowShortCutHint,단축키 힌트 표시,Show shortcut hints
 DevKit,보조 도구,Auxiliary tools
 FallbackFS,첫번째 파일 서버,First file server
 TryToFallbackFS,FFS 업로드 시도,Try with FFS
-OverrideFallbackFS,FFS 우선 적용,Override FFS
 BugReport,오류 보고,Bug Report
 ServerFiles,사용 설명서,User Manual
 InAppExplorer,인앱 탐색기,InApp Explorer

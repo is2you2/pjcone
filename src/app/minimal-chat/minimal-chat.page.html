@@ -14,13 +14,6 @@
   </div>
   <div style="display: flex; flex-direction: column; height: 100%;">
     <div style="flex: 0 1 auto;">
-      <ion-item *ngIf="!isMobileApp" [disabled]="client.status != 'idle'" button id="fallback_fs_input">
-        <ion-icon (click)="AutoFillFFSFromServer()" class="icon_margin" name="cloud-done-outline"></ion-icon>
-        <ion-input [label]="lang.text['Settings']['OverrideFallbackFS']" class="ion-text-right"
-          [(ngModel)]="client.FallbackOverrideAddress" placeholder="(https://)0.0.0.0"></ion-input>
-        <ion-icon slot="end" name="open-outline"
-          (click)="global.open_custom_site(client.FallbackOverrideAddress)"></ion-icon>
-      </ion-item>
       <ion-item button>
         <ion-input [label]="lang.text['Profile']['name_placeholder']" class="ion-text-right"
           [placeholder]="lang.text['Profile']['noname_user']" [(ngModel)]="client.MyUserName"></ion-input>

@@ -140,16 +140,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     this.extended_buttons[4].name = this.lang.text['ChatRoom']['Voice'];
   }
 
-  /** FFS 주소를 선택된 서버의 주소로 자동으로 채우기 */
-  AutoFillFFSFromServer() {
-    try {
-      let info: ServerInfo = this.MinimalChatServer.value.info;
-      this.client.FallbackOverrideAddress = `${info.useSSL ? 'https' : 'http'}://${info.address}`;
-    } catch (e) {
-      this.client.FallbackOverrideAddress = '';
-    }
-  }
-
   @ViewChild('MinimalChatServer') MinimalChatServer: IonSelect;
   /** 사설 서버를 입력하여 사용하는지 여부 */
   NeedInputCustomAddress = false;
@@ -342,8 +332,12 @@ export class MinimalChatPage implements OnInit, OnDestroy {
           this.global.set_viewer_category_from_ext(this_file);
           this_file.type = '';
           this_file.typeheader = this_file.viewer;
-          this.global.modulate_thumbnail(this_file, this_file.url);
-          this.TrySendingAttach(this_file);
+          let json = {
+            type: 'file',
+            info: this_file,
+            name: this.client.MyUserName,
+          }
+          this.client.send(JSON.stringify(json));
         } catch (e) {
           if (e == 'done')
             throw e;
@@ -445,8 +439,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         this.NeedInputCustomAddress = true;
         break;
       default: // 다른 원격 서버
-        let info = ev.detail.value.info;
-        this.UserInputCustomAddress = `${info.useSSL ? 'wss' : 'ws'}://${info.address}:${info.square_port || 12013}`;
+        this.client.cacheServerInfo = ev.detail.value.info;
+        this.UserInputCustomAddress = `${this.client.cacheServerInfo.useSSL ? 'wss' : 'ws'}://${this.client.cacheServerInfo.address}:${this.client.cacheServerInfo.square_port || 12013}`;
         this.NeedInputCustomAddress = false;
         break;
     }
@@ -487,12 +481,8 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       try {
         let data = JSON.parse(v);
         if (!this.client.JoinedChannel) this.client.JoinedChannel = data['channel'];
-        if (!this.client.uuid) {
+        if (!this.client.uuid)
           this.client.uuid = data['uid'];
-          // FFS 우선처리 주소가 등록되어있다면 이곳으로 클라이언트 연결처리
-          if (this.client.FallbackOverrideAddress && this.client.uuid)
-            this.FFSOverrideConnect();
-        }
         let isMe = this.client.uuid == data['uid'];
         let target = isMe ? (this.client.MyUserName || this.lang.text['MinimalChat']['name_me']) : (data['name'] || this.lang.text['MinimalChat']['name_stranger_group']);
         let color = data['uid'] ? (data['uid'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6) : isDarkMode ? '888888' : '444444';
@@ -679,25 +669,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     }
   }
 
-  /** FFS 우선처리 서버가 동작하는 경우 주소 확인 과정에서 해당 서버에 연결처리 */
-  FFSOverrideConnect() {
-    let sep = this.client.FallbackOverrideAddress.split('://');
-    let address_without_protocol = sep.pop();
-    let sep2 = address_without_protocol.split(':');
-    let address = sep2.shift();
-    let port = sep2.pop();
-    let check_prot = sep.pop() || this.global.checkProtocolFromAddress(address);
-    this.client.FFSClient = new WebSocket(`${check_prot ? 'wss:' : 'ws:'}//${address}:${port || 12013}`);
-    this.client.FFSClient.onopen = () => {
-      this.client.FFSClient.send(JSON.stringify({
-        type: 'override',
-        clientId: this.client.uuid,
-        channel: this.client.JoinedChannel,
-        name: this.client.MyUserName,
-      }));
-    }
-  }
-
   /** 보여지는 QRCode 정보 복사 */
   copy_qr_address(target_string = this.QRCodeTargetString) {
     this.global.WriteValueToClipboard('text/plain', target_string);
@@ -744,18 +715,17 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       name: this.client.MyUserName,
     }
     try { // FFS 발송 시도
-      if (!this.client.FallbackOverrideAddress) throw 'FFS 우선처리 지정되지 않음';
-      let apache_port: number;
+      let TargetAddress: string;
       try {
-        let info: ServerInfo = this.MinimalChatServer.value.info;
-        apache_port = info.apache_port;
-      } catch (e) { }
+        TargetAddress = `${this.client.cacheServerInfo.useSSL ? 'https' : 'http'}://${this.client.cacheServerInfo.address}:${this.client.cacheServerInfo.apache_port || 9002}`;
+      } catch (e) {
+        console.log('대상 주소 생성 오류: ', e);
+      }
       let url = await this.global.try_upload_to_user_custom_fs(FileInfo, `tmp_${this.client.JoinedChannel || 'public'}_${this.client.uuid}`,
-        undefined, `${this.client.FallbackOverrideAddress}:${apache_port || 9002}`);
+        undefined, TargetAddress);
       if (!url) throw '분할 전송 시도 필요';
       else {
         FileInfo.url = url;
-        this.client.FFS_Urls.push(url);
         delete FileInfo.blob;
         this.client.send(JSON.stringify(json));
         this.focus_on_input();
@@ -937,10 +907,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     if (this.client.status == 'idle') this.navCtrl.pop();
     // 첨부했던 파일들 삭제
     this.indexed.GetFileListFromDB('tmp_files/sqaure', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
-    for (let i = 0, j = this.client.FFS_Urls.length; i < j; i++)
-      this.global.remove_files_from_storage_with_key(this.client.FFS_Urls[i], `tmp_${this.client.JoinedChannel || 'public'}_${this.client.uuid}`, {});
     this.client.disconnect();
-    this.client.FFS_Urls.length = 0;
     this.client.DownloadPartManager = {};
   }
 
