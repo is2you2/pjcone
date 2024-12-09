@@ -1494,9 +1494,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         target: this.target,
         id: this.info.id,
       }
-      await this.nakama.servers[this.isOfficial][this.target]
-        .socket.sendMatchState(this.nakama.self_match[this.isOfficial][this.target].match_id, MatchOpCode.CHATROOM_CHECKED,
-          encodeURIComponent(`${this.info.id}`));
+      try {
+        await this.nakama.servers[this.isOfficial][this.target]
+          .socket.sendMatchState(this.nakama.self_match[this.isOfficial][this.target].match_id, MatchOpCode.CHATROOM_CHECKED,
+            encodeURIComponent(`${this.info.id}`));
+      } catch (e) { }
       this.foundLastRead = this.info['last_read_id'] == this.info['last_comment_id'];
       await this.SetExtensionButtons();
     }
