@@ -381,7 +381,7 @@
           <table id="input_table" style="width: 100%; background-color: var(--chatroom-input-background);">
             <tr>
               <td>
-                <ion-button fill="clear" mode="md" (click)="open_ext_with_delay()" class="ion-text-center">
+                <ion-button fill="clear" (click)="open_ext_with_delay()" class="ion-text-center">
                   <div *ngIf="global.ShowHint && !CheckIfFocusOnInput" class="shortcut_hint shortcut_hint_menu">E</div>
                   <ion-icon name="add"></ion-icon>
                 </ion-button>
@@ -396,7 +396,7 @@
                   (click)="make_ext_hidden()" [placeholder]="inputPlaceholder"></textarea>
               </td>
               <td>
-                <ion-button fill="clear" mode="md" (click)="send(false)" expand="block"
+                <ion-button fill="clear" (click)="send(false)" expand="block"
                   [disabled]="block_send || !info['status'] || info['status'] == 'missing' || info['status'] == 'offline'">
                   <ion-icon name="send"></ion-icon>
                 </ion-button>
