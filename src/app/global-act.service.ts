@@ -1043,7 +1043,7 @@ export class GlobalActService {
     let Catched = false;
     let CatchedAddress: string;
     if (useCustomServer)
-      CatchedAddress = await this.try_upload_to_user_custom_fs(file, info.user_id, innerLoading);
+      CatchedAddress = await this.try_upload_to_user_custom_fs(file, info?.user_id, innerLoading);
     innerLoading.message = override_try_msg ?? this.lang.text['GlobalAct']['CheckCdnServer'];
     let progress: any;
     try { // 사설 연계 서버에 업로드 시도
@@ -1053,10 +1053,10 @@ export class GlobalActService {
       };
       let upload_time = new Date().getTime();
       let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
-      let filename = file.override_name || `${info.user_id}_${upload_time}_${only_filename}.${file.file_ext}`;
-      CatchedAddress = `${protocol}//${address}:${info.apache_port || 9002}/cdn/${filename}`;
+      let filename = file.override_name || `${info?.user_id}_${upload_time}_${only_filename}.${file.file_ext}`;
+      CatchedAddress = `${protocol}//${address}:${info?.apache_port || 9002}/cdn/${filename}`;
       progress = setInterval(async () => {
-        let res = await fetch(`${protocol}//${address}:${info.cdn_port || 9001}/filesize/${filename}`, { method: "POST" });
+        let res = await fetch(`${protocol}//${address}:${info?.cdn_port || 9001}/filesize/${filename}`, { method: "POST" });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
         innerLoading.message = `${file.filename}: ${progressPercent || 0}%`;
@@ -1064,7 +1064,7 @@ export class GlobalActService {
       let formData = new FormData();
       let _file = new File([file.blob], filename);
       formData.append("files", _file);
-      let up_res = await fetch(`${protocol}//${address}:${info.cdn_port || 9001}/cdn/${filename}`, { method: "POST", body: formData });
+      let up_res = await fetch(`${protocol}//${address}:${info?.cdn_port || 9001}/cdn/${filename}`, { method: "POST", body: formData });
       if (!up_res.ok) throw '업로드 단계에서 실패';
       clearInterval(progress);
       let res = await fetch(CatchedAddress);
@@ -1087,7 +1087,7 @@ export class GlobalActService {
       let target_address = sep.shift();
       let lastIndex = target_address.lastIndexOf(':');
       if (lastIndex > 5) target_address = target_address.substring(0, lastIndex);
-      await fetch(`${target_address}:${info.cdn_port || 9001}/remove/${target_file_name}`, { method: "POST" });
+      await fetch(`${target_address}:${info?.cdn_port || 9001}/remove/${target_file_name}`, { method: "POST" });
     } catch (e) {
       console.log('remove_file_from_storage: ', e);
     }
@@ -1103,7 +1103,7 @@ export class GlobalActService {
       if (!target_address) throw '대상 주소 없음';
       let lastIndex = target_address.lastIndexOf(':');
       if (lastIndex > 5) target_address = target_address.substring(0, lastIndex);
-      await fetch(`${target_address}:${info.cdn_port || 9001}/remove_key/${target_id}`, { method: "POST" });
+      await fetch(`${target_address}:${info?.cdn_port || 9001}/remove_key/${target_id}`, { method: "POST" });
     } catch (e) {
       console.log('remove_files_from_storage_with_key: ', e);
       throw e;

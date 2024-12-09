@@ -1249,7 +1249,7 @@ export class NakamaService {
     if (targetInfo.attach && targetInfo.attach.length)
       for (let i = 0, j = targetInfo.attach.length; i < j; i++) // 로컬 FFS 사용을 대비하여 중복 처리
         if (targetInfo.attach[i].url) {
-          if (targetInfo.attach[i].url.indexOf(targetInfo.id) >= 0 && targetInfo.attach[i].type !== '')
+          if (targetInfo.attach[i].type !== '')
             this.global.remove_file_from_storage(targetInfo.attach[i].url, {});
         }
     if (targetInfo.remote) {
@@ -1269,7 +1269,7 @@ export class NakamaService {
           if (targetInfo.attach)
             for (let i = 0, j = targetInfo.attach.length; i < j; i++)
               if (targetInfo.attach[i].url) {
-                if (targetInfo.attach[i].url.indexOf(targetInfo.id) >= 0 && targetInfo.attach[i].type !== '') {
+                if (targetInfo.attach[i].type !== '') {
                   let info = this.servers[isOfficial][target].info;
                   this.global.remove_file_from_storage(targetInfo.attach[i].url, { apache_port: info.apache_port, cdn_port: info.cdn_port });
                 }
