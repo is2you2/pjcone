@@ -42,7 +42,6 @@ export class UserFsDirPage implements OnInit, OnDestroy {
   DirList: FileDir[] = [];
   /** 디렉토리 파일 리스트, 이름순 나열 */
   FileList: FileDir[] = [];
-  cant_dedicated = false;
 
   @ViewChild('FileSel') FileSel: IonAccordionGroup;
 
@@ -83,7 +82,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
       setTimeout(() => {
         this.CreateDrop();
       }, 100);
-    this.CanImportFolder = isPlatform != 'MobilePWA';
+    this.CanImportFolder = isPlatform == 'DesktopPWA';
     this.route.queryParams.subscribe(_p => {
       const navParams = this.router.getCurrentNavigation().extras.state;
       this.navParams = navParams || {};
@@ -286,8 +285,6 @@ export class UserFsDirPage implements OnInit, OnDestroy {
     this.HideThumbnail = localStorage.getItem('user-fs-thumbnail') == '1';
     this.CurrentDir = '';
     this.LoadAllIndexedFiles();
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
-      this.cant_dedicated = true;
   }
 
   async dismiss_page(file?: FileDir) {

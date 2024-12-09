@@ -6,7 +6,7 @@ import { NakamaService } from './nakama.service';
 import { LanguageSettingService } from './language-setting.service';
 import { GlobalActService } from './global-act.service';
 /** 페이지가 돌고 있는 플렛폼 구분자 */
-export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' | 'MobilePWA' = 'DesktopPWA';
+export var isPlatform: 'Android' | 'iOS' | 'DesktopPWA' = 'DesktopPWA';
 /** Nativefier로 실행중인지 검토하기 */
 export var isNativefier = false;
 import * as p5 from 'p5';
@@ -28,8 +28,8 @@ export class AppComponent {
   ) {
     if (platform.is('desktop'))
       isPlatform = 'DesktopPWA';
-    else if (platform.is('mobileweb'))
-      isPlatform = 'MobilePWA';
+    // else if (platform.is('mobileweb'))
+    //   isPlatform = 'MobilePWA';
     else if (platform.is('android'))
       isPlatform = 'Android';
     else if (platform.is('iphone'))

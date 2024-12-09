@@ -17,7 +17,7 @@
   </div>
   <ion-list>
     <div *ngIf="CurrentDir == '' && !navParams.selector && CanImportFolder">
-      <ion-item *ngIf="cant_dedicated" button (click)="SelectImportFolder()">
+      <ion-item button (click)="SelectImportFolder()">
         <ion-icon slot="start" name="arrow-down-circle"></ion-icon>
         <ion-label> {{lang.text['UserFsDir']['ImportFolder']}} </ion-label>
       </ion-item>
@@ -73,8 +73,7 @@
               <ion-button *ngIf="navParams.selector" class="ion-text-right button_dist" (click)="dismiss_page(file)">
                 {{lang.text['UserFsDir']['Select']}}
               </ion-button>
-              <ion-button *ngIf="cant_dedicated && !navParams.selector" class="ion-text-right button_dist"
-                (click)="DownloadFile(file)">
+              <ion-button *ngIf="!navParams.selector" class="ion-text-right button_dist" (click)="DownloadFile(file)">
                 {{lang.text['UserFsDir']['Download']}}
               </ion-button>
               <ion-button class="ion-text-end button_dist" (click)="RemoveFile(file, i)">

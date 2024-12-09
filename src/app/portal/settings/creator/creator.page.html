@@ -45,18 +45,4 @@
       <ion-label>{{user[lang.lang]}}</ion-label>
     </ion-chip>
   </div>
-  <div *ngIf="isMobileApp">
-    <ion-item-divider>
-      <ion-label>{{lang.text['Profile']['main_content']}}</ion-label>
-    </ion-item-divider>
-    <textarea class="infobox" style="height: 360px;" disabled>{{lang.text['Profile']['not_available_yet']}}</textarea>
-  </div>
-  <div *ngIf="isMobileApp">
-    <ion-item-divider>
-      <ion-label>{{lang.text['CreatorInfo']['Ifyoulike']}}</ion-label>
-    </ion-item-divider>
-    <ion-item button (click)="inAppPurchaseClicked()">
-      <ion-label>{{lang.text['CreatorInfo']['giveacoffeetodev']}}</ion-label>
-    </ion-item>
-  </div>
 </ion-content>

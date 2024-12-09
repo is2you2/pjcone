@@ -63,8 +63,6 @@ export class GroupServerPage implements OnInit, OnDestroy {
     });
   }
 
-  /** 모바일 PWA 여부를 검토하여 하단 modal 시작 높이를 조정 */
-  isMobilePWA = false;
   OnlineToggle = false;
   ShowServerList = false;
   EditingName = false;
@@ -385,7 +383,6 @@ export class GroupServerPage implements OnInit, OnDestroy {
       }
     });
     this.ShowServerList = this.OnlineToggle;
-    this.isMobilePWA = isPlatform == 'MobilePWA';
   }
 
   async link_group(_is_official: string, _target: string) {

@@ -24,12 +24,7 @@ export class CreatorPage implements OnInit {
   contributors = [];
   special_thanks_to = [];
 
-  isMobileApp = false;
-
   ngOnInit() {
-    this.isMobileApp = isPlatform != 'DesktopPWA' && isPlatform != 'MobilePWA';
-    // 기능 구현 전까지 숨기기
-    this.isMobileApp = false;
     new p5((p: p5) => {
       p.setup = () => {
         p.noCanvas();
@@ -72,11 +67,6 @@ export class CreatorPage implements OnInit {
     this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
-  }
-
-  /** 개발자에게 커피를 사주세요 */
-  inAppPurchaseClicked() {
-    console.log('커피 버튼');
   }
 
   ionViewWillLeave() {

@@ -1895,8 +1895,7 @@ export class GlobalActService {
       }
       GetwithoutPort[0] = '//' + GetwithoutPort[0];
       GetwithoutPort.unshift(checkProtocol ? 'https' : 'http');
-      if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
-        window.open(GetwithoutPort.join(':') + `:${port || 9001}`, '_blank');
+      window.open(GetwithoutPort.join(':') + `:${port || 9001}`, '_blank');
     } catch (e) { }
   }
 

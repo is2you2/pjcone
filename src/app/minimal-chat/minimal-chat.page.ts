@@ -48,7 +48,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   req_refreshed = false;
   minimal_chat_log: HTMLElement;
   addresses: any[];
-  isMobileApp = false;
 
   /** 이 창 열기(알림 상호작용) */
   open_this = (_ev: any) => {
@@ -165,7 +164,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       if (this.lnId) this.noti.ClearNoti(this.lnId);
       this.noti.Current = this.Header;
     }
-    this.isMobileApp = isPlatform == 'Android' || isPlatform == 'iOS';
     this.header_title = this.lang.text['MinimalChat']['header_title_group'];
     this.minimal_chat_log = document.getElementById('minimal_chat_div');
     this.minimal_chat_log.onscroll = (_ev: any) => {

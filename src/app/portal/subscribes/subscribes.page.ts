@@ -39,8 +39,6 @@ export class SubscribesPage implements OnInit {
     }
   }
 
-  cant_dedicated = false;
-
   try_add_shortcut() {
     if (this.global.p5KeyShortCut)
       this.AddShortcut();
@@ -232,8 +230,6 @@ export class SubscribesPage implements OnInit {
     if (!this.SubscribesScrollDiv)
       this.SubscribesScrollDiv = document.getElementById('SubscribesScrollDiv');
     this.nakama.subscribe_lock = true;
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA')
-      this.cant_dedicated = true;
     this.try_add_shortcut();
   }
 

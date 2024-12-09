@@ -2128,26 +2128,24 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   /** 덮어쓰기 전단계 */
   forceWrite = false;
   async download_file() {
-    if (isPlatform == 'DesktopPWA' || isPlatform == 'MobilePWA') {
-      let hasFile = await this.indexed.checkIfFileExist(this.FileInfo.alt_path || this.FileInfo.path);
-      if (hasFile) {
-        this.indexed.DownloadFileFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name']);
-      } else if (this.FileInfo['url']) {
-        try {
-          let link = document.createElement("a");
-          link.target = '_blank';
-          link.href = this.FileInfo['url'];
-          link.download = this.FileInfo.filename;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          link.remove();
-        } catch (e) {
-          console.log('다운받기 실패: ', e);
-          this.p5toast.show({
-            text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`
-          });
-        }
+    let hasFile = await this.indexed.checkIfFileExist(this.FileInfo.alt_path || this.FileInfo.path);
+    if (hasFile) {
+      this.indexed.DownloadFileFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name']);
+    } else if (this.FileInfo['url']) {
+      try {
+        let link = document.createElement("a");
+        link.target = '_blank';
+        link.href = this.FileInfo['url'];
+        link.download = this.FileInfo.filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        link.remove();
+      } catch (e) {
+        console.log('다운받기 실패: ', e);
+        this.p5toast.show({
+          text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`
+        });
       }
     }
   }

@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
-import { isNativefier, isPlatform } from '../app.component';
 import * as p5 from 'p5';
 import { LanguageSettingService } from '../language-setting.service';
 
@@ -16,17 +15,15 @@ export class FrontPage implements OnInit {
     public lang: LanguageSettingService,
   ) { }
 
-  isPWA = false;
   alwaysStart = false;
   information = '';
 
   ngOnInit() { }
 
   ionViewDidEnter() {
-    this.isPWA = (isPlatform == 'MobilePWA' || isPlatform == 'DesktopPWA') && !isNativefier;
     this.alwaysStart = Boolean(localStorage.getItem('auto_start')) || (location.protocol == 'http:' && location.host.indexOf('localhost') != 0);
     let include_infos = location.href.indexOf('?') >= 0;
-    if (!this.isPWA || this.alwaysStart || include_infos) // 무시하고 바로 시작하는 경우를 허용
+    if (this.alwaysStart || include_infos) // 무시하고 바로 시작하는 경우를 허용
       this.StartUse();
     else new p5((p: p5) => {
       p.setup = () => {
