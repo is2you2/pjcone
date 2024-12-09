@@ -103,7 +103,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   limitDisplay: string;
   /** 스크롤 행동용 메인 div 개체 */
   MainDiv: HTMLElement;
-  isMobile = false;
 
   /** 파일 읽기 멈추기 위한 컨트롤러 */
   cont: AbortController;
@@ -195,7 +194,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.cont = new AbortController();
     this.MainDiv = document.getElementById('main_div');
-    this.isMobile = isPlatform == 'Android' || isPlatform == 'iOS';
     this.nakama.socket_reactive['add_todo_menu'] = this;
     // 미리 지정된 데이터 정보가 있는지 검토
     this.route.queryParams.subscribe(_p => {
@@ -1244,10 +1242,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.isCDNToggleClicked = true;
     let ModulerSize = this.userInput.remote ? 3 : 2;
     this.useFirstCustomCDN = (force ?? (this.useFirstCustomCDN + 1)) % ModulerSize;
-    if (isPlatform == 'Android') {
-      this.useFirstCustomCDN = 2;
-      this.isCDNToggleAvailable = false;
-    }
     switch (this.useFirstCustomCDN) {
       case 0: // 기본값, cdn 서버 우선, 실패시 SQL
         this.extended_buttons[5].icon = 'cloud-offline-outline';
