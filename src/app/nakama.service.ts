@@ -90,6 +90,8 @@ export enum MatchOpCode {
   USER_PROFILE_CHANGED = 100,
   /** 사용자 프로필 사진 변경됨 */
   USER_PROFILE_IMAGE_CHANGED = 101,
+  /** 다른 세션에서 채널 메시지를 확인한 경우 동일 계정에게 전파 */
+  CHATROOM_CHECKED = 102,
 }
 
 @Injectable({
@@ -2806,6 +2808,22 @@ export class NakamaService {
               let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
               if (((this.WebRTCService && this.WebRTCService.TypeIn == 'data') || !is_me) && this.WebRTCService) {
                 await this.WebRTCService.close_webrtc();
+              }
+            }
+              break;
+            case MatchOpCode.CHATROOM_CHECKED: {
+              delete this.channels_orig[_is_official][_target][m['data_str']]['is_new'];
+              this.rearrange_channels();
+              // 하단 탭 알림등 검토
+              {
+                let keys = Object.keys(this.channels_orig[_is_official][_target]);
+                let hasNew = false;
+                for (let channel_id of keys)
+                  if (this.channels_orig[_is_official][_target][channel_id]['is_new']) {
+                    hasNew = true;
+                    break;
+                  }
+                if (!hasNew) this.has_new_channel_msg = false;
               }
             }
               break;

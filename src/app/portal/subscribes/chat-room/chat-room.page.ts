@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ChannelMessage } from '@heroiclabs/nakama-js';
 import { AlertController, IonicSafeString, LoadingController, NavController } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
-import { NakamaService } from 'src/app/nakama.service';
+import { MatchOpCode, NakamaService } from 'src/app/nakama.service';
 import * as p5 from "p5";
 import { StatusManageService } from 'src/app/status-manage.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
@@ -1494,6 +1494,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         target: this.target,
         id: this.info.id,
       }
+      await this.nakama.servers[this.isOfficial][this.target]
+        .socket.sendMatchState(this.nakama.self_match[this.isOfficial][this.target].match_id, MatchOpCode.CHATROOM_CHECKED,
+          encodeURIComponent(`${this.info.id}`));
       this.foundLastRead = this.info['last_read_id'] == this.info['last_comment_id'];
       await this.SetExtensionButtons();
     }
