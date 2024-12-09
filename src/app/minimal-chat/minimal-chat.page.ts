@@ -455,217 +455,226 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     this.noti.ClearNoti(this.lnId);
     const favicon = document.getElementById('favicon');
     favicon.setAttribute('href', `assets/icon/simplechat.png`);
-
-    if (!this.client.client || this.client.client.readyState != this.client.client.OPEN
-      && !this.client.p5OnDediMessage) {
-      this.client.userInput.logs.length = 0;
-      let joinMessage = { color: isDarkMode ? 'bbb' : '444', text: this.lang.text['MinimalChat']['joinChat_group'], isSystem: true };
-      this.client.userInput.logs.push(joinMessage);
-      this.client.userInput.last_message = joinMessage;
-      let split_fullAddress = this.UserInputCustomAddress.split('://');
-      let address = split_fullAddress.pop().split(':');
-      let protocol = split_fullAddress.pop();
-      if (protocol) {
-        protocol += ':';
-      } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'wss:' : 'ws:';
-      let target_address = `${protocol}//${address[0]}`;
-      this.client.initialize(target_address, address[1]);
-    }
-    const PWA_Action = [{
-      title: this.lang.text['MinimalChat']['Noti_Reply'],
-      action: 'sq_reply',
-      type: 'text',
-    }];
-    this.client.funcs.onmessage = (v: string) => {
-      try {
-        let data = JSON.parse(v);
-        if (!this.client.JoinedChannel) this.client.JoinedChannel = data['channel'];
-        if (!this.client.uuid)
-          this.client.uuid = data['uid'];
-        let isMe = this.client.uuid == data['uid'];
-        let target = isMe ? (this.client.MyUserName || this.lang.text['MinimalChat']['name_me']) : (data['name'] || this.lang.text['MinimalChat']['name_stranger_group']);
-        let color = data['uid'] ? (data['uid'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6) : isDarkMode ? '888888' : '444444';
-        if (this.client.p5OnDediMessage) this.client.p5OnDediMessage(color);
-        if (data['msg']) { // 채널 메시지
-          let sep: string[] = data['msg'].split(' ');
-          let msg_arr = [];
-          let normal_text = '';
-          for (let i = 0, j = sep.length; i < j; i++)
-            if (sep[i].indexOf('http://') == 0 || sep[i].indexOf('https://') == 0) {
-              msg_arr.push({ text: ' ' + normal_text + ' ' });
-              normal_text = '';
-              msg_arr.push({ href: true, text: sep[i] });
-            } else normal_text += ' ' + sep[i];
-          if (normal_text) msg_arr.push({ text: ' ' + normal_text });
-          let getMessage = { color: color, text: msg_arr, target: target, isMe: isMe };
-          this.client.userInput.logs.push(getMessage);
-          this.client.userInput.last_message = getMessage;
-        } else if (data['type']) {
-          switch (data['type']) {
-            case 'join': // 사용자 진입
-              let UserJoin = { color: color, text: [{ text: ' ' + this.lang.text['MinimalChat']['user_join_comment'] }], target: target, isSystem: true };
-              this.client.userInput.logs.push(UserJoin);
-              this.client.userInput.last_message = UserJoin;
-              break;
-            case 'leave': // 사용자 퇴장
-              let UserLeave = { color: color, text: [{ text: ' ' + this.lang.text['MinimalChat']['user_out_comment'] }], target: target, isSystem: true };
-              this.client.userInput.logs.push(UserLeave);
-              this.client.userInput.last_message = UserLeave;
-              break;
-            case 'file': // 파일 정보 전송 (url)
-              let FileAttach = { color: color, file: data, target: target, isMe: isMe };
-              this.client.userInput.logs.push(FileAttach);
-              this.client.userInput.last_message = FileAttach;
-              if (!data.info.url) { // 분할 파일인 경우 누적 준비하기
-                let FileInfo: FileInfo = data.info;
-                if (!this.client.DownloadPartManager[data.uid])
-                  this.client.DownloadPartManager[data.uid] = {};
-                if (!this.client.DownloadPartManager[data.uid][data.temp_id])
-                  this.client.DownloadPartManager[data.uid][data.temp_id] = FileAttach;
-                FileAttach['Progress'] = FileInfo.partsize;
-              }
-              break;
-            case 'part': // 분할 파일 정보 수신
-              this.client.DownloadPartManager[data.uid][data.temp_id]['Progress']--;
-              this.indexed.checkIfFileExist(data.path, b => {
-                if (!b) { // 파일이 없다면 파트파일 받기
-                  this.indexed.saveBase64ToUserPath(',' + data.part, `${data.path}_${data.index}`);
+    try {
+      if (!this.client.client || this.client.client.readyState != this.client.client.OPEN
+        && !this.client.p5OnDediMessage) {
+        this.client.userInput.logs.length = 0;
+        let joinMessage = { color: isDarkMode ? 'bbb' : '444', text: this.lang.text['MinimalChat']['joinChat_group'], isSystem: true };
+        this.client.userInput.logs.push(joinMessage);
+        this.client.userInput.last_message = joinMessage;
+        let split_fullAddress = this.UserInputCustomAddress.split('://');
+        let address = split_fullAddress.pop().split(':');
+        let protocol = split_fullAddress.pop();
+        if (protocol) {
+          protocol += ':';
+        } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'wss:' : 'ws:';
+        let target_address = `${protocol}//${address[0]}`;
+        this.client.initialize(target_address, address[1]);
+      }
+      const PWA_Action = [{
+        title: this.lang.text['MinimalChat']['Noti_Reply'],
+        action: 'sq_reply',
+        type: 'text',
+      }];
+      this.client.funcs.onmessage = (v: string) => {
+        try {
+          let data = JSON.parse(v);
+          if (!this.client.JoinedChannel) this.client.JoinedChannel = data['channel'];
+          if (!this.client.uuid)
+            this.client.uuid = data['uid'];
+          let isMe = this.client.uuid == data['uid'];
+          let target = isMe ? (this.client.MyUserName || this.lang.text['MinimalChat']['name_me']) : (data['name'] || this.lang.text['MinimalChat']['name_stranger_group']);
+          let color = data['uid'] ? (data['uid'].replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6) : isDarkMode ? '888888' : '444444';
+          if (this.client.p5OnDediMessage) this.client.p5OnDediMessage(color);
+          if (data['msg']) { // 채널 메시지
+            let sep: string[] = data['msg'].split(' ');
+            let msg_arr = [];
+            let normal_text = '';
+            for (let i = 0, j = sep.length; i < j; i++)
+              if (sep[i].indexOf('http://') == 0 || sep[i].indexOf('https://') == 0) {
+                msg_arr.push({ text: ' ' + normal_text + ' ' });
+                normal_text = '';
+                msg_arr.push({ href: true, text: sep[i] });
+              } else normal_text += ' ' + sep[i];
+            if (normal_text) msg_arr.push({ text: ' ' + normal_text });
+            let getMessage = { color: color, text: msg_arr, target: target, isMe: isMe };
+            this.client.userInput.logs.push(getMessage);
+            this.client.userInput.last_message = getMessage;
+          } else if (data['type']) {
+            switch (data['type']) {
+              case 'join': // 사용자 진입
+                let UserJoin = { color: color, text: [{ text: ' ' + this.lang.text['MinimalChat']['user_join_comment'] }], target: target, isSystem: true };
+                this.client.userInput.logs.push(UserJoin);
+                this.client.userInput.last_message = UserJoin;
+                break;
+              case 'leave': // 사용자 퇴장
+                let UserLeave = { color: color, text: [{ text: ' ' + this.lang.text['MinimalChat']['user_out_comment'] }], target: target, isSystem: true };
+                this.client.userInput.logs.push(UserLeave);
+                this.client.userInput.last_message = UserLeave;
+                break;
+              case 'file': // 파일 정보 전송 (url)
+                let FileAttach = { color: color, file: data, target: target, isMe: isMe };
+                this.client.userInput.logs.push(FileAttach);
+                this.client.userInput.last_message = FileAttach;
+                if (!data.info.url) { // 분할 파일인 경우 누적 준비하기
+                  let FileInfo: FileInfo = data.info;
+                  if (!this.client.DownloadPartManager[data.uid])
+                    this.client.DownloadPartManager[data.uid] = {};
+                  if (!this.client.DownloadPartManager[data.uid][data.temp_id])
+                    this.client.DownloadPartManager[data.uid][data.temp_id] = FileAttach;
+                  FileAttach['Progress'] = FileInfo.partsize;
                 }
-              });
-              return; // 알림 생성하지 않음
-            case 'EOF': // 파일 수신 마무리하기
-              this.indexed.checkIfFileExist(data.path, async b => {
-                if (!b) { // 파일이 없다면 파트를 모아서 파일 만들기
-                  await new Promise(async (done, err) => {
-                    let GatheringInt8Array = [];
-                    let ByteSize = 0;
-                    for (let i = 0, j = data.partsize; i < j; i++) {
+                break;
+              case 'part': // 분할 파일 정보 수신
+                this.client.DownloadPartManager[data.uid][data.temp_id]['Progress']--;
+                this.indexed.checkIfFileExist(data.path, b => {
+                  if (!b) { // 파일이 없다면 파트파일 받기
+                    this.indexed.saveBase64ToUserPath(',' + data.part, `${data.path}_${data.index}`);
+                  }
+                });
+                return; // 알림 생성하지 않음
+              case 'EOF': // 파일 수신 마무리하기
+                this.indexed.checkIfFileExist(data.path, async b => {
+                  if (!b) { // 파일이 없다면 파트를 모아서 파일 만들기
+                    await new Promise(async (done, err) => {
+                      let GatheringInt8Array = [];
+                      let ByteSize = 0;
+                      for (let i = 0, j = data.partsize; i < j; i++) {
+                        try {
+                          let part = await this.indexed.GetFileInfoFromDB(`${data.path}_${i}`);
+                          ByteSize += part.contents.length;
+                          GatheringInt8Array[i] = part;
+                        } catch (e) {
+                          console.log('파일 병합하기 오류: ', e);
+                          break;
+                        }
+                      }
                       try {
-                        let part = await this.indexed.GetFileInfoFromDB(`${data.path}_${i}`);
-                        ByteSize += part.contents.length;
-                        GatheringInt8Array[i] = part;
+                        let SaveForm: Int8Array = new Int8Array(ByteSize);
+                        let offset = 0;
+                        for (let i = 0, j = GatheringInt8Array.length; i < j; i++) {
+                          SaveForm.set(GatheringInt8Array[i].contents, offset);
+                          offset += GatheringInt8Array[i].contents.length;
+                        }
+                        await this.indexed.saveInt8ArrayToUserPath(SaveForm, data.path);
+                        for (let i = 0, j = data['partsize']; i < j; i++)
+                          this.indexed.removeFileFromUserPath(`${data.path}_${i}`)
+                        await this.indexed.removeFileFromUserPath(`${data.path}.history`)
                       } catch (e) {
-                        console.log('파일 병합하기 오류: ', e);
-                        break;
+                        console.log('파일 최종 저장하기 오류: ', e);
+                        err();
                       }
-                    }
-                    try {
-                      let SaveForm: Int8Array = new Int8Array(ByteSize);
-                      let offset = 0;
-                      for (let i = 0, j = GatheringInt8Array.length; i < j; i++) {
-                        SaveForm.set(GatheringInt8Array[i].contents, offset);
-                        offset += GatheringInt8Array[i].contents.length;
-                      }
-                      await this.indexed.saveInt8ArrayToUserPath(SaveForm, data.path);
-                      for (let i = 0, j = data['partsize']; i < j; i++)
-                        this.indexed.removeFileFromUserPath(`${data.path}_${i}`)
-                      await this.indexed.removeFileFromUserPath(`${data.path}.history`)
-                    } catch (e) {
-                      console.log('파일 최종 저장하기 오류: ', e);
-                      err();
-                    }
-                    done(undefined);
-                  });
-                  delete this.client.DownloadPartManager[data.uid][data.temp_id]['Progress'];
-                  delete this.client.DownloadPartManager[data.uid][data.temp_id];
-                } else this.indexed.removeFileFromUserPath(`${data.path}.history`);
-              });
-              return; // 알림 생성하지 않음
+                      done(undefined);
+                    });
+                    delete this.client.DownloadPartManager[data.uid][data.temp_id]['Progress'];
+                    delete this.client.DownloadPartManager[data.uid][data.temp_id];
+                  } else this.indexed.removeFileFromUserPath(`${data.path}.history`);
+                });
+                return; // 알림 생성하지 않음
+            }
           }
+          let alert_this: any = 'certified';
+          if (data['count']) this.client.ConnectedNow = data['count'];
+          if (data['msg'])
+            this.noti.PushLocal({
+              id: this.lnId,
+              title: target,
+              body: data['msg'],
+              actions_wm: PWA_Action,
+              smallIcon_ln: 'simplechat',
+            }, this.Header, this.open_this);
+          else if (data['type']) {
+            switch (data['type']) {
+              case 'join': { // 사용자 들어옴
+                this.noti.PushLocal({
+                  id: this.lnId,
+                  title: this.lang.text['MinimalChat']['user_join'],
+                  body: target + ` | ${this.lang.text['MinimalChat']['user_join_comment']}`,
+                  actions_wm: PWA_Action,
+                  smallIcon_ln: 'simplechat',
+                }, this.Header, this.open_this);
+              } break;
+              case 'leave': { // 사용자 나감
+                alert_this = 'pending';
+                this.noti.PushLocal({
+                  id: this.lnId,
+                  title: this.lang.text['MinimalChat']['user_out'],
+                  body: target + ` | ${this.lang.text['MinimalChat']['user_out_comment']}`,
+                  actions_wm: PWA_Action,
+                  smallIcon_ln: 'simplechat',
+                }, this.Header, this.open_this);
+              } break;
+              case 'file': { // 파일 전송을 시작함
+                this.noti.PushLocal({
+                  id: this.lnId,
+                  title: target,
+                  body: this.lang.text['MinimalChat']['user_send_attach'],
+                  actions_wm: PWA_Action,
+                  smallIcon_ln: 'simplechat',
+                }, this.Header, this.open_this);
+              } break;
+            }
+          }
+          this.statusBar.settings['dedicated_groupchat'] = alert_this;
+          setTimeout(() => {
+            if (this.statusBar.settings['dedicated_groupchat'] == alert_this)
+              this.statusBar.settings['dedicated_groupchat'] = 'online';
+          }, 250);
+        } catch (e) { }
+        this.auto_scroll_down();
+      }
+      this.client.funcs.onclose = (_v: any) => {
+        this.WebSocketOnCloseAct();
+      }
+      this.client.funcs.onopen = (_v: any) => {
+        this.CreateQRCode();
+        this.statusBar.settings['dedicated_groupchat'] = 'online';
+        let count = {
+          name: this.client.MyUserName,
+          type: 'join',
+          channel: this.client.JoinedChannel || 'public',
         }
-        let alert_this: any = 'certified';
-        if (data['count']) this.client.ConnectedNow = data['count'];
-        if (data['msg'])
+        this.client.send(JSON.stringify(count));
+        this.client.funcs.onclose = (_v: any) => {
+          this.statusBar.settings['dedicated_groupchat'] = 'missing';
+          setTimeout(() => {
+            this.statusBar.settings['dedicated_groupchat'] = 'offline';
+          }, 1500);
+          let text = this.lang.text['MinimalChat']['cannot_join'];
+          let GotMessage = { color: 'faa', text: text, isSystem: true };
+          this.client.userInput.logs.push(GotMessage);
+          this.client.userInput.last_message = GotMessage;
           this.noti.PushLocal({
             id: this.lnId,
-            title: target,
-            body: data['msg'],
+            title: text,
             actions_wm: PWA_Action,
             smallIcon_ln: 'simplechat',
           }, this.Header, this.open_this);
-        else if (data['type']) {
-          switch (data['type']) {
-            case 'join': { // 사용자 들어옴
-              this.noti.PushLocal({
-                id: this.lnId,
-                title: this.lang.text['MinimalChat']['user_join'],
-                body: target + ` | ${this.lang.text['MinimalChat']['user_join_comment']}`,
-                actions_wm: PWA_Action,
-                smallIcon_ln: 'simplechat',
-              }, this.Header, this.open_this);
-            } break;
-            case 'leave': { // 사용자 나감
-              alert_this = 'pending';
-              this.noti.PushLocal({
-                id: this.lnId,
-                title: this.lang.text['MinimalChat']['user_out'],
-                body: target + ` | ${this.lang.text['MinimalChat']['user_out_comment']}`,
-                actions_wm: PWA_Action,
-                smallIcon_ln: 'simplechat',
-              }, this.Header, this.open_this);
-            } break;
-            case 'file': { // 파일 전송을 시작함
-              this.noti.PushLocal({
-                id: this.lnId,
-                title: target,
-                body: this.lang.text['MinimalChat']['user_send_attach'],
-                actions_wm: PWA_Action,
-                smallIcon_ln: 'simplechat',
-              }, this.Header, this.open_this);
-            } break;
-          }
+          if (this.client.p5OnDediMessage) this.client.p5OnDediMessage('ff0000');
         }
-        this.statusBar.settings['dedicated_groupchat'] = alert_this;
-        setTimeout(() => {
-          if (this.statusBar.settings['dedicated_groupchat'] == alert_this)
-            this.statusBar.settings['dedicated_groupchat'] = 'online';
-        }, 250);
-      } catch (e) { }
-      this.auto_scroll_down();
-    }
-    this.client.funcs.onclose = (_v: any) => {
-      this.statusBar.settings['dedicated_groupchat'] = 'missing';
-      setTimeout(() => {
-        this.statusBar.settings['dedicated_groupchat'] = 'offline';
-      }, 1500);
-      let failedJoin = { color: 'faa', text: this.lang.text['MinimalChat']['failed_to_join'], isSystem: true };
-      this.client.userInput.logs.push(failedJoin);
-      this.client.userInput.last_message = failedJoin;
-      this.noti.PushLocal({
-        id: this.lnId,
-        title: this.lang.text['MinimalChat']['failed_to_join'],
-        smallIcon_ln: 'simplechat',
-      }, this.Header, this.open_this);
-      if (this.client.p5OnDediMessage) this.client.p5OnDediMessage('ff0000');
-      this.client.disconnect();
-    }
-    this.client.funcs.onopen = (_v: any) => {
-      this.CreateQRCode();
-      this.statusBar.settings['dedicated_groupchat'] = 'online';
-      let count = {
-        name: this.client.MyUserName,
-        type: 'join',
-        channel: this.client.JoinedChannel || 'public',
       }
-      this.client.send(JSON.stringify(count));
-      this.client.funcs.onclose = (_v: any) => {
-        this.statusBar.settings['dedicated_groupchat'] = 'missing';
-        setTimeout(() => {
-          this.statusBar.settings['dedicated_groupchat'] = 'offline';
-        }, 1500);
-        let text = this.lang.text['MinimalChat']['cannot_join'];
-        let GotMessage = { color: 'faa', text: text, isSystem: true };
-        this.client.userInput.logs.push(GotMessage);
-        this.client.userInput.last_message = GotMessage;
-        this.noti.PushLocal({
-          id: this.lnId,
-          title: text,
-          actions_wm: PWA_Action,
-          smallIcon_ln: 'simplechat',
-        }, this.Header, this.open_this);
-        if (this.client.p5OnDediMessage) this.client.p5OnDediMessage('ff0000');
-      }
+    } catch (e) {
+      console.log('광장 채널 접속 실패: ', e);
+      this.WebSocketOnCloseAct();
     }
+  }
+
+  /** 공통된 종료행동 공동관리용 */
+  WebSocketOnCloseAct() {
+    this.statusBar.settings['dedicated_groupchat'] = 'missing';
+    setTimeout(() => {
+      this.statusBar.settings['dedicated_groupchat'] = 'offline';
+    }, 1500);
+    let failedJoin = { color: 'faa', text: this.lang.text['MinimalChat']['failed_to_join'], isSystem: true };
+    this.client.userInput.logs.push(failedJoin);
+    this.client.userInput.last_message = failedJoin;
+    this.noti.PushLocal({
+      id: this.lnId,
+      title: this.lang.text['MinimalChat']['failed_to_join'],
+      smallIcon_ln: 'simplechat',
+    }, this.Header, this.open_this);
+    if (this.client.p5OnDediMessage) this.client.p5OnDediMessage('ff0000');
+    this.client.disconnect();
   }
 
   /** 보여지는 QRCode 정보 복사 */
