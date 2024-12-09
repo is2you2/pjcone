@@ -1,0 +1,17 @@
+.md .custom_badge {
+    background-color: var(--ion-color-danger);
+    width: 8px;
+    height: 8px;
+    position: absolute;
+    transform: translate(10px, -8px);
+    border-radius: 16px;
+}
+
+.ios .custom_badge {
+    background-color: var(--ion-color-danger);
+    width: 12px;
+    height: 12px;
+    position: absolute;
+    transform: translate(12px, -8px);
+    border-radius: 16px;
+}

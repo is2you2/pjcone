@@ -8,17 +8,17 @@
       <ion-tab-button [disabled]="!indexed.ionicDB" (click)="subscribe_button()" tab="subscribes">
         <div *ngIf="global.ShowHint" class="shortcut_hint shortcut_main">W</div>
         <ion-icon [name]="SubscribesIcon"></ion-icon>
-        <ion-badge *ngIf="nakama.has_new_channel_msg" color="danger" mode="md"></ion-badge>
+        <div *ngIf="nakama.has_new_channel_msg" class="custom_badge"></div>
       </ion-tab-button>
       <ion-tab-button [disabled]="!indexed.ionicDB" (click)="arcade_tab_selected()" tab="arcade">
         <div *ngIf="global.ShowHint" class="shortcut_hint shortcut_main">E</div>
         <ion-icon [name]="ArcadeIcon"></ion-icon>
-        <ion-badge *ngIf="global.ArcadeLoaded" color="danger" mode="md"></ion-badge>
+        <div *ngIf="global.ArcadeLoaded" class="custom_badge"></div>
       </ion-tab-button>
       <ion-tab-button [disabled]="!indexed.ionicDB" (click)="community_tab_selected()" tab="community">
         <div *ngIf="global.ShowHint" class="shortcut_hint shortcut_main">R</div>
         <ion-icon [name]="CommunityIcon"></ion-icon>
-        <ion-badge *ngIf="nakama.has_new_post" color="danger" mode="md"></ion-badge>
+        <div *ngIf="nakama.has_new_post" class="custom_badge"></div>
       </ion-tab-button>
       <ion-tab-button [disabled]="!indexed.ionicDB" (click)="setting_button()">
         <div *ngIf="global.ShowHint" class="shortcut_hint shortcut_main">T</div>
