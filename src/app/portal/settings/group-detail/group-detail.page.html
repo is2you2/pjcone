@@ -24,6 +24,15 @@
   <ion-item style="cursor: copy;" (click)="copy_id()">
     <ion-label text-wrap color="medium" class="ion-text-center">{{info.id}}</ion-label>
   </ion-item>
+  <div *ngIf="has_superadmin">
+    <ion-item-divider>
+      <ion-label>{{lang.text['AddGroup']['GroupInfo']}}</ion-label>
+    </ion-item-divider>
+    <ion-item button>
+      <ion-input [label]="lang.text['AddGroup']['DisplayName']" class="ion-text-right" [(ngModel)]="info['name']"
+        [placeholder]="lang.text['AddGroup']['DisplayName_placeholder']"></ion-input>
+    </ion-item>
+  </div>
   <ion-item button (click)="buttonClickInputFile()" (contextmenu)="changeImageContextmenu()">
     <div class="additional_form status_bar_single"
       [style]="'background-color: ' + statusBar.colors[(info['status'] || 'offline')]">
@@ -55,7 +64,7 @@
   </ion-item-divider>
   <textarea class="infobox" [disabled]="!nakama.PromotedGroup[isOfficial][target][info.id]"
     [(ngModel)]="info.description" [placeholder]="lang.text['GroupDetail']['NoDetailGroup']"></textarea>
-  <ion-item (click)="update_group_open()">
+  <ion-item (click)="update_group_open()" [disabled]="!nakama.PromotedGroup[isOfficial][target][info.id]">
     <ion-toggle [(ngModel)]="info['open']"
       style="pointer-events: none;">{{lang.text['GroupDetail']['IsOpen']}}</ion-toggle>
   </ion-item>

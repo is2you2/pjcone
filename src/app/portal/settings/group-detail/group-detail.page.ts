@@ -509,9 +509,29 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   }
 
   ionViewWillLeave() {
+    if (this.info['name'] != this.info_orig['name'])
+      this.update_group_name();
     this.need_edit = this.info['description'] != this.info_orig['description'];
     if (this.need_edit)
       this.edit_group();
     delete this.global.p5KeyShortCut['Escape'];
+  }
+
+  /** 그룹 이름이 다르다면 변경처리 */
+  async update_group_name() {
+    try {
+      await this.nakama.servers[this.isOfficial][this.target].client.rpc(
+        this.nakama.servers[this.isOfficial][this.target].session,
+        'update_group_info_fn', {
+        group_id: this.info['id'],
+        name: this.info['name'],
+      });
+    } catch (e) {
+      console.log('그룹 공개 토글 실패: ', e);
+      this.info['name'] = this.info_orig['name'];
+      this.p5toast.show({
+        text: `${this.lang.text['GroupDetail']['FailedToChangeName']}: ${e.statusText || e} (${e.status})`,
+      });
+    }
   }
 }
