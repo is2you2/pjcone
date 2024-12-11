@@ -3757,7 +3757,7 @@ export class NakamaService {
               let post = await this.load_server_post_with_id(v.content['post_id'],
                 _is_official, _target, v.content['user_id'], is_me);
               this.rearrange_posts();
-              if (!is_me) { // 내 것이 아니라면 새 게시물이 업로드됨을 알림
+              if (!is_me && post && post?.title) { // 내 것이 아니라면 새 게시물이 업로드됨을 알림
                 this.p5toast.show({
                   text: `${this.lang.text['AddPost']['Title']}: ${post.title}`,
                 });
@@ -4756,6 +4756,7 @@ export class NakamaService {
 
   /** 아이디로 서버 포스트 불러오기 */
   async load_server_post_with_id(post_id: string, isOfficial: string, target: string, user_id: string, is_me: boolean): Promise<any> {
+    let json: any;
     try { // 서버에 직접 요청하여 읽기 시도
       let info = {
         path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/info.json`,
@@ -4763,9 +4764,9 @@ export class NakamaService {
       }
       let res = await this.sync_load_file(info, isOfficial, target, 'server_post', user_id, post_id, false);
       let text = await res.value.text();
-      let json = JSON.parse(text);
+      json = JSON.parse(text);
       // 내 게시물인지 여부를 로컬에 추가로 저장
-      if (is_me) json['is_me'] = true;
+      json['is_me'] = is_me;
       let blob = new Blob([JSON.stringify(json)], { type: 'application/json' });
       // 다른 사람의 외부 노출 포스트는 기록하지 않음
       if (!json.OutSource || json['is_me'])
@@ -4832,6 +4833,10 @@ export class NakamaService {
       // 서버에서 삭제된 게시물이라면 로컬에서도 자료를 삭제
       if (e == 'RemoveSelf')
         this.RemovePost(this.posts_orig[isOfficial][target][user_id][post_id], true);
+      if (json && json?.creator_id) {
+        let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/posts/${json.creator_id}/${json.id}`);
+        list.forEach(path => this.indexed.removeFileFromUserPath(path));
+      }
       return false;
     }
   }
