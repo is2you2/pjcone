@@ -42,56 +42,58 @@
     <ion-label class="ion-text-center">{{lang.text['WebRTCDevManager']['saveSetup']}}</ion-label>
   </ion-item>
 
-  <ion-item-divider>
-    <ion-label>{{lang.text['WebRTCDevManager']['ManageServer']}}</ion-label>
-  </ion-item-divider>
-  <ion-accordion-group #WebRTCServers>
-    <ion-accordion *ngFor="let info of ServerInfos; let i = index" [value]="i">
-      <ion-item button slot="header">
-        <ion-label>{{info.urls[0]}}</ion-label>
-      </ion-item>
-      <div slot="content">
-        <img *ngIf="QRCodes[i]" [src]="QRCodes[i]" style="width: 100%; height: auto;" alt="Loading"
-          (click)="copy_info(i)" />
-        <ion-item button (click)="ModifyServer(i)">
-          <ion-label class="ion-text-center">{{lang.text['WebRTCDevManager']['Modify']}}</ion-label>
+  <div *ngIf="!InOut.length">
+    <ion-item-divider>
+      <ion-label>{{lang.text['WebRTCDevManager']['ManageServer']}}</ion-label>
+    </ion-item-divider>
+    <ion-accordion-group #WebRTCServers>
+      <ion-accordion *ngFor="let info of ServerInfos; let i = index" [value]="i">
+        <ion-item button slot="header">
+          <ion-label>{{info.urls[0]}}</ion-label>
         </ion-item>
-        <ion-item button (click)="RemoveServer(i)">
-          <ion-label color="danger" class="ion-text-center">{{lang.text['WebRTCDevManager']['Remove']}}</ion-label>
-        </ion-item>
-      </div>
-    </ion-accordion>
-  </ion-accordion-group>
-  <ion-item button (click)="CreateNewServerInfo()">
-    <ion-label class="ion-text-center">{{lang.text['WebRTCDevManager']['AddServer']}}</ion-label>
-  </ion-item>
+        <div slot="content">
+          <img *ngIf="QRCodes[i]" [src]="QRCodes[i]" style="width: 100%; height: auto;" alt="Loading"
+            (click)="copy_info(i)" />
+          <ion-item button (click)="ModifyServer(i)">
+            <ion-label class="ion-text-center">{{lang.text['WebRTCDevManager']['Modify']}}</ion-label>
+          </ion-item>
+          <ion-item button (click)="RemoveServer(i)">
+            <ion-label color="danger" class="ion-text-center">{{lang.text['WebRTCDevManager']['Remove']}}</ion-label>
+          </ion-item>
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
+    <ion-item button (click)="CreateNewServerInfo()">
+      <ion-label class="ion-text-center">{{lang.text['WebRTCDevManager']['AddServer']}}</ion-label>
+    </ion-item>
 
-  <ion-modal #RegisterNewWebRTCServer [initialBreakpoint]=".5" [breakpoints]="[0, .5, .6, .7, .8, .9, 1]">
-    <ng-template>
-      <ion-content>
-        <ion-item-divider>
-          <ion-label>{{lang.text['WebRTCDevManager']['ServerInfo']}}</ion-label>
-        </ion-item-divider>
-        <ion-item *ngFor="let i of UserInputUrlsLength;">
-          <ion-input [label]="i == 0 ? lang.text['WebRTCDevManager']['Urls'] : ''" class="ion-text-end"
-            [(ngModel)]="userInput.urls[i]" placeholder="stun:stun.l.google.com:19302"></ion-input>
-          <ion-icon *ngIf="i == 0" slot="end" color="success" name="add-circle-outline"
-            (click)="AddServerUrl()"></ion-icon>
-          <ion-icon *ngIf="i != 0" slot="end" color="danger" name="remove-circle-outline"
-            (click)="SubtractServerUrl(i)"></ion-icon>
-        </ion-item>
-        <ion-item>
-          <ion-input [label]="lang.text['WebRTCDevManager']['Username']" class="ion-text-end"
-            [(ngModel)]="userInput.username" placeholder="username"></ion-input>
-        </ion-item>
-        <ion-item>
-          <ion-input [label]="lang.text['WebRTCDevManager']['Credential']" class="ion-text-end"
-            [(ngModel)]="userInput.credential" placeholder="credential"></ion-input>
-        </ion-item>
-        <ion-item button (click)="SaveServer()">
-          <ion-label class="ion-text-center">{{lang.text['WebRTCDevManager']['Save']}}</ion-label>
-        </ion-item>
-      </ion-content>
-    </ng-template>
-  </ion-modal>
+    <ion-modal #RegisterNewWebRTCServer [initialBreakpoint]=".5" [breakpoints]="[0, .5, .6, .7, .8, .9, 1]">
+      <ng-template>
+        <ion-content>
+          <ion-item-divider>
+            <ion-label>{{lang.text['WebRTCDevManager']['ServerInfo']}}</ion-label>
+          </ion-item-divider>
+          <ion-item *ngFor="let i of UserInputUrlsLength;">
+            <ion-input [label]="i == 0 ? lang.text['WebRTCDevManager']['Urls'] : ''" class="ion-text-end"
+              [(ngModel)]="userInput.urls[i]" placeholder="stun:stun.l.google.com:19302"></ion-input>
+            <ion-icon *ngIf="i == 0" slot="end" color="success" name="add-circle-outline"
+              (click)="AddServerUrl()"></ion-icon>
+            <ion-icon *ngIf="i != 0" slot="end" color="danger" name="remove-circle-outline"
+              (click)="SubtractServerUrl(i)"></ion-icon>
+          </ion-item>
+          <ion-item>
+            <ion-input [label]="lang.text['WebRTCDevManager']['Username']" class="ion-text-end"
+              [(ngModel)]="userInput.username" placeholder="username"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input [label]="lang.text['WebRTCDevManager']['Credential']" class="ion-text-end"
+              [(ngModel)]="userInput.credential" placeholder="credential"></ion-input>
+          </ion-item>
+          <ion-item button (click)="SaveServer()">
+            <ion-label class="ion-text-center">{{lang.text['WebRTCDevManager']['Save']}}</ion-label>
+          </ion-item>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+  </div>
 </ion-content>
