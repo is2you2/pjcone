@@ -1268,6 +1268,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       this.p5toast.show({
         text: this.lang.text['TodoDetail']['needDisplayName'],
       });
+      setTimeout(() => {
+        if (this.titleIonInput) this.titleIonInput.focus();
+      }, 0);
       return;
     }
     this.isButtonClicked = true;
