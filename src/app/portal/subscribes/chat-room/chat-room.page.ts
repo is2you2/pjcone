@@ -2374,7 +2374,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.nakama.saveListedMessage([msg], this.info, this.isOfficial, this.target);
     let hasFile = msg.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
     if (msg.code != 2) this.nakama.channels_orig[this.isOfficial][this.target][this.info.id]['last_comment'] = hasFile +
-      (MsgText || msg.content['noti'] || (msg.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined) || '');
+      (MsgText || msg.content['noti'] || '');
     setTimeout(() => {
       this.userInput.text = '';
       this.ResizeTextArea();
@@ -2668,11 +2668,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     }
     this.isOtherAct = false;
-  }
-
-  JoinWebRTCMatch(msg: any) {
-    this.SetOtherAct();
-    this.nakama.JoinWebRTCMatch(msg, this.isOfficial, this.target, this.info);
   }
 
   /** 메시지 추가시마다 메시지 상태를 업데이트 (기존 html 연산)  

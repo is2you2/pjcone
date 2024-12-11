@@ -72,20 +72,6 @@ export enum MatchOpCode {
   ADD_CHANNEL = 14,
   /** 새로운 별명이 추가됨 */
   NAME_OVERRIDED = 15,
-  /** WebRTC 시작 요청 */
-  WEBRTC_INIT_REQ_SIGNAL = 20,
-  /** 초기 요청에 응답 */
-  WEBRTC_REPLY_INIT_SIGNAL = 21,
-  /** 답변에 반응하기 */
-  WEBRTC_RECEIVE_ANSWER = 22,
-  /** iceCandidate 정보 교환 */
-  WEBRTC_ICE_CANDIDATES = 23,
-  /** Stream 변경 등으로 재교환시 */
-  WEBRTC_NEGOCIATENEEDED = 24,
-  /** 다른 기기에서 통화를 수신함 */
-  WEBRTC_RECEIVED_CALL_SELF = 25,
-  /** 통화 종료함 */
-  WEBRTC_HANGUP = 30,
   /** 사용자 프로필 변경됨 */
   USER_PROFILE_CHANGED = 100,
   /** 사용자 프로필 사진 변경됨 */
@@ -2773,44 +2759,6 @@ export class NakamaService {
               if (is_me) this.LoadOverrideName(_is_official, _target);
             }
               break;
-            case MatchOpCode.WEBRTC_INIT_REQ_SIGNAL: {
-              if (((this.WebRTCService && this.WebRTCService.TypeIn == 'data') || !is_me) && this.socket_reactive['WEBRTC_INIT_REQ_SIGNAL'])
-                this.socket_reactive['WEBRTC_INIT_REQ_SIGNAL']();
-            }
-              break;
-            case MatchOpCode.WEBRTC_REPLY_INIT_SIGNAL: {
-              if (((this.WebRTCService && this.WebRTCService.TypeIn == 'data') || !is_me) && this.socket_reactive['WEBRTC_REPLY_INIT_SIGNAL'])
-                this.socket_reactive['WEBRTC_REPLY_INIT_SIGNAL'](m['data_str']);
-            }
-              break;
-            case MatchOpCode.WEBRTC_RECEIVE_ANSWER: {
-              if (((this.WebRTCService && this.WebRTCService.TypeIn == 'data') || !is_me) && this.socket_reactive['WEBRTC_RECEIVE_ANSWER'])
-                this.socket_reactive['WEBRTC_RECEIVE_ANSWER'](m['data_str']);
-            }
-              break;
-            case MatchOpCode.WEBRTC_ICE_CANDIDATES: {
-              if (((this.WebRTCService && this.WebRTCService.TypeIn == 'data') || !is_me) && this.socket_reactive['WEBRTC_ICE_CANDIDATES'])
-                this.socket_reactive['WEBRTC_ICE_CANDIDATES'](m['data_str']);
-            }
-              break;
-            case MatchOpCode.WEBRTC_NEGOCIATENEEDED: {
-              if (((this.WebRTCService && this.WebRTCService.TypeIn == 'data') || !is_me) && this.socket_reactive['WEBRTC_NEGOCIATENEEDED'])
-                this.socket_reactive['WEBRTC_NEGOCIATENEEDED'](m['data_str']);
-            }
-              break;
-            // 여러 기기를 이용할 경우 한 기기에서 통화를 받음, 다른 기기 통화 끊기
-            case MatchOpCode.WEBRTC_RECEIVED_CALL_SELF: {
-              if ((this.WebRTCService && this.WebRTCService.TypeIn != 'data') && this.socket_reactive['WEBRTC_RECEIVED_CALL_SELF'])
-                this.socket_reactive['WEBRTC_RECEIVED_CALL_SELF']();
-            }
-              break;
-            case MatchOpCode.WEBRTC_HANGUP: {
-              let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
-              if (((this.WebRTCService && this.WebRTCService.TypeIn == 'data') || !is_me) && this.WebRTCService) {
-                await this.WebRTCService.close_webrtc();
-              }
-            }
-              break;
             case MatchOpCode.CHATROOM_CHECKED: {
               delete this.channels_orig[_is_official][_target][m['data_str']]['is_new'];
               this.rearrange_channels();
@@ -2841,8 +2789,6 @@ export class NakamaService {
           } else { // 평상시에
             this.update_from_channel_msg(c, _is_official, _target);
             this.rearrange_channels();
-            if (c.content['match'] && c.sender_id != this.servers[_is_official][_target].session.user_id)
-              this.JoinWebRTCMatch(c, _is_official, _target, this.channels_orig[_is_official][_target][c.channel_id]);
           }
         }
         socket.ondisconnect = (_e) => {
@@ -3106,7 +3052,6 @@ export class NakamaService {
           || this.channels_orig[_is_official][_target][msg.channel_id]['title']
           || this.lang.text['ChatRoom']['noname_chatroom'],
         body: c.content['msg'] || c.content['noti']
-          || (c.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined)
           || `(${this.lang.text['ChatRoom']['attachments']})`,
         smallIcon_ln: 'diychat',
       }
@@ -3134,7 +3079,7 @@ export class NakamaService {
     if (!is_systemMsg) {
       let hasFile = c.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
       if (c.code != 2) this.channels_orig[_is_official][_target][c.channel_id]['last_comment'] = hasFile +
-        (original_msg || c.content['noti'] || (c.content['match'] ? this.lang.text['ChatRoom']['JoinWebRTCMatch'] : undefined) || '');
+        (original_msg || c.content['noti'] || '');
     }
   }
 
@@ -3257,40 +3202,6 @@ export class NakamaService {
     } catch (e) { }
     this.rearrange_posts();
     if (this.socket_reactive['try_load_post']) this.socket_reactive['try_load_post']();
-  }
-
-  /** WebRTC 통화 채널에 참가하기 */
-  async JoinWebRTCMatch(msg: any, _is_official: string, _target: string, c_info: any) {
-    try {
-      try {
-        this.WebRTCService.CurrentMatch = await this.servers[_is_official][_target].socket.joinMatch(msg.content.match);
-      } catch (e) {
-        throw e;
-      }
-      if (this.WebRTCService)
-        await this.WebRTCService.initialize('audio', undefined, {
-          isOfficial: _is_official,
-          target: _target,
-          channel_id: c_info['id'],
-          user_id: c_info['info']['id'] || c_info['info']['user_id'],
-        }, false);
-      await this.servers[_is_official][_target].socket.sendMatchState(
-        msg.content.match, MatchOpCode.WEBRTC_INIT_REQ_SIGNAL, encodeURIComponent(''))
-    } catch (e) {
-      switch (e.code) {
-        case 4:
-          this.p5toast.show({
-            text: this.lang.text['ChatRoom']['MatchExpiration'],
-          });
-          break;
-        default:
-          console.log('참여 실패: ', e);
-          this.p5toast.show({
-            text: `${this.lang.text['ChatRoom']['JoinMatchFailed']}: ${e}`,
-          });
-          break;
-      }
-    }
   }
 
   /** 메시지 내 하이퍼링크와 일반 메시지를 분리 */

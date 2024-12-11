@@ -79,11 +79,6 @@
                         <!-- 시간 표시 -->
                         <span class="time_form message_span_form" (click)="SetOtherAct()">{{msg['msgTime']}}</span>
                       </div>
-                      <!-- 음성채팅인 경우 -->
-                      <div *ngIf="msg.content['match']" class="quickShare_form imageForm"
-                        (click)="JoinWebRTCMatch(msg)">
-                        {{lang.text['ChatRoom']['JoinWebRTCMatch']}}
-                      </div>
                       <div *ngIf="msg.content['qoute']" class="cursor_pointer qoute_text qoute_background imageForm"
                         (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
                         <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg'] + ': ' +
@@ -175,12 +170,6 @@
                               {{msg.user_display_name || lang.text['Profile']['noname_user']}}</span>
                           </b>
                         </span>
-                      </div>
-                      <!-- 음성채팅인 경우 -->
-                      <div *ngIf="msg.content['match']" class="my_file_message_form" (click)="JoinWebRTCMatch(msg)">
-                        <div class="quickShare_form imageForm">
-                          {{lang.text['ChatRoom']['JoinWebRTCMatch']}}
-                        </div>
                       </div>
                       <div *ngIf="msg.content['qoute']" class="cursor_pointer qoute_text qoute_background imageForm"
                         (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
