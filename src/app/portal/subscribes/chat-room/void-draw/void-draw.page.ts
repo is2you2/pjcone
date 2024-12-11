@@ -152,7 +152,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     if (this.RemoteLoadingCtrl) this.RemoteLoadingCtrl.dismiss();
     this.isDrawServerCreated = false;
     this.p5SetDrawable(true);
-    this.webrtc.close_webrtc(false);
+    this.webrtc.close_webrtc();
   }
 
   /** 새 캔버스 생성 행동 분리 */
@@ -1465,7 +1465,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       this.AddrQRShare.dismiss();
       this.isDrawServerCreated = false;
       this.p5SetDrawable(true);
-      this.webrtc.close_webrtc(false);
+      this.webrtc.close_webrtc();
       this.IceWebRTCWsClient.onopen = null;
       this.IceWebRTCWsClient.onclose = null;
       this.IceWebRTCWsClient.onmessage = null;

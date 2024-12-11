@@ -747,7 +747,7 @@ export class GlobalActService {
     this.ArcadeWS.onclose = () => {
       this.ArcadeSocketId = null;
       this.BackgroundWorkDone = false;
-      this.WebRTCService.close_webrtc(false);
+      this.WebRTCService.close_webrtc();
       this.ArcadeQRAddress = null;
       this.ArcadeQRCodeSRC = null;
       this.ArcadeWS.onopen = null;

@@ -261,7 +261,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
       this.global.InstantCallWSClient.onmessage = null;
       this.global.InstantCallWSClient.onerror = null;
       this.global.InstantCallWSClient = null;
-      this.webrtc.close_webrtc(false);
+      this.webrtc.close_webrtc();
       this.CallClosed = true;
       if (!this.PageOut) this.navCtrl.pop();
     }

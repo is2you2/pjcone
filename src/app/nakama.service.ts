@@ -2541,7 +2541,7 @@ export class NakamaService {
             m.leaves.forEach(info => {
               if (this.servers[_is_official][_target].session.user_id == info.user_id) // self-match
                 if (this.WebRTCService && this.WebRTCService.TypeIn == 'data')
-                  this.WebRTCService.close_webrtc(false, true);
+                  this.WebRTCService.close_webrtc(true);
             });
           }
         }
