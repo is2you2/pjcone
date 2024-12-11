@@ -47,7 +47,6 @@ export class CommunityPage implements OnInit {
     this.try_add_shortcut();
     this.is_loadable = true;
     this.forceBlockLoadable = false;
-    await this.nakama.load_posts_counter();
     this.nakama.has_new_post = false;
     await this.load_post_cycles();
     this.is_auto_load_end = true;
@@ -145,8 +144,8 @@ export class CommunityPage implements OnInit {
     for (let _is_official of isOfficial) {
       let target = Object.keys(this.nakama.post_counter[_is_official]);
       for (let _target of target) {
-        let user_id = Object.keys(this.nakama.post_counter[_is_official][_target]);
-        for (let _userId of user_id) {
+        let userIds = Object.keys(this.nakama.post_counter[_is_official][_target]);
+        for (let _userId of userIds) {
           let is_me = _userId == 'me';
           try { // 나인지 여부를 사전에 검토
             if (_userId != 'me') is_me = _userId == this.nakama.servers[_is_official][_target].session.user_id;

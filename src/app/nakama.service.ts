@@ -148,6 +148,7 @@ export class NakamaService {
     });
     // 채널 불러오기
     await this.load_channel_list();
+    this.load_posts_counter();
     await this.CheckIfLostLocal();
     this.rearrange_channels();
     // 마지막 상태바 정보 불러오기: 사용자의 연결 여부 의사가 반영되어있음
@@ -4742,9 +4743,11 @@ export class NakamaService {
       // 서버에서 삭제된 게시물이라면 로컬에서도 자료를 삭제
       if (e == 'RemoveSelf')
         this.RemovePost(this.posts_orig[isOfficial][target][user_id][post_id], true);
-      if (json && json?.creator_id) {
+      else if (json && json?.creator_id) {
         let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/posts/${json.creator_id}/${json.id}`);
         list.forEach(path => this.indexed.removeFileFromUserPath(path));
+        delete this.posts_orig[isOfficial][target][user_id][post_id];
+        this.rearrange_posts();
       }
       return false;
     }
@@ -4800,10 +4803,42 @@ export class NakamaService {
             let other_exact_counter = 0;
             if (other_counter.objects.length) other_exact_counter = other_counter.objects[0].value['counter'];
             this.post_counter[isOfficial][target][others[k]] = other_exact_counter;
+            try { // 현재 불러와져 있는 게시물들에 대한 검토, 삭제 및 수정에 대한 업데이트하기
+              if (!this.posts_orig[isOfficial][target]) throw '아직 준비되지 않음';
+              let post_ids = Object.keys(this.posts_orig[isOfficial][target][others[k]]);
+              for (let post_id of post_ids) {
+                let RemoteExist = await this.servers[isOfficial][target].client.readStorageObjects(
+                  this.servers[isOfficial][target].session, {
+                  object_ids: [{
+                    collection: 'server_post',
+                    key: post_id,
+                    user_id: others[k],
+                  }],
+                });
+                let PostPart = RemoteExist.objects[0].value;
+                let PostInfo = await this.sync_load_file(PostPart, isOfficial, target, 'server_post', others[k], post_id, false);
+                switch (PostInfo.from) {
+                  case 'remote':
+                    let blob = PostInfo.value;
+                    let text = await blob.text();
+                    let post = JSON.parse(text);
+                    // 분할 파일은 있으나 내가 읽을 수 없는 상태로 변경됨
+                    if (post['OutSource']) delete this.posts_orig[isOfficial][target][others[k]][post_id];
+                    break;
+                  default:
+                    throw post_id;
+                }
+              }
+            } catch (e) {
+              try {
+                delete this.posts_orig[isOfficial][target][others[k]][e];
+              } catch (e) { }
+            }
           } catch (e) {
             delete this.post_counter[isOfficial][target][others[k]];
           }
         }
+        this.rearrange_posts();
       }
       if (last_counting != JSON.stringify(this.post_counter)) {
         await this.save_post_counter();
