@@ -56,14 +56,8 @@ export class WebrtcService {
   /** 응답에 반응하여 진입 후 통화 연결되기 전 */
   private JoinInited = false;
 
-  // Nakama 서버에서 통화가 사용된 채널에 로그를 남기며, 통화 요청 신호로 간주됨
-  // 채널 채팅 내 통화 기록을 누르면 그 당시 생성된 매치id에 연결을 시도하고 없으면 통화가 종료된 것으로 간주
-  // 채팅 로그에는 match_id 만 공유한다
-  private isOfficial: string;
-  private target: string;
-  channel_id: string;
-  private user_id: string;
   private LocalOffer: any;
+  private LocalOfferPartArray: string[];
   LocalAnswer: any;
   private ReceivedOfferPart = '';
   private ReceivedAnswerPart = '';
@@ -82,8 +76,7 @@ export class WebrtcService {
    * @param nakama 통화가 진행중인 채널 정보
    * @param LeaveMatch nakama에서 연결된 매치가 있다면 연결끊기 처리
    */
-  async initialize(type: 'video' | 'audio' | 'data',
-    media_const?: MediaStreamConstraints, nakama?: any) {
+  async initialize(type: 'video' | 'audio' | 'data', media_const?: MediaStreamConstraints) {
     // 보안 연결 필수, 안되면 안내 띄우고 무시
     if (type != 'data' && window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0)
       throw this.lang.text['WebRTCDevManager']['SecurityError'];
@@ -99,65 +92,6 @@ export class WebrtcService {
     }
     await this.close_webrtc();
     this.TypeIn = type;
-    // 통화중인 상대방이 오프라인으로 전환되면 통화 끝내기
-    this.nakama.socket_reactive['WEBRTC_CHECK_ONLINE'] = (_user: any) => {
-      if (this.user_id == _user.user_id)
-        if (!this.nakama.load_other_user(this.user_id, this.isOfficial, this.target)['online'])
-          this.close_webrtc();
-    }
-    this.nakama.socket_reactive['WEBRTC_INIT_REQ_SIGNAL'] = async (_target?: any) => {
-      let data_str = JSON.stringify(this.LocalOffer);
-      let part = data_str.match(/(.{1,64})/g);
-      for (let i = 0, j = part.length; i < j; i++)
-        if (_target['client'] && _target['client'].readyState == _target['client'].OPEN) {
-          _target['client'].send(JSON.stringify({
-            type: 'socket_react',
-            channel: _target['channel'],
-            act: 'WEBRTC_REPLY_INIT_SIGNAL',
-            data_str: part[i],
-          }));
-          await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
-        }
-      if (_target['client'] && _target['client'].readyState == _target['client'].OPEN)
-        _target['client'].send(JSON.stringify({
-          type: 'socket_react',
-          channel: _target['channel'],
-          act: 'WEBRTC_REPLY_INIT_SIGNAL',
-          data_str: 'EOL',
-        }));
-    }
-    this.nakama.socket_reactive['WEBRTC_REPLY_INIT_SIGNAL'] = (data_str: string) => {
-      if (data_str == 'EOL') { // 수신 완료
-        this.createRemoteOfferFromAnswer(JSON.parse(this.ReceivedOfferPart));
-        this.ReceivedOfferPart = '';
-        if (this.InitReplyCallback) this.InitReplyCallback();
-      } else this.ReceivedOfferPart += data_str;
-    }
-    this.nakama.socket_reactive['WEBRTC_RECEIVE_ANSWER'] = (data_str: string, _target?: any) => {
-      if (data_str == 'EOL') { // 수신 완료
-        this.ReceiveRemoteAnswer(JSON.parse(this.ReceivedAnswerPart), _target);
-        this.ReceivedAnswerPart = '';
-      } else this.ReceivedAnswerPart += data_str;
-    }
-    this.nakama.socket_reactive['WEBRTC_ICE_CANDIDATES'] = (data_str: string, _target?: any) => {
-      this.ReceiveIceCandidate(JSON.parse(data_str), _target);
-    }
-    this.nakama.socket_reactive['WEBRTC_NEGOCIATENEEDED'] = (data_str: string) => {
-      if (data_str == 'EOL') { // 수신 완료
-        this.createRemoteOfferFromAnswer(JSON.parse(this.ReceivedOfferPart));
-        this.ReceivedOfferPart = '';
-        this.CreateAnswer();
-      } else this.ReceivedOfferPart += data_str;
-    }
-    this.nakama.socket_reactive['WEBRTC_RECEIVED_CALL_SELF'] = () => {
-      this.close_webrtc();
-    }
-    if (nakama) {
-      this.isOfficial = nakama.isOfficial;
-      this.target = nakama.target;
-      this.user_id = nakama.user_id;
-      this.channel_id = nakama.channel_id;
-    }
     if (type != 'data') { // 화상/음성 통화일 때에만 개체 생성
       this.createP5_panel();
       try { // 로컬 정보 생성 및 받기
@@ -230,6 +164,70 @@ export class WebrtcService {
     if (this.p5callButton)
       this.p5callButton.elt.disabled = false;
     this.StatusText = this.lang.text['InstantCall']['Connecting'];
+  }
+
+  /** 최초 연결쌍이 구성되었을 때 사용자 정보 요청하기 */
+  WEBRTC_INIT_REQ_SIGNAL(_target?: any) {
+    let data_str = JSON.stringify(this.LocalOffer);
+    this.LocalOfferPartArray = data_str.match(/(.{1,64})/g);
+    this.WEBRTC_REPLY_INIT_SIGNAL_PART(_target);
+  }
+
+  WEBRTC_REPLY_INIT_SIGNAL_PART(_target: any) {
+    if (_target['client'] && _target['client'].readyState == _target['client'].OPEN) {
+      let data = this.LocalOfferPartArray.shift();
+      if (data) {
+        _target['client'].send(JSON.stringify({
+          type: 'socket_react',
+          channel: _target['channel'],
+          act: 'WEBRTC_REPLY_INIT_SIGNAL',
+          data_str: data,
+        }));
+      } else {
+        _target['client'].send(JSON.stringify({
+          type: 'socket_react',
+          channel: _target['channel'],
+          act: 'WEBRTC_REPLY_INIT_SIGNAL',
+          data_str: 'EOL',
+        }));
+      }
+    }
+  }
+
+  WEBRTC_REPLY_INIT_SIGNAL(data_str: string, _target?: any) {
+    if (data_str == 'EOL') { // 수신 완료
+      this.createRemoteOfferFromAnswer(JSON.parse(this.ReceivedOfferPart));
+      this.ReceivedOfferPart = '';
+      if (this.InitReplyCallback) this.InitReplyCallback();
+    } else {
+      this.ReceivedOfferPart += data_str;
+      if (_target['client'] && _target['client'].readyState == _target['client'].OPEN) {
+        _target['client'].send(JSON.stringify({
+          type: 'socket_react',
+          channel: _target['channel'],
+          act: 'WEBRTC_REPLY_INIT_SIGNAL_PART',
+        }));
+      }
+    }
+  }
+
+  WEBRTC_RECEIVE_ANSWER(data_str: string, _target?: any) {
+    if (data_str == 'EOL') { // 수신 완료
+      this.ReceiveRemoteAnswer(JSON.parse(this.ReceivedAnswerPart), _target);
+      this.ReceivedAnswerPart = '';
+    } else this.ReceivedAnswerPart += data_str;
+  }
+
+  WEBRTC_ICE_CANDIDATES(data_str: string, _target?: any) {
+    this.ReceiveIceCandidate(JSON.parse(data_str), _target);
+  }
+
+  WEBRTC_NEGOCIATENEEDED(data_str: string) {
+    if (data_str == 'EOL') { // 수신 완료
+      this.createRemoteOfferFromAnswer(JSON.parse(this.ReceivedOfferPart));
+      this.ReceivedOfferPart = '';
+      this.CreateAnswer();
+    } else this.ReceivedOfferPart += data_str;
   }
 
   createP5_panel() {
@@ -325,17 +323,6 @@ export class WebrtcService {
         content.style("padding: 6px 12px");
         content.style(`color: ${isDarkMode ? 'white' : 'black'}`);
         update_border();
-
-        if (this.isOfficial && this.target) {
-          if (this.user_id) // 1:1 대화인 경우
-            status = p.createDiv(this.nakama.users[this.isOfficial][this.target][this.user_id]['display_name']);
-          status.parent(content);
-          status.style('text-align', 'center');
-          status.style('align-self', 'center');
-          status.style('width', '100%');
-          status.style('height', 'fit-content');
-          status.style('pointer-events', 'none');
-        }
 
         buttons = p.createDiv();
         buttons.parent(content);
@@ -763,10 +750,6 @@ export class WebrtcService {
     this.localMedia = null;
     this.localStream = null;
     this.remoteMedia = null;
-    this.isOfficial = null;
-    this.target = null;
-    this.user_id = null;
-    this.channel_id = null;
     this.LocalOffer = null;
     this.LocalAnswer = null;
     if (this.dataChannel) {
@@ -778,13 +761,6 @@ export class WebrtcService {
     this.ReceivedOfferPart = '';
     this.ReceivedAnswerPart = '';
     this.JoinInited = false;
-    delete this.nakama.socket_reactive['WEBRTC_INIT_REQ_SIGNAL'];
-    delete this.nakama.socket_reactive['WEBRTC_REPLY_INIT_SIGNAL'];
-    delete this.nakama.socket_reactive['WEBRTC_RECEIVE_ANSWER'];
-    delete this.nakama.socket_reactive['WEBRTC_ICE_CANDIDATES'];
-    delete this.nakama.socket_reactive['WEBRTC_NEGOCIATENEEDED'];
-    delete this.nakama.socket_reactive['WEBRTC_RECEIVED_CALL_SELF'];
-    delete this.nakama.socket_reactive['WEBRTC_CHECK_ONLINE'];
     this.IceCandidates.length = 0;
   }
 }

@@ -205,15 +205,24 @@ export class InstantCallPage implements OnInit, OnDestroy {
         case 'socket_react': // nakama.socket_react
           switch (json['act']) {
             case 'WEBRTC_REPLY_INIT_SIGNAL':
-              this.nakama.socket_reactive[json['act']](json['data_str']);
+              this.webrtc.WEBRTC_REPLY_INIT_SIGNAL(json['data_str'], {
+                client: this.global.InstantCallWSClient,
+                channel: this.ChannelId,
+              });
               if (json['data_str'] == 'EOL')
                 this.webrtc.CreateAnswer({
                   client: this.global.InstantCallWSClient,
                   channel: this.ChannelId,
                 });
               break;
+            case 'WEBRTC_REPLY_INIT_SIGNAL_PART':
+              this.webrtc.WEBRTC_REPLY_INIT_SIGNAL_PART({
+                client: this.global.InstantCallWSClient,
+                channel: this.ChannelId,
+              });
+              break;
             case 'WEBRTC_ICE_CANDIDATES':
-              this.nakama.socket_reactive[json['act']](json['data_str'], {
+              this.webrtc.WEBRTC_ICE_CANDIDATES(json['data_str'], {
                 client: this.global.InstantCallWSClient,
                 channel: this.ChannelId,
               });
@@ -225,13 +234,13 @@ export class InstantCallPage implements OnInit, OnDestroy {
               this.webrtc.StatusText = this.lang.text['InstantCall']['Connected'];
               break;
             case 'WEBRTC_INIT_REQ_SIGNAL':
-              this.nakama.socket_reactive[json['act']]({
+              this.webrtc.WEBRTC_INIT_REQ_SIGNAL({
                 client: this.global.InstantCallWSClient,
                 channel: this.ChannelId,
-              });
+              })
               break;
             case 'WEBRTC_RECEIVE_ANSWER':
-              this.nakama.socket_reactive[json['act']](json['data_str'], {
+              this.webrtc.WEBRTC_RECEIVE_ANSWER(json['data_str'], {
                 client: this.global.InstantCallWSClient,
                 channel: this.ChannelId,
               });

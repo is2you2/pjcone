@@ -2565,8 +2565,6 @@ export class NakamaService {
                     others.push(info.user_id);
                     others.forEach(_userId => this.load_other_user(_userId, _is_official, _target));
                     this.count_channel_online_member(p, _is_official, _target);
-                    if (this.socket_reactive['WEBRTC_CHECK_ONLINE'])
-                      this.socket_reactive['WEBRTC_CHECK_ONLINE'](info);
                   });
               }
             });

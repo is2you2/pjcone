@@ -694,7 +694,10 @@ export class GlobalActService {
               case 'WEBRTC_REPLY_INIT_SIGNAL':
                 if (this.ArcadeLoadingCtrl)
                   this.ArcadeLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Reply'];
-                this.CallbackNakama.socket_reactive[json['act']](json['data_str']);
+                this.WebRTCService.WEBRTC_REPLY_INIT_SIGNAL(json['data_str'], {
+                  client: this.ArcadeWS,
+                  channel: channel_id,
+                });
                 if (json['data_str'] == 'EOL') {
                   if (this.ArcadeLoadingCtrl)
                     this.ArcadeLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Offer'];
@@ -706,8 +709,14 @@ export class GlobalActService {
                 if (this.ArcadeLoadingCtrl)
                   this.ArcadeLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Ice'];
                 break;
+              case 'WEBRTC_REPLY_INIT_SIGNAL_PART':
+                this.WebRTCService.WEBRTC_REPLY_INIT_SIGNAL_PART({
+                  client: this.ArcadeWS,
+                  channel: channel_id,
+                });
+                break;
               case 'WEBRTC_ICE_CANDIDATES':
-                this.CallbackNakama.socket_reactive[json['act']](json['data_str'], {
+                this.WebRTCService.WEBRTC_ICE_CANDIDATES(json['data_str'], {
                   client: this.ArcadeWS,
                   channel: channel_id,
                 });
@@ -719,13 +728,13 @@ export class GlobalActService {
                 }));
                 break;
               case 'WEBRTC_INIT_REQ_SIGNAL':
-                this.CallbackNakama.socket_reactive[json['act']]({
+                this.WebRTCService.WEBRTC_INIT_REQ_SIGNAL({
                   client: this.ArcadeWS,
                   channel: channel_id,
                 });
                 break;
               case 'WEBRTC_RECEIVE_ANSWER':
-                this.CallbackNakama.socket_reactive[json['act']](json['data_str'], {
+                this.WebRTCService.WEBRTC_RECEIVE_ANSWER(json['data_str'], {
                   client: this.ArcadeWS,
                   channel: channel_id,
                 });
