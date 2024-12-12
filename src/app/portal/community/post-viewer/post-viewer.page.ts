@@ -100,10 +100,27 @@ export class PostViewerPage implements OnInit, OnDestroy {
             this.global.PageDismissAct['post-viewer-image-view'] = async (v: any) => {
               await this.WaitingCurrent();
               if (v.data && v.data['share']) this.navCtrl.pop();
+              this.IsFocusOnHere = true;
               delete this.global.PageDismissAct['post-viewer-image-view'];
             }
+            let _is_official: string;
+            let _target: string;
+            let creator: string;
+            try {
+              creator = this.PostInfo.creator_id;
+              _is_official = this.PostInfo.server.isOfficial;
+              _target = this.PostInfo.server.target;
+            } catch (e) {
+              _is_official = 'local';
+            }
+            this.IsFocusOnHere = false;
             this.global.ActLikeModal('ionic-viewer', {
-              info: { content: this.PostInfo['attachments'][0] },
+              info: {
+                content: this.PostInfo['attachments'][0],
+                sender_id: creator,
+              },
+              isOfficial: _is_official,
+              target: _target,
               path: this.PostInfo['attachments'][0]['path'],
               relevance: createRelevances,
               noEdit: true,
@@ -336,10 +353,27 @@ export class PostViewerPage implements OnInit, OnDestroy {
                     this.global.PageDismissAct['post-viewer-image-view'] = async (v: any) => {
                       await this.WaitingCurrent();
                       if (v.data && v.data['share']) this.navCtrl.pop();
+                      this.IsFocusOnHere = true;
                       delete this.global.PageDismissAct['post-viewer-image-view'];
                     }
+                    let _is_official: string;
+                    let _target: string;
+                    let creator: string;
+                    try {
+                      creator = this.PostInfo.creator_id;
+                      _is_official = this.PostInfo.server.isOfficial;
+                      _target = this.PostInfo.server.target;
+                    } catch (e) {
+                      _is_official = 'local';
+                    }
+                    this.IsFocusOnHere = false;
                     this.global.ActLikeModal('ionic-viewer', {
-                      info: { content: this.PostInfo['attachments'][index] },
+                      info: {
+                        content: this.PostInfo['attachments'][index],
+                        sender_id: creator,
+                      },
+                      isOfficial: _is_official,
+                      target: _target,
                       path: this.PostInfo['attachments'][index]['path'],
                       relevance: createRelevances,
                       noEdit: true,
@@ -408,10 +442,27 @@ export class PostViewerPage implements OnInit, OnDestroy {
                           for (let attach of this.PostInfo['attachments'])
                             createRelevances.push({ content: attach });
                           this.global.PageDismissAct['post-viewer-file-view'] = () => {
+                            this.IsFocusOnHere = true;
                             delete this.global.PageDismissAct['post-viewer-file-view'];
                           }
+                          let _is_official: string;
+                          let _target: string;
+                          let creator: string;
+                          try {
+                            creator = this.PostInfo.creator_id;
+                            _is_official = this.PostInfo.server.isOfficial;
+                            _target = this.PostInfo.server.target;
+                          } catch (e) {
+                            _is_official = 'local';
+                          }
+                          this.IsFocusOnHere = false;
                           this.global.ActLikeModal('ionic-viewer', {
-                            info: { content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])) },
+                            info: {
+                              content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])),
+                              sender_id: creator,
+                            },
+                            isOfficial: _is_official,
+                            target: _target,
                             path: this.PostInfo['attachments'][index]['path'],
                             relevance: createRelevances,
                             noEdit: true,
@@ -435,10 +486,27 @@ export class PostViewerPage implements OnInit, OnDestroy {
                               for (let attach of this.PostInfo['attachments'])
                                 createRelevances.push({ content: attach });
                               this.global.PageDismissAct['post-viewer-file-view'] = () => {
+                                this.IsFocusOnHere = true;
                                 delete this.global.PageDismissAct['post-viewer-file-view'];
                               }
+                              let _is_official: string;
+                              let _target: string;
+                              let creator: string;
+                              try {
+                                creator = this.PostInfo.creator_id;
+                                _is_official = this.PostInfo.server.isOfficial;
+                                _target = this.PostInfo.server.target;
+                              } catch (e) {
+                                _is_official = 'local';
+                              }
+                              this.IsFocusOnHere = false;
                               this.global.ActLikeModal('ionic-viewer', {
-                                info: { content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])) },
+                                info: {
+                                  content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])),
+                                  sender_id: creator,
+                                },
+                                isOfficial: _is_official,
+                                target: _target,
                                 path: this.PostInfo['attachments'][index]['path'],
                                 relevance: createRelevances,
                                 noEdit: true,
@@ -511,10 +579,27 @@ export class PostViewerPage implements OnInit, OnDestroy {
                     for (let attach of this.PostInfo['attachments'])
                       createRelevances.push({ content: attach });
                     this.global.PageDismissAct['post-viewer-file-view'] = () => {
+                      this.IsFocusOnHere = true;
                       delete this.global.PageDismissAct['post-viewer-file-view'];
                     }
+                    let _is_official: string;
+                    let _target: string;
+                    let creator: string;
+                    try {
+                      creator = this.PostInfo.creator_id;
+                      _is_official = this.PostInfo.server.isOfficial;
+                      _target = this.PostInfo.server.target;
+                    } catch (e) {
+                      _is_official = 'local';
+                    }
+                    this.IsFocusOnHere = false;
                     this.global.ActLikeModal('ionic-viewer', {
-                      info: { content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])) },
+                      info: {
+                        content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])),
+                        sender_id: creator,
+                      },
+                      isOfficial: _is_official,
+                      target: _target,
                       path: this.PostInfo['attachments'][index]['path'],
                       relevance: createRelevances,
                       noEdit: true,
