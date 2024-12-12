@@ -1196,8 +1196,23 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
     this.noti.Current = 'IonicViewerPage';
     this.global.StoreShortCutAct('add-todo-viewer');
+    let _is_official: string;
+    let _target: string;
+    let creator: string;
+    try {
+      creator = this.userInput.remote.creator_id;
+      _is_official = this.userInput.remote.isOfficial;
+      _target = this.userInput.remote.target;
+    } catch (e) {
+      _is_official = 'local';
+    }
     this.global.ActLikeModal('ionic-viewer', {
-      info: { content: this.userInput.attach[index] },
+      info: {
+        content: this.userInput.attach[index],
+        sender_id: creator,
+      },
+      isOfficial: _is_official,
+      target: _target,
       path: this.userInput.attach[index]['alt_path'] || this.userInput.attach[index]['path'],
       relevance: createRelevances,
       noEdit: !this.isModifiable,
