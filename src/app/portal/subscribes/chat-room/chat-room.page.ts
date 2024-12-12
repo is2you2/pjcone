@@ -1656,23 +1656,26 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 선택한 메시지 복사 */
   async CopyMessageText(msg: any) {
-    let text: any = this.deserialize_text(msg);
-    if (!text) { // 텍스트가 없다면 첨부파일을 대상으로 하기
-      // 링크가 있다면 링크를 복사
-      try { // 로컬에 파일이 있다면 복사 시도
-        let path = msg.content.path;
-        let blob = await this.indexed.loadBlobFromUserPath(path, msg.content.type);
-        text = blob;
-        await this.global.WriteValueToClipboard(text.type, text, msg.content.filename);
-        return;
-      } catch (e) { // 주소인 경우 주소로 시도
-        try {
-          if (!msg.content.url) throw 'URL 없음';
-          text = msg.content.url.replace(' ', '%20');
-        } catch (e) { }
-      }
-    }
     try {
+      let text: any = this.deserialize_text(msg);
+      if (!text) { // 텍스트가 없다면 첨부파일을 대상으로 하기
+        // 링크가 있다면 링크를 복사
+        try { // 로컬에 파일이 있다면 복사 시도
+          let path = msg.content.path;
+          let blob = await this.indexed.loadBlobFromUserPath(path, msg.content.type);
+          text = blob;
+          await this.global.WriteValueToClipboard(text.type, text, msg.content.filename);
+          return;
+        } catch (e) { // 주소인 경우 주소로 시도
+          try {
+            if (!msg.content.url) throw 'URL 없음';
+            if (this.isOfficial == 'local' || msg.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id)
+              text = msg.content.url.replace(' ', '%20');
+          } catch (e) {
+            console.log('url 검토 실패: ', e);
+          }
+        }
+      }
       await this.global.WriteValueToClipboard('text/plain', text);
     } catch (e) {
       console.log('클립보드 복사 실패: ', e);
