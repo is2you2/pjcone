@@ -99,6 +99,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   target: string;
   useP5Navigator = true;
   MessageInfo: any;
+  /** 내가 보낸 첨부파일인지 검토 */
+  IsMyMessage = false;
   Relevances: any[];
   RelevanceIndex = 0;
   HaveRelevances = false;
@@ -207,6 +209,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.FileHeader = document.getElementById('FileHeader');
     this.isOfficial = this.navParams.isOfficial;
     this.target = this.navParams.target;
+    this.IsMyMessage = this.isOfficial == 'local' || this.MessageInfo.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id;
     this.isQuickLaunchViewer = this.navParams.quick;
     try {
       this.isChannelOnline = this.nakama.channels_orig[this.isOfficial][this.target][this.MessageInfo['channel_id']].info['status'] == 'online';
@@ -268,6 +271,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.isConvertible = false;
     this.isHTMLViewer = false;
     this.MessageInfo = msg;
+    this.IsMyMessage = this.isOfficial == 'local' || this.MessageInfo.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id;
     this.CurrentViewId = this.MessageInfo.message_id;
     this.FileInfo = this.MessageInfo.content;
     if (this.PageWillDestroy) return;
@@ -2385,7 +2389,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 파일이 URL로 구성되어있는 경우 URL 주소를 복사함 */
   CopyURL() {
-    if (this.FileInfo.url)
+    if (this.FileInfo.url && this.IsMyMessage)
       this.copy_url(this.FileInfo.url)
   }
 

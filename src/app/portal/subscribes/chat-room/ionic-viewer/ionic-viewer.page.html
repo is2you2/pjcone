@@ -96,7 +96,7 @@
                       <ion-label>{{lang.text['ContentViewer']['DownloadToLocal']}}</ion-label>
                     </ion-item>
                   </div>
-                  <div *ngIf="FileInfo['url'] && !isQuickLaunchViewer">
+                  <div *ngIf="IsMyMessage && FileInfo['url'] && !isQuickLaunchViewer">
                     <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">
                       {{lang.text['ContentViewer']['QuickNewWindow']}}</div>
                     <ion-item button (click)="CopyQuickViewer()" (contextmenu)="OpenNewWindow()">
