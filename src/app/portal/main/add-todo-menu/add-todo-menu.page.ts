@@ -1321,7 +1321,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           await this.indexed.saveBlobToUserPath(blob, tmp_path);
           this.userInput.attach[i].path = tmp_path;
           this.userInput.attach[i].blob = blob;
-          delete this.userInput.attach[i]['exist'];
         } catch (e) {
           if (received_json.attach[i].url) {
             let filename = received_json.attach[i].filename;
@@ -1331,12 +1330,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             await this.indexed.saveBlobToUserPath(blob, tmp_path);
             this.userInput.attach[i].path = tmp_path;
             this.userInput.attach[i].blob = blob;
-            delete this.userInput.attach[i].thumbnail;
-            delete this.userInput.attach[i].alt_path;
-            delete this.userInput.attach[i].url;
-            delete this.userInput.attach[i]['exist'];
           }
         }
+        delete this.userInput.attach[i].thumbnail;
+        delete this.userInput.attach[i].alt_path;
+        delete this.userInput.attach[i].url;
+        delete this.userInput.attach[i]['exist'];
       }
       await this.nakama.deleteTodoFromStorage(true, received_json);
       this.isModify = false;
