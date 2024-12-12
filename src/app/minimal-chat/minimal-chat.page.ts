@@ -843,6 +843,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     }
     this.global.ActLikeModal('ionic-viewer', {
       info: { content: FileInfo },
+      isOfficial: 'local',
       path: FileInfo.path,
       relevance: attaches,
       dismiss: 'minimal-ionic-viewer',
