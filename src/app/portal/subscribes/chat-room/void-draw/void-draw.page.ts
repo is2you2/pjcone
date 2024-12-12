@@ -1609,6 +1609,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       this.p5apply_crop();
     else {
       if (this.navParams.dismiss == 'voiddraw-remote') {
+        this.p5save_image(true, true);
         this.navCtrl.pop();
         return;
       }
