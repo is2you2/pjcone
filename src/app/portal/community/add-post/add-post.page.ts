@@ -554,9 +554,11 @@ export class AddPostPage implements OnInit, OnDestroy {
 
   /** 녹음중인 음성의 시간을 기록함 */
   AddVoiceTimeHistory() {
-    if (this.userInput.content)
-      this.userInput.content += `\n{"i":"n","t":"${this.extended_buttons[5].name}"}\n`;
-    else this.userInput.content = `{"i":"n","t":"${this.extended_buttons[5].name}"}\n`;
+    if (this.userInput.content) {
+      if (this.userInput.content.charAt(this.userInput.content.length - 1) == '\n') {
+        this.userInput.content += `\n{"i":"n","t":"${this.extended_buttons[5].name}"}\n`;
+      } else this.userInput.content += `\n\n{"i":"n","t":"${this.extended_buttons[5].name}"}\n`;
+    } else this.userInput.content = `{"i":"n","t":"${this.extended_buttons[5].name}"}\n\n`;
     this.ContentTextArea.focus();
   }
 
@@ -632,9 +634,11 @@ export class AddPostPage implements OnInit, OnDestroy {
 
   /** 게시물 내용에 첨부파일 링크를 추가함 */
   AddAttachTextForm() {
-    if (this.userInput.content)
-      this.userInput.content += `\n{${this.userInput.attachments.length}}\n`;
-    else this.userInput.content = `{${this.userInput.attachments.length}}\n`;
+    if (this.userInput.content) {
+      if (this.userInput.content.charAt(this.userInput.content.length - 1) == '\n')
+        this.userInput.content += `\n{${this.userInput.attachments.length}}\n\n`;
+      else this.userInput.content += `\n\n{${this.userInput.attachments.length}}\n\n`;
+    } else this.userInput.content = `{${this.userInput.attachments.length}}\n\n`;
     this.ContentTextArea.focus();
   }
 
