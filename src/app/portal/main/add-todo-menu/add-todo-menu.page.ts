@@ -831,7 +831,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           }
           delete this.global.PageDismissAct['todo-text-add'];
         }
-        this.global.ActLikeModal('ionic-viewer', {
+        this.global.ActLikeModal('portal/main/add-todo-menu/ionic-viewer', {
           info: {
             content: {
               is_new: 'text',
@@ -1206,7 +1206,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     } catch (e) {
       _is_official = 'local';
     }
-    this.global.ActLikeModal('ionic-viewer', {
+    this.global.ActLikeModal('portal/main/add-todo-menu/ionic-viewer', {
       info: {
         content: this.userInput.attach[index],
         sender_id: creator,
