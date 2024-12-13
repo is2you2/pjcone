@@ -193,6 +193,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   WaitingLoaded = false;
   ionViewWillEnter() {
+    this.global.BlockMainShortcut = true;
     this.WaitingLoaded = true;
     this.PageWillDestroy = false;
   }
@@ -2265,6 +2266,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
    */
   PageWillDestroy = false;
   async ionViewWillLeave() {
+    this.global.BlockMainShortcut = false;
     this.WaitingLoaded = false;
     this.PageWillDestroy = true;
     switch (this.FileInfo.viewer) {

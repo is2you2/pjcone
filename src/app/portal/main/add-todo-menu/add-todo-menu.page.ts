@@ -829,8 +829,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             this.userInput.attach.push(this_file);
             this.auto_scroll_down();
           }
+          this.global.RestoreShortCutAct('add-todo-add-text');
           delete this.global.PageDismissAct['todo-text-add'];
         }
+        this.global.StoreShortCutAct('add-todo-add-text');
         this.global.ActLikeModal('portal/main/add-todo-menu/ionic-viewer', {
           info: {
             content: {
