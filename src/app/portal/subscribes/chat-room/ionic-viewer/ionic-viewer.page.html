@@ -1,5 +1,5 @@
 <ion-header class="ion-no-border">
-  <ion-toolbar id="Toolbar">
+  <ion-toolbar>
     <ion-title>{{lang.text['ContentViewer']['Title']}}</ion-title>
     <ion-buttons slot="start">
       <ion-back-button defaultHref=""></ion-back-button>
@@ -28,14 +28,14 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content id="ContentBox">
+<ion-content [id]="ContentBoxId">
   <table class="main_table_elt">
     <tr style="height: 0;">
       <td>
-        <ion-list-header id="FileHeader" style="max-width: 100vw;">
+        <ion-list-header [id]="FileHeaderId" style="max-width: 100vw;">
           <ion-label *ngIf="!isTextEditMode" text-wrap style="overflow-x: auto;">{{FileInfo.filename ||
             FileInfo.name}}</ion-label>
-          <ion-input *ngIf="isTextEditMode" id="TextEditorFileName" type="text" [(ngModel)]="NewTextFileName"
+          <ion-input *ngIf="isTextEditMode" [id]="TextEditorFileNameId" type="text" [(ngModel)]="NewTextFileName"
             [placeholder]="FileInfo.filename || FileInfo.name" text-warp
             style="overflow-x: auto; overflow-y: hidden;"></ion-input>
           <ion-button *ngIf="isTextEditMode" (click)="close_text_edit()">
@@ -44,11 +44,11 @@
           <ion-button *ngIf="isTextEditMode" (click)="SaveText()">
             <ion-icon name="save-outline"></ion-icon>
           </ion-button>
-          <ion-button *ngIf="!isTextEditMode" id="menu_trigger" (click)="OpenFileMenu()">
+          <ion-button *ngIf="!isTextEditMode" [id]="menu_triggerId" (click)="OpenFileMenu()">
             <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint shortcut_hint_menu">F</div>
             <ion-icon name="ellipsis-vertical"></ion-icon>
           </ion-button>
-          <ion-popover *ngIf="!isTextEditMode" #FileMenu trigger="menu_trigger" dismissOnSelect>
+          <ion-popover *ngIf="!isTextEditMode" #FileMenu [trigger]="menu_triggerId" dismissOnSelect>
             <ng-template>
               <ion-content>
                 <ion-list>
@@ -133,7 +133,7 @@
             </div>
           </div>
         </div>
-        <div class="full_screen" id="content_viewer_canvas"
+        <div class="full_screen" [id]="content_viewer_canvasId"
           style="max-width: 100vw; position: relative; flex-direction: column;" (contextmenu)="canvasDivContextMenu()">
         </div>
       </td>

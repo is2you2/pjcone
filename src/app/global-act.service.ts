@@ -436,7 +436,7 @@ export class GlobalActService {
       _godot.setAttribute('withCredentials', 'true');
       keys['isMobile'] = isPlatform != 'DesktopPWA';
       // ionic-viewer 로부터 받은 경우 썸네일 만들기 행동 추가
-      if (_frame_name == 'content_viewer_canvas')
+      if (_frame_name.indexOf('content_viewer_canvas') >= 0)
         keys['create_thumbnail_p5'] = async (base64: string, info: FileInfo = undefined) => {
           {
             let keys = Object.keys(this.GodotCache);

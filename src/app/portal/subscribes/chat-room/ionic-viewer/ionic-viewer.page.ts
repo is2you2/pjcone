@@ -118,6 +118,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   isConvertible = false;
   /** HTML 직접보기로 보는지 여부 */
   isHTMLViewer = false;
+  // 아래 다중 창 지원을 위한 id 분리처리
+  ContentBoxId = 'ContentBox';
+  FileHeaderId = 'FileHeader';
+  TextEditorFileNameId = 'TextEditorFileName';
+  menu_triggerId = 'menu_trigger';
+  content_viewer_canvasId = 'content_viewer_canvas';
 
   /** HTML 직접보기 전환  
    * 마크다운 등 전환 보기가 필요한 녀석들은 전부 공유한다
@@ -167,6 +173,11 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.cont = new AbortController();
     this.global.StoreShortCutAct('ionic-viewer');
+    this.ContentBoxId = `ContentBox_${Date.now()}`;
+    this.FileHeaderId = `FileHeader_${Date.now()}`;
+    this.TextEditorFileNameId = `TextEditorFileName_${Date.now()}`;
+    this.menu_triggerId = `menu_trigger_${Date.now()}`;
+    this.content_viewer_canvasId = `content_viewer_canvas_${Date.now()}`;
     this.route.queryParams.subscribe(async _p => {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;
@@ -205,8 +216,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.OpenInChannelChat = this.MessageInfo['code'] !== undefined;
     this.CurrentViewId = this.MessageInfo.message_id;
     this.FileInfo = this.MessageInfo.content;
-    this.ContentBox = document.getElementById('ContentBox');
-    this.FileHeader = document.getElementById('FileHeader');
+    this.ContentBox = document.getElementById(this.ContentBoxId);
+    this.FileHeader = document.getElementById(this.FileHeaderId);
     this.isOfficial = this.navParams.isOfficial;
     this.target = this.navParams.target;
     try {
@@ -283,7 +294,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.CurrentViewId = this.MessageInfo.message_id;
     this.FileInfo = this.MessageInfo.content;
     if (this.PageWillDestroy) return;
-    this.canvasDiv = document.getElementById('content_viewer_canvas');
+    this.canvasDiv = document.getElementById(this.content_viewer_canvasId);
     if (this.canvasDiv)
       for (let i = 0, j = this.canvasDiv.childNodes.length; i < j; i++)
         try {
@@ -525,7 +536,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     }
     this.forceWrite = false;
     await new Promise((done) => setTimeout(done, 0));
-    this.canvasDiv = document.getElementById('content_viewer_canvas');
+    this.canvasDiv = document.getElementById(this.content_viewer_canvasId);
     if (this.canvasDiv) this.canvasDiv.style.backgroundImage = '';
     if (!this.WaitingLoaded) return;
     // 경우에 따라 로딩하는 캔버스를 구분
@@ -1252,7 +1263,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         if (!this.NeedDownloadFile && this.CurrentViewId == GetViewId)
           setTimeout(() => {
             this.FileInfo.cont = this.cont;
-            this.global.CreateGodotIFrameWithDuplicateAct(this.FileInfo, 'content_viewer_canvas', {
+            this.global.CreateGodotIFrameWithDuplicateAct(this.FileInfo, this.content_viewer_canvasId, {
               path: 'tmp_files/duplicate/viewer.pck',
               alt_path: this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.path,
               url: this.FileInfo.url,
@@ -1459,7 +1470,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.isTextEditMode = true;
     this.isHTMLViewer = false;
     setTimeout(() => {
-      let filename = document.getElementById('TextEditorFileName');
+      let filename = document.getElementById(this.TextEditorFileNameId);
       this.FilenameElement = filename.childNodes[1].childNodes[1].childNodes[1] as HTMLElement;
       if (!this.FilenameElement.onblur)
         this.FilenameElement.onblur = () => {
