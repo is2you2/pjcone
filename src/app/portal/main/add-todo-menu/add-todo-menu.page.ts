@@ -95,6 +95,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     done: undefined,
     /** 알림 아이디 저장 */
     noti_id: undefined,
+    /** 사용자 지정 우선 서버 사용 여부  
+     * 0: 기본값  
+     * 1: FFS 우선  
+     * 2: SQL 강제
+     */
+    CDN: undefined as number,
   };
 
   /** 사용자에게 보여지는 시작일시 문자열 */
@@ -202,6 +208,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       if (navParams) this.received_data = navParams.data;
       if (this.received_data && !this.AlreadyInited)
         this.userInput = { ...this.userInput, ...JSON.parse(this.received_data) };
+      this.toggle_custom_attach(this.userInput.CDN || 0);
       this.AlreadyInited = true;
     });
     this.nakama.AddTodoLinkAct = async (info: string) => {
@@ -647,8 +654,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.selected_blobFile_callback_act(stack[i].file);
       return false;
     }
-    this.useFirstCustomCDN = Number(localStorage.getItem('useFFSCDN')) || 0;
-    this.toggle_custom_attach(this.useFirstCustomCDN);
   }
 
   /** 사용가능한 저장소 리스트 생성 */
@@ -1247,18 +1252,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.nakama.doneTodo(this.userInput);
   }
 
-  /** 사용자 지정 우선 서버 사용 여부  
-   * 0: 기본값  
-   * 1: FFS 우선  
-   * 2: SQL 강제
-   */
-  useFirstCustomCDN = 0;
   isCDNToggleClicked = false;
-  isCDNToggleAvailable = true;
   async toggle_custom_attach(force?: number) {
     this.isCDNToggleClicked = true;
-    this.useFirstCustomCDN = (force ?? (this.useFirstCustomCDN + 1)) % 2;
-    switch (this.useFirstCustomCDN) {
+    this.userInput.CDN = (force ?? (this.userInput.CDN + 1)) % 2;
+    switch (this.userInput.CDN) {
       case 0: // 기본값, cdn 서버 우선, 실패시 SQL
         this.extended_buttons[5].icon = 'cloud-offline-outline';
         this.extended_buttons[5].name = this.lang.text['ChatRoom']['Detour'];
@@ -1272,7 +1270,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.extended_buttons[5].name = this.lang.text['ChatRoom']['forceSQL'];
         break;
     }
-    localStorage.setItem('useFFSCDN', `${this.useFirstCustomCDN}`);
+    this.userInput.CDN = this.userInput.CDN;
     setTimeout(() => {
       this.isCDNToggleClicked = false;
     }, 0);
@@ -1313,7 +1311,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       this.userInput.create_at = new Date().getTime();
     // 저장소가 변경되었다면 기존 저장소에서 삭제 시도하고 아래 모든 저장 행동을 새 작업으로 간주하여 실행
     let received_json = this.received_data ? JSON.parse(this.received_data) : undefined;
-    if (this.isStoreAtChanged && this.isModify) {
+    let isCDNChanged = received_json?.CDN != this.userInput.CDN;
+    if ((this.isStoreAtChanged || isCDNChanged) && this.isModify) {
       // 첨부파일 복제 후 재등록
       for (let i = 0, j = received_json.attach.length; i < j; i++) {
         try {
@@ -1336,6 +1335,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         }
         delete this.userInput.attach[i].thumbnail;
         delete this.userInput.attach[i].alt_path;
+        await this.global.remove_file_from_storage(this.userInput.attach[i].url, server_info);
         delete this.userInput.attach[i].url;
         delete this.userInput.attach[i]['exist'];
       }
@@ -1438,7 +1438,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               blob = await this.indexed.loadBlobFromUserPath(this.userInput.attach[i]['path'], this.userInput.attach[i]['type']);
           } catch (e) { }
           try { // FFS 업로드 시도
-            if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
+            if (this.userInput.CDN != 1) throw 'FFS 사용 순위에 없음';
             loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: ${this.userInput.attach[i].filename}`;
             let CatchedAddress: string;
             CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attach[i], this.nakama.users.self['display_name'], loading);
@@ -1578,7 +1578,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             continue;
           }
           try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
-            if (this.useFirstCustomCDN == 2) throw 'ForceSQL';
+            if (this.userInput.CDN == 2) throw 'ForceSQL';
             if (!this.userInput.attach[i].blob.size && this.userInput.attach[i].url)
               this.userInput.attach[i].blob = await (await fetch(this.userInput.attach[i].url, { signal: this.cont.signal })).blob();
             let address = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].info.address;
@@ -1588,7 +1588,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               targetname = `${this.userInput.id}_${this.userInput.remote.creator_id}`;
             } catch (e) { }
             let savedAddress = await this.global.upload_file_to_storage(this.userInput.attach[i],
-              { user_id: targetname, apache_port: server_info['apache_port'], cdn_port: server_info['cdn_port'] }, protocol, address, this.useFirstCustomCDN == 1, loading);
+              { user_id: targetname, apache_port: server_info['apache_port'], cdn_port: server_info['cdn_port'] }, protocol, address, this.userInput.CDN == 1, loading);
             let isURL = Boolean(savedAddress);
             if (!isURL) throw '링크 만들기 실패';
             delete this.userInput.attach[i]['size'];
