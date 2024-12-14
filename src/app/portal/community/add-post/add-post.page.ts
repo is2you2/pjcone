@@ -77,6 +77,12 @@ export class AddPostPage implements OnInit, OnDestroy {
     */
     OutSource: undefined,
     isNSFW: false,
+    /** 사용자 지정 우선 서버 사용 여부  
+   * 0: 기본값  
+   * 1: FFS 우선  
+   * 2: SQL 강제
+   */
+    CDN: undefined as number,
   }
   index = 0;
   isOfficial: string;
@@ -90,8 +96,6 @@ export class AddPostPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.cont = new AbortController();
-    this.useFirstCustomCDN = Number(localStorage.getItem('useFFSCDN')) || 0;
-    this.toggle_custom_attach(this.useFirstCustomCDN);
     this.UseOutLink = true;
     this.toggle_open_link(this.UseOutLink);
     this.route.queryParams.subscribe(async _p => {
@@ -100,6 +104,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       if (navParams) {
         InitAct = Boolean(navParams.act);
         if (navParams.data) this.userInput = navParams.data;
+        this.toggle_custom_attach(this.userInput?.CDN || 0);
       }
       this.lock_modal_open = false;
       if (!InitAct) return;
@@ -320,7 +325,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     try { // 변경된 서버 user_id 를 적용함
       this.userInput.creator_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
       this.userInput.UserColor = (this.userInput.creator_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
-      this.extended_buttons[7].isHide = this.useFirstCustomCDN == 2;
+      this.extended_buttons[7].isHide = this.userInput.CDN == 2;
     } catch (e) { // 그게 아니라면 로컬입니다
       this.userInput.creator_id = 'me';
       this.userInput.UserColor = '888888';
@@ -874,15 +879,9 @@ export class AddPostPage implements OnInit, OnDestroy {
     }
   }
 
-  /** 사용자 지정 우선 서버 사용 여부  
-   * 0: 기본값  
-   * 1: FFS 우선  
-   * 2: SQL 강제
-   */
-  useFirstCustomCDN = 0;
   async toggle_custom_attach(force?: number) {
-    this.useFirstCustomCDN = (force ?? (this.useFirstCustomCDN + 1)) % 2;
-    switch (this.useFirstCustomCDN) {
+    this.userInput.CDN = (force ?? (this.userInput.CDN + 1)) % 2;
+    switch (this.userInput.CDN) {
       case 0: // 기본값, cdn 서버 우선, 실패시 SQL
         this.extended_buttons[6].icon = 'cloud-offline-outline';
         this.extended_buttons[6].name = this.lang.text['ChatRoom']['Detour'];
@@ -896,7 +895,6 @@ export class AddPostPage implements OnInit, OnDestroy {
         this.extended_buttons[6].name = this.lang.text['ChatRoom']['forceSQL'];
         break;
     }
-    localStorage.setItem('useFFSCDN', `${this.useFirstCustomCDN}`);
   }
 
   UseOutLink = false;
@@ -955,7 +953,8 @@ export class AddPostPage implements OnInit, OnDestroy {
     } catch (e) {
       server_info = {};
     }
-    if (this.isModify || this.isServerChanged) { // 편집된 게시물이라면 첨부파일을 전부다 지우고 다시 등록
+    let isCDNChanged = this.OriginalInfo?.CDN != this.userInput.CDN;
+    if (this.isModify || isCDNChanged || this.isServerChanged) { // 편집된 게시물이라면 첨부파일을 전부다 지우고 다시 등록
       if (this.userInput.mainImage && this.userInput.mainImage.url) {
         try {
           let res = await fetch(this.userInput.mainImage.url, { signal: this.cont.signal });
@@ -1051,7 +1050,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         }
         if (is_local) {
           try { // FFS 업로드 시도
-            if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
+            if (this.userInput.CDN != 1) throw 'FFS 사용 순위에 없음';
             loading.message = `${this.lang.text['AddPost']['SyncMainImage']}: ${this.userInput.mainImage.filename}`;
             let CatchedAddress: string;
             CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.mainImage, this.nakama.users.self['display_name'], loading);
@@ -1065,12 +1064,12 @@ export class AddPostPage implements OnInit, OnDestroy {
           }
         } else {
           try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
-            if (this.useFirstCustomCDN == 2) throw 'SQL 강제';
+            if (this.userInput.CDN == 2) throw 'SQL 강제';
             let address = this.nakama.servers[this.isOfficial][this.target].info.address;
             let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
             let savedAddress = await this.global.upload_file_to_storage(this.userInput.mainImage,
               { user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
-              protocol, address, this.useFirstCustomCDN == 1, loading);
+              protocol, address, this.userInput.CDN == 1, loading);
             let isURL = Boolean(savedAddress);
             if (!isURL) throw '링크 만들기 실패';
             delete this.userInput.mainImage['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
@@ -1096,7 +1095,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           }
           if (is_local) {
             try { // FFS 업로드 시도
-              if (this.useFirstCustomCDN != 1) throw 'FFS 사용 순위에 없음';
+              if (this.userInput.CDN != 1) throw 'FFS 사용 순위에 없음';
               loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`;
               let CatchedAddress: string;
               CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], this.nakama.users.self['display_name'], loading);
@@ -1111,12 +1110,12 @@ export class AddPostPage implements OnInit, OnDestroy {
             }
           } else {
             try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
-              if (this.useFirstCustomCDN == 2) throw 'SQL 강제';
+              if (this.userInput.CDN == 2) throw 'SQL 강제';
               let address = this.nakama.servers[this.isOfficial][this.target].info.address;
               let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
               let savedAddress = await this.global.upload_file_to_storage(this.userInput.attachments[i],
                 { user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
-                protocol, address, this.useFirstCustomCDN == 1, loading);
+                protocol, address, this.userInput.CDN == 1, loading);
               let isURL = Boolean(savedAddress);
               if (!isURL) throw '링크 만들기 실패';
               delete this.userInput.attachments[i]['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
@@ -1151,7 +1150,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           loading.message = `${this.lang.text['AddPost']['SyncPostInfo']}`;
           let outlink = await this.global.upload_file_to_storage(file,
             { user_id: user_id, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
-            protocol, address, this.useFirstCustomCDN == 1);
+            protocol, address, this.userInput.CDN == 1);
           if (outlink) {
             this.userInput.OutSource = outlink;
           } else throw '업로드 실패';

@@ -1270,7 +1270,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.extended_buttons[5].name = this.lang.text['ChatRoom']['forceSQL'];
         break;
     }
-    this.userInput.CDN = this.userInput.CDN;
     setTimeout(() => {
       this.isCDNToggleClicked = false;
     }, 0);
