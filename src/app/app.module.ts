@@ -12,6 +12,7 @@ import { environment } from '../environments/environment';
 @NgModule({
   declarations: [AppComponent],
   imports: [BrowserModule, IonicModule.forRoot({
+    mode: 'md',
     innerHTMLTemplatesEnabled: true,
     experimentalCloseWatcher: true,
     hardwareBackButton: true,
