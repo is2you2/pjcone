@@ -483,7 +483,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   close_text_edit() {
     if (this.FileInfo['is_new']) {
       this.navCtrl.pop();
-    } else this.reinit_content_data(this.MessageInfo);
+    } else this.ChangeToAnother(0);
   }
 
   /** URL 링크인 경우 파일을 로컬에 다운받기 */
