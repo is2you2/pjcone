@@ -161,9 +161,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       },
       context: () => {
         let contextAct = async () => {
-          if (this.HasBackgroundImage) {
-            this.RemoveChannelBackgroundImage();
-          } else try {
+          try {
             let fromClipboard = await this.global.GetValueFromClipboard();
             switch (fromClipboard.type) {
               case 'image/png':
