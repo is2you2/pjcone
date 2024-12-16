@@ -8,10 +8,6 @@
     margin-top: 8px;
 }
 
-.my_sender_form {
-    text-align: -webkit-right;
-}
-
 .sender_form {
     background-color: var(--chatroom-background-transparent);
     border-radius: 16px;
@@ -34,7 +30,6 @@
 
 .my_sending_msg {
     margin-bottom: 0;
-    padding-right: 56px;
 }
 
 .dateLine {
@@ -169,7 +164,6 @@
 }
 
 .href_image_margin {
-    margin-top: 8px;
     max-height: 40px;
     object-fit: cover;
     border-radius: 12px;

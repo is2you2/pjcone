@@ -143,7 +143,7 @@
                     (click)="open_url_link(msg.content['hasLink'].url)">
                     {{msg.content['hasLink'].title}}
                     <img *ngIf="msg.content['hasLink'].imageUrl" [src]="msg.content['hasLink'].imageUrl"
-                      class="qouteImage qouteImageHeight href_image_margin"
+                      class="qouteImage qouteImageHeight href_image_margin message_form"
                       [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
                       [alt]="msg.content['hasLink'].imageAlt" />
                   </div>
@@ -163,7 +163,8 @@
                   <tr>
                     <td>
                       <!-- 이름 표시 -->
-                      <div class="message_form my_sender_form" *ngIf="msg['showInfo'] && msg['showInfo']['sender']">
+                      <div class="message_form my_file_message_form"
+                        *ngIf="msg['showInfo'] && msg['showInfo']['sender']">
                         <div class="sender_form">
                           <!-- 시간 표시 -->
                           <span class="time_form message_span_form_me" (click)="SetOtherAct()">{{msg['msgTime']}}</span>
@@ -246,7 +247,7 @@
                     (click)="open_url_link(msg.content['hasLink'].url)">
                     {{msg.content['hasLink'].title}}
                     <img *ngIf="msg.content['hasLink'].imageUrl" [src]="msg.content['hasLink'].imageUrl"
-                      class="qouteImage qouteImageHeight href_image_margin"
+                      class="qouteImage qouteImageHeight href_image_margin message_form"
                       [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
                       [alt]="msg.content['hasLink'].imageAlt" />
                   </div>
@@ -260,7 +261,7 @@
                 <div class="notice borderRadiusDefault"> {{msg.content['noti']}} </div>
               </div>
             </div>
-            <div *ngFor="let msg of sending_msg" class="my_message_right my_sending_msg">
+            <div *ngFor="let msg of sending_msg" class="my_message_right href_thumbnail_self my_sending_msg">
               <div *ngIf="msg.content['qoute']" class="cursor_pointer qoute_text qoute_background imageForm"
                 (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
                 <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg'] + ': ' +
