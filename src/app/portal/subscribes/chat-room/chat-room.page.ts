@@ -930,6 +930,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   ionViewWillEnter() {
+    this.global.StoreShortCutAct('chat-room');
     this.WillLeave = false;
     this.ChatContDiv = document.getElementById('chatroom_content_div');
     try {
@@ -2883,6 +2884,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.WillLeave = true;
     this.noti.Current = '';
     this.removeShortCutKey();
+    this.global.RestoreShortCutAct('chat-room');
     window.onfocus = null;
     this.userInputTextArea.onpaste = null;
     this.userInputTextArea.onblur = null;
@@ -2899,6 +2901,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.global.portalHint = true;
     this.indexed.GetFileListFromDB('tmp_files/chatroom', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     this.route.queryParams['unsubscribe']();
     try {
