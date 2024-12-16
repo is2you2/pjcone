@@ -117,8 +117,11 @@ export class GroupServerPage implements OnInit, OnDestroy {
         imgDiv.style('background-size', 'cover');
         imgDiv.style('cursor', 'pointer');
         imgDiv.parent(this.gsCanvasDiv);
+        let OverrideClicked = false;
         imgDiv.mouseClicked(() => {
-          this.change_img_from_file();
+          if (!OverrideClicked)
+            this.change_img_from_file();
+          OverrideClicked = false;
         });
         imgDiv.elt.oncontextmenu = () => {
           let contextmenuAct = async () => {
@@ -149,6 +152,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
         OnlineLamp.style('z-index', '1');
         OnlineLamp.parent(imgDiv);
         OnlineLamp.mouseClicked(() => {
+          OverrideClicked = true;
           this.toggle_online();
         });
         // 부드러운 이미지 전환
@@ -368,6 +372,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
           if (this.nakama.users.self['display_name']) {
             nameSpan.html(this.nakama.users.self['display_name']);
             nameEditDiv.value(this.nakama.users.self['display_name']);
+            nameEditDiv.hide();
           }
           this.ShowServerList = this.OnlineToggle;
           this.p5PasswordInput.value('');
