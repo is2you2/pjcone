@@ -42,6 +42,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
   p5ChangeImageSmooth: Function;
 
   ngOnInit() {
+    this.global.StoreShortCutAct('other-profile');
     this.route.queryParams.subscribe(_p => {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;
@@ -426,6 +427,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.global.RestoreShortCutAct('other-profile');
     this.route.queryParams['unsubscribe']();
     delete this.nakama.socket_reactive['others-profile'];
     delete this.nakama.socket_reactive['others-online'];

@@ -32,6 +32,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     private loadingCtrl: LoadingController,
   ) { }
   ngOnDestroy() {
+    this.global.RestoreShortCutAct('group-detail');
     if (this.p5canvas) this.p5canvas.remove();
     delete this.nakama.socket_reactive['group_detail'];
     this.route.queryParams['unsubscribe']();
@@ -50,6 +51,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   QRAddressAsString: string;
 
   ngOnInit() {
+    this.global.StoreShortCutAct('group-detail');
     this.route.queryParams.subscribe(_p => {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;

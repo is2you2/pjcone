@@ -38,6 +38,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
 
   gsCanvasDiv: HTMLElement;
   ngOnInit() {
+    this.global.StoreShortCutAct('group-server');
     this.servers = this.nakama.get_all_server_info(true);
 
     this.file_sel_id = `self_profile_${new Date().getTime()}`;
@@ -568,6 +569,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.global.RestoreShortCutAct('group-server');
     this.route.queryParams['unsubscribe']();
     this.p5canvas.remove();
   }
@@ -764,10 +766,10 @@ export class GroupServerPage implements OnInit, OnDestroy {
   @ViewChild('ServerDisplayName') ServerDisplayName: IonInput;
 
   OpenNewServerForm() {
-    this.global.StoreShortCutAct('group-server');
+    this.global.StoreShortCutAct('group-server-new-form');
     this.RegisterNewServer.onDidDismiss().then(() => {
       delete this.global.p5KeyShortCut['EnterAct'];
-      this.global.RestoreShortCutAct('group-server');
+      this.global.RestoreShortCutAct('group-server-new-form');
     });
     this.global.p5KeyShortCut['EnterAct'] = (ev: any) => {
       if (ev['ctrlKey'])
