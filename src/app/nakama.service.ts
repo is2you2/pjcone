@@ -424,6 +424,7 @@ export class NakamaService {
         },
       });
     });
+    this.global.portalHint = false;
   }
 
   /** 모든 pending 세션 켜기 */

@@ -743,5 +743,6 @@ export class PostViewerPage implements OnInit, OnDestroy {
       this.blenderViewers[i].remove();
     if (this.p5canvas)
       this.p5canvas.remove();
+    this.global.portalHint = true;
   }
 }

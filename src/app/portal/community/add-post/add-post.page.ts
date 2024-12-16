@@ -53,6 +53,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         }, 1000);
     } catch (e) { }
     this.indexed.GetFileListFromDB('tmp_files/post', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
+    this.global.portalHint = true;
   }
 
   servers: ServerInfo[] = [];
@@ -248,6 +249,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   /** 기존 게시물 편집 여부 */
   isModify = false;
   ionViewWillEnter() {
+    this.global.portalHint = false;
     this.WillLeavePage = false;
     this.TitleInput = document.getElementById('add_post_title').childNodes[1].childNodes[1].childNodes[1] as HTMLInputElement;
     if (!this.TitleInput.onblur)

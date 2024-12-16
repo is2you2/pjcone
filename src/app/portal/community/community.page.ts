@@ -37,6 +37,7 @@ export class CommunityPage implements OnInit {
         },
       });
     });
+    this.global.portalHint = false;
   }
 
   /** 더 불러올 게시물이 있는지 여부 */
