@@ -2376,7 +2376,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.nakama.content_to_hyperlink(msg, this.isOfficial, this.target);
     this.nakama.channels_orig[this.isOfficial][this.target][msg.channel_id]['last_comment_time'] = msg.update_time;
     this.nakama.channels_orig[this.isOfficial][this.target][this.info.id]['last_comment_id'] = msg.message_id;
-    this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'](msg);
+    if (this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'])
+      this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'](msg);
     this.nakama.saveListedMessage([msg], this.info, this.isOfficial, this.target);
     let hasFile = msg.content['filename'] ? `(${this.lang.text['ChatRoom']['attachments']}) ` : '';
     if (msg.code != 2) this.nakama.channels_orig[this.isOfficial][this.target][this.info.id]['last_comment'] = hasFile +
