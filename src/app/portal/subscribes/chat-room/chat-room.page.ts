@@ -159,9 +159,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.RemoveChannelBackgroundImage();
         } else document.getElementById('backgroundImage_sel').click();
       },
-      context: () => {
+      context: (with_key = false) => {
         let contextAct = async () => {
           try {
+            if (with_key && this.HasBackgroundImage) {
+              this.RemoveChannelBackgroundImage();
+              return false;
+            }
             let fromClipboard = await this.global.GetValueFromClipboard();
             switch (fromClipboard.type) {
               case 'image/png':
@@ -1006,7 +1010,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
     this.global.p5KeyShortCut['Digit'] = (index: number) => {
       if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && ExtTarget.length > index)
-        ExtTarget[index]['context'] ? ExtTarget[index]['context']() : ExtTarget[index]['act']();
+        ExtTarget[index]['context'] ? ExtTarget[index]['context'](true) : ExtTarget[index]['act']();
     }
     this.global.p5KeyShortCut['EnterAct'] = () => {
       if (document.activeElement != document.getElementById(this.ChannelUserInputId))
