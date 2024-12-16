@@ -60,7 +60,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
   }
   BackButtonPressed = false;
   ionViewWillEnter() {
-    this.initialize();
+    if (this.IsFocusOnHere) this.initialize();
     this.WaitingLoaded = true;
     this.global.StoreShortCutAct('post-viewer');
     this.global.p5KeyShortCut['Escape'] = () => {
