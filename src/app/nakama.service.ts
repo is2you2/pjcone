@@ -4534,11 +4534,19 @@ export class NakamaService {
         if (e == 'exist') throw '이미 있는 게시물';
       }
       let json = JSON.parse(v);
-      json['server'] = {
-        name: this.lang.text['AddGroup']['UseLocalStorage'],
-        isOfficial: 'local',
-        target: 'target',
-        local: true,
+      try {
+        json['server'] = {
+          name: this.servers[isOfficial][target].info.name,
+          isOfficial: isOfficial,
+          target: target,
+        }
+      } catch (e) {
+        json['server'] = {
+          name: this.lang.text['AddGroup']['UseLocalStorage'],
+          isOfficial: 'local',
+          target: 'target',
+          local: true,
+        }
       }
       if (json['mainImage']) {
         try {
