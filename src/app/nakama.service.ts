@@ -270,7 +270,6 @@ export class NakamaService {
         },
       });
     });
-    this.global.portalHint = false;
   }
 
   /** 그룹 상세 정보 페이지 열기 */
@@ -389,7 +388,6 @@ export class NakamaService {
         },
       });
     });
-    this.global.portalHint = false;
   }
 
   /** 새 채널 만들기 / 새 그룹 추가하기 */
@@ -425,7 +423,6 @@ export class NakamaService {
         },
       });
     });
-    this.global.portalHint = false;
   }
 
   /** 모든 pending 세션 켜기 */

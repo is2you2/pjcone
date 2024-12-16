@@ -104,6 +104,7 @@ export class PortalPage implements OnInit {
 
   /** 하단 탭을 눌러 알림 확인함 처리 */
   subscribe_button() {
+    this.global.portalHint = true;
     this.nakama.has_new_channel_msg = false;
     if (this.SubscribesIcon == 'chatbubble') {
       if (this.global.PortalBottonTabAct.Subscribes)
@@ -131,6 +132,7 @@ export class PortalPage implements OnInit {
 
   /** 구 버전 함수 이름이 계승됨, 할 일이 눌렸을 때 */
   bottom_tab_selected() {
+    this.global.portalHint = true;
     this.SubscribesIcon = 'chatbubble-outline';
     if (this.TodoIcon == 'checkbox') {
       if (this.global.PortalBottonTabAct.Todo)
@@ -144,6 +146,7 @@ export class PortalPage implements OnInit {
   @ViewChild('QuitArcade') QuitArcade: IonAlert;
   QuitArcadeButtons = [];
   arcade_tab_selected() {
+    this.global.portalHint = true;
     this.SubscribesIcon = 'chatbubble-outline';
     this.TodoIcon = 'checkbox-outline';
     if (this.ArcadeIcon == 'game-controller') {
@@ -171,6 +174,7 @@ export class PortalPage implements OnInit {
   }
 
   community_tab_selected() {
+    this.global.portalHint = true;
     this.SubscribesIcon = 'chatbubble-outline';
     this.TodoIcon = 'checkbox-outline';
     if (this.CommunityIcon == 'notifications') {

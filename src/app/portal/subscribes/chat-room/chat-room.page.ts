@@ -930,6 +930,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   ionViewWillEnter() {
+    this.global.portalHint = false;
     this.global.StoreShortCutAct('chat-room');
     this.WillLeave = false;
     this.ChatContDiv = document.getElementById('chatroom_content_div');

@@ -433,6 +433,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 타이틀에 포커스중인지 검토 */
   CheckIfTitleFocus = false;
   async ionViewWillEnter() {
+    this.global.portalHint = false;
     this.global.StoreShortCutAct('add-todo');
     this.WaitingLoaded = true;
     this.lock_modal_open = false;

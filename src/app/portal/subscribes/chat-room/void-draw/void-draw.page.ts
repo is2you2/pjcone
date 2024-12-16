@@ -87,6 +87,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   voidDrawId = 'voidDraw';
   ionViewWillEnter() {
+    this.global.portalHint = false;
     if (this.QueueAfterLoad)
       this.QueueAfterLoad();
     this.QueueAfterLoad = null;
@@ -1638,6 +1639,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   WillLeaveHere = false;
   ionViewWillLeave() {
+    this.global.portalHint = true;
     if (this.p5SetDrawable) this.p5SetDrawable(false);
     this.WillLeaveHere = true;
     this.RemoveShortCut();
