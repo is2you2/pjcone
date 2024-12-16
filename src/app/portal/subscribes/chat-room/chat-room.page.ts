@@ -940,10 +940,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
     if (!this.userInputTextArea.onblur)
       this.userInputTextArea.onblur = () => {
+        if (isPlatform != 'DesktopPWA')
+          this.global.ArcadeWithFullScreen = false;
         this.CheckIfFocusOnInput = false;
       }
     if (!this.userInputTextArea.onfocus)
       this.userInputTextArea.onfocus = () => {
+        if (isPlatform != 'DesktopPWA')
+          this.global.ArcadeWithFullScreen = true;
         this.CheckIfFocusOnInput = true;
       }
     this.userInputTextArea.onpaste = (ev: any) => {
