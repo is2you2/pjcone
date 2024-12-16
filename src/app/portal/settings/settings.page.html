@@ -162,8 +162,9 @@
           </ion-item>
           <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy; margin-bottom: 8px;"
             (click)="copy_address(QuickMainAddress)" alt="QuickMainLink" />
-          <ion-item button (click)="copy_address(QuickMainAddress)">
-            <ion-label class="ion-text-center">{{QuickMainAddress}}</ion-label>
+          <ion-item [disabled]="!global.useLocalAddress">
+            <ion-input class="ion-text-center" (ionInput)="ModifyCustomAddress()"
+              [(ngModel)]="QuickMainAddress"></ion-input>
           </ion-item>
         </div>
       </div>

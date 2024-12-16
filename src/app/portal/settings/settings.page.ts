@@ -96,6 +96,11 @@ export class SettingsPage implements OnInit, OnDestroy {
     });
   }
 
+  /** 사용자가 직접 주소 입력시 */
+  ModifyCustomAddress() {
+    this.QRCodeSRC = this.global.readasQRCodeFromString(this.QuickMainAddress);
+  }
+
   Fallback_FS_input_element: HTMLInputElement;
   /** 대안 파일 서버 주소 입력칸으로 포커싱 */
   focus_to_fallback_fs_input() {
