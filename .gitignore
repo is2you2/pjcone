@@ -44,3 +44,6 @@ Godot_v*
 certbot/*
 docker/*
 list.txt
+
+# docker 로컬 이미지 무시
+*.tar
