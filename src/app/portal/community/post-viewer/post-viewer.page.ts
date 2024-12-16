@@ -707,8 +707,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
   }
 
   EditPost() {
-    this.nakama.EditPost(this.PostInfo);
     this.navCtrl.pop();
+    this.nakama.EditPost(this.PostInfo);
   }
 
   ionViewWillLeave() {
