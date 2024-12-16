@@ -188,6 +188,8 @@ export class GlobalActService {
   /** 페이지별 단축키 관리자 */
   p5key: p5;
   p5KeyShortCut: any;
+  /** 자식 페이지 진입시 끄기 */
+  portalHint = true;
   /** 단축키 동작 막기 */
   BlockMainShortcut = false;
   initialize() {
