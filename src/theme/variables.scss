@@ -79,7 +79,8 @@
   --chatroom-background-transparent: #fff4;
   --chatroom-input-background: white;
   --chatroom-last-msg-viewer-bg: #eeeb;
-  --chatroom-filter-brightness: 1.5;
+  --offline-user-color: #444;
+  --chatroom-time-text: #888;
 
   --miniranchat-default-text: #222;
   --miniranchat-system-text: #840;
@@ -182,7 +183,8 @@
     --chatroom-background-transparent: #0004;
     --chatroom-input-background: black;
     --chatroom-last-msg-viewer-bg: #444b;
-    --chatroom-filter-brightness: .5;
+    --offline-user-color: #444;
+    --chatroom-time-text: #666;
 
     --miniranchat-default-text: #ddd;
     --miniranchat-system-text: #fd0;
