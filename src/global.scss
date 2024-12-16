@@ -167,18 +167,9 @@
 }
 
 // Header 자리 온라인 동그라미 표기
-.md .header_online_circle {
+.header_online_circle {
     position: absolute;
     top: 20px;
-    right: 24px;
-    width: 16px;
-    height: 16px;
-    border-radius: 8px;
-}
-
-.ios .header_online_circle {
-    position: absolute;
-    top: 14px;
     right: 24px;
     width: 16px;
     height: 16px;

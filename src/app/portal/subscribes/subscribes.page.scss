@@ -46,24 +46,13 @@
     border-radius: 12px;
 }
 
-.md .add_group {
+.add_group {
     position: absolute;
     right: 68px;
     top: 16px;
     cursor: pointer;
 }
 
-.ios .add_group {
-    position: absolute;
-    right: 58px;
-    top: 10px;
-    cursor: pointer;
-}
-
-.md .top_icon_override_1 {
+.top_icon_override_1 {
     right: 116px;
-}
-
-.ios .top_icon_override_1 {
-    right: 96px;
 }

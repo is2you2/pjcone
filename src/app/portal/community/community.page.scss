@@ -1,23 +1,12 @@
-.md .add_post {
+.add_post {
     position: absolute;
     right: 68px;
     top: 16px;
     cursor: pointer;
 }
 
-.ios .add_post {
-    position: absolute;
-    right: 58px;
-    top: 10px;
-    cursor: pointer;
-}
-
-.md .CardContainerDiv {
+.CardContainerDiv {
     padding-top: 14px;
-}
-
-.ios .CardContainerDiv {
-    padding-top: 20px;
 }
 
 .CardContainerDivShared {
@@ -34,38 +23,19 @@
     margin-top: 0;
 }
 
-.md .cardCreator {
+.cardCreator {
     width: fit-content;
     font-weight: bold;
     max-height: 20px;
     overflow-y: hidden;
 }
 
-.md .cardTitle {
+.cardTitle {
     max-height: 24px;
     overflow-y: hidden;
 }
 
-.md .cardContent {
-    max-height: 40px;
-    overflow-y: hidden;
-    padding-bottom: 0;
-    margin-bottom: 13px;
-}
-
-.ios .cardCreator {
-    width: fit-content;
-    font-weight: bold;
-    max-height: 20px;
-    overflow-y: hidden;
-}
-
-.ios .cardTitle {
-    max-height: 34px;
-    overflow-y: hidden;
-}
-
-.ios .cardContent {
+.cardContent {
     max-height: 40px;
     overflow-y: hidden;
     padding-bottom: 0;

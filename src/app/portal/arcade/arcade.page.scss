@@ -20,34 +20,18 @@
     position: relative;
 }
 
-.md .add_group {
+.add_group {
     position: absolute;
     right: 68px;
     top: 16px;
     cursor: pointer;
 }
 
-.ios .add_group {
-    position: absolute;
-    right: 58px;
-    top: 10px;
-    cursor: pointer;
-}
-
-.md .top_icon_override_1 {
+.top_icon_override_1 {
     right: 116px;
 }
 
-.ios .top_icon_override_1 {
-    right: 96px;
-}
-
-.md .top_icon_override_2 {
+.top_icon_override_2 {
     right: 164px;
     top: 13px;
-}
-
-.ios .top_icon_override_2 {
-    right: 134px;
-    top: 7px;
 }

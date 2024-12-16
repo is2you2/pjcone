@@ -1,31 +1,16 @@
-.md .play_button {
+.play_button {
     position: absolute;
     right: 116px;
     top: 16px;
     cursor: pointer;
 }
 
-.ios .play_button {
-    position: absolute;
-    right: 96px;
-    top: 10px;
-    cursor: pointer;
-}
-
-.md .add_button {
+.add_button {
     position: absolute;
     right: 68px;
     top: 16px;
     cursor: pointer;
 }
-
-.ios .add_button {
-    position: absolute;
-    right: 58px;
-    top: 10px;
-    cursor: pointer;
-}
-
 
 // 필터 변경 버튼
 .FilterSwitchButton {
