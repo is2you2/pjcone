@@ -376,13 +376,13 @@ export class NakamaService {
   /** 채팅 채널이 열려있는 경우 행동시키기 */
   ChatroomLinkAct: Function;
   /** subscribe과 localPush의 채팅방 입장 행동을 통일함 */
-  go_to_chatroom_without_admob_act(_info: any, _file?: FileInfo, target_chatroom = 'portal/subscribes/chat-room') {
+  go_to_chatroom_without_admob_act(_info: any, _file?: FileInfo) {
     this.has_new_channel_msg = false;
     if (_info['update']) delete _info['update'];
     if (this.ChatroomLinkAct)
       this.ChatroomLinkAct(_info, _file);
     else this.global.RemoveAllModals(() => {
-      this.navCtrl.navigateForward(target_chatroom, {
+      this.navCtrl.navigateForward('portal/subscribes/chat-room', {
         state: {
           info: _info,
           file: _file,

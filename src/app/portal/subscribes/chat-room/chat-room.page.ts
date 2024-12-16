@@ -230,7 +230,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           delete this.global.PageDismissAct['chatroom-voiddraw'];
         }
         props['dismiss'] = 'chatroom-voiddraw';
-        this.global.ActLikeModal('void-draw', props);
+        this.global.ActLikeModal('portal/subscribes/chat-room/void-draw', props);
       }
     }, { // 5
       icon: 'reader-outline',
@@ -277,7 +277,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           delete this.global.PageDismissAct['chatroom-ionicviewer'];
         }
         props['dismiss'] = 'chatroom-ionicviewer';
-        this.global.ActLikeModal('ionic-viewer', props);
+        this.global.ActLikeModal('portal/subscribes/chat-room/ionic-viewer', props);
       }
     },
     { // 6
@@ -2807,7 +2807,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 delete this.global.PageDismissAct['modify-image'];
               }
               await this.WaitingCurrent();
-              this.global.ActLikeModal('void-draw', {
+              this.global.ActLikeModal('portal/subscribes/chat-room/void-draw', {
                 path: v.data.path || _path,
                 width: v.data.width,
                 height: v.data.height,
@@ -2829,7 +2829,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         delete this.global.PageDismissAct['chatroom-ionicviewer'];
       }
       this.noti.Current = 'IonicViewerPage';
-      this.global.ActLikeModal('ionic-viewer', {
+      this.global.ActLikeModal('portal/subscribes/chat-room/ionic-viewer', {
         info: msg,
         path: _path,
         alt_path: _path,
