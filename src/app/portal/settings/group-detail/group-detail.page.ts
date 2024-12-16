@@ -260,9 +260,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   changeImageContextmenu() {
     let contextAct = async () => {
       if (this.nakama.PromotedGroup[this.isOfficial][this.target][this.info.id]) { // 권한이 있는 경우
-        if (this.info.img) {
-          this.RemoveGroupImageAct();
-        } else try {
+        try {
           let clipboard = await this.global.GetValueFromClipboard();
           switch (clipboard.type) {
             case 'text/plain':
