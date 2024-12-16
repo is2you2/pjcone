@@ -29,6 +29,19 @@
     padding-right: 56px;
 }
 
+.dateLine {
+    text-align: center;
+    font-size: 16px;
+    padding-top: 8px;
+}
+
+.dateText {
+    background-color: var(--chatroom-system-bgcolor);
+    border-radius: 16px;
+    color: var(--default-text-color-direction);
+    padding: 0px 16px;
+}
+
 // 사용자 말풍선
 .msg_balloon {
     width: fit-content;
@@ -105,7 +118,7 @@
     text-align: center;
     vertical-align: middle;
     word-break: keep-all;
-    background-color: var(--chatroom-you-read-here-backgruond);
+    background-color: var(--chatroom-system-bgcolor);
 }
 
 .qoute_text {
@@ -157,7 +170,7 @@
 .qouteDiv {
     padding: 8px 12px;
     max-width: 95vw;
-    color: var(--chatroom-qouteDiv);
+    color: var(--default-text-color-direction);
     font-size: 14px;
 }
 
@@ -268,9 +281,9 @@
 .notice {
     font-size: 12px;
     display: inline;
-    background: #444;
+    background: var(--chatroom-system-bgcolor);
     padding: 4px 8px;
-    color: white;
+    color: var(--default-text-color-direction);
 }
 
 .read_last_here {
@@ -279,7 +292,7 @@
     width: fit-content;
     text-align: center;
     font-size: 12px;
-    background: var(--chatroom-you-read-here-backgruond);
+    background: var(--chatroom-system-bgcolor);
     margin: 4px 0px;
 }
 

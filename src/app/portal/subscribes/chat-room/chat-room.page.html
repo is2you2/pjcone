@@ -50,9 +50,8 @@
               </div>
               <div *ngIf="!msg['is_me'] && !msg.content['noti']">
                 <!-- 날짜 표시 -->
-                <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"
-                  style="text-align: center; font-size: 16px; padding-top: 8px;" (click)="SetOtherAct()">
-                  <span style="color: #888"> {{msg['displayDate']}} </span>
+                <div *ngIf="msg['showInfo'] && msg['showInfo']['date']" class="dateLine" (click)="SetOtherAct()">
+                  <span class="dateText"> {{msg['displayDate']}} </span>
                 </div>
                 <table>
                   <tr>
@@ -153,9 +152,8 @@
               </div>
               <div *ngIf="msg['is_me'] && !msg.content['noti']" class="my_message_right">
                 <!-- 날짜 표시 -->
-                <div *ngIf="msg['showInfo'] && msg['showInfo']['date']"
-                  style="text-align: center; font-size: 16px; padding-top: 8px;" (click)="SetOtherAct()">
-                  <span style="color: #888;"> {{msg['displayDate']}} </span>
+                <div *ngIf="msg['showInfo'] && msg['showInfo']['date']" class="dateLine" (click)="SetOtherAct()">
+                  <span class="dateText"> {{msg['displayDate']}} </span>
                 </div>
                 <table style="display: inline-flex;">
                   <tr>
