@@ -72,7 +72,7 @@
                           <span (click)="user_detail(msg)" class="cursor_pointer">
                             <b>
                               <span
-                                [style]="'color: #' + (nakama.users[isOfficial][target][msg.sender_id]['online'] ? msg.color : '888')">
+                                [style]="'color: ' + (nakama.users[isOfficial][target][msg.sender_id]['online'] ? msg.color : 'var(--offline-user-color)')">
                                 {{nakama.usernameOverride[isOfficial][target][msg.sender_id] || msg.user_display_name ||
                                 lang.text['Profile']['noname_user']}}</span>
                             </b>
@@ -118,7 +118,7 @@
                       </div>
                       <div *ngIf="msg.content['msg']" class="message_content_form">
                         <div class="msg_balloon qouteOnChatBalloon"
-                          [style]="(msg.content['msg'][0] && msg.content['msg'][0][0].size) ? 'padding: 0; margin: 0' : ('background-color: #' + msg.color + 'bb')">
+                          [style]="(msg.content['msg'][0] && msg.content['msg'][0][0].size) ? 'padding: 0; margin: 0' : ('background-color: ' + (msg.color_bg || (msg.color + 'bb')))">
                           <div *ngFor="let line of msg.content['msg']; let i = index" class="msg_inside_balloon">
                             <span>
                               <span *ngFor="let part of line">
@@ -169,7 +169,8 @@
                           <span class="time_form message_span_form_me" (click)="SetOtherAct()">{{msg['msgTime']}}</span>
                           <span (click)="user_detail(msg)" class="cursor_pointer">
                             <b>
-                              <span [style]="'color: #' + (nakama.users.self['online'] ? msg.color : '888')">
+                              <span
+                                [style]="'color: ' + (nakama.users.self['online'] ? msg.color : 'var(--offline-user-color)')">
                                 {{msg.user_display_name || lang.text['Profile']['noname_user']}}</span>
                             </b>
                           </span>
@@ -214,7 +215,7 @@
                         <div *ngIf="msg.content['edited']" class="edited_form">
                           {{'(' + lang.text['ChatRoom']['MsgEdited'] + ')'}}</div>
                         <div class="msg_balloon qouteOnChatBalloon"
-                          [style]="(msg.content['msg'][0] && msg.content['msg'][0][0].size) ? 'padding: 0; margin: 0' : ('background-color: #' + msg.color + 'bb')">
+                          [style]="(msg.content['msg'][0] && msg.content['msg'][0][0].size) ? 'padding: 0; margin: 0' : ('background-color: ' + (msg.color_bg || (msg.color + 'bb')))">
                           <div *ngFor="let line of msg.content['msg']" class="msg_inside_balloon">
                             <span>
                               <span *ngFor="let part of line">
@@ -352,7 +353,7 @@
           </tr>
           <tr class="thumbnail_parts" *ngIf="last_message_viewer.user_id" (click)="scroll_down_logs()">
             <td class="bottom_thumbnail imageForm">
-              <span [style]="'margin-right: 8px; color: #' + last_message_viewer.color">
+              <span [style]="'margin-right: 8px; color: ' + last_message_viewer.color">
                 <b>{{(last_message_viewer.is_me ? nakama.users.self['display_name'] :
                   nakama.users[isOfficial][target][last_message_viewer.user_id].display_name)
                   || lang.text['Profile']['noname_user']}}</b></span>

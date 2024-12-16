@@ -2458,37 +2458,6 @@ export class NakamaService {
     loading.dismiss();
   }
 
-  check_if_online() {
-    let as_admin = this.get_all_server_info(true, true);
-    if (as_admin.length) {
-      //   this.bgmode.setDefaults({
-      //     title: this.lang.text['GlobalAct']['OnlineMode'],
-      //     text: this.lang.text['GlobalAct']['OnlineMode_text'],
-      //     icon: 'icon_mono',
-      //     color: 'ffd94e', // 모자 밑단 노란색
-      //   });
-      //   this.bgmode.configure({
-      //     title: this.lang.text['GlobalAct']['OnlineMode'],
-      //     text: this.lang.text['GlobalAct']['OnlineMode_text'],
-      //     icon: 'icon_mono',
-      //     color: 'ffd94e', // 모자 밑단 노란색
-      //   });
-      // } else {
-      //   this.bgmode.setDefaults({
-      //     title: this.lang.text['GlobalAct']['OfflineMode'],
-      //     text: this.lang.text['GlobalAct']['OfflineMode_text'],
-      //     icon: 'icon_mono',
-      //     color: 'ffd94e', // 모자 밑단 노란색
-      //   });
-      //   this.bgmode.configure({
-      //     title: this.lang.text['GlobalAct']['OfflineMode'],
-      //     text: this.lang.text['GlobalAct']['OfflineMode_text'],
-      //     icon: 'icon_mono',
-      //     color: 'ffd94e', // 모자 밑단 노란색
-      //   });
-    }
-  }
-
   /** 소켓이 행동할 때 행동중인 무언가가 있을 경우 검토하여 처리 */
   socket_reactive = {};
   /** 소켓 연결이 시작될 때 행동  
@@ -3287,7 +3256,7 @@ export class NakamaService {
   /** 발신인 표시를 위한 메시지 추가 가공 */
   check_sender_and_show_name(c: ChannelMessage, _is_official: string, _target: string) {
     try {
-      c['color'] = (c.sender_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
+      c['color'] = '#' + (c.sender_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
       if (c.sender_id == this.servers[_is_official][_target].session.user_id) {
         c['user_display_name'] = this.users.self['display_name'];
         c['is_me'] = true;
