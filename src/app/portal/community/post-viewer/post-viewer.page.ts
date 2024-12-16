@@ -44,8 +44,9 @@ export class PostViewerPage implements OnInit, OnDestroy {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;
         this.PostInfo = navParams.data;
+        this.ScrollPostId = `ScrollPostId_${Date.now()}`;
+        this.PostContentId = `PostContentId_${Date.now()}`;
         this.CurrentIndex = navParams.index;
-        this.initialize();
       } catch (e) { }
     });
   }
@@ -59,6 +60,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
   }
   BackButtonPressed = false;
   ionViewWillEnter() {
+    this.initialize();
     this.WaitingLoaded = true;
     this.global.StoreShortCutAct('post-viewer');
     this.global.p5KeyShortCut['Escape'] = () => {
@@ -67,6 +69,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
     this.IsFocusOnHere = true;
   }
   ScrollDiv: HTMLDivElement;
+  ScrollPostId = 'ScrollPostId';
   /** 블렌더 파일 불러오기에 사용된 개체들 */
   blenderViewers: p5[] = [];
   /** 동영상, 음성 파일은 URL을 기록하고 있기 */
@@ -208,7 +211,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
       this.ContentChanging = false;
       return;
     }
-    if (!this.ScrollDiv) this.ScrollDiv = document.getElementById('ScrollPost') as HTMLDivElement;
+    if (!this.ScrollDiv) this.ScrollDiv = document.getElementById(this.ScrollPostId) as HTMLDivElement;
     this.ScrollDiv.scrollTo({ top: 0 });
     if (this.p5canvas) this.p5canvas.remove();
     this.CurrentIndex = tmp_calced;
@@ -220,10 +223,11 @@ export class PostViewerPage implements OnInit, OnDestroy {
   ResultSharedAddress: any;
   @ViewChild('QuickPostView') QuickPostView: IonModal;
   p5canvas: p5;
+  PostContentId = 'PostContentId';
   AlreadyHaveGodot = false;
   /** 내용에 파일 뷰어를 포함한 구성 만들기 */
   create_content() {
-    let contentDiv = document.getElementById('PostContent');
+    let contentDiv = document.getElementById(this.PostContentId);
     this.p5canvas = new p5((p: p5) => {
       p.setup = async () => {
         p.noCanvas();
