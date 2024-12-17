@@ -891,7 +891,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 });
               }
               this.canvasDiv.appendChild(mediaObject['elt']);
-              mediaObject['elt'].onended = () => {
+              mediaObject['elt'].onended = async () => {
                 if (this.AutoPlayNext) {
                   let ChangeTo = -1;
                   for (let i = this.RelevanceIndex, j = this.Relevances.length, k = 1; i < j; i++, k++)
@@ -899,7 +899,22 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                       ChangeTo = k;
                       break;
                     }
-                  if (ChangeTo > 0) this.ChangeToAnother(ChangeTo);
+                  if (ChangeTo > 0) {
+                    if (this.PageWillDestroy) {
+                      if (ChangeTo > this.Relevances.length) return;
+                      this.RelevanceIndex = this.RelevanceIndex + ChangeTo;
+                      let nextFileInfo = this.Relevances[this.RelevanceIndex - 1];
+                      URL.revokeObjectURL(this.FileURL);
+                      if (nextFileInfo.content.url) {
+                        this.FileURL = nextFileInfo.content.url;
+                      } else {
+                        let blob = await this.indexed.loadBlobFromUserPath(nextFileInfo.content.path, nextFileInfo.content.type);
+                        this.FileURL = URL.createObjectURL(blob);
+                      }
+                      mediaObject['elt'].src = this.FileURL;
+                      mediaObject.play();
+                    } else this.ChangeToAnother(ChangeTo);
+                  }
                 }
               }
               ResizeAudio();
@@ -1089,10 +1104,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                     mediaObject['elt'].onended = null;
                   }
                 } else if (this.PageWillDestroy) {
-                  document.exitPictureInPicture();
-                  p.remove();
-                  mediaObject['elt'].onended = null;
-                  URL.revokeObjectURL(this.FileURL);
+                  if (document.pictureInPictureElement)
+                    document.exitPictureInPicture();
                 }
               }
               mediaObject.showControls();
@@ -1105,10 +1118,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let SearchAndPlayNextVideo = async () => {
             let tmp_calced = this.RelevanceIndex + 1;
             if (tmp_calced > this.Relevances.length) {
-              document.exitPictureInPicture();
-              p.remove();
-              mediaObject['elt'].onended = null;
-              URL.revokeObjectURL(this.FileURL);
+              if (document.pictureInPictureElement)
+                document.exitPictureInPicture();
               return;
             }
             this.RelevanceIndex = tmp_calced;
@@ -1117,6 +1128,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               SearchAndPlayNextVideo();
               return;
             }
+            URL.revokeObjectURL(this.FileURL);
             if (nextFileInfo.content.url) {
               this.FileURL = nextFileInfo.content.url;
             } else {
