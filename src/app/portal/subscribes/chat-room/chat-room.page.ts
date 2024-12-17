@@ -1079,6 +1079,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.open_first_file();
             else this.open_last_file();
             break;
+          case 'W':
+            if (document.activeElement != document.getElementById(this.ChannelUserInputId))
+              this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollTop - KeySrcrollSize, behavior: 'smooth' });
+            break;
           case 'E':
             this.open_ext_with_delay();
             break;
@@ -1094,15 +1098,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         ExtTarget[index]['context'] ? ExtTarget[index]['context'](true) : ExtTarget[index]['act']();
     }
     const KeySrcrollSize = 480;
-    this.global.p5KeyShortCut['BottomTab'] = (key: string) => {
-      if (document.activeElement != document.getElementById(this.ChannelUserInputId)) {
-        switch (key) {
-          case 'W':
-            this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollTop - KeySrcrollSize, behavior: 'smooth' });
-            break;
-        }
-      }
-    }
     this.global.p5KeyShortCut['SKeyAct'] = () => {
       if (document.activeElement != document.getElementById(this.ChannelUserInputId)) {
         this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollTop + KeySrcrollSize, behavior: 'smooth' });
