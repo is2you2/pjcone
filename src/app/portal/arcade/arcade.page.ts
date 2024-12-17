@@ -48,23 +48,13 @@ export class ArcadePage implements OnInit {
   }
 
   /** 그림판 열기 행동 */
-  async QuickLinkAct() {
-    let clipboard = await this.global.GetValueFromClipboard();
-    switch (clipboard.type) {
-      // 이미지인 경우 파일 뷰어로 열기
-      case 'image/png':
-        const file: File = clipboard.value;
-        this.SelectVoidDrawBackgroundImage({ target: { files: [file] } });
-        break;
-      default:
-        this.global.PageDismissAct['voiddraw-remote'] = (_v: any) => {
-          delete this.global.PageDismissAct['voiddraw-remote'];
-        }
-        this.global.ActLikeModal('portal/arcade/void-draw', {
-          dismiss: 'voiddraw-remote',
-        });
-        break;
+  QuickLinkAct() {
+    this.global.PageDismissAct['voiddraw-remote'] = (_v: any) => {
+      delete this.global.PageDismissAct['voiddraw-remote'];
     }
+    this.global.ActLikeModal('portal/arcade/void-draw', {
+      dismiss: 'voiddraw-remote',
+    });
   }
 
   @ViewChild('ArcadeDetail') ArcadeDetail: IonModal;
@@ -147,7 +137,20 @@ export class ArcadePage implements OnInit {
 
   /** 그림판 우클릭 행동, 첨부파일 우선 불러오기 행동하기 */
   QuickLinkContextmenu() {
-    document.getElementById('arcade_voiddraw_img').click();
+    let Quicklink = async () => {
+      let clipboard = await this.global.GetValueFromClipboard();
+      switch (clipboard.type) {
+        // 이미지인 경우 파일 뷰어로 열기
+        case 'image/png':
+          const file: File = clipboard.value;
+          this.SelectVoidDrawBackgroundImage({ target: { files: [file] } });
+          break;
+        default:
+          document.getElementById('arcade_voiddraw_img').click();
+          break;
+      }
+    }
+    Quicklink();
     return false;
   }
 
