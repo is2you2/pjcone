@@ -92,9 +92,14 @@ export class PostViewerPage implements OnInit, OnDestroy {
           case 'ArrowLeft':
             this.ChangeToAnother(-1);
             break;
+          case 'KeyE': // 빠른 편집
+            if (ev['shiftKey']) this.EditPost();
+            break;
           case 'KeyD': // 오른쪽 이동
+            // 빠른 삭제 단축키
+            if (ev['shiftKey']) this.RemovePost();
           case 'ArrowRight':
-            this.ChangeToAnother(1);
+            if (!ev['shiftKey']) this.ChangeToAnother(1);
             break;
           case 'KeyQ': // 첫번째 첨부파일 열기
             let createRelevances = [];

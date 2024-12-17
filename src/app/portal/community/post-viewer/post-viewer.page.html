@@ -41,14 +41,20 @@
   <table *ngIf="isOwner && CurrentIndex >= 0" style="width: 100%; background-color: black;">
     <tr>
       <td>
-        <ion-button expand="block" (click)="EditPost()">
-          {{lang.text['AddPost']['EditTitle']}}
-        </ion-button>
+        <div style="position: relative;">
+          <div *ngIf="global.ShowHint" class="shortcut_hint">Shift + E</div>
+          <ion-button expand="block" (click)="EditPost()">
+            {{lang.text['AddPost']['EditTitle']}}
+          </ion-button>
+        </div>
       </td>
       <td>
-        <ion-button color="danger" expand="block" (click)="RemovePost()">
-          {{lang.text['PostViewer']['RemovePost']}}
-        </ion-button>
+        <div style="position: relative;">
+          <div *ngIf="global.ShowHint" class="shortcut_hint">Shift + D</div>
+          <ion-button color="danger" expand="block" (click)="RemovePost()">
+            {{lang.text['PostViewer']['RemovePost']}}
+          </ion-button>
+        </div>
       </td>
     </tr>
   </table>
