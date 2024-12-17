@@ -19,7 +19,7 @@
     </div>
     <ion-icon *ngIf="HaveRelevances" class="relevance_change" style="padding-right: 4px;" slot="end"
       name="arrow-back-circle-outline" (click)="ChangeToAnother(-1)"></ion-icon>
-    <ion-label *ngIf="HaveRelevances" slot="end">{{ RelevanceIndex + ' / ' + Relevances.length}}</ion-label>
+    <ion-label *ngIf="HaveRelevances" slot="end">{{ RelevanceIndex + ' / ' + Relevances.length }}</ion-label>
     <div *ngIf="global.ShowHint && !isHTMLViewer && HaveRelevances" style="position: relative;" slot="end">
       <div class="shortcut_hint shortcut_change_viewer">D</div>
     </div>

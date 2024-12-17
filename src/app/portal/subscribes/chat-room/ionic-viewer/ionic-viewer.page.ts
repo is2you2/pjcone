@@ -116,6 +116,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   content_related_creator: ContentCreatorInfo[];
   isOfficial: string;
   target: string;
+  channelId: string;
   useP5Navigator = true;
   MessageInfo: any;
   /** 내가 보낸 첨부파일인지 검토 */
@@ -247,6 +248,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.FileHeader = document.getElementById(this.FileHeaderId);
     this.isOfficial = this.navParams.isOfficial;
     this.target = this.navParams.target;
+    this.channelId = this.navParams.channel_id;
     try {
       this.IsMyMessage = this.isOfficial == 'local' || this.MessageInfo.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id;
     } catch (e) {
@@ -287,6 +289,40 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           this.HaveRelevances = Boolean(this.Relevances.length > 1);
         } else this.HaveRelevances = false;
         this.CreateContentInfo();
+        // 채널 채팅으로부터 들어온 경우 모든 대화 목록으로부터 연관 콘테츠 불러오기
+        if (this.channelId) {
+          const VeryFirstTime = new Date(this.navParams?.relevance[0]?.create_time).getTime();
+          let LoadAllRelevances = async () => {
+            const TARGET_FOLDER_PATH = `servers/${this.isOfficial}/${this.target}/channels/${this.channelId}/chats/`;
+            let list = await this.indexed.GetFileListFromDB(TARGET_FOLDER_PATH);
+            for (let i = list.length - 1; i >= 0; i--) {
+              let fileInfo = await this.indexed.GetFileInfoFromDB(list[i]);
+              switch (fileInfo.mode) {
+                // 파일인 경우
+                case 33206:
+                  let blob = await this.indexed.loadBlobFromUserPath(list[i], '');
+                  let text = await blob.text();
+                  let json = JSON.parse(text);
+                  for (let j = json.length - 1; j >= 0; j--) {
+                    const CurrentMsg = json[j];
+                    // 파일이 있는 메시지에 한해서 누적시키기
+                    if (json[j]?.content?.filename) {
+                      if (VeryFirstTime > new Date(json[j].create_time).getTime()) {
+                        this.Relevances.unshift(CurrentMsg);
+                        this.RelevanceIndex++;
+                      }
+                    }
+                  }
+                  break;
+                // 폴더인 경우
+                case 16893:
+                default:
+                  break;
+              }
+            }
+          }
+          LoadAllRelevances();
+        }
         break;
     }
     this.showEdit = !Boolean(this.navParams.noEdit);
