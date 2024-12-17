@@ -833,10 +833,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       p.setup = () => {
         let timerDiv = document.getElementById('p5timer');
         let canvas = p.createCanvas(timerDiv.clientWidth, timerDiv.clientHeight);
+        p.pixelDensity(1);
         canvas.id('timer');
         canvas.style('position', 'inherit');
-        canvas.style('width', '100%');
-        canvas.style('height', '100%');
         canvas.parent(timerDiv);
         p.noStroke();
       }
@@ -866,6 +865,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           p.rect(0, 0, p.lerp(0, p.width, lerpVal), p.height);
         }
         p.pop();
+      }
+      p.windowResized = () => {
+        setTimeout(() => {
+          let timerDiv = document.getElementById('p5timer');
+          p.resizeCanvas(timerDiv.clientWidth, timerDiv.clientHeight);
+        }, 50);
       }
       let easeOut = (t: number) => {
         return Flip(p.sq(Flip(t)));
