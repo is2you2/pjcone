@@ -15,6 +15,7 @@ import { WebrtcService } from 'src/app/webrtc.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
+import { FloatButtonService } from 'src/app/float-button.service';
 
 export interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -74,6 +75,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     private webrtc: WebrtcService,
     private p5toast: P5ToastService,
     private alertCtrl: AlertController,
+    private floatButton: FloatButtonService,
   ) { }
 
   /** 채널 정보 */
@@ -318,25 +320,27 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       icon: 'mic-circle-outline',
       name: this.lang.text['ChatRoom']['Voice'],
       act: async () => {
+        if (this.global.useVoiceRecording && this.global.useVoiceRecording != 'ChatRoomRecording') {
+          this.p5toast.show({
+            text: this.lang.text['GlobalAct'][this.global.useVoiceRecording],
+          });
+          return;
+        }
         this.useVoiceRecording = !this.useVoiceRecording;
         if (this.useVoiceRecording) { // 녹음 시작
           let req = await VoiceRecorder.hasAudioRecordingPermission();
           if (req.value) { // 권한 있음
+            this.global.useVoiceRecording = 'ChatRoomRecording';
             this.extended_buttons[7].icon = 'stop-circle-outline';
             this.extended_buttons[7].name = this.lang.text['ChatRoom']['VoiceStop'];
             await VoiceRecorder.startRecording();
+            this.CreateFloatingVoiceTimeHistoryAddButton();
             this.p5toast.show({
               text: this.lang.text['ChatRoom']['StartVRecord'],
             });
           } else await VoiceRecorder.requestAudioRecordingPermission();
         } else { // 녹음 종료
-          let data = await VoiceRecorder.stopRecording();
-          let blob = this.global.Base64ToBlob(`${data.value.mimeType},${data.value.recordDataBase64}`);
-          blob['name'] = `${this.lang.text['ChatRoom']['VoiceRecord']}.${data.value.mimeType.split('/').pop().split(';')[0]}`;
-          blob['type_override'] = data.value.mimeType;
-          this.selected_blobFile_callback_act(blob);
-          this.extended_buttons[7].icon = 'mic-circle-outline';
-          this.extended_buttons[7].name = this.lang.text['ChatRoom']['Voice'];
+          this.StopAndSaveVoiceRecording();
         }
       }
     }, { // 8
@@ -583,6 +587,30 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     },];
 
+  /** 페이지는 벗어났으나 계속 녹음을 유지중일 때 floating 버튼을 사용 */
+  CreateFloatingVoiceTimeHistoryAddButton() {
+    this.floatButton.RemoveFloatButton('chatroom-record');
+    let float_button = this.floatButton.AddFloatButton('chatroom-record', 'mic-outline');
+    float_button.mouseClicked(() => {
+      this.p5toast.show({
+        text: `${this.lang.text['GlobalAct']['ChatRoomRecording']}`,
+      });
+    });
+  }
+
+  async StopAndSaveVoiceRecording() {
+    this.floatButton.RemoveFloatButton('chatroom-record');
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SavingRecord'] });
+    loading.present();
+    try {
+      let blob = await this.global.StopAndSaveVoiceRecording();
+      await this.selected_blobFile_callback_act(blob);
+    } catch (e) { }
+    loading.dismiss();
+    this.extended_buttons[7].icon = 'mic-circle-outline';
+    this.extended_buttons[7].name = this.lang.text['ChatRoom']['Voice'];
+  }
+
   /** 이미지를 불러온 후 즉시 그림판에 대입하기 */
   async SelectVoidDrawBackgroundImage(ev: any) {
     const file: File = ev.target.files[0];
@@ -666,12 +694,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   useVoiceRecording = false;
 
   ionViewDidEnter() {
-    VoiceRecorder.getCurrentStatus().then(v => {
-      if (v.status == 'RECORDING') {
-        // 게시물 생성기에서 음성녹음중인 상태로 들어오면 음성녹음을 할 수 없음
-        this.extended_buttons[7].isHide = true;
-      }
-    });
     this.lock_modal_open = false;
     this.init_noties();
     this.AddShortCut();
@@ -2959,6 +2981,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
     if (isPlatform != 'DesktopPWA')
       this.global.ArcadeWithFullScreen = false;
     this.global.portalHint = true;
@@ -2977,9 +3000,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     if (this.p5canvas)
       this.p5canvas.remove()
     this.nakama.OnTransferMessage = {};
-    try {
-      if (this.useVoiceRecording) VoiceRecorder.stopRecording();
-    } catch (e) { }
     delete this.nakama.StatusBarChangedCallback;
   }
 }

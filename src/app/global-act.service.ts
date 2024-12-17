@@ -2048,15 +2048,19 @@ export class GlobalActService {
     return str;
   }
 
+  /** 페이지에서 음성 녹음을 사용중이라면 추가 녹음을 진행하지 못함 */
+  useVoiceRecording = '';
   /** 음성녹음을 멈추고 저장된 값을 돌려주기 */
   async StopAndSaveVoiceRecording() {
     try {
       let data = await VoiceRecorder.stopRecording();
+      this.useVoiceRecording = null;
       let blob = this.Base64ToBlob(`${data.value.mimeType},${data.value.recordDataBase64}`);
       blob['name'] = `${this.lang.text['ChatRoom']['VoiceRecord']}.${data.value.mimeType.split('/').pop().split(';')[0]}`;
       blob['type_override'] = data.value.mimeType;
       return blob;
     } catch (e) {
+      this.useVoiceRecording = null;
       this.p5toast.show({
         text: `${this.lang.text['AddPost']['FailedToSaveVoice']}:${e}`,
       });

@@ -13,6 +13,7 @@ import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-a
 import { ActivatedRoute, Router } from '@angular/router';
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
 import { ExtendButtonForm } from '../../subscribes/chat-room/chat-room.page';
+import { FloatButtonService } from 'src/app/float-button.service';
 
 /** 서버에서 생성한 경우 */
 interface RemoteInfo {
@@ -51,6 +52,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     private loadingCtrl: LoadingController,
     public global: GlobalActService,
     private navCtrl: NavController,
+    private floatButton: FloatButtonService,
   ) { }
 
   /** 작성된 내용 */
@@ -173,16 +175,24 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       name: this.lang.text['ChatRoom']['Voice'],
       act: async () => {
         if (this.isButtonClicked) return;
+        if (this.global.useVoiceRecording && this.global.useVoiceRecording != 'TodoRecording') {
+          this.p5toast.show({
+            text: this.lang.text['GlobalAct'][this.global.useVoiceRecording],
+          });
+          return;
+        }
         this.useVoiceRecording = !this.useVoiceRecording;
         if (this.useVoiceRecording) { // 녹음 시작
           let req = await VoiceRecorder.hasAudioRecordingPermission();
           if (req.value) { // 권한 있음
+            this.global.useVoiceRecording = 'TodoRecording';
             this.extended_buttons[4].icon = 'stop-circle-outline';
             this.extended_buttons[4].name = this.lang.text['ChatRoom']['VoiceStop'];
             this.p5toast.show({
               text: this.lang.text['ChatRoom']['StartVRecord'],
             });
             await VoiceRecorder.startRecording();
+            this.CreateFloatingVoiceTimeHistoryAddButton();
           } else { // 권한이 없다면 권한 요청 및 UI 복구
             this.useVoiceRecording = false;
             this.extended_buttons[4].icon = 'mic-circle-outline';
@@ -198,6 +208,17 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.toggle_custom_attach();
       }
     }];
+
+  /** 페이지는 벗어났으나 계속 녹음을 유지중일 때 floating 버튼을 사용 */
+  CreateFloatingVoiceTimeHistoryAddButton() {
+    this.floatButton.RemoveFloatButton('addtodo-record');
+    let float_button = this.floatButton.AddFloatButton('addtodo-record', 'mic-outline');
+    float_button.mouseClicked(() => {
+      this.p5toast.show({
+        text: `${this.lang.text['GlobalAct']['TodoRecording']}`,
+      });
+    });
+  }
 
   /** 이미지를 불러온 후 즉시 그림판에 대입하기 */
   async SelectVoidDrawBackgroundImage(ev: any) {
@@ -234,6 +255,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   async StopAndSaveVoiceRecording() {
+    this.floatButton.RemoveFloatButton('addtodo-record');
     let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SavingRecord'] });
     loading.present();
     try {
@@ -491,12 +513,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.WaitingLoaded = true;
     this.lock_modal_open = false;
     if (!this.navParams) return;
-    VoiceRecorder.getCurrentStatus().then(v => {
-      if (v.status == 'RECORDING') {
-        // 게시물 생성기에서 음성녹음중인 상태로 들어오면 음성녹음을 할 수 없음
-        this.extended_buttons[4].isHide = true;
-      }
-    });
     this.WillLeavePage = false;
     this.LoadStorageList();
     let received_json: any;
@@ -1793,6 +1809,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
     this.global.portalHint = true;
     this.indexed.GetFileListFromDB('tmp_files/todo', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     delete this.nakama.socket_reactive['add_todo_menu'];

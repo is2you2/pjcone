@@ -582,10 +582,17 @@ export class AddPostPage implements OnInit, OnDestroy {
       name: this.lang.text['ChatRoom']['Voice'],
       act: async () => {
         if (this.isSaveClicked) return;
+        if (this.global.useVoiceRecording && this.global.useVoiceRecording != 'PostRecording') {
+          this.p5toast.show({
+            text: this.lang.text['GlobalAct'][this.global.useVoiceRecording],
+          });
+          return;
+        }
         this.useVoiceRecording = !this.useVoiceRecording;
         if (this.useVoiceRecording) { // 녹음 시작
           let req = await VoiceRecorder.hasAudioRecordingPermission();
           if (req.value) { // 권한 있음
+            this.global.useVoiceRecording = 'PostRecording';
             this.extended_buttons[5].icon = 'stop-circle-outline';
             this.p5toast.show({
               text: this.lang.text['ChatRoom']['StartVRecord'],
