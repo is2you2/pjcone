@@ -103,41 +103,46 @@ export class ArcadePage implements OnInit {
     document.getElementById('arcade_file_load').click();
   }
   async LoadFileFromLocalAct(ev: any) {
+    let StartFile: FileInfo;
+    let AllFiles: any[] = [];
     try {
-      let targetFile = ev.target.files[0];
-      let fileInfo: FileInfo = {};
-      fileInfo['filename'] = targetFile.name;
-      fileInfo['file_ext'] = targetFile.name.split('.').pop() || targetFile.type || this.lang.text['ChatRoom']['unknown_ext'];
-      fileInfo['size'] = targetFile.size;
-      fileInfo['type'] = targetFile.type || targetFile.type_override;
-      fileInfo.blob = targetFile;
-      this.global.set_viewer_category_from_ext(fileInfo);
-      fileInfo.path = `tmp_files/arcade/${targetFile.name}`;
-      await this.indexed.saveBlobToUserPath(targetFile, fileInfo.path);
-      this.global.PageDismissAct['arcade-fileviewer'] = (_v: any) => {
-        this.indexed.GetFileListFromDB(fileInfo.path).then(list => {
-          list.forEach(path => this.indexed.removeFileFromUserPath(path));
+      for (let i = 0, j = ev.target.files.length; i < j; i++) {
+        let fileInfo: FileInfo = {};
+        fileInfo['filename'] = ev.target.files[i].name;
+        fileInfo['file_ext'] = ev.target.files[i].name.split('.').pop() || ev.target.files[i].type || this.lang.text['ChatRoom']['unknown_ext'];
+        fileInfo['size'] = ev.target.files[i].size;
+        fileInfo['type'] = ev.target.files[i].type || ev.target.files[i].type_override;
+        fileInfo.blob = ev.target.files[i];
+        this.global.set_viewer_category_from_ext(fileInfo);
+        fileInfo.path = `tmp_files/arcade/[${i}] ${ev.target.files[i].name}`;
+        await this.indexed.saveBlobToUserPath(ev.target.files[i], fileInfo.path);
+        if (!StartFile) StartFile = fileInfo;
+        AllFiles.push({
+          content: fileInfo,
         });
-        delete this.global.PageDismissAct['arcade-fileviewer'];
       }
-      this.global.ActLikeModal('portal/arcade/ionic-viewer', {
-        info: {
-          content: fileInfo,
-        },
-        relevance: [{
-          content: fileInfo,
-        }],
-        noEdit: true,
-        noTextEdit: true,
-        quick: true,
-        dismiss: 'arcade-fileviewer',
-      });
     } catch (e) {
       this.p5toast.show({
         text: `${this.lang.text['Arcade']['InputError']}: ${e}`,
       });
       console.log('아케이드 파일 입력 실패: ', e);
     }
+    this.global.PageDismissAct['arcade-fileviewer'] = (_v: any) => {
+      this.indexed.GetFileListFromDB('tmp_files/arcade/').then(list => {
+        list.forEach(path => this.indexed.removeFileFromUserPath(path));
+      });
+      delete this.global.PageDismissAct['arcade-fileviewer'];
+    }
+    this.global.ActLikeModal('portal/arcade/ionic-viewer', {
+      info: {
+        content: StartFile,
+      },
+      relevance: AllFiles,
+      noEdit: true,
+      noTextEdit: true,
+      quick: true,
+      dismiss: 'arcade-fileviewer',
+    });
     document.getElementById('arcade_file_load')['value'] = null;
   }
   /** 클립보드로부터 불러오기 */
