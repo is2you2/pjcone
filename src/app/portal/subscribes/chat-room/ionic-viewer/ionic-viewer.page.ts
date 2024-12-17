@@ -50,7 +50,26 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private navCtrl: NavController,
   ) { }
+
   ngOnDestroy() {
+    if (this.CacheMediaObject) {
+      if (this.CacheMediaObject.elt != document.pictureInPictureElement)
+        this.CacheMediaObject.remove();
+      this.CacheMediaObject = null;
+    }
+    let vid_obj = document.getElementById(this.CurrentVideoId);
+    if (vid_obj && vid_obj != document.pictureInPictureElement)
+      vid_obj.remove();
+    if (!document.pictureInPictureElement) {
+      if (this.global.PIPLinkedVideoElement) {
+        this.global.PIPLinkedVideoElement.onloadedmetadata = null;
+        this.global.PIPLinkedVideoElement.onended = null;
+        this.global.PIPLinkedVideoElement.onleavepictureinpicture = null;
+      }
+      this.global.PIPLinkedVideoElement = null;
+      URL.revokeObjectURL(this.FileURL);
+    }
+
     this.cont.abort();
     this.cont = null;
     if (this.FilenameElement) {
@@ -520,6 +539,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   cont: AbortController;
   /** 비디오/오디오 콘텐츠가 종료되면 끝에서 다음 콘텐츠로 자동 넘김 */
   AutoPlayNext = false;
+  CurrentVideoId = 'ionicviewer_vid_obj';
   @ViewChild('FileMenu') FileMenu: IonPopover;
   async init_viewer() {
     if (this.FilenameElement) {
@@ -1022,7 +1042,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               for (let i = 0, j = videoElements.length; i < j; i++)
                 if (videoElements[i] != mediaObject.elt)
                   videoElements[i].remove();
-              mediaObject.id('ionicviewer_vid_obj');
+              this.CurrentVideoId = `ionicviewer_vid_obj_${Date.now()}`;
+              mediaObject.id(this.CurrentVideoId);
               if (this.global.PIPLinkedVideoElement) {
                 mediaObject.elt.remove();
                 mediaObject.elt = this.global.PIPLinkedVideoElement;
@@ -1034,7 +1055,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                   this.global.PIPLinkedVideoElement.onended = null;
                   this.global.PIPLinkedVideoElement.onleavepictureinpicture = null;
                   // 페이지를 나간 상태라면 PIP 종료와 동시에 비디오 삭제
-                  if (!document.getElementById('ionicviewer_vid_obj')) {
+                  if (!document.getElementById(this.CurrentVideoId)) {
                     this.global.PIPLinkedVideoElement.onplay = null;
                     this.global.PIPLinkedVideoElement.src = '';
                     this.global.PIPLinkedVideoElement.load();
@@ -1494,6 +1515,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     }, 500);
   }
 
+  CurrentTextId = 'ionic_viewer_text_content';
   /** 구문 강조가 가능한 재구성처리 */
   open_text_reader(p = this.p5canvas) {
     if (!this.p5SyntaxHighlightReader) {
@@ -1561,7 +1583,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         insertChunk();
       }
       updateTextInChunks(getText);
-      line.id('ionic_viewer_text_content');
+      this.CurrentTextId = `ionic_viewer_text_content_${Date.now()}`;
+      line.id(this.CurrentTextId);
       line.style('white-space', 'pre-wrap');
       line.parent(this.p5SyntaxHighlightReader);
     } catch (e) {
@@ -1626,7 +1649,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           line = p.createDiv(getText)
           break;
       }
-      line.id('ionic_viewer_text_content');
+      line.id(this.CurrentTextId);
       line.style('white-space', 'pre-wrap');
       line.parent(this.p5SyntaxHighlightReader);
     }
@@ -2397,27 +2420,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       default:
         break;
     }
-    URL.revokeObjectURL(this.FileURL);
     this.InnerChangedPage = true;
-  }
-
-  ionViewDidLeave() {
-    if (this.CacheMediaObject) {
-      if (this.CacheMediaObject.elt != document.pictureInPictureElement)
-        this.CacheMediaObject.remove();
-      this.CacheMediaObject = null;
-    }
-    let vid_obj = document.getElementById('ionicviewer_vid_obj');
-    if (vid_obj && vid_obj != document.pictureInPictureElement)
-      vid_obj.remove();
-    if (!document.pictureInPictureElement) {
-      if (this.global.PIPLinkedVideoElement) {
-        this.global.PIPLinkedVideoElement.onloadedmetadata = null;
-        this.global.PIPLinkedVideoElement.onended = null;
-        this.global.PIPLinkedVideoElement.onleavepictureinpicture = null;
-      }
-      this.global.PIPLinkedVideoElement = null;
-    }
   }
 
   /** 파일이 URL로 구성되어있는 경우 URL 주소를 복사함 */
