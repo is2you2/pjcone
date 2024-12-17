@@ -84,10 +84,18 @@ export class PostViewerPage implements OnInit, OnDestroy {
   /** PC에서 키를 눌러 컨텐츠 전환 */
   ChangeContentWithKeyInput() {
     if (this.p5canvas) {
+      const KeySrcrollSize = 480;
+      if (!this.ScrollDiv) this.ScrollDiv = document.getElementById(this.ScrollPostId) as HTMLDivElement;
       // 단축키 행동
       this.p5canvas.keyPressed = async (ev) => {
         if (!this.IsFocusOnHere) return;
         switch (ev['code']) {
+          case 'KeyW': // 위로 스크롤
+            this.ScrollDiv.scrollTo({ top: this.ScrollDiv.scrollTop - KeySrcrollSize, behavior: 'smooth' });
+            break;
+          case 'KeyS': // 아래로 스크롤
+            this.ScrollDiv.scrollTo({ top: this.ScrollDiv.scrollTop + KeySrcrollSize, behavior: 'smooth' });
+            break;
           case 'KeyA': // 왼쪽 이동
           case 'ArrowLeft':
             this.ChangeToAnother(-1);
@@ -217,7 +225,6 @@ export class PostViewerPage implements OnInit, OnDestroy {
       this.ContentChanging = false;
       return;
     }
-    if (!this.ScrollDiv) this.ScrollDiv = document.getElementById(this.ScrollPostId) as HTMLDivElement;
     this.ScrollDiv.scrollTo({ top: 0 });
     if (this.p5canvas) this.p5canvas.remove();
     this.CurrentIndex = tmp_calced;

@@ -1093,6 +1093,21 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && ExtTarget.length > index)
         ExtTarget[index]['context'] ? ExtTarget[index]['context'](true) : ExtTarget[index]['act']();
     }
+    const KeySrcrollSize = 480;
+    this.global.p5KeyShortCut['BottomTab'] = (key: string) => {
+      if (document.activeElement != document.getElementById(this.ChannelUserInputId)) {
+        switch (key) {
+          case 'W':
+            this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollTop - KeySrcrollSize, behavior: 'smooth' });
+            break;
+        }
+      }
+    }
+    this.global.p5KeyShortCut['SKeyAct'] = () => {
+      if (document.activeElement != document.getElementById(this.ChannelUserInputId)) {
+        this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollTop + KeySrcrollSize, behavior: 'smooth' });
+      }
+    }
     this.global.p5KeyShortCut['EnterAct'] = () => {
       if (document.activeElement != document.getElementById(this.ChannelUserInputId))
         setTimeout(() => {

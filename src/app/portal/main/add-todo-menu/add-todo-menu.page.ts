@@ -763,6 +763,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.AddShortCut();
   }
 
+  ScrollDiv: HTMLElement;
   AddShortCut() {
     setTimeout(() => {
       if (this.WillLeavePage) return;
@@ -775,6 +776,22 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             this.desc_input.focus();
           }, 0);
         if (ev['ctrlKey']) this.saveData();
+      }
+      const KeySrcrollSize = 480;
+      if (!this.ScrollDiv) this.ScrollDiv = document.getElementById('addtodo-scroll');
+      this.global.p5KeyShortCut['BottomTab'] = (key: string) => {
+        if (document.activeElement != this.titleIonInput && document.activeElement != this.desc_input) {
+          switch (key) {
+            case 'W':
+              this.ScrollDiv.scrollTo({ top: this.ScrollDiv.scrollTop - KeySrcrollSize, behavior: 'smooth' });
+              break;
+          }
+        }
+      }
+      this.global.p5KeyShortCut['SKeyAct'] = () => {
+        if (document.activeElement != this.titleIonInput && document.activeElement != this.desc_input) {
+          this.ScrollDiv.scrollTo({ top: this.ScrollDiv.scrollTop + KeySrcrollSize, behavior: 'smooth' });
+        }
       }
     }, 0);
   }

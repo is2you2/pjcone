@@ -11,187 +11,195 @@
   <div id="p5Drop_todo"
     style="position: absolute; width: 100%; height: 100%; display: flex; pointer-events: none; z-index: 500;">
   </div>
-  <table id="main_table" style="width: 100%;">
-    <tr style="height: 100%;">
-      <td style="vertical-align: top;">
-        <div id="p5timer" style="position: fixed; width: 100%; height: 8px; z-index: 500;"></div>
-        <div id="main_div" class="main" style="max-width: 100vw;">
-          <ion-grid *ngIf="isModify" fixed>
-            <ion-row>
-              <ion-col col-33>
-                <ion-item button color="success" [disabled]="isButtonClicked" (click)="doneTodo()">
-                  <ion-label class="ion-text-center">{{lang.text['TodoDetail']['TodoComplete']}}</ion-label>
+  <div id="addtodo-scroll" style="height: 100%; overflow-y: auto;">
+    <div id="p5timer" style="position: fixed; width: 100%; height: 8px; z-index: 500;"></div>
+    <div>
+      <table id="main_table" style="width: 100%;">
+        <tr>
+          <td style="vertical-align: top;">
+            <div id="main_div" class="main" style="max-width: 100vw;">
+              <ion-grid *ngIf="isModify" fixed>
+                <ion-row>
+                  <ion-col col-33>
+                    <ion-item button color="success" [disabled]="isButtonClicked" (click)="doneTodo()">
+                      <ion-label class="ion-text-center">{{lang.text['TodoDetail']['TodoComplete']}}</ion-label>
+                    </ion-item>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+              <ion-item *ngIf="isStoreAtChangable && AmICreator" (click)="StoreAtSelClicked()">
+                <ion-select [label]="lang.text['TodoDetail']['StoreAt']" #StoreAt style="pointer-events: none;"
+                  (ionChange)="StoreAtSelChanged($event)">
+                  <ion-select-option value="local">{{lang.text['TodoDetail']['OnThisDevice']}}</ion-select-option>
+                  <ion-select-option *ngFor="let target of AvailableStorageList;" [value]="target">{{target.name}}
+                  </ion-select-option>
+                </ion-select>
+              </ion-item>
+              <div *ngIf="!isStoreAtChangable || !AmICreator">
+                <ion-item (click)="ChangeDisconnectStatus()">
+                  <ion-label style="display: contents" color="medium">{{ userInput.display_store ||
+                    lang.text['TodoDetail']['WIP'] }}</ion-label>
+                  <ion-label color="medium" class="ion-text-right">{{ userInput.display_creator }}</ion-label>
                 </ion-item>
-              </ion-col>
-            </ion-row>
-          </ion-grid>
-          <ion-item *ngIf="isStoreAtChangable && AmICreator" (click)="StoreAtSelClicked()">
-            <ion-select [label]="lang.text['TodoDetail']['StoreAt']" #StoreAt style="pointer-events: none;"
-              (ionChange)="StoreAtSelChanged($event)">
-              <ion-select-option value="local">{{lang.text['TodoDetail']['OnThisDevice']}}</ion-select-option>
-              <ion-select-option *ngFor="let target of AvailableStorageList;" [value]="target">{{target.name}}
-              </ion-select-option>
-            </ion-select>
-          </ion-item>
-          <div *ngIf="!isStoreAtChangable || !AmICreator">
-            <ion-item (click)="ChangeDisconnectStatus()">
-              <ion-label style="display: contents" color="medium">{{ userInput.display_store ||
-                lang.text['TodoDetail']['WIP'] }}</ion-label>
-              <ion-label color="medium" class="ion-text-right">{{ userInput.display_creator }}</ion-label>
-            </ion-item>
-          </div>
-          <ion-item>
-            <ion-input id="titleInput" [label]="lang.text['TodoDetail']['DisplayName']" [(ngModel)]="userInput.title"
-              class="ion-text-right" [placeholder]="lang.text['TodoDetail']['DisplayName_placeholder']"></ion-input>
-          </ion-item>
-          <div *ngIf="userInput.storeAt != 'local' && isManager && WorkerGroups.length">
-            <ion-accordion-group #ManageWorker>
-              <ion-accordion>
-                <ion-item button slot="header">
-                  <ion-label>{{lang.text['TodoDetail']['ManageWorker']}}</ion-label>
-                </ion-item>
-                <div slot="content">
-                  <ion-accordion-group #Groups>
-                    <ion-accordion *ngFor="let key of WorkerGroups" [value]="key.id">
-                      <ion-item button slot="header">
-                        <ion-label>{{key.name}}</ion-label>
+              </div>
+              <ion-item>
+                <ion-input id="titleInput" [label]="lang.text['TodoDetail']['DisplayName']"
+                  [(ngModel)]="userInput.title" class="ion-text-right"
+                  [placeholder]="lang.text['TodoDetail']['DisplayName_placeholder']"></ion-input>
+              </ion-item>
+              <div *ngIf="userInput.storeAt != 'local' && isManager && WorkerGroups.length">
+                <ion-accordion-group #ManageWorker>
+                  <ion-accordion>
+                    <ion-item button slot="header">
+                      <ion-label>{{lang.text['TodoDetail']['ManageWorker']}}</ion-label>
+                    </ion-item>
+                    <div slot="content">
+                      <ion-accordion-group #Groups>
+                        <ion-accordion *ngFor="let key of WorkerGroups" [value]="key.id">
+                          <ion-item button slot="header">
+                            <ion-label>{{key.name}}</ion-label>
+                          </ion-item>
+                          <div slot="content">
+                            <ion-item button (click)="toggle_all_user(key.id)">
+                              <ion-label>{{lang.text['TodoDetail']['ToggleWorkers']}}</ion-label>
+                            </ion-item>
+                            <ion-item *ngFor="let worker of AvailableWorker[key.id]">
+                              <ion-checkbox [(ngModel)]="worker.todo_checked">{{worker.override_name ||
+                                worker.display_name}}</ion-checkbox>
+                            </ion-item>
+                          </div>
+                        </ion-accordion>
+                      </ion-accordion-group>
+                    </div>
+                  </ion-accordion>
+                </ion-accordion-group>
+              </div>
+              <ion-item button (click)="ImporantSelClicked()">
+                <ion-select [label]="lang.text['TodoDetail']['Importance']" #ImporantSel style="pointer-events: none;"
+                  [value]="userInput.importance" (ionChange)="ImporantSelChanged($event)">
+                  <ion-select-option value="2">{{lang.text['TodoDetail']['Importance_2']}}</ion-select-option>
+                  <ion-select-option value="1">{{lang.text['TodoDetail']['Importance_1']}}</ion-select-option>
+                  <ion-select-option value="0">{{lang.text['TodoDetail']['Importance_0']}}</ion-select-option>
+                </ion-select>
+              </ion-item>
+              <div *ngIf="!isStoreAtChanged && userInput.workers">
+                <ion-accordion-group #ManageWorker>
+                  <ion-accordion>
+                    <ion-item button slot="header">
+                      <ion-label style="display: contents">{{lang.text['TodoDetail']['ManageWorker']}}</ion-label>
+                      <ion-label class="ion-text-end">{{worker_done + ' / ' + userInput.workers.length}}</ion-label>
+                    </ion-item>
+                    <div slot="content">
+                      <ion-item *ngFor="let worker of userInput.workers" class="ignore_check">
+                        <ion-label>{{worker.name}}</ion-label>
+                        <div *ngIf="worker.displayTime" style="color: var(--ion-color-medium);">{{worker.displayTime}}
+                        </div>
+                        <ion-icon *ngIf="worker.isDelete === undefined" slot="end" color="medium"
+                          name="ellipsis-horizontal-circle-outline"></ion-icon>
+                        <ion-icon *ngIf="worker.isDelete == true" slot="end" color="danger"
+                          name="close-circle-outline"></ion-icon>
+                        <ion-icon *ngIf="worker.isDelete == false" slot="end" color="success"
+                          name="checkmark-circle-outline"></ion-icon>
                       </ion-item>
-                      <div slot="content">
-                        <ion-item button (click)="toggle_all_user(key.id)">
-                          <ion-label>{{lang.text['TodoDetail']['ToggleWorkers']}}</ion-label>
-                        </ion-item>
-                        <ion-item *ngFor="let worker of AvailableWorker[key.id]">
-                          <ion-checkbox [(ngModel)]="worker.todo_checked">{{worker.override_name ||
-                            worker.display_name}}</ion-checkbox>
-                        </ion-item>
-                      </div>
-                    </ion-accordion>
-                  </ion-accordion-group>
+                    </div>
+                  </ion-accordion>
+                </ion-accordion-group>
+              </div>
+              <ion-item button (click)="toggle_custom_color()">
+                <ion-label>{{lang.text['TodoDetail']['CustomColor']}}</ion-label>
+                <div class="additional_form new_bg_form"
+                  [style]="'background-image: linear-gradient(to right, #0000, ' + (userInput.custom_color || alert_color) + ')'">
+                  <input id="TodoCustomColorInput" type="color" style="width: 0px; height: 0px; opacity: 0;"
+                    [(ngModel)]="userInput.custom_color">
                 </div>
-              </ion-accordion>
-            </ion-accordion-group>
-          </div>
-          <ion-item button (click)="ImporantSelClicked()">
-            <ion-select [label]="lang.text['TodoDetail']['Importance']" #ImporantSel style="pointer-events: none;"
-              [value]="userInput.importance" (ionChange)="ImporantSelChanged($event)">
-              <ion-select-option value="2">{{lang.text['TodoDetail']['Importance_2']}}</ion-select-option>
-              <ion-select-option value="1">{{lang.text['TodoDetail']['Importance_1']}}</ion-select-option>
-              <ion-select-option value="0">{{lang.text['TodoDetail']['Importance_0']}}</ion-select-option>
-            </ion-select>
-          </ion-item>
-          <div *ngIf="!isStoreAtChanged && userInput.workers">
-            <ion-accordion-group #ManageWorker>
-              <ion-accordion>
-                <ion-item button slot="header">
-                  <ion-label style="display: contents">{{lang.text['TodoDetail']['ManageWorker']}}</ion-label>
-                  <ion-label class="ion-text-end">{{worker_done + ' / ' + userInput.workers.length}}</ion-label>
+              </ion-item>
+              <ion-accordion-group #DateTime>
+                <ion-accordion *ngIf="isLimitUsable" value="Start">
+                  <ion-item button slot="header">
+                    <ion-label style="display: contents">{{lang.text['TodoDetail']['startFrom']}}</ion-label>
+                    <ion-label class="ion-text-right uneditable_data">{{startDisplay ||
+                      lang.text['TodoDetail']['startImmediatly']}}</ion-label>
+                    <ion-icon class="ion-accordion-toggle-icon hide_accordion_icon"></ion-icon>
+                  </ion-item>
+                  <div slot="content">
+                    <ion-datetime #StartCalendar style="max-width: none;" [locale]="lang.lang"
+                      (ionChange)="start_change($event)"></ion-datetime>
+                  </div>
+                </ion-accordion>
+                <ion-accordion value="Limit">
+                  <ion-item button slot="header">
+                    <ion-label style="display: contents">{{lang.text['TodoDetail']['limit']}}</ion-label>
+                    <ion-label class="ion-text-right uneditable_data">{{limitDisplay}}</ion-label>
+                    <ion-icon class="ion-accordion-toggle-icon hide_accordion_icon"></ion-icon>
+                  </ion-item>
+                  <div slot="content">
+                    <ion-datetime #Calendar style="max-width: none;" [locale]="lang.lang"
+                      (ionChange)="limit_change($event)"></ion-datetime>
+                  </div>
+                </ion-accordion>
+              </ion-accordion-group>
+              <div style="position: relative;">
+                <div *ngIf="global.ShowHint && CheckIfTitleFocus" class="shortcut_hint">Enter</div>
+                <textarea id="descInput" class="infobox" style="height: 240px;" [(ngModel)]="userInput.description"
+                  [placeholder]="lang.text['TodoDetail']['description']"></textarea>
+              </div>
+              <div *ngFor="let attach of userInput.attach; index as i">
+                <ion-item>
+                  <ion-label text-wrap>{{attach.filename}}</ion-label>
+                  <ion-button *ngIf="isModifiable" (click)="remove_attach(i)">
+                    {{lang.text['ChatRoom']['Delete']}}
+                  </ion-button>
                 </ion-item>
-                <div slot="content">
-                  <ion-item *ngFor="let worker of userInput.workers" class="ignore_check">
-                    <ion-label>{{worker.name}}</ion-label>
-                    <div *ngIf="worker.displayTime" style="color: var(--ion-color-medium);">{{worker.displayTime}}</div>
-                    <ion-icon *ngIf="worker.isDelete === undefined" slot="end" color="medium"
-                      name="ellipsis-horizontal-circle-outline"></ion-icon>
-                    <ion-icon *ngIf="worker.isDelete == true" slot="end" color="danger"
-                      name="close-circle-outline"></ion-icon>
-                    <ion-icon *ngIf="worker.isDelete == false" slot="end" color="success"
-                      name="checkmark-circle-outline"></ion-icon>
+                <div *ngIf="attach['viewer']" (click)="open_content_viewer(i)">
+                  <img *ngIf="attach['thumbnail']" (contextmenu)="AttachmentContextMenu(attach, i)"
+                    class="image_thumbnail" [src]="attach['thumbnail']" [alt]="attach['filename']" />
+                  <ion-item button *ngIf="!attach['thumbnail']">
+                    <ion-label color="medium">{{lang.text['TodoDetail']['open_content_viewer']}}</ion-label>
                   </ion-item>
                 </div>
-              </ion-accordion>
-            </ion-accordion-group>
-          </div>
-          <ion-item button (click)="toggle_custom_color()">
-            <ion-label>{{lang.text['TodoDetail']['CustomColor']}}</ion-label>
-            <div class="additional_form new_bg_form"
-              [style]="'background-image: linear-gradient(to right, #0000, ' + (userInput.custom_color || alert_color) + ')'">
-              <input id="TodoCustomColorInput" type="color" style="width: 0px; height: 0px; opacity: 0;"
-                [(ngModel)]="userInput.custom_color">
+              </div>
+              <input hidden type="file" [id]="voidDrawContextId" accept="image/*"
+                (change)="SelectVoidDrawBackgroundImage($event)">
+              <div *ngIf="isStoreAtChangable" style="width: 100%; text-align: center; padding-bottom: 16px;">
+                <div *ngFor="let button of extended_buttons" style="display: inline-block;">
+                  <div class="ext_button ext_button_override"
+                    [style]="'cursor: ' + (button['cursor'] || 'pointer') + ';'" (click)="button['act']()"
+                    (contextmenu)="button['context'] ? button['context']() : null" [hidden]="button.isHide">
+                    <ion-icon *ngIf="button['icon']" slot="icon-only" [name]="button['icon'] || 'close-circle'"
+                      style="width: 36px; height: 36px;">
+                    </ion-icon>
+                    <img *ngIf="button['icon_img']" class="ext_icon_img" [src]="'assets/icon/' + button['icon_img']"
+                      [alt]="button['title']" />
+                    <div>{{button['name']}}</div>
+                  </div>
+                </div>
+              </div>
+              <input hidden type="file" [id]="file_sel_id" accept="*" multiple (change)="inputImageSelected($event)">
             </div>
-          </ion-item>
-          <ion-accordion-group #DateTime>
-            <ion-accordion *ngIf="isLimitUsable" value="Start">
-              <ion-item button slot="header">
-                <ion-label style="display: contents">{{lang.text['TodoDetail']['startFrom']}}</ion-label>
-                <ion-label class="ion-text-right uneditable_data">{{startDisplay ||
-                  lang.text['TodoDetail']['startImmediatly']}}</ion-label>
-                <ion-icon class="ion-accordion-toggle-icon hide_accordion_icon"></ion-icon>
-              </ion-item>
-              <div slot="content">
-                <ion-datetime #StartCalendar style="max-width: none;" [locale]="lang.lang"
-                  (ionChange)="start_change($event)"></ion-datetime>
+          </td>
+        </tr>
+      </table>
+      <div style="width: 100%;">
+        <table id="bottom_buttons" style="width: 100%; background-color: black;">
+          <tr>
+            <td>
+              <div>
+                <div style="position: relative;">
+                  <div *ngIf="global.ShowHint" class="shortcut_hint">Ctrl + Enter</div>
+                  <ion-button [disabled]="isButtonClicked" (click)="saveData()" expand="block">
+                    {{buttonDisplay.saveTodo}}
+                  </ion-button>
+                </div>
               </div>
-            </ion-accordion>
-            <ion-accordion value="Limit">
-              <ion-item button slot="header">
-                <ion-label style="display: contents">{{lang.text['TodoDetail']['limit']}}</ion-label>
-                <ion-label class="ion-text-right uneditable_data">{{limitDisplay}}</ion-label>
-                <ion-icon class="ion-accordion-toggle-icon hide_accordion_icon"></ion-icon>
-              </ion-item>
-              <div slot="content">
-                <ion-datetime #Calendar style="max-width: none;" [locale]="lang.lang"
-                  (ionChange)="limit_change($event)"></ion-datetime>
-              </div>
-            </ion-accordion>
-          </ion-accordion-group>
-          <div style="position: relative;">
-            <div *ngIf="global.ShowHint && CheckIfTitleFocus" class="shortcut_hint">Enter</div>
-            <textarea id="descInput" class="infobox" style="height: 240px;" [(ngModel)]="userInput.description"
-              [placeholder]="lang.text['TodoDetail']['description']"></textarea>
-          </div>
-          <div *ngFor="let attach of userInput.attach; index as i">
-            <ion-item>
-              <ion-label text-wrap>{{attach.filename}}</ion-label>
-              <ion-button *ngIf="isModifiable" (click)="remove_attach(i)">
-                {{lang.text['ChatRoom']['Delete']}}
+            </td>
+            <td *ngIf="isModify">
+              <ion-button color="danger" [disabled]="isButtonClicked" (click)="deleteData()" expand="block">
+                {{lang.text['TodoDetail']['remove']}}
               </ion-button>
-            </ion-item>
-            <div *ngIf="attach['viewer']" (click)="open_content_viewer(i)">
-              <img *ngIf="attach['thumbnail']" (contextmenu)="AttachmentContextMenu(attach, i)" class="image_thumbnail"
-                [src]="attach['thumbnail']" [alt]="attach['filename']" />
-              <ion-item button *ngIf="!attach['thumbnail']">
-                <ion-label color="medium">{{lang.text['TodoDetail']['open_content_viewer']}}</ion-label>
-              </ion-item>
-            </div>
-          </div>
-          <input hidden type="file" [id]="voidDrawContextId" accept="image/*"
-            (change)="SelectVoidDrawBackgroundImage($event)">
-          <div *ngIf="isStoreAtChangable" style="width: 100%; text-align: center; padding-bottom: 16px;">
-            <div *ngFor="let button of extended_buttons" style="display: inline-block;">
-              <div class="ext_button ext_button_override" [style]="'cursor: ' + (button['cursor'] || 'pointer') + ';'"
-                (click)="button['act']()" (contextmenu)="button['context'] ? button['context']() : null"
-                [hidden]="button.isHide">
-                <ion-icon *ngIf="button['icon']" slot="icon-only" [name]="button['icon'] || 'close-circle'"
-                  style="width: 36px; height: 36px;">
-                </ion-icon>
-                <img *ngIf="button['icon_img']" class="ext_icon_img" [src]="'assets/icon/' + button['icon_img']"
-                  [alt]="button['title']" />
-                <div>{{button['name']}}</div>
-              </div>
-            </div>
-          </div>
-          <input hidden type="file" [id]="file_sel_id" accept="*" multiple (change)="inputImageSelected($event)">
-        </div>
-      </td>
-    </tr>
-  </table>
-  <div style="width: 100%;">
-    <table id="bottom_buttons" style="width: 100%; background-color: black;">
-      <tr>
-        <td>
-          <div>
-            <div *ngIf="global.ShowHint" class="shortcut_hint">Ctrl + Enter</div>
-            <ion-button [disabled]="isButtonClicked" (click)="saveData()" expand="block">
-              {{buttonDisplay.saveTodo}}
-            </ion-button>
-          </div>
-        </td>
-        <td *ngIf="isModify">
-          <ion-button color="danger" [disabled]="isButtonClicked" (click)="deleteData()" expand="block">
-            {{lang.text['TodoDetail']['remove']}}
-          </ion-button>
-        </td>
-      </tr>
-    </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
   </div>
 </ion-content>
