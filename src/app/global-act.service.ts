@@ -1733,7 +1733,7 @@ export class GlobalActService {
    * @param [save=false] 가져오긴 하나 기록은 삭제하지 않을 경우 true
    */
   RestoreShortCutAct(key: string) {
-    if (Object.keys(this.CacheShortCut[key]).length)
+    if (this.CacheShortCut[key] && Object.keys(this.CacheShortCut[key]).length)
       this.p5KeyShortCut = this.CacheShortCut[key];
     delete this.CacheShortCut[key];
   }
