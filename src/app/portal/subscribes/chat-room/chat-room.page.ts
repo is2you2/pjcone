@@ -351,7 +351,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           if (v.data) {
             let loading = await this.loadingCtrl.create({ message: this.lang.text['ChatRoom']['CopyingChats'] });
             loading.present();
-            this.nakama.go_to_chatroom_without_admob_act(v.data);
+            this.nakama.go_to_chatroom(v.data);
             let list = await this.indexed.GetFileListFromDB(`servers/${rootChannelInfo.info.isOfficial}/${rootChannelInfo.info.target}/channels/${rootChannelInfo.id}/chats`);
             for (let path of list) {
               let info = await this.indexed.GetFileInfoFromDB(path);
@@ -1383,8 +1383,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       await this.new_attach({ detail: { value: 'link' } }, FileInfo);
     } else {
       let blob = await this.indexed.loadBlobFromUserPath(FileInfo.path, FileInfo.type);
-      blob['name'] = FileInfo.filename || FileInfo.name;
-      this.selected_blobFile_callback_act(blob, FileInfo.content_related_creator, 'shared', FileInfo.path);
+      let file = new File([blob], FileInfo.filename || FileInfo.name);
+      this.selected_blobFile_callback_act(file, FileInfo.content_related_creator, 'shared', FileInfo.path);
     }
   }
 
@@ -1403,7 +1403,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.userInput.file['typeheader'] = this.userInput.file.blob.type.split('/')[0] || this.userInput.file.viewer;
     setTimeout(() => {
       URL.revokeObjectURL(FileURL);
-    }, 0);
+    }, 500);
     if (!this.userInput.file.thumbnail)
       switch (this.userInput.file['viewer']) {
         case 'image': // 이미지인 경우 사용자에게 보여주기

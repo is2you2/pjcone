@@ -29,6 +29,7 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
     this.route.queryParams['unsubscribe']();
     if (this.global.PageDismissAct['share'])
       this.global.PageDismissAct['share']({});
+    if (this.navParams?.block) this.navParams.block.share = false;
   }
 
   channels: any[];
@@ -61,7 +62,7 @@ export class ShareContentToOtherPage implements OnInit, OnDestroy {
     try {
       let FileInfo = this.navParams.file;
       delete FileInfo['db'];
-      this.nakama.go_to_chatroom_without_admob_act(channel, FileInfo);
+      this.nakama.go_to_chatroom(channel, FileInfo);
     } catch (e) { }
     if (this.global.PageDismissAct['share'])
       this.global.PageDismissAct['share']({ data: channel });

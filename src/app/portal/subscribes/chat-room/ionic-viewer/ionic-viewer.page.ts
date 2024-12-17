@@ -184,23 +184,29 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         if (!navParams) throw '페이지 복귀';
         this.navParams = navParams;
       } catch (e) {
-        this.WaitingLoaded = false;
+        this.WaitingLoaded.block = false;
         this.ChangeContentWithKeyInput();
         this.BlockReinit = true;
       }
     });
   }
 
-  WaitingLoaded = false;
+  WaitingLoaded = {
+    block: false,
+    share: false,
+  };
   ionViewWillEnter() {
     this.global.portalHint = false;
     this.global.BlockMainShortcut = true;
-    this.WaitingLoaded = true;
+    this.WaitingLoaded.block = true;
     this.PageWillDestroy = false;
   }
   /** 정확히 현재 페이지에서 처리되어야하는 경우 사용 */
   async WaitingCurrent() {
-    while (!this.WaitingLoaded) {
+    while (!this.WaitingLoaded.block) {
+      await new Promise((done) => setTimeout(done, 0));
+    }
+    while (this.WaitingLoaded.share) {
       await new Promise((done) => setTimeout(done, 0));
     }
   }
@@ -540,7 +546,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     await new Promise((done) => setTimeout(done, 0));
     this.canvasDiv = document.getElementById(this.content_viewer_canvasId);
     if (this.canvasDiv) this.canvasDiv.style.backgroundImage = '';
-    if (!this.WaitingLoaded) return;
+    if (!this.WaitingLoaded.block) return;
     // 경우에 따라 로딩하는 캔버스를 구분
     switch (this.FileInfo['viewer']) {
       case 'image': // 이미지
@@ -2226,6 +2232,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       this.global.PageDismissAct['share'] = async (v: any) => {
         await this.WaitingCurrent();
         this.useP5Navigator = true;
+        this.global.BlockMainShortcut = true;
         if (this.BlockReinit && v.data) {
           if (this.global.PageDismissAct[this.navParams.dismiss])
             this.global.PageDismissAct[this.navParams.dismiss]({
@@ -2237,9 +2244,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       }
       let channel_copied = JSON.parse(JSON.stringify(channels));
       delete channel_copied['update'];
+      this.WaitingLoaded.share = true;
+      this.global.BlockMainShortcut = false;
       this.global.ActLikeModal('share-content-to-other', {
         file: this.FileInfo,
         channels: channel_copied,
+        block: this.WaitingLoaded,
       });
     } else this.p5toast.show({
       text: this.lang.text['ShareContentToOther']['NoChannelToShare'],
@@ -2269,7 +2279,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   async ionViewWillLeave() {
     this.global.portalHint = true;
     this.global.BlockMainShortcut = false;
-    this.WaitingLoaded = false;
+    this.WaitingLoaded.block = false;
     this.PageWillDestroy = true;
     switch (this.FileInfo.viewer) {
       case 'video':

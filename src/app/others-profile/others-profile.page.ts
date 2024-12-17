@@ -336,7 +336,7 @@ export class OthersProfilePage implements OnInit, OnDestroy {
       this.lock_create_chat = true;
       try {
         let c = await this.nakama.join_chat_with_modulation(this.info['user']['id'], 2, this.isOfficial, this.target, true);
-        this.nakama.go_to_chatroom_without_admob_act(c);
+        this.nakama.go_to_chatroom(c);
         this.lock_create_chat = false;
         this.navCtrl.pop();
       } catch (e) {

@@ -334,7 +334,7 @@ export class AdminToolsPage implements OnInit {
 
   async start_private_chat(user: any) {
     let c = await this.nakama.join_chat_with_modulation(user.user_id || user.id, 2, this.isOfficial, this.target, true);
-    this.nakama.go_to_chatroom_without_admob_act(c);
+    this.nakama.go_to_chatroom(c);
   }
 
   copy_id(id: string) {

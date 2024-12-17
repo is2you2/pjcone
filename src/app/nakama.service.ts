@@ -375,7 +375,7 @@ export class NakamaService {
   /** 채팅 채널이 열려있는 경우 행동시키기 */
   ChatroomLinkAct: Function;
   /** subscribe과 localPush의 채팅방 입장 행동을 통일함 */
-  go_to_chatroom_without_admob_act(_info: any, _file?: FileInfo) {
+  go_to_chatroom(_info: any, _file?: FileInfo) {
     this.has_new_channel_msg = false;
     if (_info['update']) delete _info['update'];
     if (this.ChatroomLinkAct)
@@ -2006,7 +2006,7 @@ export class NakamaService {
                       if (channel.messages.length)
                         this.update_from_channel_msg(channel.messages[0], servers[i].info.isOfficial, servers[i].info.target);
                       this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
-                      this.go_to_chatroom_without_admob_act(c);
+                      this.go_to_chatroom(c);
                     }).catch(e => {
                       console.error('채널 정보 추가 오류: ', e);
                     });
@@ -2025,7 +2025,7 @@ export class NakamaService {
                 .then(channel => {
                   if (channel.messages.length)
                     this.update_from_channel_msg(channel.messages[0], servers[i].info.isOfficial, servers[i].info.target);
-                  this.go_to_chatroom_without_admob_act(c);
+                  this.go_to_chatroom(c);
                 }).catch(e => {
                   console.error('채널 정보 추가 오류: ', e);
                 });
@@ -3028,8 +3028,8 @@ export class NakamaService {
       this.noti.PushLocal(PushInfo, this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id'], (ev: any) => {
         // 알림 아이디가 같으면 진입 허용
         if (ev && ev['id'] == this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']) {
-          this.go_to_chatroom_without_admob_act(this.channels_orig[_is_official][_target][msg.channel_id]);
-        } else this.go_to_chatroom_without_admob_act(this.channels_orig[_is_official][_target][msg.channel_id]);
+          this.go_to_chatroom(this.channels_orig[_is_official][_target][msg.channel_id]);
+        } else this.go_to_chatroom(this.channels_orig[_is_official][_target][msg.channel_id]);
       });
     }
     if (is_me) this.noti.ClearNoti(this.channels_orig[_is_official][_target][msg.channel_id]['cnoti_id']);
@@ -4379,11 +4379,11 @@ export class NakamaService {
           if (info) {
             if (this.AfterLoginActDone) {
               let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, info['isOfficial'], info['target'], true);
-              this.go_to_chatroom_without_admob_act(c);
+              this.go_to_chatroom(c);
             } else {
               this.AfterLoginAct.push(async () => {
                 let c = await this.join_chat_with_modulation(json[i]['user_id'], 2, info['isOfficial'], info['target'], true);
-                this.go_to_chatroom_without_admob_act(c);
+                this.go_to_chatroom(c);
               });
               this.p5toast.show({
                 text: this.lang.text['Nakama']['NeedLogin'],
@@ -4400,11 +4400,11 @@ export class NakamaService {
           if (info) {
             if (this.AfterLoginActDone) {
               let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, info['isOfficial'], info['target'], true);
-              this.go_to_chatroom_without_admob_act(c);
+              this.go_to_chatroom(c);
             } else {
               this.AfterLoginAct.push(async () => {
                 let c = await this.join_chat_with_modulation(json[i]['group_id'], 3, info['isOfficial'], info['target'], true);
-                this.go_to_chatroom_without_admob_act(c);
+                this.go_to_chatroom(c);
               });
               this.p5toast.show({
                 text: this.lang.text['Nakama']['NeedLogin'],
