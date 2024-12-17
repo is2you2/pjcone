@@ -2906,6 +2906,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (isPlatform != 'DesktopPWA')
+      this.global.ArcadeWithFullScreen = false;
     this.global.portalHint = true;
     this.indexed.GetFileListFromDB('tmp_files/chatroom', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     this.route.queryParams['unsubscribe']();
