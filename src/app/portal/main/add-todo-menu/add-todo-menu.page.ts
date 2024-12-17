@@ -114,6 +114,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   cont: AbortController;
 
   useVoiceRecording = false;
+  voidDrawContextId = 'todo_voiddraw_img';
   /** 확장 버튼 행동들 */
   extended_buttons: ExtendButtonForm[] = [
     { // 0
@@ -134,6 +135,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       act: () => {
         if (this.isButtonClicked) return;
         this.new_attach({ detail: { value: 'image' } });
+      },
+      context: () => {
+        document.getElementById(this.voidDrawContextId).click();
+        return false;
       }
     },
     { // 2
@@ -181,6 +186,40 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       }
     }];
 
+  /** 이미지를 불러온 후 즉시 그림판에 대입하기 */
+  async SelectVoidDrawBackgroundImage(ev: any) {
+    const file: File = ev.target.files[0];
+    const TMP_PATH = `tmp_files/todo/${file.name}`;
+    await this.indexed.saveBlobToUserPath(file, TMP_PATH);
+    let blob = await this.indexed.loadBlobFromUserPath(TMP_PATH, file.type);
+    let FileURL = URL.createObjectURL(blob);
+    new p5((p: p5) => {
+      p.setup = () => {
+        document.getElementById(this.voidDrawContextId)['value'] = '';
+        p.noCanvas();
+        p.loadImage(FileURL, v => {
+          this.global.PageDismissAct['todo-voiddraw-quick'] = (v: any) => {
+            if (v.data) this.voidDraw_fileAct_callback(v);
+            delete this.global.PageDismissAct['todo-voiddraw-quick'];
+          }
+          this.global.ActLikeModal('portal/main/add-todo-menu/void-draw', {
+            path: TMP_PATH,
+            width: v.width,
+            height: v.height,
+            type: file.type,
+            dismiss: 'todo-voiddraw-quick',
+          });
+          URL.revokeObjectURL(FileURL);
+          p.remove();
+        }, e => {
+          console.log('빠른 그림판 열기 실패: ', e);
+          URL.revokeObjectURL(FileURL);
+          p.remove();
+        });
+      }
+    });
+  }
+
   async StopAndSaveVoiceRecording() {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SavingRecord'] });
     loading.present();
@@ -199,6 +238,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   AlreadyInited = false;
   ngOnInit() {
     this.cont = new AbortController();
+    this.voidDrawContextId = `todo_voiddraw_img_${Date.now()}`;
     this.MainDiv = document.getElementById('main_div');
     this.nakama.socket_reactive['add_todo_menu'] = this;
     // 미리 지정된 데이터 정보가 있는지 검토
