@@ -2186,7 +2186,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       }
     }
     if (this.blob)
-      this.global.WriteValueToClipboard(this.FileInfo.type, this.blob, 'image.png');
+      this.global.WriteValueToClipboard(this.blob.type, this.blob, 'image.png');
   }
 
   /** 덮어쓰기 전단계 */
