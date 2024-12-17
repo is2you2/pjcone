@@ -44,6 +44,7 @@ export class ArcadePage implements OnInit {
   }
 
   ionViewWillLeave() {
+    this.global.RestoreShortCutAct('arcade-fileviewer');
     this.WillLeave = true;
   }
 
@@ -128,11 +129,13 @@ export class ArcadePage implements OnInit {
       console.log('아케이드 파일 입력 실패: ', e);
     }
     this.global.PageDismissAct['arcade-fileviewer'] = (_v: any) => {
+      this.global.RestoreShortCutAct('arcade-fileviewer');
       this.indexed.GetFileListFromDB('tmp_files/arcade/').then(list => {
         list.forEach(path => this.indexed.removeFileFromUserPath(path));
       });
       delete this.global.PageDismissAct['arcade-fileviewer'];
     }
+    this.global.StoreShortCutAct('arcade-fileviewer');
     this.global.ActLikeModal('portal/arcade/ionic-viewer', {
       info: {
         content: StartFile,
@@ -152,6 +155,7 @@ export class ArcadePage implements OnInit {
       switch (clipboard.type) {
         case 'text/plain': {
           this.global.PageDismissAct['arcade-clipboard'] = (_v: any) => {
+            this.global.RestoreShortCutAct('arcade-fileviewer');
             delete this.global.PageDismissAct['arcade-clipboard'];
           }
           let fileInfo: FileInfo = {};
@@ -159,6 +163,7 @@ export class ArcadePage implements OnInit {
           fileInfo.file_ext = fileInfo.filename.split('.').pop();
           fileInfo.url = clipboard.value;
           this.global.set_viewer_category_from_ext(fileInfo);
+          this.global.StoreShortCutAct('arcade-fileviewer');
           this.global.ActLikeModal('ionic-viewer', {
             info: {
               content: fileInfo,
