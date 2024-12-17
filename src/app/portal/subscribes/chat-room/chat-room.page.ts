@@ -90,6 +90,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   sending_msg = [];
   /** 내가 발송한 메시지가 수신되면 썸네일 구성하기 */
   temporary_open_thumbnail = {};
+  voidDrawContextId = 'chatroom_voiddraw';
   /** 확장 버튼 행동들 */
   extended_buttons: ExtendButtonForm[] = [
     { // 0
@@ -231,6 +232,23 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
         props['dismiss'] = 'chatroom-voiddraw';
         this.global.ActLikeModal('portal/subscribes/chat-room/void-draw', props);
+      },
+      context: () => {
+        let Quicklink = async () => {
+          let clipboard = await this.global.GetValueFromClipboard();
+          switch (clipboard.type) {
+            // 이미지인 경우 파일 뷰어로 열기
+            case 'image/png':
+              const file: File = clipboard.value;
+              this.SelectVoidDrawBackgroundImage({ target: { files: [file] } });
+              break;
+            default:
+              document.getElementById(this.voidDrawContextId).click();
+              break;
+          }
+        }
+        Quicklink();
+        return false;
       }
     }, { // 5
       icon: 'reader-outline',
@@ -565,6 +583,40 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
     },];
 
+  /** 이미지를 불러온 후 즉시 그림판에 대입하기 */
+  async SelectVoidDrawBackgroundImage(ev: any) {
+    const file: File = ev.target.files[0];
+    const TMP_PATH = `tmp_files/chatroom/${file.name}`;
+    await this.indexed.saveBlobToUserPath(file, TMP_PATH);
+    let blob = await this.indexed.loadBlobFromUserPath(TMP_PATH, file.type);
+    let FileURL = URL.createObjectURL(blob);
+    new p5((p: p5) => {
+      p.setup = () => {
+        document.getElementById(this.voidDrawContextId)['value'] = '';
+        p.noCanvas();
+        p.loadImage(FileURL, v => {
+          this.global.PageDismissAct['chatroom-voiddraw-quick'] = (v: any) => {
+            if (v.data) this.voidDraw_fileAct_callback(v);
+            delete this.global.PageDismissAct['chatroom-voiddraw-quick'];
+          }
+          this.global.ActLikeModal('portal/subscribes/chat-room/void-draw', {
+            path: TMP_PATH,
+            width: v.width,
+            height: v.height,
+            type: file.type,
+            dismiss: 'chatroom-voiddraw-quick',
+          });
+          URL.revokeObjectURL(FileURL);
+          p.remove();
+        }, e => {
+          console.log('빠른 그림판 열기 실패: ', e);
+          URL.revokeObjectURL(FileURL);
+          p.remove();
+        });
+      }
+    });
+  }
+
   /** 정확히 현재 페이지가 처리되어야하는 경우 사용 */
   async WaitingCurrent() {
     while (this.WillLeave) {
@@ -869,6 +921,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   InitWithRoomEnv = false;
 
   ngOnInit() {
+    this.voidDrawContextId = `chatroom_voiddraw_${Date.now()}`;
     this.cont = new AbortController();
     this.global.WindowOnBlurAct['chatroom'] = () => {
       if (this.ChatManageMenu) this.ChatManageMenu.dismiss();
