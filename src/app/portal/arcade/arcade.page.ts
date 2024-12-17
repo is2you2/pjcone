@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { AnimationController, NavController, iosTransitionAnimation } from '@ionic/angular';
 import { IonModal } from '@ionic/angular/common';
 import * as p5 from 'p5';
-import { GlobalActService } from 'src/app/global-act.service';
+import { FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MiniranchatClientService } from 'src/app/miniranchat-client.service';
@@ -95,6 +95,89 @@ export class ArcadePage implements OnInit {
   AddCustomGameFromClipboard() {
     this.global.ArcadeObject.QRCode = this.ArcadeQRShare;
     this.global.OpenGodotFromURL();
+    return false;
+  }
+
+  /** 파일을 선택해서 뷰어에 띄우기 */
+  LoadFileFromLocal() {
+    document.getElementById('arcade_file_load').click();
+  }
+  async LoadFileFromLocalAct(ev: any) {
+    try {
+      let targetFile = ev.target.files[0];
+      let fileInfo: FileInfo = {};
+      fileInfo['filename'] = targetFile.name;
+      fileInfo['file_ext'] = targetFile.name.split('.').pop() || targetFile.type || this.lang.text['ChatRoom']['unknown_ext'];
+      fileInfo['size'] = targetFile.size;
+      fileInfo['type'] = targetFile.type || targetFile.type_override;
+      fileInfo.blob = targetFile;
+      this.global.set_viewer_category_from_ext(fileInfo);
+      fileInfo.path = `tmp_files/arcade/${targetFile.name}`;
+      await this.indexed.saveBlobToUserPath(targetFile, fileInfo.path);
+      this.global.PageDismissAct['arcade-fileviewer'] = (_v: any) => {
+        this.indexed.GetFileListFromDB(fileInfo.path).then(list => {
+          list.forEach(path => this.indexed.removeFileFromUserPath(path));
+        });
+        delete this.global.PageDismissAct['arcade-fileviewer'];
+      }
+      this.global.ActLikeModal('portal/arcade/ionic-viewer', {
+        info: {
+          content: fileInfo,
+        },
+        relevance: [{
+          content: fileInfo,
+        }],
+        noEdit: true,
+        noTextEdit: true,
+        quick: true,
+        dismiss: 'arcade-fileviewer',
+      });
+    } catch (e) {
+      this.p5toast.show({
+        text: `${this.lang.text['Arcade']['InputError']}: ${e}`,
+      });
+      console.log('아케이드 파일 입력 실패: ', e);
+    }
+    document.getElementById('arcade_file_load')['value'] = null;
+  }
+  /** 클립보드로부터 불러오기 */
+  LoadFileFromClipboard() {
+    let ClipboardAct = async () => {
+      let clipboard = await this.global.GetValueFromClipboard();
+      switch (clipboard.type) {
+        case 'text/plain': {
+          this.global.PageDismissAct['arcade-clipboard'] = (_v: any) => {
+            delete this.global.PageDismissAct['arcade-clipboard'];
+          }
+          let fileInfo: FileInfo = {};
+          fileInfo.filename = clipboard.value.split('_').pop();
+          fileInfo.file_ext = fileInfo.filename.split('.').pop();
+          fileInfo.url = clipboard.value;
+          this.global.set_viewer_category_from_ext(fileInfo);
+          this.global.ActLikeModal('ionic-viewer', {
+            info: {
+              content: fileInfo,
+            },
+            relevance: [{
+              content: fileInfo,
+            }],
+            noEdit: true,
+            noTextEdit: true,
+            quick: true,
+            dismiss: 'arcade-clipboard',
+          });
+        }
+          break;
+        case 'image/png':
+          this.LoadFileFromLocalAct({ target: { files: [clipboard.value] } });
+          break;
+        default:
+          console.log('아케이드-클립보드로부터 파일 읽기 오류: ', clipboard.value);
+          this.LoadFileFromLocal();
+          break;
+      }
+    }
+    ClipboardAct();
     return false;
   }
 

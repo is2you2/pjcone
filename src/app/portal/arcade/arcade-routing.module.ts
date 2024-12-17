@@ -16,6 +16,10 @@ const routes: Routes = [
     path: 'void-draw',
     loadChildren: () => import('../subscribes/chat-room/void-draw/void-draw.module').then(m => m.VoidDrawPageModule)
   },
+  {
+    path: 'ionic-viewer',
+    loadChildren: () => import('../subscribes/chat-room/ionic-viewer/ionic-viewer.module').then(m => m.IonicViewerPageModule)
+  },
 ];
 
 @NgModule({
