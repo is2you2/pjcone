@@ -137,7 +137,20 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.new_attach({ detail: { value: 'image' } });
       },
       context: () => {
-        document.getElementById(this.voidDrawContextId).click();
+        let Quicklink = async () => {
+          let clipboard = await this.global.GetValueFromClipboard();
+          switch (clipboard.type) {
+            // 이미지인 경우 파일 뷰어로 열기
+            case 'image/png':
+              const file: File = clipboard.value;
+              this.SelectVoidDrawBackgroundImage({ target: { files: [file] } });
+              break;
+            default:
+              document.getElementById(this.voidDrawContextId).click();
+              break;
+          }
+        }
+        Quicklink();
         return false;
       }
     },
