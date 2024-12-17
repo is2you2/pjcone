@@ -112,16 +112,9 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           this.p5history_act(1);
           break;
         case 'C':
-          if (this.isCropMode) {
-            this.p5apply_crop();
-          } else {
-            if (ev['shiftKey'])
-              this.p5change_color_contextmenu();
-            else this.p5change_color();
-          }
-          break;
-        case 'V':
-          this.p5set_line_weight();
+          if (ev['shiftKey'])
+            this.p5change_color();
+          else this.p5change_color_detail();
           break;
       }
     }
@@ -131,7 +124,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     this.global.p5KeyShortCut['SKeyAct'] = (ev: any) => {
       if (ev['shiftKey']) {
         this.open_crop_tool_contextmenu();
-      } else this.open_crop_tool();
+      } else this.p5open_crop_tool();
     }
     this.global.p5KeyShortCut['DeleteAct'] = () => {
       if (this.isCropMode) {
@@ -173,8 +166,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   }
 
   p5voidDraw: p5;
-  @ViewChild('ChangeLineWeight') ChangeLineWeight: IonModal;
-  p5set_line_weight: Function;
   /** 현재 선의 굵기 지정 */
   LineCurrentWeight: number;
   ChangeCurrentLineWeight: Function;
@@ -182,7 +173,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   LineDefaultWeight: number;
   ChangeDefaultLineWeight: Function;
   p5change_color: Function;
-  p5change_color_contextmenu: Function;
+  p5change_color_detail: Function;
   p5save_image: Function;
   p5history_act: Function;
   p5DrawingStack: any[] = [];
@@ -215,8 +206,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       this.ChangeTransparent.dismiss();
     if (ev.target.id == 'resolutiondetailOuter')
       this.ChangeResolution.dismiss();
-    if (ev.target.id == 'strokeweightOuter')
-      this.ChangeLineWeight.dismiss();
   }
 
   QRCode: any;
@@ -264,26 +253,18 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         this.ChangeDefaultLineWeight = () => {
           localStorage.setItem('voiddraw-lineweight', `${this.LineDefaultWeight || 1}`);
         }
-        this.p5set_line_weight = () => {
-          this.LineDefaultWeight = Number(DefaultStrokeWeight);
-          this.LineCurrentWeight = strokeRatio;
-          this.ChangeLineWeight.onDidDismiss().then(() => {
-            Drawable = true;
-            isClickOnMenu = false;
-            this.global.RestoreShortCutAct('draw-stroke-weight-change');
-          });
-          Drawable = false;
-          this.global.StoreShortCutAct('draw-stroke-weight-change');
-          this.global.p5KeyShortCut['EnterAct'] = () => {
-            if (document.activeElement == document.getElementById('voiddraw_default_weight'))
-              this.ChangeLineWeight.dismiss();
-          }
-          this.ChangeLineWeight.present();
-        }
+        let OnClickDetector = true;
         this.p5change_color = () => {
+          OnClickDetector = false;
           p5ColorPicker.elt.click();
         }
-        this.p5change_color_contextmenu = () => {
+        this.p5change_color_detail = () => {
+          if (!OnClickDetector) {
+            OnClickDetector = true;
+            return;
+          }
+          this.LineDefaultWeight = Number(DefaultStrokeWeight);
+          this.LineCurrentWeight = strokeRatio;
           this.ChangeTransparent.onDidDismiss().then(() => {
             Drawable = true;
             isClickOnMenu = false;
@@ -292,10 +273,11 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           Drawable = false;
           this.global.StoreShortCutAct('draw-transparent');
           this.global.p5KeyShortCut['EnterAct'] = () => {
-            if (document.activeElement == document.getElementById('voiddraw_color_detail'))
+            if (document.activeElement == document.getElementById('voiddraw_default_weight'))
               this.ChangeTransparent.dismiss();
           }
           this.ChangeTransparent.present();
+          OnClickDetector = true;
         }
         this.p5save_image = (only_save = false, for_clipboard = false) => {
           new p5((sp: p5) => {
@@ -486,7 +468,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         else CropCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="crop"></ion-icon>`;
         CropCell.style.textAlign = 'center';
         CropCell.style.cursor = 'pointer';
-        CropCell.onclick = () => { this.open_crop_tool() }
+        CropCell.onclick = () => { this.p5open_crop_tool() }
         CropCell.oncontextmenu = () => { this.open_crop_tool_contextmenu() }
         let ApplyCell = top_row.insertCell(2);
         if (this.global.ShowHint)
@@ -533,8 +515,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         RedoCell.onclick = () => { this.p5history_act(1); }
         let ColorCell = bottom_row.insertCell(2); // 선 색상 변경
         if (this.global.ShowHint)
-          ColorCell.innerHTML = `<div><div class="shortcut_hint shortcut_voiddraw">C</div><ion-icon style="width: 27px; height: 27px" name="color-palette"></ion-icon></div>`;
-        else ColorCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="color-palette"></ion-icon>`;
+          ColorCell.innerHTML = `<div><div class="shortcut_hint shortcut_voiddraw">C</div><ion-icon style="width: 27px; height: 27px" name="brush"></ion-icon></div>`;
+        else ColorCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="brush"></ion-icon>`;
         p5ColorPicker.style('width: 0px; height: 0px; opacity: 0;');
         p5ColorPicker.parent(ColorCell);
         p5ColorPicker.elt.oninput = () => {
@@ -552,9 +534,11 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         }
         ColorCell.style.textAlign = 'center';
         ColorCell.style.cursor = 'pointer';
-        ColorCell.onclick = () => { p5ColorPicker.elt.click() }
+        ColorCell.onclick = () => {
+          this.p5change_color_detail();
+        }
         ColorCell.oncontextmenu = () => {
-          this.p5change_color_contextmenu();
+          this.p5change_color();
           return false;
         }
         this.ColorSliderUpdate = () => {
@@ -563,13 +547,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           let color_hex_with_alpha = `#${p.hex((Number(this.colorPickRed) || 0), 2)}${p.hex((Number(this.colorPickGreen) || 0), 2)}${p.hex((Number(this.colorPickBlue) || 0), 2)}${p.hex((Number(this.colorPickAlpha) || 0), 2)}`;
           ColorCell.childNodes[0].style.color = color_hex_with_alpha;
         }
-        let WeightCell = bottom_row.insertCell(3); // 선 두께 변경
-        if (this.global.ShowHint)
-          WeightCell.innerHTML = `<div><div class="shortcut_hint shortcut_voiddraw">V</div><ion-icon style="width: 27px; height: 27px" name="pencil"></ion-icon></div>`;
-        else WeightCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="pencil"></ion-icon>`;
-        WeightCell.style.textAlign = 'center';
-        WeightCell.style.cursor = 'pointer';
-        WeightCell.onclick = () => { this.change_line_weight() }
         this.p5SetCanvasViewportInit = () => {
           p.resizeCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
           StartCamPos = CamPosition.copy();
@@ -1584,13 +1561,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     }
   }
 
-  change_line_weight() {
-    this.p5set_line_weight();
-  }
-
-  open_crop_tool() {
-    this.p5open_crop_tool();
-  }
   @ViewChild('ChangeResolution') ChangeResolution: IonModal;
   /** 이건 그림판 해상도를 조정하기 위해 준비됩니다 */
   open_crop_tool_contextmenu: Function;
