@@ -1081,7 +1081,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             break;
           case 'W':
             if (document.activeElement != document.getElementById(this.ChannelUserInputId))
-              this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollTop - KeySrcrollSize, behavior: 'smooth' });
+              this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollTop - this.ChatLogs.clientHeight / 2, behavior: 'smooth' });
             break;
           case 'E':
             this.open_ext_with_delay();
@@ -1097,10 +1097,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && ExtTarget.length > index)
         ExtTarget[index]['context'] ? ExtTarget[index]['context'](true) : ExtTarget[index]['act']();
     }
-    const KeySrcrollSize = 480;
     this.global.p5KeyShortCut['SKeyAct'] = () => {
       if (document.activeElement != document.getElementById(this.ChannelUserInputId)) {
-        this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollTop + KeySrcrollSize, behavior: 'smooth' });
+        this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollTop + this.ChatLogs.clientHeight / 2, behavior: 'smooth' });
       }
     }
     this.global.p5KeyShortCut['EnterAct'] = () => {
