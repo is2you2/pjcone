@@ -13,7 +13,8 @@ import * as p5 from 'p5';
 import { ActivatedRoute, Router } from '@angular/router';
 import { VoiceRecorder } from '@langx/capacitor-voice-recorder';
 import { ExtendButtonForm } from '../portal/subscribes/chat-room/chat-room.page';
-import { NakamaService, ServerInfo } from '../nakama.service';
+import { NakamaService } from '../nakama.service';
+import { FloatButtonService } from '../float-button.service';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
 @Component({
@@ -38,6 +39,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     private loadingCtrl: LoadingController,
     private alertCtrl: AlertController,
     public nakama: NakamaService,
+    private floatButton: FloatButtonService,
   ) { }
   header_title: string;
   /** 페이지 구분자는 페이지에 사용될 아이콘 이름을 따라가도록 */
@@ -101,14 +103,22 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       act: async () => {
         this.useVoiceRecording = !this.useVoiceRecording;
         if (this.useVoiceRecording) { // 녹음 시작
+          if (this.global.useVoiceRecording && this.global.useVoiceRecording != 'SquareRecording') {
+            this.p5toast.show({
+              text: this.lang.text['GlobalAct'][this.global.useVoiceRecording],
+            });
+            return;
+          }
           let req = await VoiceRecorder.hasAudioRecordingPermission();
           if (req.value) { // 권한 있음
+            this.global.useVoiceRecording = 'SquareRecording';
             this.extended_buttons[4].icon = 'stop-circle-outline';
             this.extended_buttons[4].name = this.lang.text['ChatRoom']['VoiceStop'];
             this.p5toast.show({
               text: this.lang.text['ChatRoom']['StartVRecord'],
             });
             await VoiceRecorder.startRecording();
+            this.CreateFloatingVoiceTimeHistoryAddButton();
           } else { // 권한이 없다면 권한 요청 및 UI 복구
             this.useVoiceRecording = false;
             this.extended_buttons[4].icon = 'mic-circle-outline';
@@ -127,7 +137,19 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       },
     }];
 
+  /** 페이지는 벗어났으나 계속 녹음을 유지중일 때 floating 버튼을 사용 */
+  CreateFloatingVoiceTimeHistoryAddButton() {
+    this.floatButton.RemoveFloatButton('sqaure-record');
+    let float_button = this.floatButton.AddFloatButton('sqaure-record', 'mic-outline');
+    float_button.mouseClicked(() => {
+      this.p5toast.show({
+        text: `${this.lang.text['GlobalAct']['SquareRecording']}`,
+      });
+    });
+  }
+
   async StopAndSaveVoiceRecording() {
+    this.floatButton.RemoveFloatButton('sqaure-record');
     let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SavingRecord'] });
     loading.present();
     try {
