@@ -96,6 +96,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   cont: AbortController;
 
   ngOnInit() {
+    this.voidDrawContextId = `add_post_voiddraw_${Date.now()}`;
     this.cont = new AbortController();
     this.UseOutLink = true;
     this.toggle_open_link(this.UseOutLink);
@@ -292,6 +293,44 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.isModify = Boolean(this.userInput.id);
   }
 
+  voidDrawContextId = 'add_post_voiddraw';
+  /** 이미지를 불러온 후 즉시 그림판에 대입하기 */
+  async SelectVoidDrawBackgroundImage(ev: any) {
+    const file: File = ev.target.files[0];
+    const TMP_PATH = `tmp_files/add_post/${file.name}`;
+    await this.indexed.saveBlobToUserPath(file, TMP_PATH);
+    let blob = await this.indexed.loadBlobFromUserPath(TMP_PATH, file.type);
+    let FileURL = URL.createObjectURL(blob);
+    new p5((p: p5) => {
+      p.setup = () => {
+        document.getElementById(this.voidDrawContextId)['value'] = '';
+        p.noCanvas();
+        p.loadImage(FileURL, v => {
+          this.global.PageDismissAct['add-post-new-image-quick'] = async (v: any) => {
+            if (v.data) {
+              this.AddAttachTextForm();
+              await this.voidDraw_fileAct_callback(v);
+            }
+            delete this.global.PageDismissAct['add-post-new-image-quick'];
+          }
+          this.global.ActLikeModal('portal/community/add-post/void-draw', {
+            path: TMP_PATH,
+            width: v.width,
+            height: v.height,
+            type: file.type,
+            dismiss: 'add-post-new-image-quick',
+          });
+          URL.revokeObjectURL(FileURL);
+          p.remove();
+        }, e => {
+          console.log('빠른 편집기 이동 실패: ', e);
+          URL.revokeObjectURL(FileURL);
+          p.remove();
+        });
+      }
+    });
+  }
+
   ionViewDidEnter() {
     if (!this.WillLeavePageInside)
       this.global.StoreShortCutAct('AddPostPage');
@@ -467,6 +506,23 @@ export class AddPostPage implements OnInit, OnDestroy {
         this.global.ActLikeModal('portal/community/add-post/void-draw', {
           dismiss: 'add-post-new-image',
         });
+      },
+      context: () => {
+        let Quicklink = async () => {
+          let clipboard = await this.global.GetValueFromClipboard();
+          switch (clipboard.type) {
+            // 이미지인 경우 파일 뷰어로 열기
+            case 'image/png':
+              const file: File = clipboard.value;
+              this.SelectVoidDrawBackgroundImage({ target: { files: [file] } });
+              break;
+            default:
+              document.getElementById(this.voidDrawContextId).click();
+              break;
+          }
+        }
+        Quicklink();
+        return false;
       }
     },
     { // 3
