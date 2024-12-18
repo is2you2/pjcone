@@ -435,6 +435,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.FileInfo = { file_ext: '' };
     await this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
     this.ContentChanging = false;
+    this.CanInputValue = false;
   }
 
   /** 지원하지 않는 파일에 대해 강제로 텍스트 읽기 시도 */
