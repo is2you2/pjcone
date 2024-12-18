@@ -1836,7 +1836,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     delete this.nakama.socket_reactive['add_todo_menu'];
     this.route.queryParams['unsubscribe']();
     this.desc_input.onpaste = null;
-    this.cont.abort();
+    this.cont.abort('할 일 페이지 벗어남');
     this.cont = null;
     this.nakama.AddTodoLinkAct = null;
     this.nakama.AddTodoManageUpdateAct = null;

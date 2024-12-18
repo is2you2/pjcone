@@ -41,7 +41,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.ContentTextArea.onpaste = null;
     this.p5StartVoiceTimer = null;
     this.p5StopVoiceTimer = null;
-    this.cont.abort();
+    this.cont.abort('게시물 편집 페이지 벗어남');
     this.cont = null;
     if (this.p5canvas) this.p5canvas.remove();
     delete this.nakama.StatusBarChangedCallback;

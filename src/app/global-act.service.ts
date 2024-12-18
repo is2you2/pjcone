@@ -1716,7 +1716,7 @@ export class GlobalActService {
       let address = this.GetConnectedAddress();
       let cont = new AbortController();
       const id = setTimeout(() => {
-        cont.abort();
+        cont.abort('주소 검토 시간 초과');
         cont = null;
       }, 250);
       let res = await fetch(address, { signal: cont.signal });

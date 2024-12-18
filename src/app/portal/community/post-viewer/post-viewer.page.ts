@@ -747,7 +747,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.route.queryParams['unsubscribe']();
-    this.cont.abort();
+    this.cont.abort('게시물 뷰어 벗어남');
     this.cont = null;
     for (let i = 0, j = this.FileURLs.length; i < j; i++)
       URL.revokeObjectURL(this.FileURLs[i]);

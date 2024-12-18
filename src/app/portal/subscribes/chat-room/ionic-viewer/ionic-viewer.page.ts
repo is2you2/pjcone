@@ -70,7 +70,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       URL.revokeObjectURL(this.FileURL);
     }
 
-    this.cont.abort();
+    this.cont.abort('파일 뷰어 벗어남');
     this.cont = null;
     if (this.FilenameElement) {
       this.FilenameElement.onblur = null;

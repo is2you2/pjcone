@@ -3002,7 +3002,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     } catch (e) { }
     this.nakama.rearrange_channels();
     this.ChatLogs.onscroll = null;
-    this.cont.abort();
+    this.cont.abort('채널 채팅 벗어남');
     this.cont = null;
     delete this.global.WindowOnBlurAct['chatroom'];
     delete this.nakama.opened_page_info['channel'];
