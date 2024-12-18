@@ -2870,7 +2870,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   open_viewer(msg: any, _path: string) {
     let attaches = [];
     for (let i = 0, j = this.messages.length; i < j; i++)
-      if (this.messages[i].content.filename)
+      if (this.messages[i].code != 2 && this.messages[i].content.filename)
         attaches.push(JSON.parse(JSON.stringify(this.messages[i])));
     if (!this.lock_modal_open) {
       this.lock_modal_open = true;

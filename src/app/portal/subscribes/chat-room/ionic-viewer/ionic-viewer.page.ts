@@ -328,7 +328,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                   for (let j = json.length - 1; j >= 0; j--) {
                     const CurrentMsg = json[j];
                     // 파일이 있는 메시지에 한해서 누적시키기
-                    if (json[j]?.content?.filename) {
+                    if (json[j]?.code != 2 && json[j]?.content?.filename) {
                       if (VeryFirstTime > new Date(json[j].create_time).getTime()) {
                         this.Relevances.unshift(CurrentMsg);
                         this.RelevanceIndex++;
