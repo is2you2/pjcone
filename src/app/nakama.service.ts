@@ -4730,6 +4730,18 @@ export class NakamaService {
     }
   }
 
+  /** 메시지 평문화 */
+  deserialize_text(msg: any) {
+    let MsgText = '';
+    if (!msg.content['msg']) return MsgText;
+    for (let i = 0, j = msg.content['msg'].length; i < j; i++) {
+      for (let k = 0, l = msg.content['msg'][i].length; k < l; k++)
+        MsgText += msg.content['msg'][i][k].text;
+      if (i + 1 < j) MsgText += '\n';
+    }
+    return MsgText;
+  }
+
   /** 게시물 갯수 불러오기 (첫 실행시) */
   async load_posts_counter() {
     let last_counting = {};

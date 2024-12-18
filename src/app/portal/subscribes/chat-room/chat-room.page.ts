@@ -407,7 +407,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   }
                 } catch (e) { }
                 let getContent = msg.content;
-                let textmsg = this.deserialize_text(msg);
+                let textmsg = this.nakama.deserialize_text(msg);
                 getContent['msg'] = textmsg;
                 // 인용이 달려있다면 원본 메시지로부터 정보 받아보기
                 if (getContent['qoute'])
@@ -1266,7 +1266,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 }
               if (catch_index === undefined) throw '메시지를 찾을 수 없음';
               let target_msg = this.ViewableMessage[catch_index];
-              let text = this.deserialize_text(target_msg);
+              let text = this.nakama.deserialize_text(target_msg);
               this.userInput.qoute = {
                 timestamp: target_msg.create_time,
               };
@@ -1359,7 +1359,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         break;
       }
     this.BlockAutoScrollDown = true;
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+    let loading = await this.loadingCtrl.create({ message: this.lang.text['ChatRoom']['FindingMsg'] });
     loading.present();
     if (!targetChat) { // 메시지가 안보이면 이전 메시지에서 찾기
       let whileBreaker = false;
@@ -1379,14 +1379,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
       }
     }
+    await new Promise((done) => setTimeout(done, 1000));
     if (targetChat) {
       targetChat.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      { // 이미 배경칠된 채팅을 초기화처리
+      try { // 이미 배경칠된 채팅을 초기화처리
         let keys = Object.keys(this.BackgroundAct);
         for (let key of keys) {
           let colored_bg = document.getElementById(key + '_bg');
           colored_bg.style.backgroundColor = null;
         }
+      } catch (e) {
+        console.log('배경색 초기화 오류: ', e);
       }
       this.BackgroundAct[id] = Date.now();
       setTimeout(() => {
@@ -1401,9 +1404,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           delete this.BackgroundAct[id];
         }
       }, 3500);
-    } else this.p5toast.show({
-      text: this.lang.text['ChatRoom']['LostOriginMsg'],
-    });
+    } else {
+      this.p5toast.show({
+        text: this.lang.text['ChatRoom']['LostOriginMsg'],
+      });
+      this.BlockAutoScrollDown = false;
+    }
     loading.dismiss();
   }
 
@@ -1749,7 +1755,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 선택한 메시지 복사 */
   async CopyMessageText(msg: any) {
     try {
-      let text: any = this.deserialize_text(msg);
+      let text: any = this.nakama.deserialize_text(msg);
       if (!text) { // 텍스트가 없다면 첨부파일을 대상으로 하기
         // 링크가 있다면 링크를 복사
         try { // 로컬에 파일이 있다면 복사 시도
@@ -2460,7 +2466,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 원격 발송 없이 로컬에 저장하기 */
   SendLocalMessage(msg: any) {
-    let MsgText = this.deserialize_text(msg);
+    let MsgText = this.nakama.deserialize_text(msg);
     this.nakama.CatchQouteMsgUserName(msg, this.isOfficial, this.target);
     this.nakama.ModulateTimeDate(msg);
     this.nakama.content_to_hyperlink(msg, this.isOfficial, this.target);
@@ -2549,7 +2555,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     } catch (e) {
       server_info = {};
     }
-    let orig_msg = this.deserialize_text(msg);
+    let orig_msg = this.nakama.deserialize_text(msg);
     let MsgText = orig_msg;
     let FileURL = msg.content['url'];
     if (msg.content['viewer']) {
@@ -2682,18 +2688,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         URL.revokeObjectURL(FileURL);
       }, 100);
     } catch (e) { }
-  }
-
-  /** 메시지 평문화 */
-  deserialize_text(msg: any) {
-    let MsgText = '';
-    if (!msg.content['msg']) return MsgText;
-    for (let i = 0, j = msg.content['msg'].length; i < j; i++) {
-      for (let k = 0, l = msg.content['msg'][i].length; k < l; k++)
-        MsgText += msg.content['msg'][i][k].text;
-      if (i + 1 < j) MsgText += '\n';
-    }
-    return MsgText;
   }
 
   /** 메시지 내 파일 정보, 파일 다운받기 */
@@ -2909,6 +2903,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               return;
             case 'text':
               this.selected_blobFile_callback_act(v.data.blob, v.data.contentRelated, 'textedit');
+              break;
+            // 특정 메시지를 찾는 경우
+            case 'find':
+              this.FindQoute(v.data.messageId, v.data.timestamp);
               break;
           }
         }

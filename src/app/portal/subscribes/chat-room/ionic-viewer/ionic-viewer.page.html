@@ -93,6 +93,12 @@
                       <ion-label>{{lang.text['ContentViewer']['ContentInfo']}}</ion-label>
                     </ion-item>
                   </div>
+                  <div *ngIf="IsMyMessage && channelId">
+                    <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">Shift + F</div>
+                    <ion-item button (click)="FindMessage()">
+                      <ion-label>{{lang.text['ContentViewer']['FindMessage']}}</ion-label>
+                    </ion-item>
+                  </div>
                   <div *ngIf="CurrentFileSize && (FileInfo['url'] || !NeedDownloadFile)">
                     <ion-item button (click)="RemoveFile()">
                       <ion-label>{{lang.text['ContentViewer']['RemoveFile']}}</ion-label>

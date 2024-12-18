@@ -351,6 +351,19 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.init_viewer();
   }
 
+  /** 채널 채팅을 통해 진입한 경우, 해당 메시지 찾아주기 기능 */
+  FindMessage() {
+    if (this.global.PageDismissAct[this.navParams.dismiss])
+      this.global.PageDismissAct[this.navParams.dismiss]({
+        data: {
+          type: 'find',
+          messageId: this.MessageInfo.message_id,
+          timestamp: this.MessageInfo.create_time,
+        }
+      });
+    this.navCtrl.pop();
+  }
+
   /** 콘텐츠를 우클릭시 메뉴 발현 */
   canvasDivContextMenu() {
     if (this.FileInfo.viewer != 'blender' && this.FileInfo.viewer != 'text' && this.FileInfo.viewer != 'code') {
@@ -1498,8 +1511,11 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             this.ChangeToAnother(1);
             break;
           case 'KeyF': // 메뉴 열기 (우클릭)
-            if (!ev['ctrlKey'])
-              this.OpenFileMenu();
+            if (!ev['ctrlKey']) {
+              if (ev['shiftKey'])
+                this.FindMessage();
+              else this.OpenFileMenu();
+            }
             break;
           case 'KeyI': // 파일 정보 보기
             if (ev['ctrlKey'])
