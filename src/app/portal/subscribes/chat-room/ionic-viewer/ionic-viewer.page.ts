@@ -2232,19 +2232,19 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 클립보드에 이미지 복사하기 */
   async CopyImageToClipboard() {
-    if (!this.blob) {
-      try {
+    let blob: Blob;
+    try {
+      if (this.FileInfo.url) {
         let res = await fetch(this.FileInfo.url);
-        this.blob = await res.blob();
-      } catch (e) {
-        this.p5toast.show({
-          text: `${this.lang.text['GlobalAct']['ClipboardFailed']}`,
-        });
-        return;
-      }
+        blob = await res.blob();
+      } else blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path, this.FileInfo.type);
+      this.global.WriteValueToClipboard(blob.type, blob, 'image.png');
+    } catch (e) {
+      this.p5toast.show({
+        text: `${this.lang.text['GlobalAct']['ClipboardFailed']}`,
+      });
+      return;
     }
-    if (this.blob)
-      this.global.WriteValueToClipboard(this.blob.type, this.blob, 'image.png');
   }
 
   /** 덮어쓰기 전단계 */

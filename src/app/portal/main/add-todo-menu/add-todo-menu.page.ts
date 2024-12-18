@@ -1352,7 +1352,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   isCDNToggleClicked = false;
   async toggle_custom_attach(force?: number) {
     this.isCDNToggleClicked = true;
-    this.userInput.CDN = (force ?? (this.userInput.CDN + 1)) % 2;
+    this.userInput.CDN = (force ?? (this.userInput.CDN + 1)) % 3;
     switch (this.userInput.CDN) {
       case 0: // 기본값, cdn 서버 우선, 실패시 SQL
         this.extended_buttons[5].icon = 'cloud-offline-outline';
