@@ -123,6 +123,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   IsMyMessage = false;
   Relevances: any[];
   RelevanceIndex = 0;
+  /** 상단 숫자를 누르면 첨부파일 번호를 입력할 수 있음, true 일 때 보여짐 */
+  CanInputValue = false;
   HaveRelevances = false;
   NeedDownloadFile = false;
   ContentOnLoad = false;
@@ -144,6 +146,25 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   TextEditorFileNameId = 'TextEditorFileName';
   menu_triggerId = 'menu_trigger';
   content_viewer_canvasId = 'content_viewer_canvas';
+
+  RelevancesInputId = 'RelevancesInputId';
+  /** 첨부파일 순번 라벨을 인풋으로 변경하기 */
+  FocusOnIndexInput() {
+    this.CanInputValue = true;
+    setTimeout(() => {
+      document.getElementById(this.RelevancesInputId)?.['focus']();
+    }, 100);
+  }
+
+  /** 사용자가 직접 첨부파일 순번 입력시 */
+  ChangeRelevanceIndex(ev: any) {
+    // 엔터를 눌러 종료
+    if (ev.key == 'Enter') {
+      let targetIndex = Number(ev.target['value']);
+      this.ChangeToAnother(targetIndex - this.RelevanceIndex);
+      this.CanInputValue = false;
+    }
+  }
 
   /** HTML 직접보기 전환  
    * 마크다운 등 전환 보기가 필요한 녀석들은 전부 공유한다
@@ -191,6 +212,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   navParams: any;
   ngOnInit() {
+    this.RelevancesInputId = `RelevancesInputId_${Date.now()}`;
     this.cont = new AbortController();
     this.global.StoreShortCutAct('ionic-viewer');
     this.ContentBoxId = `ContentBox_${Date.now()}`;
