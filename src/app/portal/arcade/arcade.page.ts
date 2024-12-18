@@ -164,7 +164,7 @@ export class ArcadePage implements OnInit {
           fileInfo.url = clipboard.value;
           this.global.set_viewer_category_from_ext(fileInfo);
           this.global.StoreShortCutAct('arcade-fileviewer');
-          this.global.ActLikeModal('ionic-viewer', {
+          this.global.ActLikeModal('portal/arcade/ionic-viewer', {
             info: {
               content: fileInfo,
             },
