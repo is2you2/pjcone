@@ -130,7 +130,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
               _is_official = 'local';
             }
             this.IsFocusOnHere = false;
-            this.global.ActLikeModal('ionic-viewer', {
+            this.global.ActLikeModal('portal/community/post-viewer/ionic-viewer', {
               info: {
                 content: this.PostInfo['attachments'][0],
                 sender_id: creator,
@@ -383,7 +383,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       _is_official = 'local';
                     }
                     this.IsFocusOnHere = false;
-                    this.global.ActLikeModal('ionic-viewer', {
+                    this.global.ActLikeModal('portal/community/post-viewer/ionic-viewer', {
                       info: {
                         content: this.PostInfo['attachments'][index],
                         sender_id: creator,
@@ -472,7 +472,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                             _is_official = 'local';
                           }
                           this.IsFocusOnHere = false;
-                          this.global.ActLikeModal('ionic-viewer', {
+                          this.global.ActLikeModal('portal/community/post-viewer/ionic-viewer', {
                             info: {
                               content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])),
                               sender_id: creator,
@@ -516,7 +516,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                                 _is_official = 'local';
                               }
                               this.IsFocusOnHere = false;
-                              this.global.ActLikeModal('ionic-viewer', {
+                              this.global.ActLikeModal('portal/community/post-viewer/ionic-viewer', {
                                 info: {
                                   content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])),
                                   sender_id: creator,
@@ -609,7 +609,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       _is_official = 'local';
                     }
                     this.IsFocusOnHere = false;
-                    this.global.ActLikeModal('ionic-viewer', {
+                    this.global.ActLikeModal('portal/community/post-viewer/ionic-viewer', {
                       info: {
                         content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])),
                         sender_id: creator,
