@@ -102,6 +102,7 @@ func modify_image(args):
 
 func create_thumbnail(args):
 	var dir:= DirAccess.open('user://')
+	if not window.path: return
 	var thumbnail_exist:= dir.file_exists('%s_thumbnail.png' % [window.path])
 	if not thumbnail_exist:
 		var viewport:Viewport = get_viewport()

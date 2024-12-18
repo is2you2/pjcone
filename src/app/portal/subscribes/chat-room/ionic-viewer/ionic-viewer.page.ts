@@ -2410,6 +2410,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             width - margin_ratio * 2, height - margin_ratio * 2);
           let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
           try {
+            if (!this.FileInfo.alt_path && !this.FileInfo.path) throw '경로 없는 파일';
             await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.alt_path || this.FileInfo.path}_thumbnail.png`);
             this.FileInfo.thumbnail = base64;
             this.global.modulate_thumbnail(this.FileInfo, '', this.cont);
@@ -2429,6 +2430,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       case 'godot':
         if (!this.ContentFailedLoad)
           try {
+            if (!this.FileInfo.alt_path && !this.FileInfo.path) throw '경로 없는 파일';
             this.global.godot_window['filename'] = this.FileInfo.filename || this.FileInfo.name;
             this.global.godot_window['create_thumbnail'](this.FileInfo);
             let list = await this.indexed.GetFileListFromDB('tmp_files', undefined, this.indexed.godotDB);
@@ -2438,8 +2440,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           }
         break;
       case 'blender':
-        let base64 = this.global.BlenderCanvasInside['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
         try {
+          if (!this.FileInfo.alt_path && !this.FileInfo.path) throw '경로 없는 파일';
+          let base64 = this.global.BlenderCanvasInside['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
           new p5((p: p5) => {
             p.setup = () => {
               p.loadImage(base64, async v => {

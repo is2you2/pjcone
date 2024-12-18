@@ -471,6 +471,7 @@ export class GlobalActService {
                   p.width - margin_ratio * 2, p.height - margin_ratio * 2);
                 let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
                 try {
+                  if (!keys['alt_path'] && !keys['path']) throw '경로 없는 파일';
                   await this.indexed.saveBase64ToUserPath(base64, `${(keys['alt_path'] || keys['path'])}_thumbnail.png`);
                   this.modulate_thumbnail(info, '');
                 } catch (e) {
