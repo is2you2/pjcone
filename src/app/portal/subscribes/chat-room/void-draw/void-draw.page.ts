@@ -882,8 +882,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           color: color_hex,
           weight: strokeWeight * strokeRatio,
         };
-        CurrentDraw['pos'].push(_pos);
-        CurrentDraw['pos'].push(_pos);
+        CurrentDraw['pos']?.push(_pos);
+        CurrentDraw['pos']?.push(_pos);
         if (this.ReadyToShareAct)
           this.webrtc.dataChannel.send(JSON.stringify({
             type: 'draw',
@@ -951,8 +951,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
               let _pos = { x: pos.x, y: pos.y };
               if (CurrentDraw) {
                 try {
-                  CurrentDraw['pos'].push(_pos);
-                  CurrentDraw['pos'].push(_pos);
+                  CurrentDraw['pos']?.push(_pos);
+                  CurrentDraw['pos']?.push(_pos);
                   if (this.ReadyToShareAct)
                     this.webrtc.dataChannel.send(JSON.stringify({
                       type: 'draw',
@@ -1080,8 +1080,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                 pos.sub(CropPosition);
                 pos.add(ActualCanvasSizeHalf);
                 let _pos = { x: pos.x, y: pos.y };
-                CurrentDraw['pos'].push(_pos);
-                CurrentDraw['pos'].push(_pos);
+                CurrentDraw['pos']?.push(_pos);
+                CurrentDraw['pos']?.push(_pos);
                 if (this.ReadyToShareAct)
                   this.webrtc.dataChannel.send(JSON.stringify({
                     type: 'draw',
