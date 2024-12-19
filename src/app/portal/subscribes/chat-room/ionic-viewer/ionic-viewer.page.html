@@ -65,6 +65,7 @@
                     </ion-item>
                   </div>
                   <div *ngIf="!NeedDownloadFile && !isHTMLViewer && FileInfo['viewer'] != 'audio' && showEdit">
+                    <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">Shift + E</div>
                     <ion-item button (click)="modify_image()">
                       <ion-label>{{lang.text['ContentViewer']['Edit']}}</ion-label>
                     </ion-item>
@@ -76,7 +77,7 @@
                     </ion-item>
                   </div>
                   <div *ngIf="!NeedDownloadFile">
-                    <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">S</div>
+                    <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">Shift + D</div>
                     <ion-item button (click)="download_file()">
                       <ion-label>{{lang.text['ContentViewer']['Download']}}</ion-label>
                     </ion-item>

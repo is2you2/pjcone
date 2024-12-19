@@ -464,6 +464,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.reinit_content_data(copied);
   }
 
+  /** SQL 강제 파일을 다운로드 */
   async DownloadCurrentFile(index?: number) {
     this.isDownloading = true;
     let startFrom = 0;
@@ -1503,18 +1504,32 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           case 'ArrowLeft':
             this.ChangeToAnother(-1);
             break;
-          case 'KeyS': // 파일 저장
+          case 'KeyW': // 위로 이동
+            if (this.p5SyntaxHighlightReader)
+              this.p5SyntaxHighlightReader.scrollTo({ top: this.p5SyntaxHighlightReader.scrollTop - this.p5SyntaxHighlightReader.clientHeight / 2, behavior: 'smooth' });
+            break;
+          case 'KeyS': // 아래로 이동
             if (ev['shiftKey']) {
               this.ShareContent();
             } else {
+              if (this.p5SyntaxHighlightReader)
+                this.p5SyntaxHighlightReader.scrollTo({ top: this.p5SyntaxHighlightReader.scrollTop + this.p5SyntaxHighlightReader.clientHeight / 2, behavior: 'smooth' });
+            }
+            break;
+          case 'KeyD': // 오른쪽 이동
+            // 다운로드
+            if (ev['shiftKey']) {
               if (this.NeedDownloadFile)
                 this.DownloadCurrentFile();
               else this.download_file();
             }
-            break;
-          case 'KeyD': // 오른쪽 이동
           case 'ArrowRight':
-            this.ChangeToAnother(1);
+            if (!ev['shiftKey'])
+              this.ChangeToAnother(1);
+            break;
+          case 'KeyE':
+            if (ev['shiftKey'])
+              this.modify_image();
             break;
           case 'KeyF': // 메뉴 열기 (우클릭)
             if (!ev['ctrlKey']) {
@@ -2273,6 +2288,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 덮어쓰기 전단계 */
   forceWrite = false;
+  /** url 파일로부터 파일 다운받기 */
   async download_file() {
     let hasFile = await this.indexed.checkIfFileExist(this.FileInfo.alt_path || this.FileInfo.path);
     if (hasFile) {
