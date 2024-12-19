@@ -1025,31 +1025,42 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.global.ArcadeWithFullScreen = true;
         this.CheckIfFocusOnInput = true;
       }
-    this.userInputTextArea.onpaste = (ev: any) => {
-      let stack = [];
-      for (const clipboardItem of ev.clipboardData.files)
-        stack.push({ file: clipboardItem });
-      if (!stack.length) return;
-      if (stack.length == 1)
-        this.selected_blobFile_callback_act(stack[0].file);
-      else this.alertCtrl.create({
-        header: this.lang.text['ChatRoom']['MultipleSend'],
-        message: `${this.lang.text['ChatRoom']['CountFile']}: ${stack.length}`,
-        buttons: [{
-          text: this.lang.text['ChatRoom']['Send'],
-          handler: () => {
-            this.DropSendAct(stack);
-          }
-        }]
-      }).then(v => {
-        this.global.StoreShortCutAct('chatroom-alert');
-        v.onDidDismiss().then(() => {
-          this.global.RestoreShortCutAct('chatroom-alert');
-        });
-        v.present();
-      });
-      return false;
+    // 찾아진 메시지 배경색 삭제
+    const keys = Object.keys(this.BackgroundAct);
+    for (let id of keys) {
+      if ((Date.now() - this.BackgroundAct[id]) >= 3500) {
+        const targetChatBg = document.getElementById(id + '_bg');
+        if (targetChatBg) targetChatBg.style.backgroundColor = null;
+        delete this.BackgroundAct[id];
+      }
     }
+    // 붙여넣기시 행동 등록
+    if (!this.userInputTextArea.onpaste)
+      this.userInputTextArea.onpaste = (ev: any) => {
+        let stack = [];
+        for (const clipboardItem of ev.clipboardData.files)
+          stack.push({ file: clipboardItem });
+        if (!stack.length) return;
+        if (stack.length == 1)
+          this.selected_blobFile_callback_act(stack[0].file);
+        else this.alertCtrl.create({
+          header: this.lang.text['ChatRoom']['MultipleSend'],
+          message: `${this.lang.text['ChatRoom']['CountFile']}: ${stack.length}`,
+          buttons: [{
+            text: this.lang.text['ChatRoom']['Send'],
+            handler: () => {
+              this.DropSendAct(stack);
+            }
+          }]
+        }).then(v => {
+          this.global.StoreShortCutAct('chatroom-alert');
+          v.onDidDismiss().then(() => {
+            this.global.RestoreShortCutAct('chatroom-alert');
+          });
+          v.present();
+        });
+        return false;
+      }
   }
 
   /** 페이지가 스크롤을 가지는지 여부 검토 */
