@@ -1498,8 +1498,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           FileMenu.push(() => this.CopyQuickViewer());
         switch (ev['code']) {
           case 'Enter':
-            if (!this.CanInputValue)
+            if (!this.CanInputValue) {
+              await this.FileMenu.dismiss();
               this.FocusOnIndexInput();
+            }
             break;
           case 'KeyA': // 왼쪽 이동
           case 'ArrowLeft':
@@ -1523,20 +1525,24 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               if (this.NeedDownloadFile)
                 this.DownloadCurrentFile();
               else this.download_file();
+              this.FileMenu.dismiss();
             }
           case 'ArrowRight':
             if (!ev['shiftKey'])
               this.ChangeToAnother(1);
             break;
           case 'KeyE':
-            if (ev['shiftKey'])
+            if (ev['shiftKey']) {
               this.modify_image();
+              this.FileMenu.dismiss();
+            }
             break;
           case 'KeyF': // 메뉴 열기 (우클릭)
             if (!ev['ctrlKey']) {
-              if (ev['shiftKey'])
+              if (ev['shiftKey']) {
+                this.FileMenu.dismiss();
                 this.FindMessage();
-              else this.OpenFileMenu();
+              } else this.OpenFileMenu();
             }
             break;
           case 'KeyI': // 파일 정보 보기
@@ -1544,8 +1550,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               this.open_bottom_modal();
             break;
           case 'KeyC': // 파일 정보 보기
-            if (ev['shiftKey'])
+            if (ev['shiftKey']) {
               this.CopyImageToClipboard();
+              this.FileMenu.dismiss();
+            }
             break;
           case 'Digit1':
           case 'Digit2':
