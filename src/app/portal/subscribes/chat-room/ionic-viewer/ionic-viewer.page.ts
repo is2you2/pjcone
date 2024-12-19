@@ -320,6 +320,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             const TARGET_FOLDER_PATH = `servers/${this.isOfficial}/${this.target}/channels/${this.channelId}/chats/`;
             let list = await this.indexed.GetFileListFromDB(TARGET_FOLDER_PATH);
             for (let i = list.length - 1; i >= 0; i--) {
+              if (!this.cont) return;
               let fileInfo = await this.indexed.GetFileInfoFromDB(list[i]);
               switch (fileInfo.mode) {
                 // 파일인 경우
