@@ -162,7 +162,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     if (ev.key == 'Enter') {
       let targetIndex = Number(ev.target['value']);
       this.ChangeToAnother(targetIndex - this.RelevanceIndex);
-      this.CanInputValue = false;
+      setTimeout(() => {
+        this.CanInputValue = false;
+      }, 0);
     }
   }
 
@@ -1493,6 +1495,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         if (this.FileInfo.url && !this.isQuickLaunchViewer)
           FileMenu.push(() => this.CopyQuickViewer());
         switch (ev['code']) {
+          case 'Enter':
+            if (!this.CanInputValue)
+              this.FocusOnIndexInput();
+            break;
           case 'KeyA': // 왼쪽 이동
           case 'ArrowLeft':
             this.ChangeToAnother(-1);
