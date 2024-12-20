@@ -3244,6 +3244,7 @@ export class NakamaService {
         if (msg.content['hasLink']) return;
         try {
           let json = await this.global.GetHrefThumbnail(targetURL, reqAddress, cont)
+          if (!json || json['error']) throw json;
           msg.content['hasLink'] = json;
         } catch (e) {
           console.log('href 간략정보 받아오기 실패: ', e);
