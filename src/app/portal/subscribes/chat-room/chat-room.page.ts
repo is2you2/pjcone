@@ -999,8 +999,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     setTimeout(() => {
       if (!this.WillLeave) this.CreateDrop();
     }, 100);
-    this.nakama.StatusBarChangedCallback = async () => {
-      await this.SetExtensionButtons();
+    this.nakama.StatusBarChangedCallback = () => {
+      this.SetExtensionButtons();
     }
   }
 
@@ -1580,7 +1580,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             encodeURIComponent(`${this.info.id}`));
       } catch (e) { }
       this.foundLastRead = this.info['last_read_id'] == this.info['last_comment_id'];
-      await this.SetExtensionButtons();
+      this.SetExtensionButtons();
     }
     // 실시간 채팅을 받는 경우 행동처리
     if (this.nakama.channels_orig[this.isOfficial][this.target] &&
@@ -1749,7 +1749,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.extended_buttons.forEach(button => {
         button.isHide = true;
       });
-      this.extended_buttons[13].isHide = false;
+      this.extended_buttons[12].isHide = false;
       if (this.info['redirect']['type'] == 3)
         this.extended_buttons[0].isHide = false;
     } else this.extended_buttons[10].isHide = isNativefier || this.info['status'] == 'missing';
