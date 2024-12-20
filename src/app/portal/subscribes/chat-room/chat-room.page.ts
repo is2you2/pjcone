@@ -1592,7 +1592,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             if (this.messages[i].message_id == c['message_id']) {
               this.messages[i].content = c.content;
               this.global.modulate_thumbnail(this.messages[i].content, this.messages[i].content.url, this.cont);
-              this.nakama.CreateHyperLinkDesc(this.messages[i], this.isOfficial, this.target, this.cont);
+              this.nakama.CreateHyperLinkDesc(this.messages[i], this.isOfficial, this.target, this.cont).then(() => {
+                setTimeout(() => {
+                  if (this.NeedScrollDown())
+                    this.scroll_down_logs();
+                }, 100);
+              });
               break;
             }
           return;
@@ -1619,7 +1624,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
         // 인용 메시지가 경로로 구성된 이미지 파일을 따르는 경우
         if (c.content.qoute) this.OpenQouteThumbnail(c);
-        this.nakama.CreateHyperLinkDesc(c, this.isOfficial, this.target, this.cont);
+        this.nakama.CreateHyperLinkDesc(c, this.isOfficial, this.target, this.cont).then(() => {
+          setTimeout(() => {
+            if (this.NeedScrollDown())
+              this.scroll_down_logs();
+          }, 100);
+        });
         if (this.ViewMsgIndex + this.ViewCount == this.messages.length - 1)
           this.ViewMsgIndex++;
         this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
@@ -1930,7 +1940,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.nakama.CatchQouteMsgUserName(msg, this.isOfficial, this.target);
           this.nakama.ModulateTimeDate(msg);
           this.nakama.content_to_hyperlink(msg, this.isOfficial, this.target);
-          this.nakama.CreateHyperLinkDesc(msg, this.isOfficial, this.target, this.cont);
+          this.nakama.CreateHyperLinkDesc(msg, this.isOfficial, this.target, this.cont).then(() => {
+            setTimeout(() => {
+              if (this.NeedScrollDown())
+                this.scroll_down_logs();
+            }, 100);
+          });
           // 삭제한 메시지가 아니라면 추가
           if (msg.code != 2) {
             // 중복 추가되는 메시지 검토
