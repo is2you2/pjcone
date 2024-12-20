@@ -292,7 +292,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             });
             this.userInput.file = this_file;
             this.CancelEditText();
-            this.create_thumbnail_imported(this_file);
+            this.selected_blobFile_callback_act(this_file.blob);
           }
           delete this.global.PageDismissAct['chatroom-ionicviewer'];
         }
