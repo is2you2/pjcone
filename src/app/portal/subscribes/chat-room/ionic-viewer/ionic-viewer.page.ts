@@ -947,7 +947,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 gainNode = new p5.Gain();
                 gainNode.amp(0);
                 p.loadSound(this.FileURL, v => {
-                  if (cacheURL != this.FileURL) {
+                  if (!this.cont || cacheURL != this.FileURL) {
                     p.remove();
                     return;
                   }
@@ -1127,7 +1127,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             p.noLoop();
             let cacheURL = this.FileURL;
             mediaObject = p.createVideo([this.FileURL], () => {
-              if (cacheURL != this.FileURL) {
+              if (!this.cont || cacheURL != this.FileURL) {
                 p.remove();
                 return;
               }
