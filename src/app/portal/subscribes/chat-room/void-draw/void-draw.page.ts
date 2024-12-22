@@ -518,6 +518,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           ColorCell.innerHTML = `<div><div class="shortcut_hint shortcut_voiddraw">C</div><ion-icon style="width: 27px; height: 27px" name="brush"></ion-icon></div>`;
         else ColorCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="brush"></ion-icon>`;
         p5ColorPicker.style('width: 0px; height: 0px; opacity: 0;');
+        p5ColorPicker.hide();
         p5ColorPicker.parent(ColorCell);
         p5ColorPicker.elt.oninput = () => {
           let color = p5ColorPicker['color']().levels;
