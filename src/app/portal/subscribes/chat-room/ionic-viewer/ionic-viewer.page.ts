@@ -161,6 +161,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     // 엔터를 눌러 종료
     if (ev.key == 'Enter') {
       let targetIndex = Number(ev.target['value']);
+      targetIndex = Math.max(Math.min(targetIndex, this.Relevances.length), 1);
       this.ChangeToAnother(targetIndex - this.RelevanceIndex);
       setTimeout(() => {
         this.CanInputValue = false;
