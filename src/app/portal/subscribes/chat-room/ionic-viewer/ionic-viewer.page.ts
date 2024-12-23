@@ -241,6 +241,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     share: false,
   };
   ionViewWillEnter() {
+    this.useP5Navigator = true;
     this.global.portalHint = false;
     this.global.BlockMainShortcut = true;
     this.WaitingLoaded.block = true;
@@ -2420,6 +2421,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
    */
   PageWillDestroy = false;
   async ionViewWillLeave() {
+    this.useP5Navigator = false;
     this.global.portalHint = true;
     this.global.BlockMainShortcut = false;
     this.WaitingLoaded.block = false;
