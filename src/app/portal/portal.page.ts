@@ -107,8 +107,11 @@ export class PortalPage implements OnInit {
     this.global.portalHint = true;
     this.nakama.has_new_channel_msg = false;
     if (this.SubscribesIcon == 'chatbubble') {
-      if (this.global.PortalBottonTabAct.Subscribes)
+      if (this.global.PortalBottonTabAct.Subscribes) {
+        this.global.ClearShortCutAct();
+        this.try_add_shortcut();
         this.global.PortalBottonTabAct.Subscribes();
+      }
     }
     this.SubscribesIcon = 'chatbubble';
     this.TodoIcon = 'checkbox-outline';
@@ -135,8 +138,11 @@ export class PortalPage implements OnInit {
     this.global.portalHint = true;
     this.SubscribesIcon = 'chatbubble-outline';
     if (this.TodoIcon == 'checkbox') {
-      if (this.global.PortalBottonTabAct.Todo)
+      if (this.global.PortalBottonTabAct.Todo) {
+        this.global.ClearShortCutAct();
+        this.try_add_shortcut();
         this.global.PortalBottonTabAct.Todo();
+      }
     }
     this.TodoIcon = 'checkbox';
     this.CommunityIcon = 'notifications-outline';
@@ -150,8 +156,11 @@ export class PortalPage implements OnInit {
     this.SubscribesIcon = 'chatbubble-outline';
     this.TodoIcon = 'checkbox-outline';
     if (this.ArcadeIcon == 'game-controller') {
-      if (this.global.PortalBottonTabAct.Arcade)
+      if (this.global.PortalBottonTabAct.Arcade) {
+        this.global.ClearShortCutAct();
+        this.try_add_shortcut();
         this.global.PortalBottonTabAct.Arcade();
+      }
     }
     if (this.global.ArcadeLoaded && this.ArcadeIcon == 'game-controller') {
       this.global.StoreShortCutAct('quit-arcade');
@@ -178,8 +187,11 @@ export class PortalPage implements OnInit {
     this.SubscribesIcon = 'chatbubble-outline';
     this.TodoIcon = 'checkbox-outline';
     if (this.CommunityIcon == 'notifications') {
-      if (this.global.PortalBottonTabAct.Community)
+      if (this.global.PortalBottonTabAct.Community) {
+        this.global.ClearShortCutAct();
+        this.try_add_shortcut();
         this.global.PortalBottonTabAct.Community();
+      }
     }
     this.CommunityIcon = 'notifications';
     this.ArcadeIcon = 'game-controller-outline';

@@ -1739,6 +1739,12 @@ export class GlobalActService {
     delete this.CacheShortCut[key];
   }
 
+  /** 모든 등록된 단축키 삭제 */
+  ClearShortCutAct() {
+    let keys = Object.keys(this.CacheShortCut);
+    for (let key of keys) delete this.CacheShortCut[key];
+  }
+
   /** 나카마 서비스 받아오기 */
   CallbackNakama: any;
   /** 카메라로 찍은 후 사진 정보 돌려주기
