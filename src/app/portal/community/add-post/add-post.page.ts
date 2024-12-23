@@ -279,17 +279,16 @@ export class AddPostPage implements OnInit, OnDestroy {
         else this.ContentTextArea.focus();
       }
     }, 200);
-    this.ContentTextArea.onpaste = (ev: any) => {
-      let stack = [];
-      for (const clipboardItem of ev.clipboardData.files)
-        stack.push({ file: clipboardItem });
-      if (!stack.length) return;
-      if (stack.length == 1)
-        this.selected_blobFile_callback_act(stack[0].file);
-      else for (let i = 0, j = stack.length; i < j; i++)
-        this.selected_blobFile_callback_act(stack[i].file);
-      return false;
-    }
+    if (!this.ContentTextArea.onpaste)
+      this.ContentTextArea.onpaste = (ev: any) => {
+        let stack = [];
+        for (const clipboardItem of ev.clipboardData.files)
+          stack.push({ file: clipboardItem });
+        if (!stack.length) return;
+        for (let i = 0, j = stack.length; i < j; i++)
+          this.selected_blobFile_callback_act(stack[i].file);
+        return false;
+      }
     this.isModify = Boolean(this.userInput.id);
   }
 
@@ -1029,17 +1028,27 @@ export class AddPostPage implements OnInit, OnDestroy {
         this.userInput.mainImage.override_name = this.userInput.mainImage.url.split('/').pop();
         delete this.userInput.mainImage.url;
       }
-      for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
-        if (this.userInput.attachments[i].url) {
-          try {
-            let res = await fetch(this.userInput.attachments[i].url, { signal: this.cont.signal });
-            if (res.ok) this.userInput.attachments[i].blob = await res.blob();
-          } catch (e) { }
-          delete this.userInput.attachments[i].thumbnail;
-          delete this.userInput.attachments[i].alt_path;
-          this.userInput.attachments[i].override_name = this.userInput.attachments[i].url.split('/').pop();
-          delete this.userInput.attachments[i].url;
+      // 첨부파일 기억하기
+      for (let i = 0, j = this.userInput.attachments.length; i < j; i++) {
+        if (!this.userInput.attachments[i].blob) {
+          if (this.userInput.attachments[i]['url']) {
+            try {
+              let res = await fetch(this.userInput.attachments[i]['url']);
+              let blob = await res.blob();
+              this.userInput.attachments[i].blob = blob;
+              delete this.userInput.attachments[i].thumbnail;
+              delete this.userInput.attachments[i].alt_path;
+              this.userInput.attachments[i].override_name = this.userInput.attachments[i].url.split('/').pop();
+              delete this.userInput.attachments[i].url;
+            } catch (e) {
+              continue;
+            }
+          } else {
+            let blob = await this.indexed.loadBlobFromUserPath(this.userInput.attachments[i].path, this.userInput.attachments[i].type);
+            this.userInput.attachments[i].blob = blob;
+          }
         }
+      }
       await this.nakama.RemovePost(this.userInput);
       if (this.OriginalInfo) // 기존 게시물 정보 삭제
         await this.nakama.RemovePost(this.OriginalInfo);
@@ -1148,15 +1157,6 @@ export class AddPostPage implements OnInit, OnDestroy {
       if (attach_len) {
         loading.message = this.lang.text['AddPost']['SyncAttaches'];
         for (let i = attach_len - 1; i >= 0; i--) {
-          if (this.userInput.attachments[i]['url']) {
-            try {
-              let res = await fetch(this.userInput.attachments[i]['url']);
-              let blob = await res.blob();
-              this.userInput.attachments[i].blob = blob;
-            } catch (e) {
-              continue;
-            }
-          }
           if (is_local) {
             try { // FFS 업로드 시도
               if (this.userInput.CDN != 1) throw 'FFS 사용 순위에 없음';
