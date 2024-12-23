@@ -624,8 +624,10 @@ export class AddPostPage implements OnInit, OnDestroy {
   AddVoiceTimeHistory() {
     if (this.userInput.content) {
       if (this.userInput.content.charAt(this.userInput.content.length - 1) == '\n') {
-        this.userInput.content += `\n{"i":"n","t":"${this.extended_buttons[5].name}"}\n`;
-      } else this.userInput.content += `\n\n{"i":"n","t":"${this.extended_buttons[5].name}"}\n`;
+        if (this.userInput.content.charAt(this.userInput.content.length - 2) == '\n') {
+          this.userInput.content += `{"i":"n","t":"${this.extended_buttons[5].name}"}\n\n`;
+        } else this.userInput.content += `\n{"i":"n","t":"${this.extended_buttons[5].name}"}\n\n`;
+      } else this.userInput.content += `\n\n{"i":"n","t":"${this.extended_buttons[5].name}"}\n\n`;
     } else this.userInput.content = `{"i":"n","t":"${this.extended_buttons[5].name}"}\n\n`;
     this.ContentTextArea.focus();
   }
@@ -704,7 +706,9 @@ export class AddPostPage implements OnInit, OnDestroy {
   AddAttachTextForm() {
     if (this.userInput.content) {
       if (this.userInput.content.charAt(this.userInput.content.length - 1) == '\n')
-        this.userInput.content += `\n{${this.userInput.attachments.length}}\n\n`;
+        if (this.userInput.content.charAt(this.userInput.content.length - 2) == '\n')
+          this.userInput.content += `{${this.userInput.attachments.length}}\n\n`;
+        else this.userInput.content += `\n{${this.userInput.attachments.length}}\n\n`;
       else this.userInput.content += `\n\n{${this.userInput.attachments.length}}\n\n`;
     } else this.userInput.content = `{${this.userInput.attachments.length}}\n\n`;
     this.ContentTextArea.focus();
