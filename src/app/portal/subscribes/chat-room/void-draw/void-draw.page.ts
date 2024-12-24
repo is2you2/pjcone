@@ -166,12 +166,18 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   }
 
   p5voidDraw: p5;
-  /** 현재 선의 굵기 지정 */
-  LineCurrentWeight: number;
-  ChangeCurrentLineWeight: Function;
   /** 선의 시작 굵기 지정 */
   LineDefaultWeight: number;
+  /** 빠른 색상 선택시 사용하는 두께 */
+  LineQuickWeight: number;
+  /** 빠른 색상 선택시 기본 투명도 */
+  LineQuickTransparent: number;
+  /** 그냥 붓 설정을 변경할 때, 현재 그리기 두께 */
   ChangeDefaultLineWeight: Function;
+  /** 빠른 색상 선택시 사용하게 될 두께 */
+  ChangeQuickLineColor: Function;
+  /** 빠른 색 선택시 투명도를 조절할 때 */
+  ChangeQuickTransparent: Function;
   p5change_color: Function;
   p5change_color_detail: Function;
   p5save_image: Function;
@@ -231,13 +237,17 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       /** 임시방편 색상 선택기 */
       let p5ColorPicker = p.createColorPicker('#000');
       let strokeWeight = Math.min(initData['width'], initData['height']) / 100;
-      const DefaultStrokeWeight = localStorage.getItem('voiddraw-lineweight') || 1;
-      let strokeRatio = Number(DefaultStrokeWeight);
+      let strokeRatio: number;
       let change_checkmark: Function;
       /** 붓질 기록 최대 길이 제한 */
       const MAX_HISTORY_LEN = 20;
       const PIXEL_DENSITY = 1;
       p.setup = async () => {
+        const DefaultStrokeWeight = localStorage.getItem('voiddraw-lineweight') || 1;
+        strokeRatio = Number(DefaultStrokeWeight);
+        this.LineDefaultWeight = Number(DefaultStrokeWeight);
+        this.LineQuickWeight = Number(localStorage.getItem('voiddraw-quick-lineweight') || 1);
+        this.LineQuickTransparent = Number(localStorage.getItem('voiddraw-quick-transparent') || 255);
         p5ColorPicker.style('position', 'absolute');
         p.pixelDensity(PIXEL_DENSITY);
         p.noLoop();
@@ -247,11 +257,15 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         canvas.parent(targetDiv);
         CamPosition.x = p.width / 2;
         CamPosition.y = p.height / 2;
-        this.ChangeCurrentLineWeight = () => {
-          strokeRatio = Number(this.LineCurrentWeight) || 1;
-        }
         this.ChangeDefaultLineWeight = () => {
+          strokeRatio = Number(this.LineDefaultWeight) || 1;
           localStorage.setItem('voiddraw-lineweight', `${this.LineDefaultWeight || 1}`);
+        }
+        this.ChangeQuickLineColor = () => {
+          localStorage.setItem('voiddraw-quick-lineweight', `${this.LineQuickWeight || 1}`);
+        }
+        this.ChangeQuickTransparent = () => {
+          localStorage.setItem('voiddraw-quick-transparent', `${this.LineQuickTransparent || 255}`);
         }
         let OnClickDetector = true;
         this.p5change_color = () => {
@@ -263,8 +277,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             OnClickDetector = true;
             return;
           }
-          this.LineDefaultWeight = Number(DefaultStrokeWeight);
-          this.LineCurrentWeight = strokeRatio;
           this.ChangeTransparent.onDidDismiss().then(() => {
             Drawable = true;
             isClickOnMenu = false;
@@ -521,13 +533,14 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         p5ColorPicker.hide();
         p5ColorPicker.parent(ColorCell);
         p5ColorPicker.elt.oninput = () => {
+          strokeRatio = Number(this.LineQuickWeight) || Number(this.LineDefaultWeight) || 1;
           let color = p5ColorPicker['color']().levels;
-          let color_hex = `#${p.hex(color[0], 2)}${p.hex(color[1], 2)}${p.hex(color[2], 2)}`;
+          let color_hex = `#${p.hex(color[0], 2)}${p.hex(color[1], 2)}${p.hex(color[2], 2)}${p.hex(this.LineQuickTransparent, 2)}`;
           ColorCell.childNodes[0].style.color = color_hex;
           this.colorPickRed = color[0];
           this.colorPickGreen = color[1];
           this.colorPickBlue = color[2];
-          this.colorPickAlpha = color[3];
+          this.colorPickAlpha = this.LineQuickTransparent;
         }
         if (initData['path']) {
           p5ColorPicker.value('#ff0000');
@@ -543,6 +556,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           return false;
         }
         this.ColorSliderUpdate = () => {
+          strokeRatio = Number(this.LineDefaultWeight) || 1;
           let color_hex = `#${p.hex((Number(this.colorPickRed) || 0), 2)}${p.hex((Number(this.colorPickGreen) || 0), 2)}${p.hex((Number(this.colorPickBlue) || 0), 2)}`;
           p5ColorPicker.value(color_hex);
           let color_hex_with_alpha = `#${p.hex((Number(this.colorPickRed) || 0), 2)}${p.hex((Number(this.colorPickGreen) || 0), 2)}${p.hex((Number(this.colorPickBlue) || 0), 2)}${p.hex((Number(this.colorPickAlpha) || 0), 2)}`;

@@ -45,41 +45,48 @@
           <ion-range [(ngModel)]="colorPickRed" (ionInput)="ColorSliderUpdate()" max="255">
             <div slot="label" class="slider_title">{{lang.text['voidDraw']['ColorpickRed']}}</div>
             <div slot="end" class="slider_end">
-              <input type="text" (input)="ColorSliderUpdate()" class="slider_input" [(ngModel)]="colorPickRed">
+              <input type="number" (input)="ColorSliderUpdate()" class="slider_input" [(ngModel)]="colorPickRed">
             </div>
           </ion-range>
           <ion-range [(ngModel)]="colorPickGreen" (ionInput)="ColorSliderUpdate()" max="255">
             <div slot="label" class="slider_title">{{lang.text['voidDraw']['ColorpickGreen']}}</div>
             <div slot="end" class="slider_end">
-              <input type="text" (input)="ColorSliderUpdate()" class="slider_input" [(ngModel)]="colorPickGreen">
+              <input type="number" (input)="ColorSliderUpdate()" class="slider_input" [(ngModel)]="colorPickGreen">
             </div>
           </ion-range>
           <ion-range [(ngModel)]="colorPickBlue" (ionInput)="ColorSliderUpdate()" max="255">
             <div slot="label" class="slider_title">{{lang.text['voidDraw']['ColorpickBlue']}}</div>
             <div slot="end" class="slider_end">
-              <input type="text" (input)="ColorSliderUpdate()" class="slider_input" [(ngModel)]="colorPickBlue">
+              <input type="number" (input)="ColorSliderUpdate()" class="slider_input" [(ngModel)]="colorPickBlue">
             </div>
           </ion-range>
           <ion-range [(ngModel)]="colorPickAlpha" (ionInput)="ColorSliderUpdate()" max="255">
             <div slot="label" class="slider_title">{{lang.text['voidDraw']['ColorpickAlpha']}}</div>
             <div slot="end" class="slider_end">
-              <input id="voiddraw_color_detail" type="text" (input)="ColorSliderUpdate()" class="slider_input"
+              <input id="voiddraw_color_detail" type="number" (input)="ColorSliderUpdate()" class="slider_input"
                 [(ngModel)]="colorPickAlpha">
             </div>
           </ion-range>
-          <h4>{{lang.text['voidDraw']['changeWeight']}}</h4>
-          <ion-range [(ngModel)]="LineCurrentWeight" (ionInput)="ChangeCurrentLineWeight()" min="1" max="30">
+          <ion-range [(ngModel)]="LineDefaultWeight" (ionInput)="ChangeDefaultLineWeight()" min="1" max="10">
             <div slot="label" class="slider_title">{{lang.text['voidDraw']['weight']}}</div>
             <div slot="end" class="slider_end">
-              <input type="text" class="slider_input" [(ngModel)]="LineCurrentWeight"
-                (input)="ChangeCurrentLineWeight()">
+              <input id="voiddraw_default_weight" type="number" class="slider_input" [(ngModel)]="LineDefaultWeight"
+                (input)="ChangeDefaultLineWeight()">
             </div>
           </ion-range>
-          <ion-range [(ngModel)]="LineDefaultWeight" (ionInput)="ChangeDefaultLineWeight()" min="1" max="30">
-            <div slot="label" class="slider_title">{{lang.text['voidDraw']['changeDefaultWeight']}}</div>
+          <h4>{{lang.text['voidDraw']['quickSetup']}}</h4>
+          <ion-range [(ngModel)]="LineQuickWeight" (ionInput)="ChangeQuickLineColor()" min="1" max="10">
+            <div slot="label" class="slider_title">{{lang.text['voidDraw']['weight']}}</div>
             <div slot="end" class="slider_end">
-              <input id="voiddraw_default_weight" type="text" class="slider_input" [(ngModel)]="LineDefaultWeight"
-                (input)="ChangeDefaultLineWeight()">
+              <input id="voiddraw_default_weight" type="number" class="slider_input" [(ngModel)]="LineQuickWeight"
+                (input)="ChangeQuickLineColor()">
+            </div>
+          </ion-range>
+          <ion-range [(ngModel)]="LineQuickTransparent" (ionInput)="ChangeQuickTransparent()" min="1" max="255">
+            <div slot="label" class="slider_title">{{lang.text['voidDraw']['quickTransparent']}}</div>
+            <div slot="end" class="slider_end">
+              <input id="voiddraw_default_weight" type="number" class="slider_input" [(ngModel)]="LineQuickTransparent"
+                (input)="ChangeQuickTransparent()">
             </div>
           </ion-range>
         </div>
@@ -97,7 +104,7 @@
             (ionInput)="ResolutionSliderUpdate()" min="1">
             <div slot="label" class="slider_title">{{lang.text['voidDraw']['ResolutionRatio']}}</div>
             <div slot="end" class="slider_end">
-              <input id="voiddraw_resolution" type="text" class="slider_input" (input)="ResolutionSliderUpdate()"
+              <input id="voiddraw_resolution" type="number" class="slider_input" (input)="ResolutionSliderUpdate()"
                 [(ngModel)]="resolutionRatio">
             </div>
           </ion-range>
