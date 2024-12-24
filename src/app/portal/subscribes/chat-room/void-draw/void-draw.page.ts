@@ -47,9 +47,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       this.p5ImageCanvas = null;
     }
     if (this.p5voidDraw) this.p5voidDraw.remove();
-    if (this.IceWebRTCWsClient)
-      this.IceWebRTCWsClient.close(1000);
-    this.CancelRemoteAct();
+    if (this.IceWebRTCWsClient) {
+      this.IceWebRTCWsClient.close(1000, 'close ');
+      this.CancelRemoteAct();
+    }
   }
 
   /** 페이지 진입 후 페이지가 준비되었을 때 행동시키기 */
@@ -142,11 +143,14 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   /** 원격과 관련된 행동 취소시 사용 */
   CancelRemoteAct() {
-    this.ReadyToShareAct = false;
-    if (this.RemoteLoadingCtrl) this.RemoteLoadingCtrl.dismiss();
-    this.isDrawServerCreated = false;
-    this.p5SetDrawable(true);
-    this.webrtc.close_webrtc();
+    if (this.ReadyToShareAct) {
+      this.ReadyToShareAct = false;
+      if (this.RemoteLoadingCtrl) this.RemoteLoadingCtrl.dismiss();
+      this.isDrawServerCreated = false;
+      this.p5SetDrawable(true);
+      this.webrtc.close_webrtc();
+      this.dismiss_draw(true);
+    }
   }
 
   /** 새 캔버스 생성 행동 분리 */
@@ -296,18 +300,21 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             sp.setup = () => {
               let canvas = sp.createCanvas(this.resolutionEffectedWidth, this.resolutionEffectedHeight);
               sp.pixelDensity(PIXEL_DENSITY);
-              if (ImageCanvas)
+              if (ImageCanvas && ImageCanvas.elt)
                 sp.image(ImageCanvas, 0, 0, this.resolutionEffectedWidth, this.resolutionEffectedHeight);
               if (DrawBeforeCanvas)
                 sp.image(DrawBeforeCanvas, 0, 0, this.resolutionEffectedWidth, this.resolutionEffectedHeight);
-              if (ActualCanvas)
+              if (ActualCanvas && ActualCanvas.elt)
                 sp.image(ActualCanvas, 0, 0, this.resolutionEffectedWidth, this.resolutionEffectedHeight);
               let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
               let tmp_filename = `voidDraw_${sp.year()}-${sp.nf(sp.month(), 2)}-${sp.nf(sp.day(), 2)}_${sp.nf(sp.hour(), 2)}-${sp.nf(sp.minute(), 2)}-${sp.nf(sp.second(), 2)}.png`;
               // 결과물을 클립보드에 저장하기
               if (for_clipboard) {
                 let blob = this.global.Base64ToBlob(base64, 'image/png');
-                this.global.WriteValueToClipboard('image/png', blob, 'image.png');
+                this.global.WriteValueToClipboard('image/png', blob, 'image.png')
+                  .catch(_e => {
+                    // 아케이드에서 원격 연결 후 벗어날 때 오류발생, 무시 가능함
+                  });
                 return;
               }
               // 다른 환경과 연대하여 결과물을 돌려줌
@@ -1450,12 +1457,12 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             break;
         }
       } catch (e) {
-        this.IceWebRTCWsClient.close(1000);
+        this.IceWebRTCWsClient.close(1000, 'onmessage_error');
       }
     }
     this.IceWebRTCWsClient.onerror = (e) => {
       console.log('그림판 기능 공유 연결 오류: ', e);
-      this.IceWebRTCWsClient.close(1000, 'error');
+      this.IceWebRTCWsClient.close(1000, 'onerror');
     }
     this.IceWebRTCWsClient.onclose = (ev: any) => {
       console.log('연결이 끊기는 이유: ', ev);
@@ -1590,10 +1597,11 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   UserToggleAutoResolution: Function;
 
   /** 사용하기를 누른 경우 */
-  dismiss_draw() {
-    if (this.isCropMode)
+  dismiss_draw(force = false) {
+    if (this.isCropMode && !force)
       this.p5apply_crop();
     else {
+      // 원격을 진행하려고 들어온 경우 클립보드에 복사하고 끝내기
       if (this.navParams.dismiss == 'voiddraw-remote') {
         this.p5save_image(true, true);
         this.navCtrl.pop();

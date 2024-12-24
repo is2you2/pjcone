@@ -512,7 +512,7 @@ AutoResolution,항상 표시된 대로 해상도 자동 조정,Always auto-adjus
 width,가로,Width
 height,세로,Height
 weight,선 두께,Stroke weight
-quickSetup,빠른 설정,Quick setup
+quickSetup,빠른 설정 기본값,Quick setup defaults
 quickTransparent,투명도,ransparency
 apply,적용,Apply
 CreateChannel,새 채널 생성,Create new channel
