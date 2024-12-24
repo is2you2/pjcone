@@ -1168,6 +1168,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   /** 상대방과 연결되어있는지 여부 */
   HasConnectedPeer = false;
+  /** 서버 선택자의 값 */
+  RemoteDrawSelected = 'local';
   /** 원격 추가 버튼 눌릴 때 */
   ClickRemoteAddButton() {
     if (this.isDrawServerCreated) return;
@@ -1187,6 +1189,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     // 웹 페이지에서는 모바일로 연결할 수 있도록 인터페이스 준비
     this.ServerList = this.nakama.get_all_online_server();
     if (this.ServerList.length) {
+      this.RemoteDrawSelected = this.ServerList[0];
       this.p5SetDrawable(false);
       this.RemoteDraw.open();
     } else {
