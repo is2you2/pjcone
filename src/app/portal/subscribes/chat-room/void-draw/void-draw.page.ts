@@ -51,6 +51,9 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       this.IceWebRTCWsClient.close(1000, 'close ');
       this.CancelRemoteAct();
     }
+    this.AddrQRShare.dismiss();
+    this.ChangeTransparent.dismiss();
+    this.ChangeResolution.dismiss();
   }
 
   /** 페이지 진입 후 페이지가 준비되었을 때 행동시키기 */
@@ -405,16 +408,26 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           }
           this.ChangeResolution.present();
         }
-        this.UserToggleAutoResolution = () => {
+        this.UserToggleAutoResolution = (own = true) => {
           if (this.ToggleAutoResolution) {
             this.p5SetCanvasViewportInit();
           }
+          if (this.ReadyToShareAct && own)
+            this.webrtc.dataChannel.send(JSON.stringify({
+              type: 'res_tog',
+              data: this.ToggleAutoResolution,
+            }));
         }
-        this.ResolutionSliderUpdate = () => {
+        this.ResolutionSliderUpdate = (own = true) => {
           p.pixelDensity(p.min(1, PIXEL_DENSITY * (Number(this.resolutionRatio) || 1) / 100 / CamScale));
           p.redraw();
           this.resolutionEffectedWidth = p.floor(ActualCanvas.width * (Number(this.resolutionRatio) || 1) / 100);
           this.resolutionEffectedHeight = p.floor(ActualCanvas.height * (Number(this.resolutionRatio) || 1) / 100);
+          if (this.ReadyToShareAct && own)
+            this.webrtc.dataChannel.send(JSON.stringify({
+              type: 'res_slider',
+              data: this.resolutionRatio,
+            }));
         }
         this.p5apply_crop = (is_host = true) => {
           ActualCanvas.resizeCanvas(CropSize.x, CropSize.y);
@@ -1568,6 +1581,14 @@ export class VoidDrawPage implements OnInit, OnDestroy {
               this.p5RemoteDrawingEnd(json['data']);
               break;
           }
+          break;
+        case 'res_tog':
+          this.ToggleAutoResolution = json['data'];
+          this.UserToggleAutoResolution(false);
+          break;
+        case 'res_slider':
+          this.resolutionRatio = json['data'];
+          this.ResolutionSliderUpdate(false)
           break;
         case 'same':
           switch (json['act']) {
