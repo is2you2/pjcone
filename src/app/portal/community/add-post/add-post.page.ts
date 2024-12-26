@@ -613,7 +613,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         this.toggle_custom_attach();
       }
     }, { // 7
-      icon: 'notifications-circle-outline',
+      icon: 'globe-outline',
       name: this.lang.text['AddPost']['NoOutLink'],
       act: () => {
         this.toggle_open_link();
@@ -972,7 +972,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.extended_buttons[7].icon = 'link-outline';
       this.extended_buttons[7].name = this.lang.text['AddPost']['UseOutLink'];
     } else {
-      this.extended_buttons[7].icon = 'notifications-circle-outline';
+      this.extended_buttons[7].icon = 'globe-outline';
       this.extended_buttons[7].name = this.lang.text['AddPost']['NoOutLink'];
     }
   }
