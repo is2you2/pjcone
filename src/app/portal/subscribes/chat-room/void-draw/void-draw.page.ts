@@ -175,12 +175,16 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   p5voidDraw: p5;
   /** 선의 시작 굵기 지정 */
   LineDefaultWeight: number;
+  /** 투명도 값을 각각 관리하기 */
+  LineDefaultTransparent: number;
   /** 빠른 색상 선택시 사용하는 두께 */
   LineQuickWeight: number;
   /** 빠른 색상 선택시 기본 투명도 */
   LineQuickTransparent: number;
   /** 그냥 붓 설정을 변경할 때, 현재 그리기 두께 */
   ChangeDefaultLineWeight: Function;
+  /** 그냥 붓의 투명도를 조정할 때 */
+  ChangeDefaultLineTransparent: Function;
   /** 빠른 색상 선택시 사용하게 될 두께 */
   ChangeQuickLineColor: Function;
   /** 빠른 색 선택시 투명도를 조절할 때 */
@@ -253,8 +257,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         const DefaultStrokeWeight = localStorage.getItem('voiddraw-lineweight') || 1;
         strokeRatio = Number(DefaultStrokeWeight);
         this.LineDefaultWeight = Number(DefaultStrokeWeight);
+        this.LineDefaultTransparent = Number(localStorage.getItem('voiddraw-transparent') || 255);
+        this.colorPickAlpha = this.LineDefaultTransparent;
         this.LineQuickWeight = Number(localStorage.getItem('voiddraw-quick-lineweight') || 1);
-        this.LineQuickTransparent = Number(localStorage.getItem('voiddraw-quick-transparent') || 255);
+        this.LineQuickTransparent = Number(localStorage.getItem('voiddraw-quick-transparent') || 138);
         p5ColorPicker.style('position', 'absolute');
         p.pixelDensity(PIXEL_DENSITY);
         p.noLoop();
@@ -268,11 +274,17 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           strokeRatio = Number(this.LineDefaultWeight) || 1;
           localStorage.setItem('voiddraw-lineweight', `${this.LineDefaultWeight || 1}`);
         }
+        this.ChangeDefaultLineTransparent = () => {
+          this.colorPickAlpha = this.LineDefaultTransparent;
+          localStorage.setItem('voiddraw-transparent', `${this.LineDefaultTransparent || 255}`);
+          this.ColorSliderUpdate();
+        }
         this.ChangeQuickLineColor = () => {
           localStorage.setItem('voiddraw-quick-lineweight', `${this.LineQuickWeight || 1}`);
         }
         this.ChangeQuickTransparent = () => {
-          localStorage.setItem('voiddraw-quick-transparent', `${this.LineQuickTransparent || 255}`);
+          this.colorPickAlpha = this.LineQuickTransparent;
+          localStorage.setItem('voiddraw-quick-transparent', `${this.LineQuickTransparent || 138}`);
         }
         let OnClickDetector = true;
         this.p5change_color = () => {
@@ -582,6 +594,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           let color_hex_with_alpha = `#${p.hex((Number(this.colorPickRed) || 0), 2)}${p.hex((Number(this.colorPickGreen) || 0), 2)}${p.hex((Number(this.colorPickBlue) || 0), 2)}${p.hex((Number(this.colorPickAlpha) || 0), 2)}`;
           ColorCell.childNodes[0].style.color = color_hex_with_alpha;
         }
+        this.ColorSliderUpdate();
         this.p5SetCanvasViewportInit = () => {
           p.resizeCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
           StartCamPos = CamPosition.copy();

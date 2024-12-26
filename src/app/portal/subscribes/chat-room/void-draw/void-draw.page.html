@@ -60,11 +60,11 @@
               <input type="number" (input)="ColorSliderUpdate()" class="slider_input" [(ngModel)]="colorPickBlue">
             </div>
           </ion-range>
-          <ion-range [(ngModel)]="colorPickAlpha" (ionInput)="ColorSliderUpdate()" max="255">
+          <ion-range [(ngModel)]="LineDefaultTransparent" (ionInput)="ChangeDefaultLineTransparent()" max="255">
             <div slot="label" class="slider_title">{{lang.text['voidDraw']['ColorpickAlpha']}}</div>
             <div slot="end" class="slider_end">
-              <input id="voiddraw_color_detail" type="number" (input)="ColorSliderUpdate()" class="slider_input"
-                [(ngModel)]="colorPickAlpha">
+              <input id="voiddraw_color_detail" type="number" (input)="ChangeDefaultLineTransparent()" class="slider_input"
+                [(ngModel)]="LineDefaultTransparent">
             </div>
           </ion-range>
           <ion-range [(ngModel)]="LineDefaultWeight" (ionInput)="ChangeDefaultLineWeight()" min="1" max="10">
