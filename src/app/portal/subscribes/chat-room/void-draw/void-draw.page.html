@@ -23,7 +23,7 @@
   </div>
   <ion-modal #AddrQRShare class="transparent-modal">
     <ng-template>
-      <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+      <div id="RemoteDrawQR" class="OutterModal" (click)="CheckIfDismissAct($event)">
         <div
           style="width: 400px; min-height: 455px; background-color: var(--chatroom-background); text-align: center; padding: 16px">
           <img *ngIf="QRCodeSRC" [src]="QRCodeSRC" style="width: 100%; height: auto; cursor: copy; margin-bottom: 8px;"
@@ -37,8 +37,7 @@
   </ion-modal>
   <ion-modal #ChangeTransparent class="transparent-modal">
     <ng-template>
-      <div id="colordetailOuter" style="display: flex; justify-content: center; align-items: center; height: 100%;"
-        (click)="CheckIfDismissAct($event)">
+      <div id="colordetailOuter" class="OutterModal" (click)="CheckIfDismissAct($event)">
         <div id="colordetailInner"
           style="width: 400px; min-height: 240px; background-color: var(--chatroom-background); text-align: center; padding: 16px;">
           <h4>{{lang.text['voidDraw']['ColorpickDetail']}}</h4>
@@ -63,8 +62,8 @@
           <ion-range [(ngModel)]="LineDefaultTransparent" (ionInput)="ChangeDefaultLineTransparent()" max="255">
             <div slot="label" class="slider_title">{{lang.text['voidDraw']['ColorpickAlpha']}}</div>
             <div slot="end" class="slider_end">
-              <input id="voiddraw_color_detail" type="number" (input)="ChangeDefaultLineTransparent()" class="slider_input"
-                [(ngModel)]="LineDefaultTransparent">
+              <input id="voiddraw_color_detail" type="number" (input)="ChangeDefaultLineTransparent()"
+                class="slider_input" [(ngModel)]="LineDefaultTransparent">
             </div>
           </ion-range>
           <ion-range [(ngModel)]="LineDefaultWeight" (ionInput)="ChangeDefaultLineWeight()" min="1" max="10">
@@ -95,8 +94,7 @@
   </ion-modal>
   <ion-modal #ChangeResolution class="transparent-modal">
     <ng-template>
-      <div id="resolutiondetailOuter" style="display: flex; justify-content: center; align-items: center; height: 100%;"
-        (click)="CheckIfDismissAct($event)">
+      <div id="resolutiondetailOuter" class="OutterModal" (click)="CheckIfDismissAct($event)">
         <div id="resolutiondetailInner"
           style="width: 400px; min-height: 160px; background-color: var(--chatroom-background); text-align: center; padding: 16px;">
           <h4>{{lang.text['voidDraw']['ResolutionDetail']}}</h4>

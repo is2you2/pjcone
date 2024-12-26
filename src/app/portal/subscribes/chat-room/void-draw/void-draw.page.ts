@@ -219,10 +219,17 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   colorPickAlpha = 255;
   ColorSliderUpdate: Function;
   CheckIfDismissAct(ev: any) {
-    if (ev.target.id == 'colordetailOuter')
-      this.ChangeTransparent.dismiss();
-    if (ev.target.id == 'resolutiondetailOuter')
-      this.ChangeResolution.dismiss();
+    switch (ev.target.id) {
+      case 'RemoteDrawQR':
+        this.AddrQRShare.dismiss();
+        break;
+      case 'colordetailOuter':
+        this.ChangeTransparent.dismiss();
+        break;
+      case 'resolutiondetailOuter':
+        this.ChangeResolution.dismiss();
+        break;
+    }
   }
 
   QRCode: any;
