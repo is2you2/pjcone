@@ -2416,6 +2416,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.ChangeToAnother(1);
   }
 
+  CheckIfDismissAct(ev: any) {
+    switch (ev.target.id) {
+      case 'quickfileviewer':
+        this.QuickFileViewer.dismiss();
+        break;
+    }
+  }
+
   /** 페이지가 곧 삭제될 예정입니다  
    * reinit 행동 중첩막기를 위해 존재함
    */
