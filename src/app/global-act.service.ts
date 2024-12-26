@@ -1705,6 +1705,8 @@ export class GlobalActService {
 
   /** QRCode 양식 사용 여부 */
   useLocalAddress = false;
+  /** 사용자가 주소를 직접 */
+  CustomLocalAddress: string;
   /** QR코드 생성시 사용할 주소 검토
    * @param address 사용할 주소, 없으면 현재 연결된 주소 사용
    * @param [force=false] 강제로 github 주소 송출
@@ -1713,6 +1715,7 @@ export class GlobalActService {
   async GetHeaderAddress() {
     let header_address: string;
     try {
+      if (this.CustomLocalAddress) return this.CustomLocalAddress;
       if (!this.useLocalAddress) throw '강제로 github 주소 발생시키기';
       let address = this.GetConnectedAddress();
       let cont = new AbortController();

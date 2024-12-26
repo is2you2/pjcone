@@ -84,21 +84,22 @@ export class SettingsPage implements OnInit, OnDestroy {
       this.navCtrl.pop();
     }
     this.CreateHint();
-    this.ToggleQRCodeForm();
+    this.ToggleQRCodeForm(true);
   }
 
   /** QRCode 양식 전환 */
-  ToggleQRCodeForm(force?: boolean) {
+  ToggleQRCodeForm(init?: boolean) {
+    if (!init) this.global.CustomLocalAddress = null;
     localStorage.setItem('useQRCodeBasic', `${this.global.useLocalAddress}`);
     this.global.GetHeaderAddress().then(address => {
-      this.QuickMainAddress = address;
-      this.QRCodeSRC = this.global.readasQRCodeFromString(this.QuickMainAddress);
+      this.global.CustomLocalAddress = address;
+      this.QRCodeSRC = this.global.readasQRCodeFromString(this.global.CustomLocalAddress);
     });
   }
 
   /** 사용자가 직접 주소 입력시 */
   ModifyCustomAddress() {
-    this.QRCodeSRC = this.global.readasQRCodeFromString(this.QuickMainAddress);
+    this.QRCodeSRC = this.global.readasQRCodeFromString(this.global.CustomLocalAddress);
   }
 
   CheckIfDismissAct(ev: any) {
@@ -345,7 +346,6 @@ export class SettingsPage implements OnInit, OnDestroy {
   }
 
   QRCodeSRC: any;
-  QuickMainAddress: string;
   @ViewChild('QuickJoinMain') QuickJoinMain: IonModal;
   copy_address(target: string) {
     this.global.WriteValueToClipboard('text/plain', target);

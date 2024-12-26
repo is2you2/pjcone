@@ -163,10 +163,10 @@
             </ion-item>
             <img *ngIf="QRCodeSRC" [src]="QRCodeSRC"
               style="width: 100%; height: auto; cursor: copy; margin-bottom: 8px;"
-              (click)="copy_address(QuickMainAddress)" alt="QuickMainLink" />
+              (click)="copy_address(global.CustomLocalAddress)" alt="QuickMainLink" />
             <ion-item [disabled]="!global.useLocalAddress">
               <ion-input class="ion-text-center" (ionInput)="ModifyCustomAddress()"
-                [(ngModel)]="QuickMainAddress"></ion-input>
+                [(ngModel)]="global.CustomLocalAddress"></ion-input>
             </ion-item>
           </div>
         </div>
