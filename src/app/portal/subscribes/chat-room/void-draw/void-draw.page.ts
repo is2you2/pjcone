@@ -1047,6 +1047,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       const HEADER_HEIGHT = this.platform.is('iphone') ? 44 : 56;
       p.touchStarted = (ev: any) => {
         if (!Drawable) return;
+        isClickOnMenu = false;
         touches = ev['touches'];
         if (ev['changedTouches'][0].clientY < BUTTON_HEIGHT + HEADER_HEIGHT
           || ev['changedTouches'][0].clientY > p.height) {
