@@ -341,7 +341,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
               }
               // 다른 환경과 연대하여 결과물을 돌려줌
               if (!only_save) {
-                if (this.navParams.dismiss)
+                if (this.navParams.dismiss && this.global.PageDismissAct[this.navParams.dismiss])
                   this.global.PageDismissAct[this.navParams.dismiss]({
                     data: {
                       name: tmp_filename,
