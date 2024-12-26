@@ -101,6 +101,14 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.QuickMainAddress);
   }
 
+  CheckIfDismissAct(ev: any) {
+    switch (ev.target.id) {
+      case 'quickjoin_mainpage':
+        this.QuickJoinMain.dismiss();
+        break;
+    }
+  }
+
   Fallback_FS_input_element: HTMLInputElement;
   /** 대안 파일 서버 주소 입력칸으로 포커싱 */
   focus_to_fallback_fs_input() {
