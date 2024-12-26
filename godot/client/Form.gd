@@ -44,7 +44,7 @@ func load_package_debug(files:PackedStringArray):
 			break
 	var is_loaded:= ProjectSettings.load_resource_pack(target, false)
 	if not is_loaded: # 불러오기 실패
-		printerr('Godot: 패키지를 불러오지 못함: ', target)
+		printerr('1 Godot: 패키지를 불러오지 못함: ', target)
 		$CenterContainer/ColorRect/Label.text = 'Cannot load file: %s' % target
 	else: # 정상적으로 불러와짐
 		print('Godot-debug: 패키지 타겟: ', target)
@@ -56,7 +56,7 @@ func load_pck(try_left:= 5):
 	if FileAccess.file_exists('user://%s' % window['path']):
 		var is_loaded:= ProjectSettings.load_resource_pack('user://%s' % window['path'])
 		if not is_loaded: # 없으면 다운받기
-			printerr('Godot: 패키지를 불러오지 못함: ', 'user://%s' % window['path'])
+			printerr('2 Godot: 패키지를 불러오지 못함: ', 'user://%s' % window['path'])
 			$CenterContainer/ColorRect/Label.text = 'Cannot load file: %s' % 'user://%s' % window['path']
 		else: # 패키지를 가지고 있는 경우
 			load_next_scene('res://main.tscn')
@@ -67,7 +67,7 @@ func load_pck(try_left:= 5):
 			await get_tree().idle_frame
 			load_pck(try_left - 1)
 		else:
-			printerr('Godot: 패키지를 불러오지 못함: ', 'user://%s' % window['path'])
+			printerr('3 Godot: 패키지를 불러오지 못함: ', 'user://%s' % window['path'])
 			$CenterContainer/ColorRect/Label.text = 'Cannot find file: %s' % 'user://%s' % window['path']
 
 # 천천히 불러오기

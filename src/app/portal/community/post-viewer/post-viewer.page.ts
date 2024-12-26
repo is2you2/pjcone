@@ -493,7 +493,6 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       this.PostInfo['attachments'][index].cont = this.cont;
                       this.global.CreateGodotIFrameWithDuplicateAct(this.PostInfo['attachments'][index], targetFrameId, {
                         path: `tmp_files/duplicate/${this.PostInfo['attachments'][index]['filename']}`,
-                        url: this.PostInfo['attachments'][index].url,
                         quit_ionic: () => {
                           try {
                             CreateClickPanel(godot_frame, index);

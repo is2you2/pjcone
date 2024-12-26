@@ -1386,7 +1386,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             this.global.CreateGodotIFrameWithDuplicateAct(this.FileInfo, this.content_viewer_canvasId, {
               path: 'tmp_files/duplicate/viewer.pck',
               alt_path: this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.path,
-              url: this.FileInfo.url,
               background: ThumbnailURL,
               receive_image: async (base64: string, width: number, height: number) => {
                 let tmp_path = 'tmp_files/modify_image.png';
