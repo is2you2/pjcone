@@ -39,6 +39,15 @@ export class SubscribesPage implements OnInit {
     }
   }
 
+  CheckIfDismissAct(ev: any) {
+    console.log('들어는오나:', ev);
+    switch (ev.target.id) {
+      case 'inapp_qrscanner':
+        this.InAppQRScanner.dismiss();
+        break;
+    }
+  }
+
   try_add_shortcut() {
     if (this.global.p5KeyShortCut)
       this.AddShortcut();
