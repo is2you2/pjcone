@@ -1643,6 +1643,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   /** 사용하기를 누른 경우 */
   dismiss_draw(force = false) {
+    if (this.WillLeaveHere) return;
     if (this.isCropMode && !force)
       this.p5apply_crop();
     else {
