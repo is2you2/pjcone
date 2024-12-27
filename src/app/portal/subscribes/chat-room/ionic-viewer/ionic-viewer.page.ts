@@ -903,16 +903,17 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 if (this.Relevances[i].content.viewer == 'audio') {
                   if (i == this.RelevanceIndex - 1) CurrentIndex = playList.length;
                   playList.push(this.Relevances[i]);
-                }
+                } else playList.push(null);
               for (let i = 0, j = playList.length; i < j; i++) {
-                let item = p.createDiv(playList[i].content.filename);
+                if (!playList[i]) continue;
+                const item = p.createDiv(playList[i].content.filename);
                 item.style('padding', '10px');
                 item.style('border', '1px solid #ccc');
                 item.style('background-color', 'transparent');
                 item.style('margin-bottom', '5px');
                 item.style('border-radius', '5px');
                 item.style('cursor', 'pointer');
-                let targetIndex = i - CurrentIndex;
+                const targetIndex = i - CurrentIndex;
                 if (targetIndex == 0) {
                   item.style('background-color', 'var(--list-shortcut-hint-background)');
                   FocusOnThis = item;
