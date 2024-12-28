@@ -246,6 +246,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.global.BlockMainShortcut = true;
     this.WaitingLoaded.block = true;
     this.PageWillDestroy = false;
+    switch (this.FileInfo.viewer) {
+      case 'video':
+      case 'audio':
+        this.p5canvas.windowResized();
+        break;
+    }
   }
   /** 정확히 현재 페이지에서 처리되어야하는 경우 사용 */
   async WaitingCurrent() {
@@ -2461,7 +2467,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     switch (this.FileInfo.viewer) {
       case 'video':
         try {
-          let size = this.CacheMediaObject.size();
+          const size = this.CacheMediaObject.size();
           let width: number, height: number;
           if (size.width > size.height) {
             height = size.height / size.width * 192;
