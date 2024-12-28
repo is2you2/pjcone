@@ -282,7 +282,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           localStorage.setItem('voiddraw-lineweight', `${this.LineDefaultWeight || 1}`);
         }
         this.ChangeDefaultLineTransparent = () => {
-          this.colorPickAlpha = this.LineDefaultTransparent;
           localStorage.setItem('voiddraw-transparent', `${this.LineDefaultTransparent || 255}`);
           this.ColorSliderUpdate();
         }
@@ -595,6 +594,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           return false;
         }
         this.ColorSliderUpdate = () => {
+          this.colorPickAlpha = this.LineDefaultTransparent;
           strokeRatio = Number(this.LineDefaultWeight) || 1;
           let color_hex = `#${p.hex((Number(this.colorPickRed) || 0), 2)}${p.hex((Number(this.colorPickGreen) || 0), 2)}${p.hex((Number(this.colorPickBlue) || 0), 2)}`;
           p5ColorPicker.value(color_hex);
