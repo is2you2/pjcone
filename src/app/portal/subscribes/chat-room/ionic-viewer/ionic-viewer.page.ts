@@ -1040,28 +1040,48 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             p.clear(255, 255, 255, 0);
             try {
               if (sound && mediaObject) {
-                let spectrum = fft.analyze();
-                let binSize = Math.floor(spectrum.length / numBins);  // 각 구간에 해당하는 스펙트럼 크기
-                let barWidth = p.width / numBins; // 바 너비 계산
-                for (let i = 0, j = spectrum.length; i < j; i++) {
-                  let startBin = i * binSize;
-                  let endBin = (i + 1) * binSize;
+                if (isPlatform == 'DesktopPWA') {
+                  let spectrum = fft.analyze();
+                  let binSize = Math.floor(spectrum.length / numBins);  // 각 구간에 해당하는 스펙트럼 크기
+                  let barWidth = p.width / numBins; // 바 너비 계산
+                  for (let i = 0, j = spectrum.length; i < j; i++) {
+                    let startBin = i * binSize;
+                    let endBin = (i + 1) * binSize;
 
-                  let avg = 0;
-                  // 각 구간의 평균을 구하기
-                  for (let j = startBin; j < endBin; j++)
-                    avg += spectrum[j];
-                  avg /= binSize;
-                  // 평균 값을 높이로 변환하여 바를 그림
-                  let h = p.map(avg, 0, 255, 0, p.height);
-                  // 높이별로 바를 추가로 분리시킴
-                  for (let k = p.ceil(p.height / SepBarHeight), l = k; k >= 0; k--) {
-                    if (p.height - SepBarHeight * k > h) break;
-                    if (isDarkMode)
-                      p.fill(p.min((l - k) * 10, 255), p.min((l - k) * 4, 255));
-                    else p.fill(p.min(255 - (l - k) * 10, 255), p.min((l - k) * 4, 255));
-                    // 바를 그릴 때 각 구간에 대해 하나의 바를 그립니다
-                    p.rect(i * barWidth + BinMargin, SepBarHeight * k - BinMargin, barWidth - 2 * BinMargin, -SepBarHeight + BinMargin * 2);
+                    let avg = 0;
+                    // 각 구간의 평균을 구하기
+                    for (let k = startBin; k < endBin; k++)
+                      avg += spectrum[k];
+                    avg /= binSize;
+                    // 평균 값을 높이로 변환하여 바를 그림
+                    let h = p.map(avg, 0, 255, 0, p.height);
+                    // 높이별로 바를 추가로 분리시킴
+                    for (let k = p.ceil(p.height / SepBarHeight), l = k; k >= 0; k--) {
+                      if (p.height - SepBarHeight * k > h) break;
+                      if (isDarkMode)
+                        p.fill(p.min((l - k) * 10, 255), p.min((l - k) * 4, 255));
+                      else p.fill(p.min(255 - (l - k) * 10, 255), p.min((l - k) * 4, 255));
+                      // 바를 그릴 때 각 구간에 대해 하나의 바를 그립니다
+                      p.rect(i * barWidth + BinMargin, SepBarHeight * k - BinMargin, barWidth - 2 * BinMargin, -SepBarHeight + BinMargin * 2);
+                    }
+                  }
+                } else {
+                  let spectrum = fft.analyze();
+                  let binSize = Math.floor(spectrum.length / numBins);  // 각 구간에 해당하는 스펙트럼 크기
+                  let barWidth = p.width / numBins; // 바 너비 계산
+                  p.fill(`#${isDarkMode ? '30564e' : 'eb8f75'}`);
+                  for (let i = 0, j = spectrum.length; i < j; i++) {
+                    let startBin = i * binSize;
+                    let endBin = (i + 1) * binSize;
+
+                    let avg = 0;
+                    // 각 구간의 평균을 구하기
+                    for (let k = startBin; k < endBin; k++)
+                      avg += spectrum[k];
+                    avg /= binSize;
+                    // 평균 값을 높이로 변환하여 바를 그림
+                    let h = p.map(avg, 0, 255, 0, p.height);
+                    p.rect(i * barWidth + BinMargin, p.height, barWidth - 2 * BinMargin, -h);
                   }
                 }
               }
