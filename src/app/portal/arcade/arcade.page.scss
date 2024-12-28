@@ -17,10 +17,17 @@
     margin: 16px 0px 16px 16px;
 }
 
+.searchInput {
+    border: none;
+    border-bottom: 1px solid;
+    outline: none;
+}
+
 .cover_image {
     width: 100%;
     height: 100%;
     background-size: cover;
+    background-position: center;
     opacity: .35;
 }
 

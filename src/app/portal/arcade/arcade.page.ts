@@ -47,6 +47,31 @@ export class ArcadePage implements OnInit {
     }
   }
 
+  ionViewDidEnter() {
+    try {
+      const officialFilter = document.getElementById('official_filter');
+      if (!officialFilter.onfocus)
+        officialFilter.onfocus = () => {
+          this.global.BlockMainShortcut = true;
+        }
+      if (!officialFilter.onblur)
+        officialFilter.onblur = () => {
+          this.global.BlockMainShortcut = true;
+        }
+    } catch (e) { }
+    try {
+      const dedicatedFilter = document.getElementById('dedicated_filter');
+      if (!dedicatedFilter.onfocus)
+        dedicatedFilter.onfocus = () => {
+          this.global.BlockMainShortcut = true;
+        }
+      if (!dedicatedFilter.onblur)
+        dedicatedFilter.onblur = () => {
+          this.global.BlockMainShortcut = true;
+        }
+    } catch (e) { }
+  }
+
   WillLeave = false;
   /** 정확히 현재 페이지가 처리되어야하는 경우 사용 */
   async WaitingCurrent() {
@@ -110,6 +135,20 @@ export class ArcadePage implements OnInit {
       console.log('아케이드 파일 입력 실패: ', e);
     }
     document.getElementById('arcade_file_input')['value'] = null;
+  }
+
+  /** 검색어를 입력함 */
+  SearchTextInput(type: string, ev: any) {
+    switch (type) {
+      case 'official':
+        for (let info of this.nakama.ArcadeListOfficial)
+          info.hide = info.name.indexOf(ev.target.value) < 0;
+        break;
+      case 'dedicated':
+        for (let info of this.nakama.ArcadeList)
+          info.hide = info.name.indexOf(ev.target.value) < 0;
+        break;
+    }
   }
 
   /** 클립보드에 복사된 주소 URL을 다운받아서 열기 */

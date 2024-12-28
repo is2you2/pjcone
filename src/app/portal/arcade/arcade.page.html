@@ -56,11 +56,13 @@
         <!-- 공식 리스트 필터 -->
         <div style="position: absolute; right: 16px;">
           <ion-icon style="margin-right: 8px; cursor: pointer;" name="search-outline"></ion-icon>
-          <input disabled style="border: none; border-bottom: 1px solid; outline: none;" type="text">
+          <input id="official_filter" class="searchInput" type="text" [placeholder]="lang.text['Arcade']['Search']"
+            (input)="SearchTextInput('official', $event)">
         </div>
       </ion-item-divider>
       <div class="fixed_btn_size">
-        <div *ngFor="let info of nakama.ArcadeListOfficial" class="list_ele list_add_btn" (click)="ShowGameInfo()">
+        <div *ngFor="let info of nakama.ArcadeListOfficial" [hidden]="info.hide" class="list_ele list_add_btn"
+          (click)="ShowGameInfo()">
           <div *ngIf="info.cover" class="cover_image" [style]="'background-image: url(' + info.cover + ');'"></div>
           <div class="disconnect_info">
             {{info.name}}
@@ -75,11 +77,12 @@
         <!-- 비공식 리스트 필터 -->
         <div style="position: absolute; right: 16px;">
           <ion-icon style="margin-right: 8px; cursor: pointer;" name="search-outline"></ion-icon>
-          <input disabled style="border: none; border-bottom: 1px solid; outline: none;" type="text">
+          <input id="dedicated_filter" class="searchInput" type="text" [placeholder]="lang.text['Arcade']['Search']"
+            (input)="SearchTextInput('dedicated', $event)">
         </div>
       </ion-item-divider>
-      <div *ngFor="let info of nakama.ArcadeList" class="list_form">
-        <div *ngFor="let arcade of nakama.ArcadeList" class="list_ele" (click)="ShowGameInfo()">
+      <div class="list_form">
+        <div *ngFor="let info of nakama.ArcadeList" [hidden]="info.hide" class="list_ele" (click)="ShowGameInfo()">
           <div *ngIf="info.cover" class="cover_image" [style]="'background-image: url(' + info.cover + ');'"></div>
           <div class="disconnect_info">
             {{info.name}}
