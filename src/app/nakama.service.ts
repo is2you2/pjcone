@@ -58,6 +58,8 @@ interface ArcadeForm {
   cover?: string;
   /** 게임 설명글 */
   desc?: string;
+  /** **로컬 정보** true 인 경우, 리스트에서 가려짐. 필터에 의해서 조정됨 */
+  hide?: boolean;
 }
 
 /** 주로 셀프 매칭에 동기화할 때 사용하나 다른 곳에도 사용하고 있는 중 */
@@ -973,10 +975,10 @@ export class NakamaService {
     this.set_group_statusBar('online', _is_official, _target);
   }
 
+  /** 공식 서버가 제공하는 아케이드 정보 */
+  ArcadeListOfficial: ArcadeForm[] = [];
   /** 아케이드 정보 수집 */
-  ArcadeList: ArcadeForm[] = [{
-    name: 'testGame',
-  }];
+  ArcadeList: ArcadeForm[] = [];
   async load_server_arcade_list(_is_official: string, _target: string) {
     // 아래 코드는 서버에 연결하면 after_login 자리에서 진행되어야함
     // nakama.service 에서 아케이드 리스트를 서버별로 관리하기

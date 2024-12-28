@@ -29,7 +29,7 @@
     <ion-item-divider>
       <ion-label>{{lang.text['Arcade']['AddCustom']}}</ion-label>
     </ion-item-divider>
-    <div style="display: flex; flex-direction: row; gap: 16px; overflow-x: auto; margin: 16px 0px 16px 16px;">
+    <div class="fixed_btn_size">
       <input hidden type="file" id="arcade_file_input" accept=".pck" (change)="inputFileSelected($event)">
       <div class="list_ele list_add_btn" (click)="AddCustomGame()" (contextmenu)="AddCustomGameFromClipboard()">
         <div class="disconnect_info">
@@ -49,14 +49,44 @@
         </div>
       </div>
     </div>
-    <!-- <div *ngIf="nakama.ArcadeList.length">
+    <!-- 공식 게임 리스트 -->
+    <div *ngIf="nakama.ArcadeListOfficial.length">
       <ion-item-divider>
-        <ion-label>{{lang.text['Arcade']['AddedCustom']}}</ion-label>
+        <ion-label>{{lang.text['Arcade']['OfficialList']}}</ion-label>
+        <!-- 공식 리스트 필터 -->
+        <div style="position: absolute; right: 16px;">
+          <ion-icon style="margin-right: 8px; cursor: pointer;" name="search-outline"></ion-icon>
+          <input disabled style="border: none; border-bottom: 1px solid; outline: none;" type="text">
+        </div>
       </ion-item-divider>
-      <div class="list_form">
-        <div *ngFor="let arcade of nakama.ArcadeList" class="list_ele" (click)="ShowGameInfo()"></div>
+      <div class="fixed_btn_size">
+        <div *ngFor="let info of nakama.ArcadeListOfficial" class="list_ele list_add_btn" (click)="ShowGameInfo()">
+          <div *ngIf="info.cover" class="cover_image" [style]="'background-image: url(' + info.cover + ');'"></div>
+          <div class="disconnect_info">
+            {{info.name}}
+          </div>
+        </div>
       </div>
-    </div> -->
+    </div>
+    <!-- 사설 서버로부터 받은 리스트 -->
+    <div *ngIf="nakama.ArcadeList.length">
+      <ion-item-divider>
+        <ion-label>{{lang.text['Arcade']['DediList']}}</ion-label>
+        <!-- 비공식 리스트 필터 -->
+        <div style="position: absolute; right: 16px;">
+          <ion-icon style="margin-right: 8px; cursor: pointer;" name="search-outline"></ion-icon>
+          <input disabled style="border: none; border-bottom: 1px solid; outline: none;" type="text">
+        </div>
+      </ion-item-divider>
+      <div *ngFor="let info of nakama.ArcadeList" class="list_form">
+        <div *ngFor="let arcade of nakama.ArcadeList" class="list_ele" (click)="ShowGameInfo()">
+          <div *ngIf="info.cover" class="cover_image" [style]="'background-image: url(' + info.cover + ');'"></div>
+          <div class="disconnect_info">
+            {{info.name}}
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   <div *ngIf="global.ArcadeLoaded">
     <div id="arcade_pck_loaded" class="full_screen" style="position: fixed;"></div>
@@ -64,16 +94,18 @@
   <ion-modal #ArcadeDetail class="transparent-modal" [enterAnimation]="enterAnimation"
     [leaveAnimation]="leaveAnimation">
     <ng-template>
-      <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
-        <div
-          style="width: 400px; height: 455px; background-color: var(--chatroom-background); text-align: center; padding: 16px; border-radius: 16px;">
+      <div id="arcade_detail" class="OutterModal" (click)="CheckIfDismissAct($event)">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <div
+            style="width: 400px; height: 455px; background-color: var(--chatroom-background); text-align: center; padding: 16px; border-radius: 16px;">
+          </div>
         </div>
       </div>
     </ng-template>
   </ion-modal>
   <ion-modal #ArcadeQRShare class="transparent-modal">
     <ng-template>
-      <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+      <div style="display: flex; justify-content: center; align-items: center;">
         <div
           style="width: 400px; min-height: 455px; background-color: var(--chatroom-background); text-align: center; padding: 16px">
           <img *ngIf="global.ArcadeQRCodeSRC" [src]="global.ArcadeQRCodeSRC"

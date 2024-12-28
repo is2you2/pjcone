@@ -33,6 +33,18 @@ export class ArcadePage implements OnInit {
 
   async ionViewWillEnter() {
     this.WillLeave = false;
+    // 공식으로 제공하는 게임 리스트가 없으면 불러오기 시도하기
+    if (!this.nakama.ArcadeListOfficial.length) {
+      try {
+        let res = await fetch('https://is2you2.github.io/pjcone_arcade.json');
+        if (res.ok) {
+          let json = await res.json();
+          this.nakama.ArcadeListOfficial = json;
+        } else throw res;
+      } catch (e) {
+        console.log('공식 아케이드 리스트 불러오기 실패: ', e);
+      }
+    }
   }
 
   WillLeave = false;
@@ -56,6 +68,14 @@ export class ArcadePage implements OnInit {
     this.global.ActLikeModal('portal/arcade/void-draw', {
       dismiss: 'voiddraw-remote',
     });
+  }
+
+  CheckIfDismissAct(ev: any) {
+    switch (ev.target.id) {
+      case 'arcade_detail':
+        this.ArcadeDetail.dismiss();
+        break;
+    }
   }
 
   @ViewChild('ArcadeDetail') ArcadeDetail: IonModal;
