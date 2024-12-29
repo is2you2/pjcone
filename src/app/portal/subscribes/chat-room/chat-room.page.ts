@@ -953,7 +953,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     try {
       this.ChatLogs = document.getElementById('chatroom_div');
       this.ChatLogs.onscroll = (_ev: any) => {
-        let CheckScroll = this.ChatLogs.scrollHeight - (this.ChatLogs.scrollTop + this.ChatLogs.clientHeight) < this.ChatLogs.scrollHeight / 4;
+        let CheckScroll = this.NeedScrollDown();
         if (CheckScroll) {
           // 스크롤을 제일 하단으로 내리면 사라짐
           if (!this.ShowGoToBottom)
@@ -1806,7 +1806,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 충분히 스크롤 되어있어서 최하단으로 내려도 됨 */
   NeedScrollDown(): boolean {
-    return this.ChatLogs.scrollHeight < this.ChatLogs.scrollTop + this.ChatLogs.clientHeight + 200;
+    return this.ChatLogs.scrollHeight - (this.ChatLogs.scrollTop + this.ChatLogs.clientHeight) < this.ChatLogs.scrollHeight / 12;
   }
 
   /** 가장 최근 메시지 보기 */
