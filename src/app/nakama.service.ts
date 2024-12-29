@@ -45,11 +45,13 @@ export interface NakamaGroup {
 }
 
 /** 아케이드 정보 양식 */
-interface ArcadeForm {
+export interface ArcadeForm {
   /** 분류를 위한 게임 id */
   id?: string;
   /** 게임 이름 (가운데 배치됨) */
   name: string;
+  /** 검색 보조용 키워드 추가 준비 */
+  searchKey?: string[];
   /** 실행을 위한 pck 또는 html 파일의 온라인 주소 */
   url?: string;
   /** 파일 형식 */

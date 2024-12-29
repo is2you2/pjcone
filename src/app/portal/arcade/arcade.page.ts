@@ -6,7 +6,7 @@ import { FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MiniranchatClientService } from 'src/app/miniranchat-client.service';
-import { NakamaService } from 'src/app/nakama.service';
+import { ArcadeForm, NakamaService } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 
@@ -139,15 +139,21 @@ export class ArcadePage implements OnInit {
 
   /** 검색어를 입력함 */
   SearchTextInput(type: string, ev: any) {
+    let target: ArcadeForm[] = [];
     switch (type) {
       case 'official':
-        for (let info of this.nakama.ArcadeListOfficial)
-          info.hide = info.name.indexOf(ev.target.value) < 0;
+        target = this.nakama.ArcadeListOfficial;
         break;
       case 'dedicated':
-        for (let info of this.nakama.ArcadeList)
-          info.hide = info.name.indexOf(ev.target.value) < 0;
+        target = this.nakama.ArcadeList;
         break;
+    }
+    for (let info of target) {
+      let searchKeyword = info.name;
+      for (let searchKey of (info.searchKey || []))
+        searchKeyword += searchKey;
+      const HasNoKeyFromName = searchKeyword.toLowerCase().indexOf(ev.target.value.toLowerCase()) < 0;
+      info.hide = HasNoKeyFromName;
     }
   }
 
