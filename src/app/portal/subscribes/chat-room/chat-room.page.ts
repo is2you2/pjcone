@@ -1408,8 +1408,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         targetChatBg.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .5)';
       }, 100);
       setTimeout(() => {
-        if (this.WillLeave) return;
         this.BlockAutoScrollDown = false;
+        if (this.WillLeave) return;
         if ((Date.now() - this.BackgroundAct[id]) >= 3500) {
           targetChatBg.style.backgroundColor = null;
           delete this.BackgroundAct[id];
