@@ -160,7 +160,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   ChangeRelevanceIndex(ev: any) {
     // 엔터를 눌러 종료
     if (ev.key == 'Enter') {
-      let targetIndex = Number(ev.target['value']);
+      let targetIndex = Number(ev.target['value'] || ev.target['placeholder']);
       targetIndex = Math.max(Math.min(targetIndex, this.Relevances.length), 1);
       this.ChangeToAnother(targetIndex - this.RelevanceIndex);
       setTimeout(() => {
