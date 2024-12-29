@@ -247,6 +247,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.WaitingLoaded.block = true;
     this.PageWillDestroy = false;
     switch (this.FileInfo.viewer) {
+      case 'image':
       case 'video':
       case 'audio':
         this.p5canvas.windowResized();
@@ -1351,10 +1352,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               this.FileInfo['else'] = true; // 일반 미디어 파일이 아님을 알림
               this.ContentOnLoad = true;
             });
-          }
-          p.windowResized = () => {
-            let target_height = window.innerHeight - 45 - 56;
-            this.p5SyntaxHighlightReader.setAttribute('style', `height: ${target_height}px; display: ${this.isTextEditMode ? 'none' : 'block'}; overflow-y: scroll;`);
           }
           let startPos: p5.Vector = p.createVector();
           let touches: { [id: string]: p5.Vector } = {};
