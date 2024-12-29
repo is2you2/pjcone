@@ -360,6 +360,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                     console.log('게시물 image 첨부파일 불러오기 오류: ', e);
                   }
                   let pimg = p.createP();
+                  pimg.parent(contentDiv);
                   let img = p.createImg(FileURL, `${index}`);
                   img.style('cursor', 'pointer');
                   img.mouseClicked(() => {
