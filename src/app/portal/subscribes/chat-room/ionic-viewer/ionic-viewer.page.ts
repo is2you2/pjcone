@@ -246,13 +246,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.global.BlockMainShortcut = true;
     this.WaitingLoaded.block = true;
     this.PageWillDestroy = false;
-    switch (this.FileInfo.viewer) {
-      case 'image':
-      case 'video':
-      case 'audio':
-        this.p5canvas.windowResized();
-        break;
-    }
+    if (this.p5canvas)
+      switch (this.FileInfo.viewer) {
+        case 'image':
+        case 'video':
+        case 'audio':
+          this.p5canvas.windowResized();
+          break;
+      }
   }
   /** 정확히 현재 페이지에서 처리되어야하는 경우 사용 */
   async WaitingCurrent() {
