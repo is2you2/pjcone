@@ -81,6 +81,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
   PlayableElements = [];
   /** 이 페이지를 보고 있는지 */
   IsFocusOnHere = true;
+  /** 첨부파일을 게시된 순서대로 기억하기 */
+  RearrangedRelevance = [];
   /** PC에서 키를 눌러 컨텐츠 전환 */
   ChangeContentWithKeyInput() {
     if (this.p5canvas) {
@@ -109,10 +111,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
             if (!ev['shiftKey']) this.ChangeToAnother(1);
             break;
           case 'KeyQ': // 첫번째 첨부파일 열기
-            let createRelevances = [];
-            for (let i = 0, j = this.PostInfo['attachments'].length; i < j; i++)
-              createRelevances.push({ content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][i])) });
-            if (!createRelevances.length) return;
+            if (!this.RearrangedRelevance.length) return;
             this.global.PageDismissAct['post-viewer-image-view'] = async (v: any) => {
               await this.WaitingCurrent();
               if (v.data && v.data['share']) this.navCtrl.pop();
@@ -132,13 +131,13 @@ export class PostViewerPage implements OnInit, OnDestroy {
             this.IsFocusOnHere = false;
             this.global.ActLikeModal('portal/community/post-viewer/ionic-viewer', {
               info: {
-                content: this.PostInfo['attachments'][0],
+                ...this.RearrangedRelevance[0],
                 sender_id: creator,
               },
               isOfficial: _is_official,
               target: _target,
-              path: this.PostInfo['attachments'][0]['path'],
-              relevance: createRelevances,
+              path: this.RearrangedRelevance[0].content['path'],
+              relevance: this.RearrangedRelevance,
               noEdit: true,
               dismiss: 'post-viewer-image-view',
             });
@@ -315,6 +314,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
           }
         });
         creator.parent(contentDiv);
+        // 첨부파일 검토용 index 구성
+        let RelevanceIndexes = [];
         // 내용
         if (this.PostInfo['content']) {
           let content: any[] = (await marked.marked(this.PostInfo['content'])).split('\n');
@@ -331,6 +332,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
               let endOfContent = content[i].indexOf('}</p>');
               index = Number(content[i].substring(4, endOfContent));
               is_attach = content[i].indexOf('<p>{') == 0 && content[i].indexOf('}</p>') == (content_len - 4) && !isNaN(index);
+              if (!Number.isNaN(index) && !RelevanceIndexes.includes(index))
+                RelevanceIndexes.push(index);
             } catch (e) { }
             if (is_attach) {
               // 첨부파일 불러오기
@@ -364,9 +367,6 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   let img = p.createImg(FileURL, `${index}`);
                   img.style('cursor', 'pointer');
                   img.mouseClicked(() => {
-                    let createRelevances = [];
-                    for (let attach of this.PostInfo['attachments'])
-                      createRelevances.push({ content: JSON.parse(JSON.stringify(attach)) });
                     this.global.PageDismissAct['post-viewer-image-view'] = async (v: any) => {
                       await this.WaitingCurrent();
                       if (v.data && v.data['share']) this.navCtrl.pop();
@@ -392,7 +392,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       isOfficial: _is_official,
                       target: _target,
                       path: this.PostInfo['attachments'][index]['path'],
-                      relevance: createRelevances,
+                      relevance: this.RearrangedRelevance,
                       noEdit: true,
                       dismiss: 'post-viewer-image-view',
                     });
@@ -455,9 +455,6 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       try {
                         CreateClickPanel(godot_frame, index);
                         godot_frame.mouseClicked(() => {
-                          let createRelevances = [];
-                          for (let attach of this.PostInfo['attachments'])
-                            createRelevances.push({ content: attach });
                           this.global.PageDismissAct['post-viewer-file-view'] = () => {
                             this.IsFocusOnHere = true;
                             delete this.global.PageDismissAct['post-viewer-file-view'];
@@ -481,7 +478,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                             isOfficial: _is_official,
                             target: _target,
                             path: this.PostInfo['attachments'][index]['path'],
-                            relevance: createRelevances,
+                            relevance: this.RearrangedRelevance,
                             noEdit: true,
                             dismiss: 'post-viewer-file-view',
                           });
@@ -498,9 +495,6 @@ export class PostViewerPage implements OnInit, OnDestroy {
                           try {
                             CreateClickPanel(godot_frame, index);
                             godot_frame.mouseClicked(() => {
-                              let createRelevances = [];
-                              for (let attach of this.PostInfo['attachments'])
-                                createRelevances.push({ content: attach });
                               this.global.PageDismissAct['post-viewer-file-view'] = () => {
                                 this.IsFocusOnHere = true;
                                 delete this.global.PageDismissAct['post-viewer-file-view'];
@@ -524,7 +518,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                                 isOfficial: _is_official,
                                 target: _target,
                                 path: this.PostInfo['attachments'][index]['path'],
-                                relevance: createRelevances,
+                                relevance: this.RearrangedRelevance,
                                 noEdit: true,
                                 dismiss: 'post-viewer-file-view',
                               });
@@ -591,9 +585,6 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   EmptyDiv.parent(contentDiv);
                   CreateClickPanel(EmptyDiv, index);
                   EmptyDiv.mouseClicked(() => {
-                    let createRelevances = [];
-                    for (let attach of this.PostInfo['attachments'])
-                      createRelevances.push({ content: attach });
                     this.global.PageDismissAct['post-viewer-file-view'] = () => {
                       this.IsFocusOnHere = true;
                       delete this.global.PageDismissAct['post-viewer-file-view'];
@@ -617,7 +608,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       isOfficial: _is_official,
                       target: _target,
                       path: this.PostInfo['attachments'][index]['path'],
-                      relevance: createRelevances,
+                      relevance: this.RearrangedRelevance,
                       noEdit: true,
                       dismiss: 'post-viewer-file-view',
                     });
@@ -661,6 +652,13 @@ export class PostViewerPage implements OnInit, OnDestroy {
               } catch (e) { }
             }
           }
+          /** 게시되지 않은 숨은 파일을 뒤에 정렬 */
+          const attach_len = this.PostInfo.attachments?.length || 0;
+          for (let i = 0; i < attach_len; i++)
+            if (!RelevanceIndexes.includes(i))
+              RelevanceIndexes.push(i);
+          for (let index of RelevanceIndexes)
+            this.RearrangedRelevance.push({ content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])) });
           let result = [];
           let CollectResult = () => {
             if (result.length) {
