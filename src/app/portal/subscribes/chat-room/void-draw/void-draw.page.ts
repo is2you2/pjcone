@@ -1538,7 +1538,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           let protocol = sep.shift();
           if (protocol) {
             protocol = protocol == 'wss' ? 'https:' : 'http:';
-          } else protocol = this.global.checkProtocolFromAddress(this.InputCustomAddress) ? 'https' : 'http';
+          } else protocol = this.global.checkProtocolFromAddress(this.InputCustomAddress) ? 'https:' : 'http:';
           let uploaded_address = await this.global.upload_file_to_storage({
             blob: blob,
             size: blob.size,
