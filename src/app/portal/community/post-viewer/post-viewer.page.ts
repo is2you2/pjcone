@@ -332,10 +332,10 @@ export class PostViewerPage implements OnInit, OnDestroy {
               let endOfContent = content[i].indexOf('}</p>');
               index = Number(content[i].substring(4, endOfContent));
               is_attach = content[i].indexOf('<p>{') == 0 && content[i].indexOf('}</p>') == (content_len - 4) && !isNaN(index);
-              if (!Number.isNaN(index) && !RelevanceIndexes.includes(index))
-                RelevanceIndexes.push(index);
             } catch (e) { }
             if (is_attach) {
+              if (!Number.isNaN(index) && !RelevanceIndexes.includes(index))
+                RelevanceIndexes.push(index);
               // 첨부파일 불러오기
               if (this.PostInfo['server']['local'])
                 try {
