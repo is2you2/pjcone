@@ -81,7 +81,7 @@ export class P5ToastService {
         p.setup = () => {
           p.noCanvas();
           div = p.createDiv();
-          div.style("position: absolute; left: 0; top: 0; z-index: 1");
+          div.style("position: absolute; left: 0; top: 0; z-index: 2");
           div.style("width: 100%; height: fit-content");
           div.style("padding: 32px;");
           div.style("display: flex; justify-content: center;");
@@ -93,7 +93,7 @@ export class P5ToastService {
           border.style("display: flex; justify-content: center;");
           border.style("width: fit-content; height: fit-content");
           border.style("border-radius: 24px");
-          border.style(`background: #${isDarkMode ? '30564e88' : 'b9543788'}`);
+          border.style('background: var(--toast-background-color)');
           border.style("padding: 4px");
 
           content = p.createDiv();
@@ -101,7 +101,7 @@ export class P5ToastService {
           content.style("display: flex; justify-content: center;");
           content.style("width: fit-content; height: fit-content");
           content.style("word-break: break-all");
-          content.style(`background: #${isDarkMode ? '30564e88' : 'b9543788'}`);
+          content.style('background: var(--toast-background-color)');
           content.style("border-radius: 20px");
           content.style("padding: 12px");
           content.style("color: white");

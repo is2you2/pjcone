@@ -308,7 +308,7 @@ export class WebrtcService {
         border.style("display: flex; justify-content: center;");
         border.style("width: fit-content; height: fit-content");
         border.style(`border-radius: ${BORDER_RADIUS}px`);
-        border.style(`background: #${isDarkMode ? '30564e88' : 'b9543788'}`);
+        border.style('background: var(--toast-background-color)');
         border.style("padding: 6px 12px");
 
         content = p.createDiv();
@@ -318,7 +318,7 @@ export class WebrtcService {
         content.style('flex-direction', 'column');
         content.style("width: fit-content; height: fit-content");
         content.style("word-break: break-all");
-        content.style(`background: #${isDarkMode ? '30564e88' : 'b9543788'}`);
+        content.style('background: var(--toast-background-color)');
         content.style(`border-radius: ${BORDER_RADIUS}px`);
         content.style("padding: 6px 12px");
         content.style(`color: ${isDarkMode ? 'white' : 'black'}`);
