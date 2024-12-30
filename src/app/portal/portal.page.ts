@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { IonAlert, IonTabs, iosTransitionAnimation, NavController, Platform } from '@ionic/angular';
+import { IonAlert, IonTabs, iosTransitionAnimation, NavController } from '@ionic/angular';
 import { NakamaService } from '../nakama.service';
 import { GlobalActService } from '../global-act.service';
 import { IndexedDBService } from '../indexed-db.service';
@@ -24,14 +24,9 @@ export class PortalPage implements OnInit {
     private _webrtc: WebrtcService, // constructor 단계 수행을 위해 로드만 함
     public statusBar: StatusManageService,
     public lang: LanguageSettingService,
-    private platform: Platform,
   ) { }
 
   ngOnInit() {
-    if (this.platform.is('iphone')) {
-      const app: HTMLElement = document.querySelector('ion-router-outlet');
-      app.style.marginBottom = '24px';
-    }
     this.global.SelectArcadeTab = () => {
       this.arcade_tab_selected();
       this.ionTabs.select('arcade');
