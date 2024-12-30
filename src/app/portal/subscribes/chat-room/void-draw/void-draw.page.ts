@@ -91,6 +91,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   voidDrawId = 'voidDraw';
   ionViewWillEnter() {
+    this.WillLeaveHere = false;
     this.global.portalHint = false;
     if (this.QueueAfterLoad)
       this.QueueAfterLoad();
