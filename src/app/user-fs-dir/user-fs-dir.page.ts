@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { AlertController, IonAccordionGroup, LoadingController, NavController } from '@ionic/angular';
+import { AlertController, IonAccordionGroup, NavController } from '@ionic/angular';
 import { isPlatform } from '../app.component';
 import { GlobalActService } from '../global-act.service';
 import { IndexedDBService } from '../indexed-db.service';
@@ -48,7 +48,6 @@ export class UserFsDirPage implements OnInit, OnDestroy {
 
   constructor(
     private indexed: IndexedDBService,
-    private loadingCtrl: LoadingController,
     public lang: LanguageSettingService,
     private global: GlobalActService,
     private p5toast: P5ToastService,
@@ -91,8 +90,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
     });
   }
 
-  initLoadingElement: HTMLIonLoadingElement;
-
+  InitIndexingId = 'userfs_init';
   ionViewDidEnter() {
     this.global.p5KeyShortCut['Escape'] = () => {
       if (this.is_ready) {
@@ -100,7 +98,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
           this.navCtrl.pop();
         } else this.MoveToUpDir();
       } else {
-        this.initLoadingElement.dismiss();
+        this.p5loading.remove(this.InitIndexingId);
         this.is_ready = true;
       }
     }
@@ -128,10 +126,12 @@ export class UserFsDirPage implements OnInit, OnDestroy {
           clearTimeout(StartAct);
           StartAct = setTimeout(async () => {
             if (!isMultipleSend) {
-              let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-              loading.present();
-              this.importSelected(file.file);
-              loading.dismiss();
+              const actId = `userfs_multi_drop_${Date.now()}`;
+              this.p5loading.update({
+                id: actId,
+              });
+              await this.importSelected(file.file);
+              this.p5loading.remove(actId);
             } else { // 여러 파일 발송 여부 검토 후, 아니라고 하면 첫 파일만
               this.MultipleDrops(Drops);
             }
@@ -209,33 +209,49 @@ export class UserFsDirPage implements OnInit, OnDestroy {
   }
 
   async MultipleDrops(Drops: any) {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-    loading.present();
+    const actId = `userfs_MultipleDrops_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['UserFsDir']['MultipleSave'],
+    });
     for (let i = 0, j = Drops.length; i < j; i++) {
+      this.p5loading.update({
+        id: actId,
+        message: `${this.lang.text['UserFsDir']['MultipleSave']}: ${Drops[i].file.name}`,
+        progress: i / j,
+      });
       await this.importSelected(Drops[i].file);
     }
-    loading.dismiss();
+    this.p5loading.remove(actId);
   }
 
   /** 파일 첨부하기 */
   async inputFileSelected(ev: any) {
     if (ev.target.files.length) {
+      const actId = `userfs_inputFileSelected_${Date.now()}`;
       let is_multiple_files = ev.target.files.length != 1;
       if (is_multiple_files) {
-        let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['MultipleSave'] });
-        loading.present();
+        this.p5loading.update({
+          id: actId,
+          message: this.lang.text['UserFsDir']['MultipleSave'],
+        });
         for (let i = 0, j = ev.target.files.length; i < j; i++) {
           if (this.StopIndexing) break;
-          loading.message = `${this.lang.text['UserFsDir']['MultipleSave']}: ${j - i}`;
+          this.p5loading.update({
+            id: actId,
+            message: `${this.lang.text['UserFsDir']['MultipleSave']}: ${ev.target.files[i].name}`,
+            progress: i / j,
+          });
           await this.importSelected(ev.target.files[i]);
         }
         this.noti.ClearNoti(4);
-        loading.dismiss();
+        this.p5loading.remove(actId);
       } else {
-        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-        loading.present();
+        this.p5loading.update({
+          id: actId,
+        });
         await this.importSelected(ev.target.files[0]);
-        loading.dismiss();
+        this.p5loading.remove(actId);
       }
     }
   }
@@ -305,8 +321,10 @@ export class UserFsDirPage implements OnInit, OnDestroy {
 
   /** 폴더를 선택했을 때 */
   async LoadAllIndexedFiles() {
-    this.initLoadingElement = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['LoadingExplorer'] });
-    this.initLoadingElement.present();
+    this.p5loading.update({
+      id: this.InitIndexingId,
+      message: this.lang.text['UserFsDir']['LoadingExplorer'],
+    });
     this.DirList.length = 0;
     this.FileList.length = 0;
     if (this.navParams.selector) {
@@ -340,7 +358,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
       });
     }
     this.noti.ClearNoti(5);
-    this.initLoadingElement.dismiss();
+    this.p5loading.remove(this.InitIndexingId);
     this.is_ready = true;
   }
 
@@ -348,7 +366,11 @@ export class UserFsDirPage implements OnInit, OnDestroy {
     for (let i = 0, j = _list.length; i < j; i++) {
       if (this.StopIndexing) return;
       let message = `${this.lang.text['UserFsDir']['LoadingExplorer']}: ${_list.length - i}`;
-      this.initLoadingElement.message = message;
+      this.p5loading.update({
+        id: this.InitIndexingId,
+        message: message,
+        progress: i / _list.length
+      });
       await this.indexed.GetFileInfoFromDB(_list[i], (info) => {
         let _info: FileDir = {
           path: _list[i],
@@ -535,17 +557,20 @@ export class UserFsDirPage implements OnInit, OnDestroy {
     input.click();
   }
   async inputImageSelected(ev: any) {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['LoadingExplorer'] });
-    loading.present();
+    const actId = `userfs_inputImageSelected_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['UserFsDir']['LoadingExplorer'],
+    });
     for (let i = 0, j = ev.target.files.length; i < j; i++) {
       if (this.StopIndexing) {
-        loading.dismiss();
+        this.p5loading.remove(actId);
         return;
       }
       await this.indexed.saveBlobToUserPath(ev.target.files[i], ev.target.files[i].webkitRelativePath);
     }
     this.LoadAllIndexedFiles();
-    loading.dismiss();
+    this.p5loading.remove(actId);
     this.p5toast.show({
       text: this.lang.text['UserFsDir']['NeedResetToApply'],
     });
@@ -576,15 +601,22 @@ export class UserFsDirPage implements OnInit, OnDestroy {
       buttons: [{
         text: this.lang.text['UserFsDir']['RemoveApply'],
         handler: async () => {
-          let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['DeleteFile'] });
-          loading.present();
+          const actId = `userfs_RemoveDirectoryRecursive_${Date.now()}`;
+          this.p5loading.update({
+            id: actId,
+            message: this.lang.text['UserFsDir']['DeleteFile'],
+          });
           let list = await this.indexed.GetFileListFromDB(dir);
           for (let i = 0, j = list.length; i < j; i++) {
             if (this.StopIndexing) {
-              loading.dismiss();
+              this.p5loading.remove(actId);
               return;
             }
-            loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`;
+            this.p5loading.update({
+              id: actId,
+              message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${list[i].split('/').pop()}`,
+              progress: i / j,
+            });
             await this.indexed.removeFileFromUserPath(list[i]);
           }
           for (let i = this.DirList.length - 1; i >= 0; i--)
@@ -594,7 +626,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
             if (this.FileList[i].path.indexOf(dir) == 0)
               this.FileList.splice(i, 1);
           if (dir === this.CurrentDir) this.MoveToUpDir();
-          loading.dismiss();
+          this.p5loading.remove(actId);
           this.noti.ClearNoti(4);
         },
         cssClass: 'redfont',
