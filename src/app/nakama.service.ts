@@ -4015,7 +4015,7 @@ export class NakamaService {
       this.noti.PushLocal({
         id: 7,
         title: this.lang.text['ChatRoom']['SendFile'],
-        body: info.filename || info.name,
+        body: info.filename,
         smallIcon_ln: 'diychat',
       }, this.noti.Current);
     } catch (e) {
@@ -4023,7 +4023,7 @@ export class NakamaService {
       this.noti.PushLocal({
         id: 7,
         title: this.lang.text['Nakama']['FailedUpload'],
-        body: `${info.filename || info.name}: ${e}`,
+        body: `${info.filename}: ${e}`,
         smallIcon_ln: 'diychat',
       }, this.noti.Current);
       throw e;

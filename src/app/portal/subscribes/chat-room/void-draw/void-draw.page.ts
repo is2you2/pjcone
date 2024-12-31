@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AlertController, IonSelect, LoadingController, NavController } from '@ionic/angular';
 import * as p5 from 'p5';
-import { isPlatform } from 'src/app/app.component';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -10,6 +9,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { WebrtcService } from 'src/app/webrtc.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonModal, Platform } from '@ionic/angular/common';
+import { P5LoadingService } from 'src/app/p5-loading.service';
 
 @Component({
   selector: 'app-void-draw',
@@ -31,6 +31,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private navCtrl: NavController,
     private platform: Platform,
+    private p5loading: P5LoadingService,
   ) { }
   ngOnDestroy(): void {
     this.route.queryParams['unsubscribe']();
@@ -87,7 +88,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       }
     });
   }
-  mainLoading: HTMLIonLoadingElement;
 
   voidDrawId = 'voidDraw';
   ionViewWillEnter() {
@@ -102,7 +102,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   async ionViewDidEnter() {
     this.global.StoreShortCutAct('void-draw')
     this.AddShortCut();
-    this.mainLoading = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['UseThisImage'] });
+    this.p5loading.update({
+      id: this.voidDrawId,
+      message: this.lang.text['voidDraw']['UseThisImage'],
+    }, true);
   }
 
   AddShortCut() {
@@ -346,7 +349,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                     data: {
                       name: tmp_filename,
                       img: base64,
-                      loadingCtrl: this.mainLoading,
+                      loadingCtrl: this.voidDrawId,
                     }
                   });
                 this.navCtrl.pop();
@@ -1546,7 +1549,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             filename: `voidDrawRemoveImage.${file_ext}`,
           }, {
             user_id: `tmp_${this.QRNavParams.channel}_${this.QRNavParams.user_id}`,
-          }, protocol, address, false, this.RemoteLoadingCtrl);
+          }, protocol, address, false, this.voidDrawId);
           this.webrtc.dataChannel.send(JSON.stringify({
             type: 'background',
             data: uploaded_address,
@@ -1654,7 +1657,9 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         this.navCtrl.pop();
         return;
       }
-      this.mainLoading.present();
+      this.p5loading.update({
+        id: this.voidDrawId,
+      });
       this.WithoutSave = false;
       this.p5save_image();
     }
@@ -1689,7 +1694,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   WithoutSave = true;
   ionViewDidLeave() {
     if (this.WithoutSave)
-      this.mainLoading.remove();
+      this.p5loading.remove(this.voidDrawId);
   }
   // 아래, LinkQRPage 병합
   @ViewChild('AddrQRShare') AddrQRShare: IonModal;

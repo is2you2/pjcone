@@ -2136,9 +2136,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
     loading.present();
     // 채널 채팅에서는 별도 파일첨부로 처리
-    if (!this.NewTextFileName) this.NewTextFileName = this.FileInfo.filename || this.FileInfo.name;
+    if (!this.NewTextFileName) this.NewTextFileName = this.FileInfo.filename;
     if (this.NewTextFileName.indexOf('.') < 0) this.NewTextFileName += '.txt';
-    let new_name = this.NewTextFileName || this.FileInfo.filename || this.FileInfo.name;
+    let new_name = this.NewTextFileName || this.FileInfo.filename;
     let file_ext = new_name.split('.').pop();
     this.FileInfo.type = file_ext == 'html' ? 'text/html' : this.FileInfo.type;
     let blob = new Blob([this.p5TextArea.value], { type: this.FileInfo.type });
@@ -2153,7 +2153,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           }
         });
     } else { // 할 일에서는 직접 파일 수정 후 임시 교체
-      let tmp_path = `tmp_files/texteditor/${this.FileInfo.filename || this.FileInfo.name}`;
+      let tmp_path = `tmp_files/texteditor/${this.FileInfo.filename}`;
       if (!this.FileInfo.path) this.FileInfo.path = tmp_path;
       await this.indexed.saveBlobToUserPath(blob, tmp_path);
       if (this.global.PageDismissAct[this.navParams.dismiss])
@@ -2518,7 +2518,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         if (!this.ContentFailedLoad)
           try {
             if (!this.FileInfo.alt_path && !this.FileInfo.path) throw '경로 없는 파일';
-            this.global.godot_window['filename'] = this.FileInfo.filename || this.FileInfo.name;
+            this.global.godot_window['filename'] = this.FileInfo.filename;
             this.global.godot_window['create_thumbnail'](this.FileInfo);
             let list = await this.indexed.GetFileListFromDB('tmp_files', undefined, this.indexed.godotDB);
             list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB))

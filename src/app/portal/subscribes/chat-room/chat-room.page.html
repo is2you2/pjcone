@@ -384,9 +384,11 @@
                 </ion-button>
               </td>
               <td style="width: 100%; vertical-align: bottom; position: relative;">
-                <div *ngIf="global.ShowHint && !CheckIfFocusOnInput" class="shortcut_hint shortcut_hint_menu">Enter
+                <div *ngIf="global.ShowHint && !CheckIfFocusOnInput" class="shortcut_hint shortcut_hint_menu"
+                  style="z-index: 32;">Enter
                 </div>
-                <div *ngIf="global.ShowHint && CheckIfFocusOnInput" class="shortcut_hint shortcut_hint_menu">Backspace
+                <div *ngIf="global.ShowHint && CheckIfFocusOnInput" class="shortcut_hint shortcut_hint_menu"
+                  style="z-index: 32;">Backspace
                 </div>
                 <textarea [id]="ChannelUserInputId" [(ngModel)]="userInput.text" (keyup)="check_key($event)"
                   (keydown)="check_key($event)" class="TextAreaInput imageForm" style="overflow: auto; z-index: 16;"

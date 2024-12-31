@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { AlertController, IonSelect, LoadingController, NavController } from '@ionic/angular';
+import { AlertController, IonSelect, NavController } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import * as p5 from "p5";
 import { P5ToastService } from 'src/app/p5-toast.service';
@@ -14,6 +14,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
 import { ExtendButtonForm } from '../../subscribes/chat-room/chat-room.page';
 import { FloatButtonService } from 'src/app/float-button.service';
+import { P5LoadingService } from 'src/app/p5-loading.service';
 
 /** 서버에서 생성한 경우 */
 interface RemoteInfo {
@@ -49,10 +50,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     private alertCtrl: AlertController,
     private noti: LocalNotiService,
     private statusBar: StatusManageService,
-    private loadingCtrl: LoadingController,
     public global: GlobalActService,
     private navCtrl: NavController,
     private floatButton: FloatButtonService,
+    private p5loading: P5LoadingService,
   ) { }
 
   /** 작성된 내용 */
@@ -256,13 +257,16 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   async StopAndSaveVoiceRecording() {
     this.floatButton.RemoveFloatButton('addtodo-record');
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SavingRecord'] });
-    loading.present();
+    const actId = `add_todo_saveVoiceRecording_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['AddPost']['SavingRecord']
+    });
     try {
       let blob = await this.global.StopAndSaveVoiceRecording();
       await this.selected_blobFile_callback_act(blob, false);
     } catch (e) { }
-    loading.dismiss();
+    this.p5loading.remove(actId);
     this.extended_buttons[4].icon = 'mic-circle-outline';
     this.extended_buttons[4].name = this.lang.text['ChatRoom']['Voice'];
   }
@@ -397,11 +401,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   async selected_blobFile_callback_act(blob: any, showLoading = true) {
-    let saving_file: HTMLIonLoadingElement;
-    if (showLoading) {
-      saving_file = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-      saving_file.present();
-    }
+    const actId = `add_todo_add_attach_${Date.now()}`;
+    if (showLoading)
+      this.p5loading.update({
+        id: actId,
+      });
     let this_file: FileInfo = this.global.selected_blobFile_callback_act(blob, 'tmp_files/todo/', {
       display_name: this.nakama.users.self['display_name'],
     });
@@ -421,7 +425,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         text: this.lang.text['TodoDetail']['load_failed'],
       });
     }
-    if (showLoading) saving_file.dismiss();
+    if (showLoading) this.p5loading.remove(actId);
     this.auto_scroll_down();
   }
 
@@ -567,10 +571,18 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       has_thumbnail = await this.indexed.checkIfFileExist(`todo/${this.userInput.id}/thumbnail.png`);
     }
     if (this.userInput.attach.length) {
-      let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SyncAttaches'] });
-      loading.present();
+      const actId = `add_todo_check_attch_${Date.now()}`;
+      this.p5loading.update({
+        id: actId,
+        message: this.lang.text['AddPost']['SyncAttaches'],
+        progress: 0,
+      });
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
-        loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: ${this.userInput.attach[i].filename}`;
+        this.p5loading.update({
+          id: actId,
+          message: `${this.lang.text['AddPost']['SyncAttaches']}: ${this.userInput.attach[i].filename}`,
+          progress: i / j,
+        });
         try {
           if (this.userInput.remote) {
             try {
@@ -657,7 +669,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         }
         this.userInput.attach[i]['exist'] = true;
       }
-      loading.dismiss();
+      this.p5loading.remove(actId);
     }
     // 저장소 표기 적용
     try {
@@ -1049,13 +1061,21 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 파일 선택시 로컬에서 반영 */
   async inputImageSelected(ev: any) {
     if (!ev.target.files.length) return;
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['ContentViewer']['OnLoadContent'] });
-    loading.present();
+    const actId = `add_todo_file_input_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['ContentViewer']['OnLoadContent'],
+      progress: 0,
+    });
     for (let i = 0, j = ev.target.files.length; i < j; i++) {
-      loading.message = `${this.lang.text['ContentViewer']['OnLoadContent']}: ${ev.target.files[i].name}`;
+      this.p5loading.update({
+        id: actId,
+        message: `${this.lang.text['ContentViewer']['OnLoadContent']}: ${ev.target.files[i].name}`,
+        progress: i / j,
+      });
       await this.selected_blobFile_callback_act(ev.target.files[i], false);
     }
-    loading.dismiss();
+    this.p5loading.remove(actId);
     let input = document.getElementById(this.file_sel_id) as HTMLInputElement;
     input.value = '';
   }
@@ -1494,8 +1514,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         attach_changed = true;
       }
     }
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-    loading.present();
+    const actId = `add_todo_save_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+    });
     if (has_attach && attach_changed) { // 첨부된 파일이 있다면
       if (received_json) { // 진입시 받은 정보가 있다면 수정 전 내용임
         try {
@@ -1535,9 +1557,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           } catch (e) { }
           try { // FFS 업로드 시도
             if (this.userInput.CDN != 1) throw 'FFS 사용 순위에 없음';
-            loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: ${this.userInput.attach[i].filename}`;
+            this.p5loading.update({
+              id: actId,
+              message: `${this.lang.text['AddPost']['SyncAttaches']}: ${this.userInput.attach[i].filename}`,
+              progress: i / j,
+            });
             let CatchedAddress: string;
-            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attach[i], this.nakama.users.self['display_name'], loading);
+            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attach[i], this.nakama.users.self['display_name'], actId);
             if (CatchedAddress) {
               delete this.userInput.attach[i]['partsize'];
               delete this.userInput.attach[i]['size'];
@@ -1560,6 +1586,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             header_image = URL.createObjectURL(blob);
           } catch (e) { }
       }
+      this.p5loading.update({
+        id: actId,
+        progress: null,
+      });
       if (header_image) { // 대표 이미지가 있다면
         await new Promise((done: any) => {
           new p5((p: p5) => {
@@ -1684,7 +1714,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               targetname = `${this.userInput.id}_${this.userInput.remote.creator_id}`;
             } catch (e) { }
             let savedAddress = await this.global.upload_file_to_storage(this.userInput.attach[i],
-              { user_id: targetname, apache_port: server_info['apache_port'], cdn_port: server_info['cdn_port'] }, protocol, address, this.userInput.CDN == 1, loading);
+              { user_id: targetname, apache_port: server_info['apache_port'], cdn_port: server_info['cdn_port'] }, protocol, address, this.userInput.CDN == 1, actId);
             let isURL = Boolean(savedAddress);
             if (!isURL) throw '링크 만들기 실패';
             delete this.userInput.attach[i]['size'];
@@ -1770,11 +1800,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           text: this.lang.text['TodoDetail']['CanAddToServer'],
         });
         this.isButtonClicked = false;
-        loading.dismiss();
+        this.p5loading.remove(actId);
         return;
       }
     }
-    loading.dismiss();
+    this.p5loading.remove(actId);
     this.userInput['is_me'] = true;
     if (this.global.p5todoAddtodo)
       this.global.p5todoAddtodo(JSON.stringify(this.userInput));

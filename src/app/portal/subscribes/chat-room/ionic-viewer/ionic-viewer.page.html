@@ -40,10 +40,9 @@
     <tr style="height: 0;">
       <td>
         <ion-list-header [id]="FileHeaderId" style="max-width: 100vw;">
-          <ion-label *ngIf="!isTextEditMode" text-wrap style="overflow-x: auto;">{{FileInfo.filename ||
-            FileInfo.name}}</ion-label>
+          <ion-label *ngIf="!isTextEditMode" text-wrap style="overflow-x: auto;">{{FileInfo.filename}}</ion-label>
           <ion-input *ngIf="isTextEditMode" [id]="TextEditorFileNameId" type="text" [(ngModel)]="NewTextFileName"
-            [placeholder]="FileInfo.filename || FileInfo.name" text-warp
+            [placeholder]="FileInfo.filename" text-warp
             style="overflow-x: auto; overflow-y: hidden;"></ion-input>
           <ion-button *ngIf="isTextEditMode" (click)="close_text_edit()">
             <ion-icon name="close-circle-outline"></ion-icon>

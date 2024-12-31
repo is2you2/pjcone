@@ -10,6 +10,7 @@ import { LocalNotiService } from '../local-noti.service';
 import { NakamaService } from '../nakama.service';
 import * as p5 from 'p5';
 import { ActivatedRoute, Router } from '@angular/router';
+import { P5LoadingService } from '../p5-loading.service';
 
 /** userfs 의 파일과 폴더 형식 */
 interface FileDir {
@@ -58,6 +59,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
     private nakama: NakamaService,
     private router: Router,
     private route: ActivatedRoute,
+    private p5loading: P5LoadingService,
   ) { }
   ngOnDestroy(): void {
     this.route.queryParams['unsubscribe']();
@@ -490,7 +492,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
                 let blob = this.global.Base64ToBlob(v.data['img'], 'image/png');
                 blob['name'] = v.data['name'];
                 await this.importSelected(blob);
-                v.data['loadingCtrl'].dismiss();
+                this.p5loading.remove(v.data['loadingCtrl']);
               }
               this.ionViewDidEnter();
               delete this.global.PageDismissAct['userfs-modify-image'];

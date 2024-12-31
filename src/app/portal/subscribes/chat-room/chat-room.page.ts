@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ChannelMessage } from '@heroiclabs/nakama-js';
-import { AlertController, IonicSafeString, LoadingController, NavController } from '@ionic/angular';
+import { AlertController, IonicSafeString, NavController } from '@ionic/angular';
 import { LocalNotiService } from 'src/app/local-noti.service';
 import { MatchOpCode, NakamaService } from 'src/app/nakama.service';
 import * as p5 from "p5";
@@ -16,6 +16,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
 import { FloatButtonService } from 'src/app/float-button.service';
+import { P5LoadingService } from 'src/app/p5-loading.service';
 
 export interface ExtendButtonForm {
   /** 버튼 숨기기 */
@@ -71,11 +72,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     public lang: LanguageSettingService,
     private sanitizer: DomSanitizer,
     public global: GlobalActService,
-    private loadingCtrl: LoadingController,
     private webrtc: WebrtcService,
     private p5toast: P5ToastService,
     private alertCtrl: AlertController,
     private floatButton: FloatButtonService,
+    private p5loading: P5LoadingService,
   ) { }
 
   /** 채널 정보 */
@@ -277,7 +278,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               props.info.content.path = path;
               props.info.content.type = this.userInput.file.type;
               props.info.content.viewer = this.userInput.file.viewer;
-              props.info.content.filename = this.userInput.file.filename || this.userInput.file.name;
+              props.info.content.filename = this.userInput.file.filename;
               break;
           }
         } else { // 새 텍스트 파일
@@ -304,8 +305,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       icon: 'camera-outline',
       name: this.lang.text['ChatRoom']['Camera'],
       act: async () => {
-        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-        loading.present();
+        const actId = `camera_${this.info.id}_${Date.now()}`;
+        this.p5loading.update({
+          id: actId,
+          message: this.lang.text['ChatRoom']['LoadImageFromCamera'],
+        });
         try {
           let image = await this.global.from_camera('tmp_files/chatroom/', {
             user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
@@ -314,7 +318,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.userInput.file = image;
           this.CancelEditText();
         } catch (e) { }
-        loading.dismiss();
+        this.p5loading.remove(actId);
       }
     }, { // 7
       icon: 'mic-circle-outline',
@@ -371,8 +375,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.global.PageDismissAct['share'] = async (v: any) => {
           await this.WaitingCurrent();
           if (v.data) {
-            let loading = await this.loadingCtrl.create({ message: this.lang.text['ChatRoom']['CopyingChats'] });
-            loading.present();
+            const actId = `share_to_other_${this.info.id}_${Date.now()}`;
+            this.p5loading.update({
+              id: actId,
+              message: this.lang.text['ChatRoom']['CopyingChats'],
+              progress: 0,
+            });
             this.nakama.go_to_chatroom(v.data);
             let list = await this.indexed.GetFileListFromDB(`servers/${rootChannelInfo.info.isOfficial}/${rootChannelInfo.info.target}/channels/${rootChannelInfo.id}/chats`);
             for (let path of list) {
@@ -417,7 +425,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                       getContent['qoute'].url = _msg['content'].url;
                     }
                   }
-                loading.message = `${this.lang.text['ChatRoom']['CopyingChats']}: ${this.global.truncateString(textmsg, 12)} (${index}/${length})`;
+                this.p5loading.update({
+                  id: actId,
+                  message: `${rootChannelInfo.title} -> ${this.info.title}: ${this.global.truncateString(textmsg, 12)} (${index}/${length})`,
+                  progress: index / length,
+                });
                 if (blob && this.useFirstCustomCDN != 2) try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
                   let address = this.nakama.servers[this.isOfficial][this.target].info.address;
                   let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
@@ -426,8 +438,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                     }_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`;
                   let server_info = this.nakama.servers[this.isOfficial][this.target].info;
                   let savedAddress = await this.global.upload_file_to_storage(FileInfo,
-                    { user_id: targetname, apache_port: server_info.apache_port, cdn_port: server_info.cdn_port }, protocol, address, this.useFirstCustomCDN == 1, loading,
-                    `${this.lang.text['GlobalAct']['CheckCdnServer']} (${index}/${length})`);
+                    { user_id: targetname, apache_port: server_info.apache_port, cdn_port: server_info.cdn_port }, protocol, address, this.useFirstCustomCDN == 1, actId,
+                    `${rootChannelInfo.title} -> ${this.info.title}: ${this.lang.text['GlobalAct']['CheckCdnServer']} (${index}/${length})`);
                   if (!savedAddress) throw '링크 만들기 실패';
                   getContent['url'] = savedAddress;
                 } catch (e) {
@@ -463,7 +475,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 await new Promise((done) => setTimeout(done, 1000));
               }
             }
-            loading.dismiss();
+            this.p5loading.remove(actId);
           }
           if (!this.WillLeave) this.ionViewDidEnter();
           delete this.global.PageDismissAct['share'];
@@ -509,8 +521,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           buttons: [{
             text: this.lang.text['ChatRoom']['Delete'],
             handler: async () => {
-              let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-              loading.present();
+              const actId = `remove_chatroom_${this.info.id}_${Date.now()}`;
+              this.p5loading.update({
+                id: actId,
+              });
               let server_info = {};
               try {
                 let info = this.nakama.servers[this.isOfficial][this.target].info;
@@ -566,10 +580,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               // 해당 채널과 관련된 파일 일괄 삭제 (로컬)
               let list = await this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`);
               for (let i = 0, j = list.length; i < j; i++) {
-                loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`
+                this.p5loading.update({
+                  id: actId,
+                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`,
+                });
                 await this.indexed.removeFileFromUserPath(list[i]);
               }
-              loading.dismiss();
+              this.p5loading.remove(actId);
               this.navCtrl.pop();
             },
             cssClass: 'redfont',
@@ -600,13 +617,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   async StopAndSaveVoiceRecording() {
     this.floatButton.RemoveFloatButton('chatroom-record');
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SavingRecord'] });
-    loading.present();
+    const actId = `RecordingVoice_${this.info.id}_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['AddPost']['SavingRecord'],
+    });
     try {
       let blob = await this.global.StopAndSaveVoiceRecording();
-      await this.selected_blobFile_callback_act(blob);
+      this.selected_blobFile_callback_act(blob);
     } catch (e) { }
-    loading.dismiss();
+    this.p5loading.remove(actId);
     this.extended_buttons[7].icon = 'mic-circle-outline';
     this.extended_buttons[7].name = this.lang.text['ChatRoom']['Voice'];
   }
@@ -733,7 +753,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               `${this.lang.text['ChatRoom']['FileLink']}.${getType.split('/').pop()}`, {
               type: getType,
             });
-            await this.selected_blobFile_callback_act(file);
+            this.selected_blobFile_callback_act(file);
             throw 'done';
           } catch (e) {
             switch (e) {
@@ -871,15 +891,23 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           buttons: [{
             text: this.lang.text['ChatRoom']['Send'],
             handler: async () => {
-              let loading = await this.loadingCtrl.create({ message: this.lang.text['ChatRoom']['MultipleSend'] });
-              loading.present();
+              const actId = `chatroom_fileInput_${this.info.id}_${Date.now()}`;
+              this.p5loading.update({
+                id: actId,
+                message: this.lang.text['ChatRoom']['MultipleSend'],
+                progress: 0,
+              });
               for (let i = 0, j = ev.target.files.length; i < j; i++) {
-                loading.message = `${j - i}: ${ev.target.files[i].name}`;
-                await this.selected_blobFile_callback_act(ev.target.files[i]);
-                await this.send(undefined, loading);
+                this.p5loading.update({
+                  id: actId,
+                  message: `${j - i}: ${ev.target.files[i].name}`,
+                  progress: i / j,
+                });
+                this.selected_blobFile_callback_act(ev.target.files[i]);
+                await this.send(undefined, actId);
               }
               this.noti.ClearNoti(7);
-              loading.dismiss();
+              this.p5loading.remove(actId);
             }
           }]
         });
@@ -897,10 +925,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         });
         alert.present();
       } else {
-        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-        loading.present();
-        await this.selected_blobFile_callback_act(ev.target.files[0]);
-        loading.dismiss();
+        const actId = `chatroom_fileInput_multiple_${this.info.id}_${Date.now()}`;
+        this.p5loading.update({
+          id: actId,
+        });
+        this.selected_blobFile_callback_act(ev.target.files[0]);
+        this.p5loading.remove(actId);
         let input = document.getElementById(this.file_sel_id) as HTMLInputElement;
         input.value = '';
       }
@@ -1194,10 +1224,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           StartAct = setTimeout(async () => {
             if (this.WillLeave) return;
             if (!isMultipleSend) {
-              let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-              loading.present();
+              const actId = `filedrop_${this.info.id}_${Date.now()}`;
+              this.p5loading.update({
+                id: actId,
+              });
               this.selected_blobFile_callback_act(file.file);
-              loading.dismiss();
+              this.p5loading.remove(actId);
             } else { // 여러 파일 발송 여부 검토 후, 아니라고 하면 첫 파일만
               this.alertCtrl.create({
                 header: this.lang.text['ChatRoom']['MultipleSend'],
@@ -1370,8 +1402,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         break;
       }
     this.BlockAutoScrollDown = true;
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['ChatRoom']['FindingMsg'] });
-    loading.present();
+    const actId = `FindQoute_${id}`;
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['ChatRoom']['FindingMsg'],
+    });
     if (!targetChat) { // 메시지가 안보이면 이전 메시지에서 찾기
       let whileBreaker = false;
       while (!targetChat && this.pullable && !whileBreaker) {
@@ -1421,7 +1456,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       });
       this.BlockAutoScrollDown = false;
     }
-    loading.dismiss();
+    this.p5loading.remove(actId);
   }
 
   /** 인용 정보를 삭제함 */
@@ -1431,13 +1466,20 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 한번에 여러파일 보내기 */
   async DropSendAct(Drops: any) {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-    loading.present();
+    const actId = `drop_multiple_act_${this.info.id}_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+      progress: 0,
+    });
     for (let i = 0, j = Drops.length; i < j; i++) {
-      await this.selected_blobFile_callback_act(Drops[i].file);
-      await this.send(undefined, loading);
+      this.selected_blobFile_callback_act(Drops[i].file);
+      this.p5loading.update({
+        id: actId,
+        progress: i / j,
+      });
+      await this.send(undefined, actId);
     }
-    loading.dismiss();
+    this.p5loading.remove(actId);
     setTimeout(() => {
       this.scroll_down_logs();
     }, 300);
@@ -1446,7 +1488,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 파일 선택시 행동
    * @param path 다른 채널에서 공유시 원본이 저장된 경로
    */
-  async selected_blobFile_callback_act(blob: any, contentRelated: ContentCreatorInfo[] = [], various = 'loaded', path?: string) {
+  selected_blobFile_callback_act(blob: any, contentRelated: ContentCreatorInfo[] = [], various = 'loaded', path?: string) {
     this.userInput['file'] = {};
     this.userInput.file['filename'] = blob.name;
     this.userInput.file['file_ext'] = blob.name.split('.').pop() || blob.type || this.lang.text['ChatRoom']['unknown_ext'];
@@ -1484,7 +1526,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       await this.new_attach({ detail: { value: 'link' } }, FileInfo);
     } else {
       let blob = await this.indexed.loadBlobFromUserPath(FileInfo.path, FileInfo.type);
-      let file = new File([blob], FileInfo.filename || FileInfo.name);
+      let file = new File([blob], FileInfo.filename);
       this.selected_blobFile_callback_act(file, FileInfo.content_related_creator, 'shared', FileInfo.path);
     }
   }
@@ -2229,7 +2271,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   block_send = false;
-  async send(with_key = false, loading?: HTMLIonLoadingElement) {
+  async send(with_key = false, actId?: string) {
     if (with_key && (isPlatform == 'Android' || isPlatform == 'iOS')) return;
     this.userInputTextArea.focus();
     if (!this.userInput.text.trim() && !this.userInput['file'])
@@ -2321,7 +2363,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`;
         let server_info = this.nakama.servers[this.isOfficial][this.target].info;
         let savedAddress = await this.global.upload_file_to_storage(this.userInput.file,
-          { user_id: targetname, apache_port: server_info.apache_port, cdn_port: server_info.cdn_port }, protocol, address, this.useFirstCustomCDN == 1, loading);
+          { user_id: targetname, apache_port: server_info.apache_port, cdn_port: server_info.cdn_port }, protocol, address, this.useFirstCustomCDN == 1, actId);
         isURL = Boolean(savedAddress);
         if (!isURL) throw '링크 만들기 실패';
         delete result['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
@@ -2329,7 +2371,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.noti.PushLocal({
           id: 7,
           title: this.lang.text['ChatRoom']['SendFile'],
-          body: this.userInput.file.filename || this.userInput.file.name,
+          body: this.userInput.file.filename,
           smallIcon_ln: 'diychat',
         }, this.noti.Current);
       } catch (e) {
@@ -2337,7 +2379,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.noti.PushLocal({
           id: 7,
           title: this.lang.text['Nakama']['FailedUpload'],
-          body: `${this.userInput.file.filename || this.userInput.file.name}: ${e}`,
+          body: `${this.userInput.file.filename}: ${e}`,
           smallIcon_ln: 'diychat',
         }, this.noti.Current);
       }
@@ -2372,7 +2414,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.noti.PushLocal({
             id: 7,
             title: this.lang.text['ChatRoom']['SendFile'],
-            body: this.userInput.file.filename || this.userInput.file.name,
+            body: this.userInput.file.filename,
             smallIcon_ln: 'diychat',
           }, this.noti.Current);
         } catch (e) { // 사설 서버 업로드 실패시 직접 저장
@@ -2380,7 +2422,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.noti.PushLocal({
             id: 7,
             title: this.lang.text['Nakama']['FailedUpload'],
-            body: `${this.userInput.file.filename || this.userInput.file.name}: ${e}`,
+            body: `${this.userInput.file.filename}: ${e}`,
             smallIcon_ln: 'diychat',
           }, this.noti.Current);
           await this.indexed.saveBlobToUserPath(this.userInput.file.blob, path);
@@ -2629,8 +2671,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             try {
               await this.nakama.servers[this.isOfficial][this.target].socket.removeChatMessage(this.info['id'], msg.message_id);
               if (FileURL) { // 첨부파일이 포함되어 있는 경우
-                let loading = await this.loadingCtrl.create({ message: this.lang.text['UserFsDir']['DeleteFile'] });
-                loading.present();
+                const actId = `remove_chat_msg_file_${this.info.id}_${Date.now()}`;
+                this.p5loading.update({
+                  id: actId,
+                  message: this.lang.text['UserFsDir']['DeleteFile'],
+                });
                 let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
                 if (msg.content.url) { // 링크된 파일인 경우
                   if (msg.content.url.indexOf(msg.group_id) >= 0 && msg.content.type !== '')
@@ -2646,13 +2691,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                         }],
                       });
                     } catch (e) { }
-                    loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${msg.content['filename']}_${msg.content['partsize'] - i}`;
+                    this.p5loading.update({
+                      id: actId,
+                      message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${msg.content['filename']}_${msg.content['partsize'] - i}`,
+                      progress: i / msg.content['partsize'],
+                    });
                   } // 서버에서 삭제되지 않았을 경우 파일을 남겨두기
                 }
                 let list = await this.indexed.GetFileListFromDB(path);
                 for (let path of list)
                   await this.indexed.removeFileFromUserPath(path);
-                loading.dismiss();
+                this.p5loading.remove(actId);
               }
             } catch (e) {
               console.error('채널 메시지 삭제 오류: ', e);
@@ -2960,7 +3009,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.CancelEditText();
     this.userInput.file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(v.data['img']);
     this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
-    v.data['loadingCtrl'].dismiss();
+    this.p5loading.remove(v.data['loadingCtrl']);
   }
 
   /** 사용자 정보보기 */

@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { AlertController, IonInput, IonSelect, LoadingController, NavController } from '@ionic/angular';
+import { AlertController, IonInput, IonSelect, NavController } from '@ionic/angular';
 import { LocalNotiService } from '../local-noti.service';
 import { MiniranchatClientService } from '../miniranchat-client.service';
 import { StatusManageService } from '../status-manage.service';
@@ -15,6 +15,7 @@ import { VoiceRecorder } from '@langx/capacitor-voice-recorder';
 import { ExtendButtonForm } from '../portal/subscribes/chat-room/chat-room.page';
 import { NakamaService } from '../nakama.service';
 import { FloatButtonService } from '../float-button.service';
+import { P5LoadingService } from '../p5-loading.service';
 
 /** MiniRanchat 에 있던 기능 이주, 대화창 구성 */
 @Component({
@@ -36,10 +37,10 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     public global: GlobalActService,
     private p5toast: P5ToastService,
     private indexed: IndexedDBService,
-    private loadingCtrl: LoadingController,
     private alertCtrl: AlertController,
     public nakama: NakamaService,
     private floatButton: FloatButtonService,
+    private p5loading: P5LoadingService,
   ) { }
   header_title: string;
   /** 페이지 구분자는 페이지에 사용될 아이콘 이름을 따라가도록 */
@@ -150,13 +151,16 @@ export class MinimalChatPage implements OnInit, OnDestroy {
 
   async StopAndSaveVoiceRecording() {
     this.floatButton.RemoveFloatButton('sqaure-record');
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SavingRecord'] });
-    loading.present();
+    const actId = `minimal_chat_saveVoiceRec_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['AddPost']['SavingRecord'],
+    });
     try {
       let blob = await this.global.StopAndSaveVoiceRecording();
       await this.SendAttachAct({ target: { files: [blob] } });
     } catch (e) { }
-    loading.dismiss();
+    this.p5loading.remove(actId);
     this.extended_buttons[4].icon = 'mic-circle-outline';
     this.extended_buttons[4].name = this.lang.text['ChatRoom']['Voice'];
   }
@@ -389,20 +393,33 @@ export class MinimalChatPage implements OnInit, OnDestroy {
           LastDropAt = _Millis;
           clearTimeout(StartAct);
           StartAct = setTimeout(async () => {
+            const actId = `minimal_chat_dropAct_${Date.now()}`;
             if (!isMultipleSend) {
-              let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-              loading.present();
-              this.SendAttachAct({ target: { files: [file.file] } });
-              loading.dismiss();
+              this.p5loading.update({
+                id: actId,
+              });
+              await this.SendAttachAct({ target: { files: [file.file] } });
+              this.p5loading.remove(actId);
             } else { // 여러 파일 발송 여부 검토 후, 아니라고 하면 첫 파일만
               this.alertCtrl.create({
                 header: this.lang.text['ChatRoom']['MultipleSend'],
                 message: `${this.lang.text['ChatRoom']['CountFile']}: ${Drops.length}`,
                 buttons: [{
                   text: this.lang.text['ChatRoom']['Send'],
-                  handler: () => {
-                    for (let i = 0, j = Drops.length; i < j; i++)
-                      this.SendAttachAct({ target: { files: [Drops[i].file] } });
+                  handler: async () => {
+                    const actId = `minimal_chat_dropAct_${Date.now()}`;
+                    this.p5loading.update({
+                      id: actId,
+                      progress: 0,
+                    });
+                    for (let i = 0, j = Drops.length; i < j; i++) {
+                      this.p5loading.update({
+                        id: actId,
+                        progress: i / j,
+                      });
+                      await this.SendAttachAct({ target: { files: [Drops[i].file] } }, actId);
+                    }
+                    this.p5loading.remove(actId);
                   }
                 }]
               }).then(v => {
@@ -711,7 +728,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   /** 파일 보내기 / 즉시 발송됨  
    * 파일 쪼개기 후 순차적으로 보냄
    */
-  async SendAttachAct(ev: any) {
+  async SendAttachAct(ev: any, actId?: string) {
     let file = ev.target.files[0];
     let FileInfo: FileInfo = {};
     FileInfo.blob = file;
@@ -732,11 +749,11 @@ export class MinimalChatPage implements OnInit, OnDestroy {
       display_name: this.client.MyUserName,
       various: 'loaded',
     };
-    this.TrySendingAttach(FileInfo);
+    await this.TrySendingAttach(FileInfo, actId);
   }
 
   /** 첨부파일을 발송하기 */
-  async TrySendingAttach(FileInfo: FileInfo) {
+  async TrySendingAttach(FileInfo: FileInfo, actId?: string) {
     let TempId = `${Date.now()}`;
     let json = {
       type: 'file',
@@ -752,7 +769,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         console.log('대상 주소 생성 오류: ', e);
       }
       let url = await this.global.try_upload_to_user_custom_fs(FileInfo, `tmp_${this.client.JoinedChannel || 'public'}_${this.client.uuid}`,
-        undefined, TargetAddress);
+        actId, TargetAddress);
       if (!url) throw '분할 전송 시도 필요';
       else {
         FileInfo.url = url;
@@ -833,7 +850,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
             }
             this.global.PageDismissAct['minimal-ionic-viewer-edit'] = (v: any) => {
               if (v.data) {
-                v.data['loadingCtrl'].dismiss();
+                this.p5loading.remove(v.data['loadingCtrl']);
                 let base64 = v.data['img'];
                 let path = `tmp_files/sqaure/${v.data['name']}`;
                 this.indexed.saveBase64ToUserPath(base64, path);

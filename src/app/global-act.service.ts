@@ -10,6 +10,7 @@ import { isPlatform } from './app.component';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { VoiceRecorder } from '@langx/capacitor-voice-recorder';
 import { IonModal } from '@ionic/angular/common';
+import { P5LoadingService } from './p5-loading.service';
 
 export var isDarkMode = false;
 /** 파일 입출 크기 제한 */
@@ -47,7 +48,6 @@ interface ServerInfoShort {
 
 /** 뷰어 동작 호완을 위한 틀 */
 export interface FileInfo {
-  name?: string;
   filename?: string;
   /** 재등록을 위한 이름 덮어쓰기 */
   override_name?: string;
@@ -159,6 +159,7 @@ export class GlobalActService {
     private indexed: IndexedDBService,
     private loadingCtrl: LoadingController,
     private navCtrl: NavController,
+    private p5loading: P5LoadingService,
   ) {
     isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
@@ -1047,16 +1048,20 @@ export class GlobalActService {
    * @param address 해당 서버 주소
    * @returns 등록된 주소 반환
    */
-  async upload_file_to_storage(file: FileInfo, info: ServerInfoShort, protocol: string, address: string, useCustomServer: boolean, loading?: HTMLIonLoadingElement, override_try_msg?: string): Promise<string> {
-    let innerLoading: HTMLIonLoadingElement;
-    if (!loading) innerLoading = await this.loadingCtrl.create({ message: this.lang.text['Settings']['TryToFallbackFS'] });
-    else innerLoading = loading;
-    innerLoading.present();
+  async upload_file_to_storage(file: FileInfo, info: ServerInfoShort, protocol: string, address: string, useCustomServer: boolean, loadingId?: string, override_try_msg?: string): Promise<string> {
+    const actId = loadingId || `upload_file_to_storage_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['Settings']['TryToFallbackFS'],
+    });
     let Catched = false;
     let CatchedAddress: string;
     if (useCustomServer)
-      CatchedAddress = await this.try_upload_to_user_custom_fs(file, info?.user_id, innerLoading);
-    innerLoading.message = override_try_msg ?? this.lang.text['GlobalAct']['CheckCdnServer'];
+      CatchedAddress = await this.try_upload_to_user_custom_fs(file, info?.user_id, actId);
+    this.p5loading.update({
+      id: actId,
+      message: override_try_msg ?? `${this.lang.text['GlobalAct']['CheckCdnServer']}: ${file.filename}`,
+    });
     let progress: any;
     try { // 사설 연계 서버에 업로드 시도
       if (CatchedAddress) {
@@ -1071,7 +1076,10 @@ export class GlobalActService {
         let res = await fetch(`${protocol}//${address}:${info?.cdn_port || 9001}/filesize/${filename}`, { method: "POST" });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
-        innerLoading.message = `${file.filename}: ${progressPercent || 0}%`;
+        this.p5loading.update({
+          id: actId,
+          message: `${file.filename}: ${progressPercent || 0}%`,
+        });
       }, 700);
       let formData = new FormData();
       let _file = new File([file.blob], filename);
@@ -1084,10 +1092,13 @@ export class GlobalActService {
       else throw '요청 실패';
     } catch (e) {
       clearInterval(progress);
-      innerLoading.message = this.lang.text['GlobalAct']['CancelingUpload'];
+      this.p5loading.update({
+        id: actId,
+        message: this.lang.text['GlobalAct']['CancelingUpload'],
+      });
       console.warn('cdn 파일 업로드 단계 실패:', e);
     }
-    if (!loading) innerLoading.dismiss();
+    if (!loadingId) this.p5loading.remove(actId);
     return Catched ? CatchedAddress : undefined;
   }
 
@@ -1123,10 +1134,12 @@ export class GlobalActService {
   }
 
   /** 사용자 지정 서버에 업로드 시도 */
-  async try_upload_to_user_custom_fs(file: FileInfo, user_id: string, loading?: HTMLIonLoadingElement, override_ffs_str?: string) {
-    let innerLoading: HTMLIonLoadingElement;
-    if (!loading) innerLoading = await this.loadingCtrl.create({ message: this.lang.text['Settings']['TryToFallbackFS'] });
-    else innerLoading = loading;
+  async try_upload_to_user_custom_fs(file: FileInfo, user_id: string, loadingId?: string, override_ffs_str?: string) {
+    const actId = loadingId || `try_upload_to_user_custom_fs_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['Settings']['TryToFallbackFS'],
+    });
     let upload_time = new Date().getTime();
     let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
     let filename = file.override_name || `${user_id}_${upload_time}_${only_filename}.${file.file_ext}`;
@@ -1150,18 +1163,21 @@ export class GlobalActService {
         let res = await fetch(`${protocol}//${address[0]}:9001/filesize/${filename}`, { method: "POST" });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
-        if (loading) loading.message = `${file.filename}: ${progressPercent || 0}%`;
+        this.p5loading.update({
+          id: actId,
+          message: `${file.filename}: ${progressPercent || 0}%`,
+        });
       }, 700);
       let up_res = await fetch(`${protocol}//${address[0]}:9001/cdn/${filename}`, { method: "POST", body: formData });
       if (!up_res.ok) throw '업로드 단계에서 실패';
       clearInterval(progress);
       let res = await fetch(CatchedAddress);
-      if (!loading) innerLoading.dismiss();
+      if (!loadingId) this.p5loading.remove(actId);
       if (res.ok) return CatchedAddress;
       else throw '요청 실패';
     } catch (e) {
       clearInterval(progress);
-      if (!loading) innerLoading.dismiss();
+      if (!loadingId) this.p5loading.remove(actId);
       return undefined;
     }
   }
@@ -1753,16 +1769,18 @@ export class GlobalActService {
   /** 카메라로 찍은 후 사진 정보 돌려주기
    * @param path 이름은 여기서 지정되고 직전 폴더까지 구성
    */
-  async from_camera(path: string, userInfo: AttachUserInfo) {
+  async from_camera(path: string, userInfo: AttachUserInfo, loadingId?: string) {
+    const actId = loadingId || `from_camera_${Date.now()}`;
     let result: FileInfo = {};
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
+    this.p5loading.update({
+      id: actId,
+    })
     try {
       const image = await Camera.getPhoto({
         quality: 90,
         resultType: CameraResultType.Base64,
         source: CameraSource.Camera,
       });
-      loading.present();
       let time = new Date();
       result.filename = `Camera_${time.toLocaleString().replace(/[:|.|\/]/g, '_')}.${image.format}`;
       result.file_ext = image.format;
@@ -1791,7 +1809,7 @@ export class GlobalActService {
       console.log('카메라 행동 실패: ', e);
       throw e;
     }
-    loading.dismiss();
+    this.p5loading.remove(actId);
     return result;
   }
 
@@ -1856,7 +1874,7 @@ export class GlobalActService {
     let blob = new Blob([raw], { type: this_file['type'] })
     this_file.blob = new File([blob], v.data['name']);
     this_file.size = this_file.blob.size;
-    v.data['loadingCtrl'].dismiss();
+    this.p5loading.remove(v.data['loadingCtrl']);
     return this_file;
   }
 
@@ -1940,8 +1958,11 @@ export class GlobalActService {
       type: 'text/plain' as 'image/png' | 'text/plain' | 'error',
       value: '' as any,
     };
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['GlobalAct']['ClipboardPaste'] });
-    loading.present();
+    const actId = `GetValueFromClipboard_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['GlobalAct']['ClipboardPaste'],
+    });
     try {
       const clipboardItems = await navigator.clipboard.read();
       for (let item of clipboardItems) {
@@ -1960,7 +1981,7 @@ export class GlobalActService {
           }
         }
       }
-      loading.dismiss();
+      this.p5loading.remove(actId);
       return result;
     } catch (e) {
       console.error('클립보드에서 불러오기 오류: ', e);
@@ -1969,7 +1990,7 @@ export class GlobalActService {
       });
       result.type = 'error';
       result.value = e;
-      loading.dismiss();
+      this.p5loading.remove(actId);
       return result;
     }
   }
@@ -1985,8 +2006,11 @@ export class GlobalActService {
    */
   async WriteValueToClipboard(type: string, value: any, filename?: string) {
     if (!value) return;
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['GlobalAct']['ClipboardCopy'] });
-    loading.present();
+    const actId = `WriteValueToClipboard_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['GlobalAct']['ClipboardCopy']
+    });
     try {
       let data = {};
       let _value = value;
@@ -2002,13 +2026,13 @@ export class GlobalActService {
         this.p5toast.show({
           text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${filename || value}`,
         });
-      loading.dismiss();
+      this.p5loading.remove(actId);
     } catch (e) {
       console.log('클립보드에 복사하기 오류: ', e);
       this.p5toast.show({
         text: `${this.lang.text['GlobalAct']['ClipboardFailed']}: ${e}`
       });
-      loading.dismiss();
+      this.p5loading.remove(actId);
       throw e;
     }
   }

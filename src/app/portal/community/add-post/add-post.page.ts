@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { AlertController, LoadingController, NavController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular';
 import { ContentCreatorInfo, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { MatchOpCode, NakamaService, ServerInfo } from 'src/app/nakama.service';
@@ -12,6 +12,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import * as p5 from 'p5';
 import { isPlatform } from 'src/app/app.component';
 import { FloatButtonService } from 'src/app/float-button.service';
+import { P5LoadingService } from 'src/app/p5-loading.service';
 
 @Component({
   selector: 'app-add-post',
@@ -26,12 +27,12 @@ export class AddPostPage implements OnInit, OnDestroy {
     private nakama: NakamaService,
     private p5toast: P5ToastService,
     private indexed: IndexedDBService,
-    private loadingCtrl: LoadingController,
     private sanitizer: DomSanitizer,
     private route: ActivatedRoute,
     private router: Router,
     private floatButton: FloatButtonService,
     private alertCtrl: AlertController,
+    private p5loading: P5LoadingService,
   ) { }
 
   ngOnDestroy() {
@@ -670,13 +671,16 @@ export class AddPostPage implements OnInit, OnDestroy {
 
   async StopAndSaveVoiceRecording() {
     this.floatButton.RemoveFloatButton('addpost-timer');
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['SavingRecord'] });
-    loading.present();
+    const actId = `add_post_saveVoiceRecording_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['AddPost']['SavingRecord'],
+    });
     try {
       let blob = await this.global.StopAndSaveVoiceRecording();
       await this.selected_blobFile_callback_act(blob);
     } catch (e) { }
-    loading.dismiss();
+    this.p5loading.remove(actId);
     this.extended_buttons[5].icon = 'mic-circle-outline';
     this.extended_buttons[5].name = this.lang.text['ChatRoom']['Voice'];
     this.checkVoiceLinker();
@@ -718,7 +722,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       user_id: this.isOfficial == 'local' ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
       display_name: this.nakama.users.self['display_name'],
     }, various, contentRelated);
-    this.create_selected_thumbnail(file);
+    await this.create_selected_thumbnail(file);
     if (index === undefined) {
       this.AddAttachTextForm();
       this.userInput.attachments.push(file);
@@ -796,7 +800,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     if (index !== undefined)
       this.userInput.attachments[index] = file;
     else this.userInput.attachments.push(file);
-    v.data['loadingCtrl'].dismiss();
+    this.p5loading.remove(v.data['loadingCtrl']);
   }
 
   /** 첨부 파일 타입 정하기 */
@@ -919,25 +923,34 @@ export class AddPostPage implements OnInit, OnDestroy {
 
   /** 파일 첨부하기 */
   async inputFileSelected(ev: any) {
-    if (ev.target.files.length) {
+    if (ev.target?.files?.length) {
+      const actId = `add_post_file_added_${Date.now()}`;
       let is_multiple_files = ev.target.files.length != 1;
       if (is_multiple_files) {
-        let loading = await this.loadingCtrl.create({ message: this.lang.text['ChatRoom']['MultipleSend'] });
-        loading.present();
+        this.p5loading.update({
+          id: actId,
+          message: this.lang.text['ChatRoom']['MultipleSend'],
+          progress: 0,
+        });
         for (let i = 0, j = ev.target.files.length; i < j; i++) {
-          loading.message = `${j - i}: ${ev.target.files[i].name}`;
+          this.p5loading.update({
+            id: actId,
+            message: `${j - i}: ${ev.target.files[i].name}`,
+            progress: i / j,
+          });
           await this.selected_blobFile_callback_act(ev.target.files[i]);
         }
-        loading.dismiss();
+        this.p5loading.remove(actId);
         setTimeout(() => {
           let input = document.getElementById('add_post_input') as HTMLInputElement;
           input.value = '';
         }, 300);
       } else {
-        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-        loading.present();
+        this.p5loading.update({
+          id: actId,
+        });
         await this.selected_blobFile_callback_act(ev.target.files[0]);
-        loading.dismiss();
+        this.p5loading.remove(actId);
         let input = document.getElementById('add_post_input') as HTMLInputElement;
         input.value = '';
       }
@@ -984,7 +997,7 @@ export class AddPostPage implements OnInit, OnDestroy {
               });
               return;
             case 'text':
-              this.selected_blobFile_callback_act(v.data.blob, v.data.contentRelated, 'textedit', index);
+              await this.selected_blobFile_callback_act(v.data.blob, v.data.contentRelated, 'textedit', index);
               break;
           }
         }
@@ -1059,8 +1072,11 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.TitleInput.focus();
       return;
     }
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['AddPost']['WIP'] });
-    loading.present();
+    const actId = `postData_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+      message: `${this.lang.text['AddPost']['WIP']}: ${this.userInput.title}`
+    });
     // 음성 녹음중이라면 녹음을 마무리하여 파일로 저장한 후 게시물 저장처리 진행
     if (this.useVoiceRecording) await this.StopAndSaveVoiceRecording();
     /** 로컬 서버인지 여부 */
@@ -1172,7 +1188,10 @@ export class AddPostPage implements OnInit, OnDestroy {
         delete this.userInput.attachments[i].thumbnail;
       // 대표 이미지 저장
       if (this.userInput.mainImage) {
-        loading.message = this.lang.text['AddPost']['SyncMainImage'];
+        this.p5loading.update({
+          id: actId,
+          message: this.lang.text['AddPost']['SyncMainImage'],
+        });
         this.userInput.mainImage.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/MainImage.${this.userInput.mainImage.file_ext}`;
         this.userInput.mainImage.thumbnail = this.MainPostImage;
         if (!this.userInput.mainImage.blob) {
@@ -1185,9 +1204,12 @@ export class AddPostPage implements OnInit, OnDestroy {
         if (is_local) {
           try { // FFS 업로드 시도
             if (this.userInput.CDN != 1) throw 'FFS 사용 순위에 없음';
-            loading.message = `${this.lang.text['AddPost']['SyncMainImage']}: ${this.userInput.mainImage.filename}`;
+            this.p5loading.update({
+              id: actId,
+              message: `${this.lang.text['AddPost']['SyncMainImage']}: ${this.userInput.mainImage.filename}`,
+            });
             let CatchedAddress: string;
-            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.mainImage, this.nakama.users.self['display_name'], loading);
+            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.mainImage, this.nakama.users.self['display_name'], actId);
             if (CatchedAddress) {
               delete this.userInput.mainImage['path'];
               delete this.userInput.mainImage['partsize'];
@@ -1203,7 +1225,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
             let savedAddress = await this.global.upload_file_to_storage(this.userInput.mainImage,
               { user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
-              protocol, address, this.userInput.CDN == 1, loading);
+              protocol, address, this.userInput.CDN == 1, actId);
             let isURL = Boolean(savedAddress);
             if (!isURL) throw '링크 만들기 실패';
             delete this.userInput.mainImage['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
@@ -1216,14 +1238,20 @@ export class AddPostPage implements OnInit, OnDestroy {
       // 첨부파일들 전부 저장
       let attach_len = this.userInput.attachments.length;
       if (attach_len) {
-        loading.message = this.lang.text['AddPost']['SyncAttaches'];
+        this.p5loading.update({
+          id: actId,
+          message: this.lang.text['AddPost']['SyncAttaches'],
+        });
         for (let i = attach_len - 1; i >= 0; i--) {
           if (is_local) {
             try { // FFS 업로드 시도
               if (this.userInput.CDN != 1) throw 'FFS 사용 순위에 없음';
-              loading.message = `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`;
+              this.p5loading.update({
+                id: actId,
+                message: `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`,
+              });
               let CatchedAddress: string;
-              CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], this.nakama.users.self['display_name'], loading);
+              CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], this.nakama.users.self['display_name'], actId);
               if (CatchedAddress) {
                 delete this.userInput.attachments[i]['path'];
                 delete this.userInput.attachments[i]['partsize'];
@@ -1240,7 +1268,7 @@ export class AddPostPage implements OnInit, OnDestroy {
               let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
               let savedAddress = await this.global.upload_file_to_storage(this.userInput.attachments[i],
                 { user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
-                protocol, address, this.userInput.CDN == 1, loading);
+                protocol, address, this.userInput.CDN == 1, actId);
               let isURL = Boolean(savedAddress);
               if (!isURL) throw '링크 만들기 실패';
               delete this.userInput.attachments[i]['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
@@ -1272,7 +1300,10 @@ export class AddPostPage implements OnInit, OnDestroy {
           let address = this.nakama.servers[this.isOfficial][this.target].info.address;
           let user_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
           let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
-          loading.message = `${this.lang.text['AddPost']['SyncPostInfo']}`;
+          this.p5loading.update({
+            id: actId,
+            message: `${this.lang.text['AddPost']['SyncPostInfo']}`,
+          });
           let outlink = await this.global.upload_file_to_storage(file,
             { user_id: user_id, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
             protocol, address, this.userInput.CDN == 1);
@@ -1282,7 +1313,10 @@ export class AddPostPage implements OnInit, OnDestroy {
         } catch (e) { // 지정된 서버 주소로 업로드를 실패했다면 FFS 등록 주소를 따라 업로드 시도
           try { // FFS에 업로드 시도
             let user_id = this.nakama.users.self['display_name'];
-            loading.message = `${this.lang.text['AddPost']['SyncPostInfo']}`;
+            this.p5loading.update({
+              id: actId,
+              message: `${this.lang.text['AddPost']['SyncPostInfo']}`,
+            });
             let outlink = await this.global.try_upload_to_user_custom_fs(file, user_id);
             if (outlink) {
               this.userInput.OutSource = outlink;
@@ -1349,7 +1383,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         persistent: false,
       });
     } catch (e) { }
-    loading.dismiss();
+    this.p5loading.remove(actId);
     this.navCtrl.navigateBack('portal/community');
   }
 
