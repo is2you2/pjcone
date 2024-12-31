@@ -261,9 +261,17 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       let strokeWeight = Math.min(initData['width'], initData['height']) / 100;
       let strokeRatio: number;
       let change_checkmark: Function;
+      /** 기본 붓을 사용하는지, 빠른 붓을 사용하는지 추적: true 일 때 기본 붓 */
+      let isDefaultSet = true;
       /** 붓질 기록 최대 길이 제한 */
       const MAX_HISTORY_LEN = 20;
       const PIXEL_DENSITY = 1;
+      /** 빠른 붓 설정이 변경되면 즉시 적용도 시킴 */
+      const QuickChangeAct = () => {
+        if (isDefaultSet) return;
+        this.colorPickAlpha = this.LineQuickTransparent;
+        strokeRatio = Number(this.LineQuickWeight) || 1;
+      }
       p.setup = async () => {
         const DefaultStrokeWeight = localStorage.getItem('voiddraw-lineweight') || 1;
         strokeRatio = Number(DefaultStrokeWeight);
@@ -291,13 +299,16 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         }
         this.ChangeQuickLineColor = () => {
           localStorage.setItem('voiddraw-quick-lineweight', `${this.LineQuickWeight || 1}`);
+          QuickChangeAct();
         }
         this.ChangeQuickTransparent = () => {
           this.colorPickAlpha = this.LineQuickTransparent;
           localStorage.setItem('voiddraw-quick-transparent', `${this.LineQuickTransparent || 138}`);
+          QuickChangeAct();
         }
         let OnClickDetector = true;
         this.p5change_color = () => {
+          isDefaultSet = false;
           OnClickDetector = false;
           p5ColorPicker.elt.click();
         }
@@ -595,9 +606,11 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         }
         ColorCell.oncontextmenu = () => {
           this.p5change_color();
+          QuickChangeAct();
           return false;
         }
         this.ColorSliderUpdate = () => {
+          isDefaultSet = true;
           this.colorPickAlpha = this.LineDefaultTransparent;
           strokeRatio = Number(this.LineDefaultWeight) || 1;
           let color_hex = `#${p.hex((Number(this.colorPickRed) || 0), 2)}${p.hex((Number(this.colorPickGreen) || 0), 2)}${p.hex((Number(this.colorPickBlue) || 0), 2)}`;
