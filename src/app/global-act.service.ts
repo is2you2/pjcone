@@ -1763,6 +1763,7 @@ export class GlobalActService {
     let result: FileInfo = {};
     this.p5loading.update({
       id: actId,
+      message: this.lang.text['ChatRoom']['LoadImageFromCamera'],
     })
     try {
       const image = await Camera.getPhoto({

@@ -305,11 +305,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       icon: 'camera-outline',
       name: this.lang.text['ChatRoom']['Camera'],
       act: async () => {
-        const actId = `camera_${this.info.id}_${Date.now()}`;
-        this.p5loading.update({
-          id: actId,
-          message: this.lang.text['ChatRoom']['LoadImageFromCamera'],
-        });
         try {
           let image = await this.global.from_camera('tmp_files/chatroom/', {
             user_id: this.info['local'] ? 'local' : this.nakama.servers[this.isOfficial][this.target].session.user_id,
@@ -318,7 +313,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.userInput.file = image;
           this.CancelEditText();
         } catch (e) { }
-        this.p5loading.remove(actId);
       }
     }, { // 7
       icon: 'mic-circle-outline',
