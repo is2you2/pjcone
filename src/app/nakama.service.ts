@@ -5,9 +5,10 @@ import { P5ToastService } from './p5-toast.service';
 import { StatusManageService } from './status-manage.service';
 import * as p5 from 'p5';
 import { LocalNotiService, TotalNotiForm } from './local-noti.service';
-import { AlertController, IonicSafeString, LoadingController, NavController, iosTransitionAnimation, mdTransitionAnimation } from '@ionic/angular';
+import { AlertController, IonicSafeString, NavController, iosTransitionAnimation, mdTransitionAnimation } from '@ionic/angular';
 import { LanguageSettingService } from './language-setting.service';
 import { FILE_BINARY_LIMIT, FileInfo, GlobalActService } from './global-act.service';
+import { P5LoadingService } from './p5-loading.service';
 
 /** 서버 상세 정보 */
 export interface ServerInfo {
@@ -98,7 +99,7 @@ export class NakamaService {
     private lang: LanguageSettingService,
     private global: GlobalActService,
     private navCtrl: NavController,
-    private loadingCtrl: LoadingController,
+    private p5loading: P5LoadingService,
   ) {
     global.CallbackNakama = this;
   }
@@ -1196,20 +1197,20 @@ export class NakamaService {
   /** 이 일을 완료했습니다 */
   async doneTodo(targetInfo: any, slient = false) {
     targetInfo.done = true;
+    const actId = `nakama_doneTodo_${Date.now()}`;
     if (this.global.p5todoAddtodo)
       this.global.p5todoAddtodo(JSON.stringify(targetInfo));
     if (targetInfo.remote) {
-      let loading: HTMLIonLoadingElement;
-      if (!slient) { // 알림 없이 조용히 처리할 수도 있음
-        loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-        loading.present();
-      }
+      if (!slient) // 알림 없이 조용히 처리할 수도 있음
+        this.p5loading.update({
+          id: actId,
+        });
       try {
         if (this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target] && this.self_match[targetInfo.remote.isOfficial][targetInfo.remote.target])
           await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
             .socket.sendMatchState(this.self_match[targetInfo.remote.isOfficial][targetInfo.remote.target].match_id, MatchOpCode.MANAGE_TODO,
               encodeURIComponent(`done,${targetInfo.id}`));
-        if (!slient) loading.dismiss();
+        if (!slient) this.p5loading.remove(actId);
       } catch (e) { // 원격 동기화 실패시 로컬에 별도 저장처리
         targetInfo.modified = true;
         let path: string;
@@ -1219,24 +1220,24 @@ export class NakamaService {
           path = `todo/${targetInfo['id']}/info.todo`;
         }
         await this.indexed.saveTextFileToUserPath(JSON.stringify(targetInfo), path);
-        if (!slient) loading.dismiss();
+        if (!slient) this.p5loading.remove(actId);
         this.navCtrl.pop();
         return;
       }
     }
-    await this.deleteTodoFromStorage(false, targetInfo, slient);
+    await this.deleteTodoFromStorage(false, targetInfo, slient, actId);
     this.navCtrl.pop();
   }
 
   /** 저장소로부터 데이터를 삭제하는 명령 모음  
    * @param isDelete 삭제 여부를 검토하여 애니메이션 토글
    */
-  async deleteTodoFromStorage(isDelete: boolean, targetInfo: any, slient = false) {
-    let loading: HTMLIonLoadingElement;
-    if (!slient) {
-      loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-      loading.present();
-    }
+  async deleteTodoFromStorage(isDelete: boolean, targetInfo: any, slient = false, loadingId?: string) {
+    const actId = loadingId || `nakama_deleteTodoFromStorage_${Date.now()}`;
+    if (!slient)
+      this.p5loading.update({
+        id: actId,
+      });
     if (targetInfo.attach && targetInfo.attach.length)
       for (let i = 0, j = targetInfo.attach.length; i < j; i++) // 로컬 FFS 사용을 대비하여 중복 처리
         if (targetInfo.attach[i].url) {
@@ -1354,7 +1355,7 @@ export class NakamaService {
         this.noti.ClearNoti(targetInfo.noti_id);
         if (isDelete && this.global.p5removeTodo)
           this.global.p5removeTodo(JSON.stringify(targetInfo));
-        if (!slient) loading.dismiss();
+        if (!slient) this.p5loading.remove(actId);
         return;
       }
     }
@@ -1372,7 +1373,7 @@ export class NakamaService {
     this.noti.ClearNoti(targetInfo.noti_id);
     if (isDelete && this.global.p5todo)
       this.global.p5removeTodo(JSON.stringify(targetInfo));
-    if (!slient) loading.dismiss();
+    if (!slient && !loadingId) this.p5loading.remove(actId);
   }
 
   /** 그룹 내에서 승격된 경우를 기록함 (superadmin, admin)  
@@ -2339,9 +2340,11 @@ export class NakamaService {
 
   /** 사설 서버 삭제 */
   async remove_server(_is_official: string, _target: string, only_remove: boolean) {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-    loading.present();
-    loading.message = this.lang.text['Nakama']['RemovingAccount'];
+    const actId = `nakama_remove_server_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['Nakama']['RemovingAccount'],
+    });
     let server_info = this.servers[_is_official][_target].info;
     try { // 나카마 서버에서 계정 삭제
       let my_uid = this.servers[_is_official][_target].session.user_id;
@@ -2369,7 +2372,10 @@ export class NakamaService {
         'remove_account_fn', { user_id: my_uid }).catch(e => { }); // 계정 삭제시 오래 걸리므로 무시처리
     } catch (e) { }
     // 로그인 상태일 경우 로그오프처리
-    loading.message = this.lang.text['Nakama']['LogoutAccount'];
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['Nakama']['LogoutAccount'],
+    });
     if (this.statusBar.groupServer[_is_official][_target] == 'online') {
       try {
         this.servers[_is_official][_target].socket.disconnect(true);
@@ -2378,13 +2384,19 @@ export class NakamaService {
       }
     }
     // 알림정보 삭제
-    loading.message = this.lang.text['Nakama']['RemovingNotification'];
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['Nakama']['RemovingNotification'],
+    });
     try {
       delete this.noti_origin[_is_official][_target];
     } catch (e) { }
     this.rearrange_notifications();
     // 예하 채널들 손상처리
-    loading.message = this.lang.text['Nakama']['MissingChannels'];
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['Nakama']['MissingChannels'],
+    });
     try {
       let channel_ids = Object.keys(this.channels_orig[_is_official][_target]);
       if (!this.channels_orig['deleted']) this.channels_orig['deleted'] = {};
@@ -2405,7 +2417,10 @@ export class NakamaService {
         let targetPath = list[i].replace('/official/', '/deleted/').replace(`/${_is_official}/`, '/deleted/');
         await this.indexed.saveFileToUserPath(file, targetPath);
         await this.indexed.removeFileFromUserPath(list[i]);
-        loading.message = `${this.lang.text['Nakama']['MissingChannelFiles']}: ${list[i]}`;
+        this.p5loading.update({
+          id: actId,
+          message: `${this.lang.text['Nakama']['MissingChannelFiles']}: ${list[i]}`,
+        });
       } catch (e) {
         console.log('파일 이관 실패: ', e);
       }
@@ -2421,7 +2436,10 @@ export class NakamaService {
       await this.save_post_counter();
     }
     // 예하 그룹들 손상처리
-    loading.message = this.lang.text['Nakama']['MissingGroups'];
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['Nakama']['MissingGroups'],
+    });
     try {
       if (!this.groups['deleted']) this.groups['deleted'] = {};
       if (!this.groups['deleted'][_target]) this.groups['deleted'][_target] = {};
@@ -2437,7 +2455,10 @@ export class NakamaService {
     } catch (e) { }
     this.save_groups_with_less_info();
     // 그룹서버 정리
-    loading.message = this.lang.text['Nakama']['DeletingServerInfo'];
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['Nakama']['DeletingServerInfo'],
+    });
     this.set_group_statusBar('offline', _is_official, _target);
     delete this.statusBar.groupServer[_is_official][_target];
     // 동일 주소 WebRTC 서버 일괄 삭제
@@ -2459,7 +2480,7 @@ export class NakamaService {
       this.indexed.saveTextFileToUserPath(lines.join('\n'), 'servers/list_detail.csv');
     }
     this.noti.ClearNoti(9);
-    loading.dismiss();
+    this.p5loading.remove(actId);
   }
 
   /** 소켓이 행동할 때 행동중인 무언가가 있을 경우 검토하여 처리 */
@@ -3105,17 +3126,28 @@ export class NakamaService {
   /** 게시물 폴더 삭제  
    * @param [slient=false] 조용한 모드, 직접적인 게시물 편집이 아닌 경우에 true 처리. 파일 삭제 등을 하지 않음
    */
-  async RemovePost(info: any, slient = false) {
-    let loading: HTMLIonLoadingElement;
+  async RemovePost(info: any, slient = false, loadingId?: string) {
     let isOfficial = info['server']['isOfficial'];
     let target = info['server']['target'];
-    if (!slient) loading = await this.loadingCtrl.create({ message: this.lang.text['PostViewer']['RemovePost'] });
+    const actId = loadingId || `nakama_RemovePost_${Date.now()}`;
+    if (!slient) this.p5loading.update({
+      id: actId,
+      message: this.lang.text['PostViewer']['RemovePost'],
+    });
     let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/posts/${info['creator_id']}/${info['id']}`);
-    if (loading) loading.present();
     for (let i = 0, j = list.length; i < j; i++) {
-      if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${list[i]}`;
+      if (!slient) this.p5loading.update({
+        id: actId,
+        message: `${this.lang.text['PostViewer']['RemovePost']}: ${list[i]}`,
+        progress: i / j,
+      });
       await this.indexed.removeFileFromUserPath(list[i]);
     }
+    if (!slient)
+      this.p5loading.update({
+        id: actId,
+        progress: null,
+      });
     let server_info = {};
     try {
       let info = this.servers[isOfficial][target].info;
@@ -3130,7 +3162,12 @@ export class NakamaService {
     if (info['attachments'])
       for (let i = 0, j = info['attachments'].length; i < j; i++)
         try {
-          if (loading) loading.message = `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`;
+          if (!slient)
+            this.p5loading.update({
+              id: actId,
+              message: `${this.lang.text['PostViewer']['RemovePost']}: ${info['attachments'][i]['filename']}`,
+              progress: i / j,
+            });
           if (info['attachments'][i].url && info['attachments'][i].type !== '') {
             if (!slient) this.global.remove_file_from_storage(info['attachments'][i].url, server_info);
           } else {
@@ -3140,6 +3177,11 @@ export class NakamaService {
             } catch (e) { }
           }
         } catch (e) { }
+    if (!slient)
+      this.p5loading.update({
+        id: actId,
+        progress: null,
+      });
     // 메인 사진 삭제
     if (info['mainImage'])
       try {
@@ -3157,7 +3199,7 @@ export class NakamaService {
       if (!info.server.local)
         if (!slient) await this.sync_remove_file(info['id'], isOfficial, target, 'server_post', '', `${info['id']}`);
     } catch (e) { }
-    if (loading) loading.dismiss();
+    if (!slient && !loadingId) this.p5loading.remove(actId);
     try {
       delete this.posts_orig[isOfficial][target][info['creator_id']][info['id']];
     } catch (e) { }
