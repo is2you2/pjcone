@@ -187,8 +187,10 @@ export class P5LoadingService {
     if (this.stackKeys.includes(info.id)) {
       if (info.forceEnd !== undefined) {
         this.loadingStack[info.id].forceEnd = info.forceEnd;
-        if (this.loadingStack[info.id].progress)
+        if (this.loadingStack[info.id].progress) {
           this.loadingStack[info.id].progress = 1;
+          this.loadingStack[info.id].progressElement.style('background: conic-gradient(var(--loading-done-color) 0% 100%');
+        }
       }
       if (info.message !== undefined) {
         this.loadingStack[info.id].message = info.message;
