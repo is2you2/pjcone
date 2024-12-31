@@ -1072,6 +1072,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.TitleInput.focus();
       return;
     }
+    this.isApplyPostData = true;
     this.navCtrl.navigateBack('portal/community');
     const actId = `postData_${Date.now()}`;
     this.p5loading.update({
@@ -1082,7 +1083,6 @@ export class AddPostPage implements OnInit, OnDestroy {
     if (this.useVoiceRecording) await this.StopAndSaveVoiceRecording();
     /** 로컬 서버인지 여부 */
     let is_local = Boolean(this.userInput.server['local']);
-    this.isApplyPostData = true;
     this.isSaveClicked = true;
     let isOfficial = this.userInput.server['isOfficial'];
     let target = this.userInput.server['target'];
@@ -1361,7 +1361,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         file.blob = blob;
         file.size = blob.size;
         file.type = 'application/json';
-        file.file_ext = 'txt';
+        file.file_ext = 'json';
         file.typeheader = 'text';
         file.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/info.json`;
         await this.nakama.sync_save_file(file, isOfficial, target, 'server_post', this.userInput.id);

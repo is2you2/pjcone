@@ -4028,10 +4028,10 @@ export class NakamaService {
   /** 로컬 파일을 저장하며 원격에 분산하여 올리기 */
   async sync_save_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _key_force = '') {
     try {
-      if (info.blob.size)
+      if (info.blob?.size)
         await this.indexed.saveBlobToUserPath(info.blob, info.path);
       let file_info = await this.global.req_file_info(info.path);
-      info.partsize = Math.ceil((info['filesize'] || file_info.contents.length) / FILE_BINARY_LIMIT);
+      info.partsize = Math.ceil((info.size || file_info.contents.length) / FILE_BINARY_LIMIT);
       delete info['blob'];
       await this.servers[_is_official][_target].client.writeStorageObjects(
         this.servers[_is_official][_target].session, [{
