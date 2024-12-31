@@ -177,7 +177,7 @@ export class SubscribesPage implements OnInit {
               for (let i = 0, j = list.length; i < j; i++) {
                 this.p5loading.update({
                   id: actId,
-                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`,
+                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${list[i].split('/').pop()}`,
                   progress: i / j,
                 });
                 await this.indexed.removeFileFromUserPath(list[i]);
@@ -230,7 +230,7 @@ export class SubscribesPage implements OnInit {
               for (let i = 0, j = list.length; i < j; i++) {
                 this.p5loading.update({
                   id: actId,
-                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`,
+                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${list[i].split('/').pop()}`,
                   progress: i / j,
                 });
                 await this.indexed.removeFileFromUserPath(list[i]);

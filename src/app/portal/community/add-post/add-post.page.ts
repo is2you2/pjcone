@@ -935,7 +935,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         for (let i = 0, j = ev.target.files.length; i < j; i++) {
           this.p5loading.update({
             id: actId,
-            message: `${j - i}: ${ev.target.files[i].name}`,
+            message: `${this.lang.text['ChatRoom']['MultipleSend']}: ${ev.target.files[i].name}`,
             progress: i / j,
           });
           await this.selected_blobFile_callback_act(ev.target.files[i]);
