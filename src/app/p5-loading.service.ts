@@ -140,7 +140,7 @@ export class P5LoadingService {
             if (this.loadingStack[key].forceEnd !== undefined && this.loadingStack[key].forceEnd > 0)
               this.loadingStack[key].forceEnd -= 7;
             // 로딩이 끝나면 FadeOut
-            if (this.loadingStack[key].forceEnd <= 0 || this.loadingStack[key].progress > 1) {
+            if (this.loadingStack[key].forceEnd <= 0) {
               if (this.loadingStack[key].fade > 0) {
                 this.loadingStack[key].fade -= .07;
                 this.loadingStack[key].element.style(`opacity: ${this.loadingStack[key].fade}`);
@@ -217,7 +217,7 @@ export class P5LoadingService {
   remove(id: string) {
     this.update({
       id: id,
-      forceEnd: 200,
+      forceEnd: 300,
     }, true);
   }
 }
