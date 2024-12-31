@@ -2012,10 +2012,10 @@ export class GlobalActService {
       await navigator.clipboard.write([
         new ClipboardItem(data)
       ]);
-      if (isPlatform == 'DesktopPWA')
-        this.p5toast.show({
-          text: `${this.lang.text['GlobalAct']['PCClipboard']}: ${filename || value}`,
-        });
+      this.p5loading.update({
+        id: actId,
+        message: `${this.lang.text['GlobalAct']['PCClipboard']}: ${filename || value}`,
+      });
       this.p5loading.remove(actId);
     } catch (e) {
       console.log('클립보드에 복사하기 오류: ', e);
