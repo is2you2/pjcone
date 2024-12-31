@@ -1,6 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { AlertController, LoadingController, NavController } from '@ionic/angular';
-import { isPlatform } from 'src/app/app.component';
+import { AlertController, NavController } from '@ionic/angular';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { StatusManageService } from 'src/app/status-manage.service';
@@ -8,6 +7,7 @@ import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { IonModal } from '@ionic/angular/common';
 import { P5ToastService } from 'src/app/p5-toast.service';
+import { P5LoadingService } from 'src/app/p5-loading.service';
 
 @Component({
   selector: 'app-subscribes',
@@ -24,8 +24,8 @@ export class SubscribesPage implements OnInit {
     private navCtrl: NavController,
     private indexed: IndexedDBService,
     private alertCtrl: AlertController,
-    private loadingCtrl: LoadingController,
     private p5toast: P5ToastService,
+    private p5loading: P5LoadingService,
   ) { }
 
   SubscribesScrollDiv: HTMLElement;
@@ -137,8 +137,10 @@ export class SubscribesPage implements OnInit {
           buttons: [{
             text: this.lang.text['ChatRoom']['Delete'],
             handler: async () => {
-              let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-              loading.present();
+              const actId = `subscribes_remove_1:1_${Date.now()}`;
+              this.p5loading.update({
+                id: actId,
+              });
               let info = this.nakama.servers[isOfficial][target].info;
               await this.nakama.remove_group_list(this.nakama.groups[isOfficial][target][channel['group_id']], isOfficial, target, true);
               delete this.nakama.channels_orig[isOfficial][target][channel.id];
@@ -173,10 +175,14 @@ export class SubscribesPage implements OnInit {
               } catch (e) { }
               let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${channel.id}`);
               for (let i = 0, j = list.length; i < j; i++) {
-                loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`
+                this.p5loading.update({
+                  id: actId,
+                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`,
+                  progress: i / j,
+                });
                 await this.indexed.removeFileFromUserPath(list[i]);
               }
-              loading.dismiss();
+              this.p5loading.remove(actId);
               this.nakama.rearrange_channels();
             },
             cssClass: 'redfont',
@@ -190,8 +196,10 @@ export class SubscribesPage implements OnInit {
           buttons: [{
             text: this.lang.text['ChatRoom']['Delete'],
             handler: async () => {
-              let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-              loading.present();
+              const actId = `subscribes_remove_local_${Date.now()}`;
+              this.p5loading.update({
+                id: actId,
+              });
               delete this.nakama.channels_orig[isOfficial][target][channel.id];
               try { // 그룹 이미지 삭제
                 await this.indexed.removeFileFromUserPath(`servers/${isOfficial}/${target}/groups/${channel.id}.img`);
@@ -220,10 +228,14 @@ export class SubscribesPage implements OnInit {
               } catch (e) { }
               let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${channel.id}`);
               for (let i = 0, j = list.length; i < j; i++) {
-                loading.message = `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`
+                this.p5loading.update({
+                  id: actId,
+                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`,
+                  progress: i / j,
+                });
                 await this.indexed.removeFileFromUserPath(list[i]);
               }
-              loading.dismiss();
+              this.p5loading.remove(actId);
               this.nakama.rearrange_channels();
             },
             cssClass: 'redfont',

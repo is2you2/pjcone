@@ -7,8 +7,9 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController, LoadingController, NavController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular';
 import * as p5 from 'p5';
+import { P5LoadingService } from 'src/app/p5-loading.service';
 
 
 @Component({
@@ -29,7 +30,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     private router: Router,
     private navCtrl: NavController,
     private alertCtrl: AlertController,
-    private loadingCtrl: LoadingController,
+    private p5loading: P5LoadingService,
   ) { }
   ngOnDestroy() {
     this.global.RestoreShortCutAct('group-detail');
@@ -176,8 +177,10 @@ export class GroupDetailPage implements OnInit, OnDestroy {
       buttons: [{
         text: this.lang.text['GroupDetail']['ChangeMaxCount'],
         handler: async (ev) => {
-          let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-          loading.present();
+          const actId = `group_detail_updateMemberMaximum_${Date.now()}`;
+          this.p5loading.update({
+            id: actId,
+          });
           let newCount = Number(ev['0']);
           try {
             await this.nakama.servers[this.isOfficial][this.target].client.rpc(
@@ -198,7 +201,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
               text: `${this.lang.text['GroupDetail']['FailedToChangeMax']}: ${e.statusText || e} (${e.status})`,
             });
           }
-          loading.dismiss();
+          this.p5loading.remove(actId);
         }
       }]
     }).then(v => v.present());
