@@ -3886,7 +3886,7 @@ export class NakamaService {
    */
   async WriteStorage_From_channel(msg: any, path: string, _is_official: string, _target: string, startFrom = 0) {
     let _msg = JSON.parse(JSON.stringify(msg));
-    let file_info = await this.global.req_file_info(path);
+    let file_info = await await this.indexed.GetFileInfoFromDB(path);
     let partsize = Math.ceil(file_info.contents.length / FILE_BINARY_LIMIT);
     if (!this.OnTransfer[_is_official][_target][msg.channel_id]) this.OnTransfer[_is_official][_target][msg.channel_id] = {};
     if (!this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id])
@@ -4030,7 +4030,7 @@ export class NakamaService {
     try {
       if (info.blob?.size)
         await this.indexed.saveBlobToUserPath(info.blob, info.path);
-      let file_info = await this.global.req_file_info(info.path);
+      let file_info = await this.indexed.GetFileInfoFromDB(info.path);
       info.partsize = Math.ceil((info.size || file_info.contents.length) / FILE_BINARY_LIMIT);
       delete info['blob'];
       await this.servers[_is_official][_target].client.writeStorageObjects(

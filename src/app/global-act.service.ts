@@ -808,17 +808,6 @@ export class GlobalActService {
     this.CreateArcadeWSCloseAct();
   }
 
-  /** 파일 경로를 큐에 추가하고 계속하여 정보를 받습니다  
-   * 여기서 추가한 것은 반드시 큐를 제거해야함
-   * @returns 파일 전체 길이 (number) / FILE_BINARY_LIMIT 기준
-   */
-  async req_file_info(path: string): Promise<any> {
-    return new Promise(async (done) => {
-      let info = await this.indexed.GetFileInfoFromDB(path);
-      done(info);
-    });
-  }
-
   /** 파일의 부분 base64 정보 받기 */
   req_file_part_base64(file_info: any, index: number, path: string): string {
     let binary = '';
