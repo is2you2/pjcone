@@ -1138,7 +1138,7 @@ export class GlobalActService {
     const actId = loadingId || `try_upload_to_user_custom_fs_${Date.now()}`;
     this.p5loading.update({
       id: actId,
-      message: this.lang.text['Settings']['TryToFallbackFS'],
+      message: `${this.lang.text['Settings']['TryToFallbackFS']}: ${file.filename}`,
     });
     let upload_time = new Date().getTime();
     let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));

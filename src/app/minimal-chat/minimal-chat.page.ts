@@ -406,20 +406,23 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                 message: `${this.lang.text['ChatRoom']['CountFile']}: ${Drops.length}`,
                 buttons: [{
                   text: this.lang.text['ChatRoom']['Send'],
-                  handler: async () => {
-                    const actId = `minimal_chat_dropAct_${Date.now()}`;
-                    this.p5loading.update({
-                      id: actId,
-                      progress: 0,
-                    });
-                    for (let i = 0, j = Drops.length; i < j; i++) {
+                  handler: () => {
+                    let SendingAct = async () => {
+                      const actId = `minimal_chat_dropAct_${Date.now()}`;
                       this.p5loading.update({
                         id: actId,
-                        progress: i / j,
+                        progress: 0,
                       });
-                      await this.SendAttachAct({ target: { files: [Drops[i].file] } }, actId);
+                      for (let i = 0, j = Drops.length; i < j; i++) {
+                        this.p5loading.update({
+                          id: actId,
+                          progress: i / j,
+                        });
+                        await this.SendAttachAct({ target: { files: [Drops[i].file] } }, actId);
+                      }
+                      this.p5loading.remove(actId);
                     }
-                    this.p5loading.remove(actId);
+                    SendingAct();
                   }
                 }]
               }).then(v => {
