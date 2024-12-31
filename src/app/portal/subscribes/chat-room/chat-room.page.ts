@@ -2662,11 +2662,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         cssClass: 'redfont',
         handler: async () => {
           this.CancelEditText();
+          const actId = `remove_chat_msg_file_${this.info.id}_${Date.now()}`;
           if (!this.info['local']) { // 서버와 연결된 채널인 경우
             try {
               await this.nakama.servers[this.isOfficial][this.target].socket.removeChatMessage(this.info['id'], msg.message_id);
               if (FileURL) { // 첨부파일이 포함되어 있는 경우
-                const actId = `remove_chat_msg_file_${this.info.id}_${Date.now()}`;
                 this.p5loading.update({
                   id: actId,
                   message: this.lang.text['UserFsDir']['DeleteFile'],
@@ -2696,7 +2696,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 let list = await this.indexed.GetFileListFromDB(path);
                 for (let path of list)
                   await this.indexed.removeFileFromUserPath(path);
-                this.p5loading.remove(actId);
               }
             } catch (e) {
               console.error('채널 메시지 삭제 오류: ', e);
@@ -2722,9 +2721,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.SendLocalMessage(msg);
           for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
             this.modulate_chatmsg(i, this.ViewableMessage.length);
-          this.p5toast.show({
-            text: this.lang.text['ChatRoom']['MsgRemoved'],
+          this.p5loading.update({
+            id: actId,
+            message: this.lang.text['ChatRoom']['MsgRemoved'],
           });
+          this.p5loading.remove(actId);
         }
       }]
     };
