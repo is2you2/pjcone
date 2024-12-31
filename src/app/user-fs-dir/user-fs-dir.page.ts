@@ -365,7 +365,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
   async ModulateIndexedFile(_list: string[]) {
     for (let i = 0, j = _list.length; i < j; i++) {
       if (this.StopIndexing) return;
-      let message = `${this.lang.text['UserFsDir']['LoadingExplorer']}: ${_list.length - i}`;
+      let message = `${this.lang.text['UserFsDir']['LoadingExplorer']}: ${_list[i].split('/').pop()}`;
       this.p5loading.update({
         id: this.InitIndexingId,
         message: message,
