@@ -1563,6 +1563,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           }, {
             user_id: `tmp_${this.QRNavParams.channel}_${this.QRNavParams.user_id}`,
           }, protocol, address, false, this.voidDrawId);
+          this.p5loading.remove(this.voidDrawId);
           this.webrtc.dataChannel.send(JSON.stringify({
             type: 'background',
             data: uploaded_address,
