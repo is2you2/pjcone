@@ -578,6 +578,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         progress: 0,
       });
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
+        if (this.PageDestoryed) break;
         this.p5loading.update({
           id: actId,
           message: `${this.lang.text['AddPost']['SyncAttaches']}: ${this.userInput.attach[i].filename}`,
@@ -733,15 +734,16 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       }
     }
     this.desc_input = document.getElementById('descInput') as HTMLInputElement;
-    this.desc_input.onpaste = (ev: any) => {
-      let stack = [];
-      for (const clipboardItem of ev.clipboardData.files)
-        stack.push({ file: clipboardItem });
-      if (!stack.length) return;
-      for (let i = 0, j = stack.length; i < j; i++)
-        this.selected_blobFile_callback_act(stack[i].file);
-      return false;
-    }
+    if (this.desc_input && !this.desc_input.onpaste)
+      this.desc_input.onpaste = (ev: any) => {
+        let stack = [];
+        for (const clipboardItem of ev.clipboardData.files)
+          stack.push({ file: clipboardItem });
+        if (!stack.length) return;
+        for (let i = 0, j = stack.length; i < j; i++)
+          this.selected_blobFile_callback_act(stack[i].file);
+        return false;
+      }
   }
 
   /** 사용가능한 저장소 리스트 생성 */
@@ -1405,6 +1407,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       return;
     }
     this.isButtonClicked = true;
+    this.navCtrl.pop();
+    const actId = `add_todo_save_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+    });
     if (this.useVoiceRecording) await this.StopAndSaveVoiceRecording();
     let has_attach = Boolean(this.userInput.attach.length);
     delete this.userInput.display_store;
@@ -1514,10 +1521,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         attach_changed = true;
       }
     }
-    const actId = `add_todo_save_${Date.now()}`;
-    this.p5loading.update({
-      id: actId,
-    });
     if (has_attach && attach_changed) { // 첨부된 파일이 있다면
       if (received_json) { // 진입시 받은 정보가 있다면 수정 전 내용임
         try {
@@ -1557,11 +1560,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           } catch (e) { }
           try { // FFS 업로드 시도
             if (this.userInput.CDN != 1) throw 'FFS 사용 순위에 없음';
-            this.p5loading.update({
-              id: actId,
-              message: `${this.lang.text['AddPost']['SyncAttaches']}: ${this.userInput.attach[i].filename}`,
-              progress: i / j,
-            });
             let CatchedAddress: string;
             CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attach[i], this.nakama.users.self['display_name'], actId);
             if (CatchedAddress) {
@@ -1586,10 +1584,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             header_image = URL.createObjectURL(blob);
           } catch (e) { }
       }
-      this.p5loading.update({
-        id: actId,
-        progress: null,
-      });
       if (header_image) { // 대표 이미지가 있다면
         await new Promise((done: any) => {
           new p5((p: p5) => {
@@ -1804,7 +1798,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         return;
       }
     }
-    this.p5loading.remove(actId);
     this.userInput['is_me'] = true;
     if (this.global.p5todoAddtodo)
       this.global.p5todoAddtodo(JSON.stringify(this.userInput));
@@ -1815,7 +1808,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       path = `todo/${this.userInput.id}/info.todo`;
     }
     await this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), path);
-    this.navCtrl.pop();
+    this.p5loading.remove(actId);
   }
 
   /** 이 해야할 일 삭제 (삭제 버튼 전용) */
@@ -1859,13 +1852,15 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       this.p5timer.remove();
   }
 
+  PageDestoryed = false;
   ngOnDestroy() {
+    this.PageDestoryed = true;
     if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
     this.global.portalHint = true;
     this.indexed.GetFileListFromDB('tmp_files/todo', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     delete this.nakama.socket_reactive['add_todo_menu'];
     this.route.queryParams['unsubscribe']();
-    this.desc_input.onpaste = null;
+    if (this.desc_input) this.desc_input.onpaste = null;
     this.cont.abort('할 일 페이지 벗어남');
     this.cont = null;
     this.nakama.AddTodoLinkAct = null;
