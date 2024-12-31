@@ -1072,6 +1072,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.TitleInput.focus();
       return;
     }
+    this.navCtrl.navigateBack('portal/community');
     const actId = `postData_${Date.now()}`;
     this.p5loading.update({
       id: actId,
@@ -1306,7 +1307,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           });
           let outlink = await this.global.upload_file_to_storage(file,
             { user_id: user_id, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
-            protocol, address, this.userInput.CDN == 1);
+            protocol, address, this.userInput.CDN == 1, actId);
           if (outlink) {
             this.userInput.OutSource = outlink;
           } else throw '업로드 실패';
@@ -1384,7 +1385,6 @@ export class AddPostPage implements OnInit, OnDestroy {
       });
     } catch (e) { }
     this.p5loading.remove(actId);
-    this.navCtrl.navigateBack('portal/community');
   }
 
   /** 이 페이지를 떠날 예정 */
