@@ -3888,6 +3888,11 @@ export class NakamaService {
     let _msg = JSON.parse(JSON.stringify(msg));
     let file_info = await await this.indexed.GetFileInfoFromDB(path);
     let partsize = Math.ceil(file_info.contents.length / FILE_BINARY_LIMIT);
+    const actId = `ForceSQL_write_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+      message: this.lang.text['ChatRoom']['forceSQL'],
+    });
     if (!this.OnTransfer[_is_official][_target][msg.channel_id]) this.OnTransfer[_is_official][_target][msg.channel_id] = {};
     if (!this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id])
       this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id] = { index: partsize };
@@ -3896,6 +3901,11 @@ export class NakamaService {
       msg.content['transfer_index'] = this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id];
     for (let i = startFrom; i < partsize; i++)
       try {
+        this.p5loading.update({
+          id: actId,
+          message: `${this.lang.text['ChatRoom']['forceSQL']}: ${this.lang.text['ChatRoom']['SendFile']}: ${_msg.content.filename}`,
+          progress: i / partsize,
+        });
         let part = this.global.req_file_part_base64(file_info, i, path);
         await this.servers[_is_official][_target].client.writeStorageObjects(
           this.servers[_is_official][_target].session, [{
@@ -3912,7 +3922,7 @@ export class NakamaService {
         this.noti.PushLocal({
           id: 7,
           title: this.lang.text['Nakama']['FailedUpload'],
-          body: `${_msg.content.filename || _msg.content.name}: ${e}`,
+          body: `${_msg.content.filename}: ${e}`,
           smallIcon_ln: 'diychat',
         }, this.noti.Current);
         this.p5toast.show({
@@ -3921,11 +3931,9 @@ export class NakamaService {
         break;
       }
     setTimeout(() => {
+      this.p5loading.remove(actId);
       delete this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id];
       this.global.remove_req_file_info(msg, path);
-      this.p5toast.show({
-        text: `${this.lang.text['ChatRoom']['forceSQL']}: ${this.lang.text['ChatRoom']['SendFile']}: ${_msg.content.filename}`,
-      });
       this.noti.PushLocal({
         id: 7,
         title: this.lang.text['ChatRoom']['SendFile'],
