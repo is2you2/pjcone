@@ -1373,7 +1373,7 @@ export class NakamaService {
     this.noti.ClearNoti(targetInfo.noti_id);
     if (isDelete && this.global.p5todo)
       this.global.p5removeTodo(JSON.stringify(targetInfo));
-    if (!slient && !loadingId) this.p5loading.remove(actId);
+    if (!slient) this.p5loading.remove(actId);
   }
 
   /** 그룹 내에서 승격된 경우를 기록함 (superadmin, admin)  
