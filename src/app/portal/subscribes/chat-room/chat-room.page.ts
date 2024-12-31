@@ -582,7 +582,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               for (let i = 0, j = list.length; i < j; i++) {
                 this.p5loading.update({
                   id: actId,
-                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${j - i}`,
+                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${list[i].split('/').pop()}`,
                 });
                 await this.indexed.removeFileFromUserPath(list[i]);
               }
@@ -900,7 +900,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               for (let i = 0, j = ev.target.files.length; i < j; i++) {
                 this.p5loading.update({
                   id: actId,
-                  message: `${j - i}: ${ev.target.files[i].name}`,
+                  message: `${this.lang.text['ChatRoom']['MultipleSend']}: ${ev.target.files[i].name}`,
                   progress: i / j,
                 });
                 this.selected_blobFile_callback_act(ev.target.files[i]);
@@ -1475,6 +1475,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.selected_blobFile_callback_act(Drops[i].file);
       this.p5loading.update({
         id: actId,
+        message: `${this.lang.text['ChatRoom']['MultipleSend']}: ${Drops[i].file.name}`,
         progress: i / j,
       });
       await this.send(undefined, actId);
