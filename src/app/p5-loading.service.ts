@@ -197,17 +197,17 @@ export class P5LoadingService {
           delete this.loadingStack[info.id];
           this.loadingStack[info.id].messageElement.html();
         } else {
-        this.loadingStack[info.id].message = info.message;
-        this.loadingStack[info.id].messageElement.html(info.message);
+          this.loadingStack[info.id].message = info.message;
+          this.loadingStack[info.id].messageElement.html(info.message);
         }
       }
       if (info.progress !== undefined) {
         if (info.progress === null) {
           delete this.loadingStack[info.id].progress;
         } else {
-        this.loadingStack[info.id].progress = info.progress;
-        const floatAsPercent = Math.floor(info.progress * 100);
-        this.loadingStack[info.id].progressElement.style(`background: conic-gradient(var(--loading-done-color) 0% ${floatAsPercent}%, var(--loading-waiting-color) ${floatAsPercent}% 100%)`);
+          this.loadingStack[info.id].progress = info.progress;
+          const floatAsPercent = Math.floor(info.progress * 100);
+          this.loadingStack[info.id].progressElement.style(`background: conic-gradient(var(--loading-done-color) 0% ${floatAsPercent}%, var(--loading-waiting-color) ${floatAsPercent}% 100%)`);
         }
       }
     } else if (!only_update) this.create(info);
@@ -217,7 +217,7 @@ export class P5LoadingService {
   remove(id: string) {
     this.update({
       id: id,
-      forceEnd: 100,
+      forceEnd: 200,
     }, true);
   }
 }
