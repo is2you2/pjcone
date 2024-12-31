@@ -1065,14 +1065,14 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.p5loading.update({
       id: actId,
       message: this.lang.text['ContentViewer']['OnLoadContent'],
-      progress: 0,
     });
     for (let i = 0, j = ev.target.files.length; i < j; i++) {
-      this.p5loading.update({
+      const loadingInfo = {
         id: actId,
         message: `${this.lang.text['ContentViewer']['OnLoadContent']}: ${ev.target.files[i].name}`,
-        progress: i / j,
-      });
+      };
+      if (j > 1) loadingInfo['progress'] = i / j;
+      this.p5loading.update(loadingInfo);
       await this.selected_blobFile_callback_act(ev.target.files[i], false);
     }
     this.p5loading.remove(actId);
