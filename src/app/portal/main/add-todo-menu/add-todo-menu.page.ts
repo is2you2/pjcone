@@ -189,9 +189,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             this.global.useVoiceRecording = 'TodoRecording';
             this.extended_buttons[4].icon = 'stop-circle-outline';
             this.extended_buttons[4].name = this.lang.text['ChatRoom']['VoiceStop'];
-            this.p5toast.show({
-              text: this.lang.text['ChatRoom']['StartVRecord'],
-            });
+            this.p5loading.toast(this.lang.text['ChatRoom']['StartVRecord']);
             await VoiceRecorder.startRecording();
             this.CreateFloatingVoiceTimeHistoryAddButton();
           } else { // 권한이 없다면 권한 요청 및 UI 복구

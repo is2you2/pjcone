@@ -6,6 +6,7 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { P5LoadingService } from 'src/app/p5-loading.service';
 
 @Component({
   selector: 'app-server-detail',
@@ -18,6 +19,7 @@ export class ServerDetailPage implements OnInit, OnDestroy {
     public lang: LanguageSettingService,
     private p5toast: P5ToastService,
     private indexed: IndexedDBService,
+    private p5loading: P5LoadingService,
     private nakama: NakamaService,
     public global: GlobalActService,
     private route: ActivatedRoute,
@@ -55,9 +57,7 @@ export class ServerDetailPage implements OnInit, OnDestroy {
   /** WebRTC 서버 정보 손상시 복구용 */
   async reGenerateWebRTCInfo() {
     await this.nakama.AutoGenWebRTCInfo(this.dedicated_info);
-    this.p5toast.show({
-      text: this.lang.text['ServerDetail']['RegenWebRTCDone'],
-    });
+    this.p5loading.toast(this.lang.text['ServerDetail']['RegenWebRTCDone']);
   }
 
   index = 0;

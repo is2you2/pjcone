@@ -217,8 +217,8 @@ export class P5LoadingService {
   }
 
   /** 간단한 알림 흉내내기 */
-  toast(message: string, timer = 1000) {
-    const actId = `AsToast_${Date.now()}`;
+  toast(message: string, loadingId?: string, timer = 1000) {
+    const actId = loadingId || `AsToast_${Date.now()}`;
     this.update({
       id: actId,
       message: message,

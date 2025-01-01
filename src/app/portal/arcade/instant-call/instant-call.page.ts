@@ -8,6 +8,7 @@ import { FloatButtonService } from 'src/app/float-button.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
+import { P5LoadingService } from 'src/app/p5-loading.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { WebrtcService } from 'src/app/webrtc.service';
 
@@ -27,6 +28,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private p5toast: P5ToastService,
+    private p5loading: P5LoadingService,
     private navCtrl: NavController,
     private floatbutton: FloatButtonService,
   ) { }
@@ -125,9 +127,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
     let uuid: string;
     this.global.InstantCallWSClient.onopen = async () => {
       this.global.WaitingConnect = true;
-      this.p5toast.show({
-        text: this.lang.text['InstantCall']['Waiting'],
-      });
+      this.p5loading.toast(this.lang.text['InstantCall']['Waiting']);
       if (this.ChannelId) { // 준비된 채널로 진입
         this.global.InstantCallSend(JSON.stringify({
           type: 'join',

@@ -175,9 +175,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               case 'image/png':
                 this.ChangeBackgroundImage({ target: { files: [fromClipboard.value] } });
                 break;
-              case 'text/plain':
-                await this.check_if_clipboard_available(fromClipboard.value);
-                break;
               case 'error':
                 throw fromClipboard.value;
             }
@@ -333,9 +330,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.extended_buttons[7].name = this.lang.text['ChatRoom']['VoiceStop'];
             await VoiceRecorder.startRecording();
             this.CreateFloatingVoiceTimeHistoryAddButton();
-            this.p5toast.show({
-              text: this.lang.text['ChatRoom']['StartVRecord'],
-            });
+            this.p5loading.toast(this.lang.text['ChatRoom']['StartVRecord']);
           } else await VoiceRecorder.requestAudioRecordingPermission();
         } else { // 녹음 종료
           this.StopAndSaveVoiceRecording();

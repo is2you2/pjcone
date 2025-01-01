@@ -595,9 +595,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           if (req.value) { // 권한 있음
             this.global.useVoiceRecording = 'PostRecording';
             this.extended_buttons[5].icon = 'stop-circle-outline';
-            this.p5toast.show({
-              text: this.lang.text['ChatRoom']['StartVRecord'],
-            });
+            this.p5loading.toast(this.lang.text['ChatRoom']['StartVRecord']);
             this.p5StartVoiceTimer();
             await VoiceRecorder.startRecording();
             this.CreateFloatingVoiceTimeHistoryAddButton();
@@ -888,9 +886,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       buttons: [{
         text: this.lang.text['UserFsDir']['RemoveApply'],
         handler: () => {
-          this.p5toast.show({
-            text: `${this.lang.text['AddPost']['RemoveAttach']}: ${this.userInput.attachments[i].filename}`,
-          });
+          this.p5loading.toast(`${this.lang.text['AddPost']['RemoveAttach']}: ${this.userInput.attachments[i].filename}`);
           this.userInput.attachments.splice(i, 1);
           // 첨부파일 링크 텍스트를 삭제하고, 재정렬시킴
           let sep_as_line = this.userInput.content.split('\n');
