@@ -166,18 +166,24 @@ export class MainPage implements OnInit {
                 message: new IonicSafeString(result_form),
                 buttons: [{
                   text: this.lang.text['TodoDetail']['TodoComplete'],
-                  handler: async () => {
-                    try {
-                      await nakama.doneTodo(Todos[TodoKeys[i]].json);
-                    } catch (e) { }
+                  handler: () => {
+                    const doneTodo = async () => {
+                      try {
+                        await nakama.doneTodo(Todos[TodoKeys[i]].json);
+                      } catch (e) { }
+                    }
+                    doneTodo();
                   }
                 }, {
                   text: this.lang.text['TodoDetail']['remove'],
                   cssClass: 'redfont',
-                  handler: async () => {
-                    try {
-                      await nakama.deleteTodoFromStorage(true, Todos[TodoKeys[i]].json);
-                    } catch (e) { }
+                  handler: () => {
+                    const removeTodo = async () => {
+                      try {
+                        await nakama.deleteTodoFromStorage(true, Todos[TodoKeys[i]].json);
+                      } catch (e) { }
+                    }
+                    removeTodo();
                   }
                 }],
               }).then(v => {
