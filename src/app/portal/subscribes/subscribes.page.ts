@@ -141,7 +141,13 @@ export class SubscribesPage implements OnInit {
               this.p5loading.update({
                 id: actId,
               });
-              let info = this.nakama.servers[isOfficial][target].info;
+              let info: any;
+              try {
+                info = this.nakama.servers[isOfficial][target].info;
+              } catch (e) {
+                // 만약 실패한다면, 삭제된 서버여서 그럴 가능성이 높다
+                console.log('삭제된 서버의 채널 삭제: ', e);
+              }
               await this.nakama.remove_group_list(this.nakama.groups[isOfficial][target][channel['group_id']], isOfficial, target, true);
               delete this.nakama.channels_orig[isOfficial][target][channel.id];
               this.nakama.remove_channel_files(isOfficial, target, channel.id);
