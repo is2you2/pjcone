@@ -8,8 +8,7 @@ function import_p5sound() {
 import_p5sound();
 import { P5ToastService } from './p5-toast.service';
 import { LanguageSettingService } from './language-setting.service';
-import { MatchOpCode, NakamaService } from './nakama.service';
-import { Match } from '@heroiclabs/nakama-js';
+import { NakamaService } from './nakama.service';
 import { IndexedDBService } from './indexed-db.service';
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
 import { GlobalActService, isDarkMode } from './global-act.service';
