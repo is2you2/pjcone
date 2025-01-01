@@ -213,11 +213,21 @@ export class P5LoadingService {
     } else if (!only_update) this.create(info);
   }
 
+  /** 간단한 알림 흉내내기 */
+  toast(message: string, timer = 1000) {
+    const actId = `AsToast_${Date.now()}`;
+    this.update({
+      id: actId,
+      message: message,
+      forceEnd: timer,
+    });
+  }
+
   /** 로딩 삭제하기 */
   remove(id: string) {
     this.update({
       id: id,
-      forceEnd: 300,
+      forceEnd: 1000,
     }, true);
   }
 }

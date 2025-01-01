@@ -462,6 +462,7 @@ export class NakamaService {
   /** 모든 세션을 토글 */
   async toggle_all_session() {
     if (this.TogglingSession) return;
+    const actId = `nakama_toggle_all_session`;
     this.TogglingSession = true;
     if (this.statusBar.settings.groupServer == 'online') {
       this.logout_all_server();
@@ -469,19 +470,22 @@ export class NakamaService {
         text: this.lang.text['Nakama']['SessionLogout'],
       });
     } else {
-      this.p5toast.show({
-        text: this.lang.text['Nakama']['PendingLogin'],
+      this.p5loading.update({
+        id: actId,
+        message: this.lang.text['Nakama']['PendingLogin'],
       });
       try {
         let count_server = await this.init_all_sessions();
         if (!count_server)
-          this.p5toast.show({
-            text: this.lang.text['Nakama']['NoLoginServer'],
+          this.p5loading.update({
+            id: actId,
+            message: this.lang.text['Nakama']['NoLoginServer'],
           });
       } catch (e) {
         console.log('테스트 서버 연결 오류: ', e);
       }
     }
+    this.p5loading.remove(actId);
     this.TogglingSession = false;
   }
 
