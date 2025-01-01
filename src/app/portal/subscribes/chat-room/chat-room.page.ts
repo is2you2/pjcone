@@ -1395,10 +1395,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         break;
       }
     this.BlockAutoScrollDown = true;
-    const actId = `FindQoute_${id}`;
     this.p5loading.update({
-      id: actId,
+      id: 'FindQoute',
       message: this.lang.text['ChatRoom']['FindingMsg'],
+      progress: null,
     });
     /** 메시지를 찾았는지 여부 검토 */
     if (!targetChat) { // 메시지가 안보이면 이전 메시지에서 찾기
@@ -1449,7 +1449,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     // 찾기를 진행하면서 다른 페이지로 넘어간 경우 찾기 행동을 보류함
     if (targetChat === null || this.WillLeave) {
       this.p5loading.update({
-        id: actId,
+        id: 'FindQoute',
         message: this.lang.text['ChatRoom']['MsgFound'],
         progress: 1,
       });
@@ -1460,13 +1460,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           targetChatBg = document.getElementById(id + '_bg');
           FindExactAct();
         }, 1000);
-        this.p5loading.remove(actId);
+        this.p5loading.remove('FindQoute');
       });
       return;
     }
     if (targetChat) {
       this.p5loading.update({
-        id: actId,
+        id: 'FindQoute',
         message: this.lang.text['ChatRoom']['MsgFound'],
         progress: 1,
       });
@@ -1477,7 +1477,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       });
       this.BlockAutoScrollDown = false;
     }
-    this.p5loading.remove(actId);
+    this.p5loading.remove('FindQoute');
   }
 
   /** 인용 정보를 삭제함 */
@@ -3083,6 +3083,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.p5loading.remove('FindQoute');
     if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
     if (isPlatform != 'DesktopPWA')
       this.global.ArcadeWithFullScreen = false;
