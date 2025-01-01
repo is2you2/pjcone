@@ -49,6 +49,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
         this.CurrentIndex = navParams.index;
       } catch (e) { }
     });
+    this.RelevancesInputId = `post-viewer_RelevancesInputId_${Date.now}`;
   }
 
   WaitingLoaded = false;
@@ -227,6 +228,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
     if (this.p5canvas) this.p5canvas.remove();
     this.CurrentIndex = tmp_calced;
     this.PostInfo = this.nakama.posts[this.CurrentIndex - 1];
+    this.CanInputValue = false;
     this.initialize();
   }
 
@@ -721,6 +723,29 @@ export class PostViewerPage implements OnInit, OnDestroy {
       case 'quick_post_link_qr':
         this.QuickPostView.dismiss();
         break;
+    }
+  }
+
+  CanInputValue = false;
+  RelevancesInputId = 'RelevancesInputId';
+  /** 첨부파일 순번 라벨을 인풋으로 변경하기 */
+  FocusOnIndexInput() {
+    this.CanInputValue = true;
+    setTimeout(() => {
+      document.getElementById(this.RelevancesInputId)?.['focus']();
+    }, 100);
+  }
+
+  /** 사용자가 직접 첨부파일 순번 입력시 */
+  ChangeRelevanceIndex(ev: any) {
+    // 엔터를 눌러 종료
+    if (ev.key == 'Enter') {
+      let targetIndex = Number(ev.target['value'] || ev.target['placeholder']);
+      targetIndex = Math.max(Math.min(targetIndex, this.nakama.posts.length), 1);
+      this.ChangeToAnother(targetIndex - this.CurrentIndex);
+      setTimeout(() => {
+        this.CanInputValue = false;
+      }, 0);
     }
   }
 

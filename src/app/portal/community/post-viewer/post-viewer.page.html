@@ -9,7 +9,12 @@
     </div>
     <ion-icon *ngIf="HavePosts" class="relevance_change" style="padding-right: 4px;" slot="end"
       name="arrow-back-circle-outline" (click)="ChangeToAnother(-1)"></ion-icon>
-    <ion-label *ngIf="HavePosts" slot="end">{{ CurrentIndex + ' / ' + nakama.posts.length}}</ion-label>
+    <ion-label *ngIf="HavePosts && !CanInputValue" slot="end" (click)="FocusOnIndexInput()">{{ CurrentIndex + ' / ' + nakama.posts.length}}</ion-label>
+    <ion-label *ngIf="HavePosts && CanInputValue" slot="end"><input [id]="RelevancesInputId" type="number"
+        style="width: 50px; text-align: right;" (change)="ChangeRelevanceIndex($event)"
+        (keydown)="ChangeRelevanceIndex($event)" [placeholder]="CurrentIndex">{{
+      ' / ' + nakama.posts.length
+      }}</ion-label>
     <div *ngIf="global.ShowHint && HavePosts" style="position: relative;" slot="end">
       <div class="shortcut_hint shortcut_change_viewer">D</div>
     </div>
