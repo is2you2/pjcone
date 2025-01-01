@@ -20,6 +20,10 @@ const routes: Routes = [
     path: 'ionic-viewer',
     loadChildren: () => import('../subscribes/chat-room/ionic-viewer/ionic-viewer.module').then(m => m.IonicViewerPageModule)
   },
+  {
+    path: 'post-viewer',
+    loadChildren: () => import('../community/post-viewer/post-viewer.module').then(m => m.PostViewerPageModule)
+  },
 ];
 
 @NgModule({

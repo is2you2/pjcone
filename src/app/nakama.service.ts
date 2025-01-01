@@ -418,9 +418,9 @@ export class NakamaService {
   }
 
   /** 게시글 읽기 */
-  open_post(info: any, index: number, navTarget = 'post-viewer') {
+  open_post(info: any, index: number, navTarget = '') {
     this.global.RemoveAllModals(() => {
-      this.navCtrl.navigateForward(navTarget, {
+      this.navCtrl.navigateForward(navTarget + 'post-viewer', {
         animation: mdTransitionAnimation,
         state: {
           data: info,
@@ -4225,7 +4225,7 @@ export class NakamaService {
    * @returns 빠른 진입 행동에 성공하면 true 반환
    */
   async open_url_link(url: string, open_link = true) {
-    let address = this.global.GetConnectedAddress();
+    const address = this.global.GetConnectedAddress();
     // 근데 주소가 메인 주소라면 QR행동으로 처리하기
     if (url.indexOf('https://is2you2.github.io/pjcone_pwa/?') == 0 || url.indexOf(`${address}?`) == 0) {
       let init = this.global.CatchGETs(url) || {};
@@ -4378,7 +4378,10 @@ export class NakamaService {
     return QRCodeSRC;
   }
 
-  async act_from_QRInfo(json: any) {
+  /** QR 정보를 실행
+   * @param [page_header=''] 일부는 로컬 페이지에서 열 수 있도록 페이지 주소 앞에 추가할 수 있음 (~/ 맺음해야함)
+   */
+  async act_from_QRInfo(json: any, page_header = '') {
     // 번역 준비가 끝날 때까지 기다리기
     for (let i = 0, j = 20; i < j; i++) {
       if (this.lang.text['WebRTCDevManager']['SecurityError']) break;
@@ -4483,7 +4486,7 @@ export class NakamaService {
           this.global.PageDismissAct['voiddraw-remote'] = () => {
             delete this.global.PageDismissAct['voiddraw-remote'];
           }
-          this.global.ActLikeModal('void-draw', {
+          this.global.ActLikeModal(page_header + 'void-draw', {
             remote: {
               address: json[i].address,
               channel: json[i].channel,
@@ -4499,14 +4502,14 @@ export class NakamaService {
           if (res.ok) {
             let text = await res.text();
             let post_info = JSON.parse(text);
-            this.open_post(post_info, -2);
+            this.open_post(post_info, -2, page_header);
           } else this.p5toast.show({
             text: `${this.lang.text['AddPost']['NoPostOutLink']}: ${res.statusText}`,
           });
           break;
         case 'instc': // 즉석 통화
           this.global.RemoveAllModals(() => {
-            this.navCtrl.navigateForward('instant-call', {
+            this.navCtrl.navigateForward(page_header + 'instant-call', {
               animation: iosTransitionAnimation,
               state: {
                 address: json[i]['address'],
@@ -4526,7 +4529,7 @@ export class NakamaService {
           this.global.PageDismissAct['quick-fileviewer'] = (v: any) => {
             delete this.global.PageDismissAct['quick-fileviewer'];
           }
-          this.global.ActLikeModal('ionic-viewer', {
+          this.global.ActLikeModal(page_header + 'ionic-viewer', {
             info: {
               content: {
                 filename: json[i]['url'].split('_').pop(),

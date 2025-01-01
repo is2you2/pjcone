@@ -68,7 +68,7 @@ export class CommunityPage implements OnInit {
   /** 게시물 열기 */
   open_post(post: any, index: number) {
     this.forceBlockLoadable = true;
-    this.nakama.open_post(post, index, 'portal/community/post-viewer');
+    this.nakama.open_post(post, index, 'portal/community/');
   }
 
   ContentScroll: HTMLDivElement;

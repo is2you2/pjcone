@@ -1704,7 +1704,7 @@ export class GlobalActService {
 
   /** 지금 연결된 주소 받기 */
   GetConnectedAddress() {
-    let address = `${location.protocol}//${location.host}${window['sub_path']}`;
+    const address = `${location.protocol}//${location.host}${window['sub_path']}`;
     return address;
   }
 

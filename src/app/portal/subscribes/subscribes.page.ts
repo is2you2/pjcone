@@ -6,7 +6,6 @@ import { StatusManageService } from 'src/app/status-manage.service';
 import { GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { IonModal } from '@ionic/angular/common';
-import { P5ToastService } from 'src/app/p5-toast.service';
 import { P5LoadingService } from 'src/app/p5-loading.service';
 
 @Component({
@@ -24,7 +23,6 @@ export class SubscribesPage implements OnInit {
     private navCtrl: NavController,
     private indexed: IndexedDBService,
     private alertCtrl: AlertController,
-    private p5toast: P5ToastService,
     private p5loading: P5LoadingService,
   ) { }
 

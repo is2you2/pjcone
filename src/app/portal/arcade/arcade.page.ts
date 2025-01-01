@@ -445,7 +445,19 @@ export class ArcadePage implements OnInit {
         // 텍스트는 주소로 처리하기
         case 'text/plain':
           const address = from_clipboard.value;
-          console.log('받은 텍스트: ', address);
+          const custom_default = this.global.GetConnectedAddress();
+          if (address.indexOf('https://is2you2.github.io/pjcone_pwa/?') == 0 || custom_default.indexOf(`${address}?`) == 0) {
+            const init = this.global.CatchGETs(address) || {};
+            try {
+              const actJson = await this.nakama.AddressToQRCodeAct(init, true);
+              this.nakama.act_from_QRInfo(actJson, 'portal/arcade/');
+            } catch (e) {
+              console.log('open_url_link: ', e);
+              this.p5toast.show({
+                text: `${this.lang.text['ChatRoom']['QRLinkFailed']}: ${e}`,
+              });
+            }
+          }
           break;
         // 이미지는 뷰어로 열기
         case 'image/png':
