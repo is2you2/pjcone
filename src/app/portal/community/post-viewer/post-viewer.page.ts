@@ -190,6 +190,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
 
   /** 진입 정보를 어떻게 활용할 것인가 */
   initialize() {
+    this.RearrangedRelevance.length = 0;
     if (this.PostInfo['mainImage']) {
       try {
         let FileURL = this.PostInfo['mainImage']['url'];
