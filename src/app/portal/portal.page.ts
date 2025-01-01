@@ -31,6 +31,10 @@ export class PortalPage implements OnInit {
       this.arcade_tab_selected();
       this.ionTabs.select('arcade');
     }
+    this.nakama.SelectSubscribesTab = () => {
+      this.subscribe_button();
+      this.ionTabs.select('subscribes');
+    }
   }
 
   OnInit = true;

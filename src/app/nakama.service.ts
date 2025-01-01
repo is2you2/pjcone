@@ -377,6 +377,8 @@ export class NakamaService {
     );
   }
 
+  /** 외압에 의한 구독 탭 선택시 실행됨 */
+  SelectSubscribesTab: Function;
   /** 채팅 채널이 열려있는 경우 행동시키기 */
   ChatroomLinkAct: Function;
   /** subscribe과 localPush의 채팅방 입장 행동을 통일함 */
@@ -385,14 +387,17 @@ export class NakamaService {
     if (_info['update']) delete _info['update'];
     if (this.ChatroomLinkAct)
       this.ChatroomLinkAct(_info, _file);
-    else this.global.RemoveAllModals(() => {
-      this.navCtrl.navigateForward('portal/subscribes/chat-room', {
-        state: {
-          info: _info,
-          file: _file,
-        },
+    else {
+      if (this.SelectSubscribesTab) this.SelectSubscribesTab();
+      this.global.RemoveAllModals(() => {
+        this.navCtrl.navigateForward('portal/subscribes/chat-room', {
+          state: {
+            info: _info,
+            file: _file,
+          },
+        });
       });
-    });
+    }
   }
 
   /** 새 채널 만들기 / 새 그룹 추가하기 */
