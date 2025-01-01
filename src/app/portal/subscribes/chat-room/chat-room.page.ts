@@ -1023,10 +1023,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 다른 페이지에 넘어간 등, 백그라운드 마무리 작업을 모아두었다가 복귀했을 때 행동 */
+  QueuedAct: Function[] = [];
   ionViewWillEnter() {
     this.global.portalHint = false;
     this.global.StoreShortCutAct('chat-room');
     this.WillLeave = false;
+    for (let func of this.QueuedAct) func();
+    this.QueuedAct.length = 0;
     this.ChatContDiv = document.getElementById('chatroom_content_div');
     try {
       this.CheckIfHasScroll = this.ChatLogs.scrollHeight > this.ChatLogs.clientHeight;
@@ -1396,6 +1400,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       id: actId,
       message: this.lang.text['ChatRoom']['FindingMsg'],
     });
+    /** 메시지를 찾았는지 여부 검토 */
     if (!targetChat) { // 메시지가 안보이면 이전 메시지에서 찾기
       let whileBreaker = false;
       while (!targetChat && this.pullable && !whileBreaker) {
@@ -1414,8 +1419,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }
       }
     }
-    await new Promise((done) => setTimeout(done, 1000));
-    if (targetChat) {
+    /** 찾기 행동 (가장 마지막에 스크롤 잡아주는 것) */
+    let FindExactAct = () => {
       targetChat.scrollIntoView({ block: 'center', behavior: 'smooth' });
       try { // 이미 배경칠된 채팅을 초기화처리
         let keys = Object.keys(this.BackgroundAct);
@@ -1439,6 +1444,33 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           delete this.BackgroundAct[id];
         }
       }, 3500);
+    }
+    // 찾기를 진행하면서 다른 페이지로 넘어간 경우 찾기 행동을 보류함
+    if (targetChat === null) {
+      this.p5loading.update({
+        id: actId,
+        message: this.lang.text['ChatRoom']['MsgFound'],
+        progress: 1,
+      });
+      this.QueuedAct.push(async () => {
+        await this.pull_msg_history(false);
+        setTimeout(() => {
+          targetChat = document.getElementById(id);
+          targetChatBg = document.getElementById(id + '_bg');
+          FindExactAct();
+        }, 1000);
+        this.p5loading.remove(actId);
+      });
+      return;
+    }
+    await new Promise((done) => setTimeout(done, 1000));
+    if (targetChat) {
+      this.p5loading.update({
+        id: actId,
+        message: this.lang.text['ChatRoom']['MsgFound'],
+        progress: 1,
+      });
+      FindExactAct();
     } else {
       this.p5toast.show({
         text: this.lang.text['ChatRoom']['LostOriginMsg'],
