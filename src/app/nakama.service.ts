@@ -506,9 +506,7 @@ export class NakamaService {
       for (let i = 0, j = Targets.length; i < j; i++)
         await this.init_session(this.servers['official'][Targets[i]].info);
       if (this.statusBar.settings.groupServer == 'online')
-        this.p5toast.show({
-          text: this.lang.text['Nakama']['AccessTestServer'],
-        });
+        this.p5loading.toast(this.lang.text['Nakama']['AccessTestServer']);
     } catch (e) {
       console.log('주소받기 실패: ', e);
     }
@@ -4097,6 +4095,12 @@ export class NakamaService {
    * @returns value { from: 검토 위치, value: Blob }
    */
   async sync_load_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _userid = '', _key_force = '', show_noti = true) {
+    const actId = `ForceSQL_sync_load_${Date.now()}`;
+    if (show_noti)
+      await this.p5loading.update({
+        id: actId,
+        message: `${this.lang.text['ChatRoom']['forceSQL']}: ${this.lang.text['ChatRoom']['SavingFile']}`,
+      });
     try {
       let file_info = await this.servers[_is_official][_target].client.readStorageObjects(
         this.servers[_is_official][_target].session, {
@@ -4110,6 +4114,12 @@ export class NakamaService {
       let isSuccessful = true;
       for (let i = 0; i < info_json.partsize; i++) {
         try {
+          if (show_noti)
+            this.p5loading.update({
+              id: actId,
+              message: `${this.lang.text['ChatRoom']['forceSQL']}: ${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
+              progress: i / info_json.partsize,
+            });
           let part = await this.servers[_is_official][_target].client.readStorageObjects(
             this.servers[_is_official][_target].session, {
             object_ids: [{
@@ -4131,14 +4141,11 @@ export class NakamaService {
           break;
         }
       }
+      if (show_noti) this.p5loading.remove(actId);
       if (isSuccessful) {
         delete info['url'];
         // 서버에 업로드된 파일
         info['text'] = [this.lang.text['ChatRoom']['SavingFile']];
-        if (show_noti)
-          this.p5toast.show({
-            text: `${this.lang.text['ChatRoom']['forceSQL']}: ${this.lang.text['ChatRoom']['SavingFile']}: ${info_json.filename}`,
-          });
         let GatheringInt8Array = [];
         let ByteSize = 0;
         await new Promise(async (done, err) => {
