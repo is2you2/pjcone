@@ -1949,7 +1949,7 @@ export class GlobalActService {
       value: '' as any,
     };
     const actId = `GetValueFromClipboard_${Date.now()}`;
-    this.p5loading.update({
+    await this.p5loading.update({
       id: actId,
       message: this.lang.text['GlobalAct']['ClipboardPaste'],
     });

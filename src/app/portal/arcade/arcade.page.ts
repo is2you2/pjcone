@@ -100,6 +100,9 @@ export class ArcadePage implements OnInit {
       case 'arcade_detail':
         this.ArcadeDetail.dismiss();
         break;
+      case 'inapp_qrscanner':
+        this.InAppQRScanner.dismiss();
+        break;
     }
   }
 
@@ -366,6 +369,100 @@ export class ArcadePage implements OnInit {
 
   QRCodeSRC: any;
   copy_address(target: string) {
+    this.global.WriteValueToClipboard('text/plain', target);
+  }
+
+  @ViewChild('InAppQRScanner') InAppQRScanner: IonModal;
+  QRScanResult: string;
+  ChangeDeviceFunc: Function;
+  /** QR스캐너 열기 */
+  async OpenScanner() {
+    this.QRScanResult = null;
+    this.global.StoreShortCutAct('qrcode-scanner');
+    let zxing_scanner = await fetch('assets/p5js/zxing_scanner.js');
+    let zxing_scannerBlob = await zxing_scanner.blob();
+    let zxing_scannerURL = URL.createObjectURL(zxing_scannerBlob);
+    let p5js = await fetch('assets/p5js/libraries/p5.min.js');
+    let p5jsBlob = await p5js.blob();
+    let p5jsURL = URL.createObjectURL(p5jsBlob);
+    let zxing = await fetch('assets/p5js/libraries/zxing@0.21.3.min.js');
+    let zxingBlob = await zxing.blob();
+    let zxingURL = URL.createObjectURL(zxingBlob);
+    let scanMain = await fetch('assets/p5js/zxing.html');
+    let scanMainText = await scanMain.text();
+    scanMainText = scanMainText.replace('<script language="javascript" type="text/javascript" src="libraries/p5.min.js"></script>',
+      `<script language="javascript" type="text/javascript" src="${p5jsURL}"></script>`)
+      .replace('<script language="javascript" type="text/javascript" src="libraries/zxing@0.21.3.min.js"></script>',
+        `<script language="javascript" type="text/javascript" src="${zxingURL}"></script>`)
+      .replace('<script language="javascript" type="text/javascript" src="zxing_scanner.js"></script>',
+        `<script language="javascript" type="text/javascript" src="${zxing_scannerURL}"></script>`);
+    let scanMainBlob = new Blob([scanMainText], { type: 'text/html' });
+    let MainURL = URL.createObjectURL(scanMainBlob);
+    this.InAppQRScanner.onDidDismiss().then(() => {
+      URL.revokeObjectURL(MainURL);
+      URL.revokeObjectURL(zxing_scannerURL);
+      URL.revokeObjectURL(p5jsURL);
+      URL.revokeObjectURL(zxingURL);
+      this.ChangeDeviceFunc = null;
+      this.global.RestoreShortCutAct('qrcode-scanner');
+    });
+    await this.InAppQRScanner.present();
+    let iframe = document.getElementById('qr_scan_frame') as HTMLIFrameElement;
+    iframe.src = MainURL;
+    let contentWindow = iframe.contentWindow || iframe.contentDocument;
+    setTimeout(() => {
+      this.ChangeDeviceFunc = contentWindow['ChangeDevice'];
+      contentWindow['load_failed'] = (e: any) => {
+        this.p5toast.show({
+          text: `${this.lang.text['Subscribes']['QRScanInitFailed']}: ${e}`,
+        });
+        this.InAppQRScanner.dismiss();
+      }
+      contentWindow['scan_result'] = async (result: any) => {
+        try {
+          this.QRScanResult = result.text;
+          if (this.QRScanResult) {
+            let result = await this.nakama.open_url_link(this.QRScanResult, false);
+            if (result) this.InAppQRScanner.dismiss();
+          }
+        } catch (e) {
+          console.log('QR스캔 실패: ', e);
+        }
+      }
+    }, 1000);
+  }
+
+  /** QRCode 스캔 중 장치 변경하기 */
+  ChangeScanDevice() {
+    if (this.ChangeDeviceFunc) this.ChangeDeviceFunc();
+  }
+
+  /** 이 탭에서 빠른 진입 링크 열람하기 */
+  OpenQuickLink() {
+    let contextAct = async () => {
+      const from_clipboard = await this.global.GetValueFromClipboard();
+      switch (from_clipboard.type) {
+        // 텍스트는 주소로 처리하기
+        case 'text/plain':
+          const address = from_clipboard.value;
+          console.log('받은 텍스트: ', address);
+          break;
+        // 이미지는 뷰어로 열기
+        case 'image/png':
+          this.LoadFileFromLocalAct({ target: { files: [from_clipboard.value] } });
+          break;
+        case 'error':
+          this.p5toast.show({
+            text: `${this.lang.text['GlobalAct']['FailedToReadClipboard']}: ${from_clipboard.value}`,
+          });
+          break;
+      }
+    }
+    contextAct();
+    return false;
+  }
+
+  copy_info(target: string) {
     this.global.WriteValueToClipboard('text/plain', target);
   }
 }

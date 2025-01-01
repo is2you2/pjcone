@@ -30,12 +30,11 @@
       <ion-label>{{lang.text['Arcade']['AddCustom']}}</ion-label>
     </ion-item-divider>
     <div class="fixed_btn_size">
-      <input hidden type="file" id="arcade_file_input" accept=".pck" (change)="inputFileSelected($event)">
-      <div class="list_ele list_add_btn" (click)="AddCustomGame()" (contextmenu)="AddCustomGameFromClipboard()">
+      <div class="list_ele list_add_btn" (click)="OpenScanner()" (contextmenu)="OpenQuickLink()">
         <div class="disconnect_info">
-          <ion-icon style="width: 36px; height: 36px;" color="medium" name="extension-puzzle-outline"></ion-icon>
+          <ion-icon style="width: 36px; height: 36px;" color="medium" name="qr-code-outline"></ion-icon>
           <div>
-            <ion-label color="medium">{{lang.text['Arcade']['FromPck']}}</ion-label>
+            <ion-label color="medium">QRCode</ion-label>
           </div>
         </div>
       </div>
@@ -45,6 +44,15 @@
           <ion-icon style="width: 36px; height: 36px;" color="medium" name="document-outline"></ion-icon>
           <div>
             <ion-label color="medium">{{lang.text['Arcade']['FromFile']}}</ion-label>
+          </div>
+        </div>
+      </div>
+      <input hidden type="file" id="arcade_file_input" accept=".pck" (change)="inputFileSelected($event)">
+      <div class="list_ele list_add_btn" (click)="AddCustomGame()" (contextmenu)="AddCustomGameFromClipboard()">
+        <div class="disconnect_info">
+          <ion-icon style="width: 36px; height: 36px;" color="medium" name="extension-puzzle-outline"></ion-icon>
+          <div>
+            <ion-label color="medium">{{lang.text['Arcade']['FromPck']}}</ion-label>
           </div>
         </div>
       </div>
@@ -117,6 +125,27 @@
           <ion-item button (click)="copy_address(global.ArcadeQRAddress)">
             <ion-label class="ion-text-center">{{global.ArcadeQRAddress}}</ion-label>
           </ion-item>
+        </div>
+      </div>
+    </ng-template>
+  </ion-modal>
+  <ion-modal #InAppQRScanner class="transparent-modal">
+    <ng-template>
+      <div id="inapp_qrscanner" class="OutterModal" (click)="CheckIfDismissAct($event)">
+        <div style="display: flex; justify-content: center; align-items: center;">
+          <div
+            style="width: 400px; min-height: 455px; background-color: var(--chatroom-background); text-align: center; padding: 16px; position: relative;">
+            <div (click)="ChangeScanDevice()"
+              style="position: absolute; width: 64px; height: 64px; cursor: pointer; margin: 16px; background-color: #8888; border-radius: 24px; top: 0; right: 0; text-align: center; align-content: center">
+              <ion-icon style="width: 36px; height: 36px" name="camera-reverse-outline"></ion-icon>
+            </div>
+            <iframe id="qr_scan_frame" style="width: 100%; height: 368px; margin-bottom: 8px;" frameborder="0"></iframe>
+            <ion-item button (click)="copy_info(QRScanResult)">
+              <ion-label *ngIf="!QRScanResult" class="ion-text-center"
+                color="medium">{{lang.text['Subscribes']['QRScanPlaceholder']}}</ion-label>
+              <ion-label *ngIf="QRScanResult" class="ion-text-center">{{QRScanResult}}</ion-label>
+            </ion-item>
+          </div>
         </div>
       </div>
     </ng-template>
