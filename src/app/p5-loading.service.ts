@@ -114,6 +114,7 @@ export class P5LoadingService {
               progress.style('width: 24px; height: 24px;');
               progress.style('flex-shrink: 0');
               progress.style('border-radius: 50%');
+              if (info.progress === null) info.progress = undefined;
               const floatAsPercent = Math.floor(info.progress * 100) || 0;
               progress.style(`background: conic-gradient(var(--loading-done-color) 0% ${floatAsPercent}%, var(--loading-waiting-color) ${floatAsPercent}% 100%)`);
               info.progressElement = progress;

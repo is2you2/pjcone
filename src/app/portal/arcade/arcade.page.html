@@ -38,6 +38,16 @@
           </div>
         </div>
       </div>
+      <div *ngIf="NeedBackgroundMode" class="list_ele list_add_btn"
+        [style]="IsBackgroundMode ? 'background-color: var(--toast-background-color)' : ''"
+        (click)="ToggleBackgroundMode()">
+        <div class="disconnect_info">
+          <ion-icon style="width: 36px; height: 36px;" color="medium" name="alert-circle-outline"></ion-icon>
+          <div id="BackgroundModeAudio">
+            <ion-label color="medium">{{lang.text['Arcade']['ToggleBGMode']}}</ion-label>
+          </div>
+        </div>
+      </div>
       <input hidden type="file" id="arcade_file_load" multiple accept="*" (change)="LoadFileFromLocalAct($event)">
       <div class="list_ele list_add_btn" (click)="LoadFileFromLocal()" (contextmenu)="LoadFileFromClipboard()">
         <div class="disconnect_info">

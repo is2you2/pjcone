@@ -17,6 +17,7 @@
           "!/assets/js.blend/package.json",
           "!/assets/js.blend/*.blend*",
           "/assets/p5js/**/*.*",
+          "/assets/empty.ogg",
           "!/assets/p5js/**/*.properties",
           "!/**/*.gdignore",
           "!/**/*.gitignore",
