@@ -716,6 +716,14 @@ export class PostViewerPage implements OnInit, OnDestroy {
     });
   }
 
+  CheckIfDismissAct(ev: any) {
+    switch (ev.target.id) {
+      case 'quick_post_link_qr':
+        this.QuickPostView.dismiss();
+        break;
+    }
+  }
+
   EditPost() {
     this.navCtrl.pop();
     this.nakama.EditPost(this.PostInfo);
