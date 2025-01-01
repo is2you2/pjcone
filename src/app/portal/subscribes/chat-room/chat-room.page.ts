@@ -1421,7 +1421,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
     /** 찾기 행동 (가장 마지막에 스크롤 잡아주는 것) */
     let FindExactAct = () => {
-      targetChat.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      targetChat?.scrollIntoView({ block: 'center', behavior: 'smooth' });
       try { // 이미 배경칠된 채팅을 초기화처리
         let keys = Object.keys(this.BackgroundAct);
         for (let key of keys) {
@@ -1434,19 +1434,20 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.BackgroundAct[id] = Date.now();
       setTimeout(() => {
         if (this.WillLeave) return;
-        targetChatBg.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .5)';
+        if (targetChatBg) targetChatBg.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .5)';
       }, 100);
       setTimeout(() => {
         this.BlockAutoScrollDown = false;
         if (this.WillLeave) return;
         if ((Date.now() - this.BackgroundAct[id]) >= 3500) {
-          targetChatBg.style.backgroundColor = null;
+          if (targetChatBg) targetChatBg.style.backgroundColor = null;
           delete this.BackgroundAct[id];
         }
       }, 3500);
     }
+    await new Promise((done) => setTimeout(done, 1000));
     // 찾기를 진행하면서 다른 페이지로 넘어간 경우 찾기 행동을 보류함
-    if (targetChat === null) {
+    if (targetChat === null || this.WillLeave) {
       this.p5loading.update({
         id: actId,
         message: this.lang.text['ChatRoom']['MsgFound'],
@@ -1463,7 +1464,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       });
       return;
     }
-    await new Promise((done) => setTimeout(done, 1000));
     if (targetChat) {
       this.p5loading.update({
         id: actId,
@@ -2056,7 +2056,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     } else { // 최근 메시지를 보려고 함
       let subtract = this.messages.length - this.ViewMsgIndex - this.ViewCount;
       this.ShowRecentMsg = !(subtract == 0);
-      this.ViewMsgIndex += Math.min(this.RefreshCount, subtract);
+      this.ViewMsgIndex += Math.min(this.RefreshCount, Math.max(0, subtract));
       this.ViewableMessage = this.messages.slice(this.ViewMsgIndex, this.ViewMsgIndex + this.ViewCount);
       this.CheckIfShortcutLinkFile();
       for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
