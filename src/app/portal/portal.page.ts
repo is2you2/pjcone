@@ -198,6 +198,7 @@ export class PortalPage implements OnInit {
 
   CacheKeyShortCut: any;
   ionViewWillLeave() {
+    this.global.ArcadeWithFullScreen = false;
     this.global.FocusOnPortal = false;
     if (this.global.FocusOnPortalLeaveAct)
       this.global.FocusOnPortalLeaveAct();

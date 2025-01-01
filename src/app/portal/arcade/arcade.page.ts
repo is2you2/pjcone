@@ -87,6 +87,7 @@ export class ArcadePage implements OnInit {
 
   ionViewWillLeave() {
     this.global.RestoreShortCutAct('arcade-fileviewer');
+    this.global.ArcadeWithFullScreen = false;
     this.WillLeave = true;
   }
 
