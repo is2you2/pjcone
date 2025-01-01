@@ -49,132 +49,135 @@ export class P5LoadingService {
   private AddLoadingInfo: Function;
 
   /** 백그라운드 로딩을 생성합니다 */
-  private create(info: LoadingForm) {
+  private async create(info: LoadingForm) {
     // 현재 사용중인 로딩이 없다면 새로 생성하기
     if (!this.CurrentLoading) {
-      this.CurrentLoading = new p5((p: p5) => {
-        p.setup = () => {
-          p.noCanvas();
-          this.parentDiv = p.createDiv();
-          this.parentDiv.style("position: absolute; left: 0; top: 0; z-index: 1");
-          this.parentDiv.style("width: 100%; height: fit-content");
-          this.parentDiv.style("padding: 16px;");
-          this.parentDiv.style("display: flex; flex-direction: column");
-          this.parentDiv.style("gap: 8px");
-          this.parentDiv.style("justify-content: center;");
-          this.parentDiv.style("pointer-events: none");
+      await new Promise((done) => {
+        this.CurrentLoading = new p5((p: p5) => {
+          p.setup = () => {
+            p.noCanvas();
+            this.parentDiv = p.createDiv();
+            this.parentDiv.style("position: absolute; left: 0; top: 0; z-index: 1");
+            this.parentDiv.style("width: 100%; height: fit-content");
+            this.parentDiv.style("padding: 16px;");
+            this.parentDiv.style("display: flex; flex-direction: column");
+            this.parentDiv.style("gap: 8px");
+            this.parentDiv.style("justify-content: center;");
+            this.parentDiv.style("pointer-events: none");
 
-          this.AddLoadingInfo = (info: LoadingForm) => {
-            this.loadingStack[info.id] = info;
-            // 로딩 칸 전체
-            this.stackKeys = Object.keys(this.loadingStack);
-            const thisLoading = p.createDiv();
-            this.loadingStack[info.id].element = thisLoading;
-            thisLoading.style("width: 100%; height: fit-content");
-            thisLoading.style("word-break: break-all");
-            thisLoading.style('background: var(--toast-background-color)');
-            thisLoading.style("border-radius: 32px");
-            thisLoading.style("padding: 8px");
-            thisLoading.style("color: white");
-            thisLoading.parent(this.parentDiv);
-            // 레이아웃용 flex-div
-            const flex_outlook = p.createDiv();
-            flex_outlook.style('display: flex; flex-direction: row;');
-            flex_outlook.parent(thisLoading);
-            // 이미지가 있는 경우 이미지 표시하기
-            const img = p.createImg(info.image, 'ld_img');
-            img.style('width: 32px; height: 32px;');
-            img.style('margin-left: 8px');
-            img.style('object-fit: cover');
-            img.style('border-radius: 24px;');
-            // 양식은 만들어두고 숨기기
-            if (!info.image) img.hide();
-            img.parent(flex_outlook);
-            // 텍스트 및 진행도 내용물 구성 틀
-            const contentForm = p.createDiv();
-            contentForm.style('display: flex; flex-direction: row;');
-            contentForm.style('gap: 4px');
-            contentForm.style('overflow: hidden');
-            contentForm.style('flex-grow: 1');
-            contentForm.style('align-items: center');
-            contentForm.style('margin-right: 8px');
-            contentForm.parent(flex_outlook);
-            // 지정된 텍스트
-            const message = p.createDiv(info.message || this.lang.text['TodoDetail']['WIP']);
-            message.style('margin-left: 16px');
-            message.style('flex-grow: 1');
-            message.style('overflow: hidden');
-            message.style('white-space: nowrap');
-            message.style('text-overflow: ellipsis');
-            info.messageElement = message;
-            message.parent(contentForm);
-            // 진행도 표시
-            const progress = p.createDiv();
-            progress.style('width: 24px; height: 24px;');
-            progress.style('flex-shrink: 0');
-            progress.style('border-radius: 50%');
-            const floatAsPercent = Math.floor(info.progress * 100) || 0;
-            progress.style(`background: conic-gradient(var(--loading-done-color) 0% ${floatAsPercent}%, var(--loading-waiting-color) ${floatAsPercent}% 100%)`);
-            info.progressElement = progress;
-            info.nullProgress = 0;
-            progress.parent(contentForm);
-            info.fade = 0;
-          }
-          this.AddLoadingInfo(info);
-        }
-        p.draw = () => {
-          // 예약 대기열에 추가된 것을 실제 정보로 옮김
-          for (let i = this.queued.length - 1; i >= 0; i--) {
-            this.AddLoadingInfo(this.queued[i]);
-            this.queued.splice(i, 1);
-          }
-          // 투명도 조정 FadeIn
-          for (let key of this.stackKeys) {
-            // 진행도 정보가 없다면 회전시키기
-            if (this.loadingStack[key].progress === undefined) {
-              this.loadingStack[key].nullProgress = (this.loadingStack[key].nullProgress + 2) % 120;
-              const floatAsPercent = this.loadingStack[key].nullProgress;
-              this.loadingStack[key].progressElement.style(`background: conic-gradient(var(--loading-waiting-color) 0% ${floatAsPercent - 20}%, var(--loading-done-color) ${floatAsPercent - 20}% ${floatAsPercent}%, var(--loading-waiting-color) ${floatAsPercent}% 100%)`);
+            this.AddLoadingInfo = (info: LoadingForm) => {
+              this.loadingStack[info.id] = info;
+              this.stackKeys = Object.keys(this.loadingStack);
+              // 로딩 칸 전체
+              const thisLoading = p.createDiv();
+              this.loadingStack[info.id].element = thisLoading;
+              thisLoading.style("width: 100%; height: fit-content");
+              thisLoading.style("word-break: break-all");
+              thisLoading.style('background: var(--toast-background-color)');
+              thisLoading.style("border-radius: 32px");
+              thisLoading.style("padding: 8px");
+              thisLoading.style("color: white");
+              thisLoading.parent(this.parentDiv);
+              // 레이아웃용 flex-div
+              const flex_outlook = p.createDiv();
+              flex_outlook.style('display: flex; flex-direction: row;');
+              flex_outlook.parent(thisLoading);
+              // 이미지가 있는 경우 이미지 표시하기
+              const img = p.createImg(info.image, 'ld_img');
+              img.style('width: 32px; height: 32px;');
+              img.style('margin-left: 8px');
+              img.style('object-fit: cover');
+              img.style('border-radius: 24px;');
+              // 양식은 만들어두고 숨기기
+              if (!info.image) img.hide();
+              img.parent(flex_outlook);
+              // 텍스트 및 진행도 내용물 구성 틀
+              const contentForm = p.createDiv();
+              contentForm.style('display: flex; flex-direction: row;');
+              contentForm.style('gap: 4px');
+              contentForm.style('overflow: hidden');
+              contentForm.style('flex-grow: 1');
+              contentForm.style('align-items: center');
+              contentForm.style('margin-right: 8px');
+              contentForm.parent(flex_outlook);
+              // 지정된 텍스트
+              const message = p.createDiv(info.message || this.lang.text['TodoDetail']['WIP']);
+              message.style('margin-left: 16px');
+              message.style('flex-grow: 1');
+              message.style('overflow: hidden');
+              message.style('white-space: nowrap');
+              message.style('text-overflow: ellipsis');
+              info.messageElement = message;
+              message.parent(contentForm);
+              // 진행도 표시
+              const progress = p.createDiv();
+              progress.style('width: 24px; height: 24px;');
+              progress.style('flex-shrink: 0');
+              progress.style('border-radius: 50%');
+              const floatAsPercent = Math.floor(info.progress * 100) || 0;
+              progress.style(`background: conic-gradient(var(--loading-done-color) 0% ${floatAsPercent}%, var(--loading-waiting-color) ${floatAsPercent}% 100%)`);
+              info.progressElement = progress;
+              info.nullProgress = 0;
+              progress.parent(contentForm);
+              info.fade = 0;
             }
-            // 강제 종료가 예정되어있다면 초를 세고 종료시키기
-            if (this.loadingStack[key].forceEnd !== undefined && this.loadingStack[key].forceEnd > 0)
-              this.loadingStack[key].forceEnd -= 7;
-            // 로딩이 끝나면 FadeOut
-            if (this.loadingStack[key].forceEnd <= 0) {
-              if (this.loadingStack[key].fade > 0) {
-                this.loadingStack[key].fade -= .07;
-                this.loadingStack[key].element.style(`opacity: ${this.loadingStack[key].fade}`);
-                if (this.loadingStack[key].fade <= 0) {
+            this.AddLoadingInfo(info);
+            done(undefined);
+          }
+          p.draw = () => {
+            // 예약 대기열에 추가된 것을 실제 정보로 옮김
+            for (let i = this.queued.length - 1; i >= 0; i--) {
+              this.AddLoadingInfo(this.queued[i]);
+              this.queued.splice(i, 1);
+            }
+            // 투명도 조정 FadeIn
+            for (let key of this.stackKeys) {
+              // 진행도 정보가 없다면 회전시키기
+              if (this.loadingStack[key].progress === undefined) {
+                this.loadingStack[key].nullProgress = (this.loadingStack[key].nullProgress + 2) % 120;
+                const floatAsPercent = this.loadingStack[key].nullProgress;
+                this.loadingStack[key].progressElement.style(`background: conic-gradient(var(--loading-waiting-color) 0% ${floatAsPercent - 20}%, var(--loading-done-color) ${floatAsPercent - 20}% ${floatAsPercent}%, var(--loading-waiting-color) ${floatAsPercent}% 100%)`);
+              }
+              // 강제 종료가 예정되어있다면 초를 세고 종료시키기
+              if (this.loadingStack[key].forceEnd !== undefined && this.loadingStack[key].forceEnd > 0)
+                this.loadingStack[key].forceEnd -= 7;
+              // 로딩이 끝나면 FadeOut
+              if (this.loadingStack[key].forceEnd <= 0) {
+                if (this.loadingStack[key].fade > 0) {
+                  this.loadingStack[key].fade -= .07;
+                  this.loadingStack[key].element.style(`opacity: ${this.loadingStack[key].fade}`);
+                  if (this.loadingStack[key].fade <= 0) {
+                    this.loadingStack[key].element.remove();
+                    delete this.loadingStack[key];
+                    this.stackKeys = Object.keys(this.loadingStack);
+                  }
+                } else {
                   this.loadingStack[key].element.remove();
                   delete this.loadingStack[key];
                   this.stackKeys = Object.keys(this.loadingStack);
                 }
               } else {
-                this.loadingStack[key].element.remove();
-                delete this.loadingStack[key];
-                this.stackKeys = Object.keys(this.loadingStack);
-              }
-            } else {
-              // 처음에 시작할 때 FadeIn
-              if (this.loadingStack[key].fade < 1) {
-                this.loadingStack[key].fade += .07;
-                if (this.loadingStack[key].fade >= 1)
-                  this.loadingStack[key].fade = 1;
-                this.loadingStack[key].element.style(`opacity: ${this.loadingStack[key].fade}`);
+                // 처음에 시작할 때 FadeIn
+                if (this.loadingStack[key].fade < 1) {
+                  this.loadingStack[key].fade += .07;
+                  if (this.loadingStack[key].fade >= 1)
+                    this.loadingStack[key].fade = 1;
+                  this.loadingStack[key].element.style(`opacity: ${this.loadingStack[key].fade}`);
+                }
               }
             }
+            // 완벽한 유휴 상태 확인시 삭제
+            if (!this.stackKeys.length) RemoveLoading();
           }
-          // 완벽한 유휴 상태 확인시 삭제
-          if (!this.stackKeys.length) RemoveLoading();
-        }
-        /** p5 로딩 개체를 삭제함 */
-        let RemoveLoading = () => {
-          p.remove();
-          this.parentDiv = null;
-          this.CurrentLoading = null;
-          this.AddLoadingInfo = null;
-          this.stackKeys.length = 0;
-        }
+          /** p5 로딩 개체를 삭제함 */
+          let RemoveLoading = () => {
+            p.remove();
+            this.parentDiv = null;
+            this.CurrentLoading = null;
+            this.AddLoadingInfo = null;
+            this.stackKeys.length = 0;
+          }
+        });
       });
     } else if (this.AddLoadingInfo) this.AddLoadingInfo(info);
     else this.queued.push(info);
@@ -183,7 +186,7 @@ export class P5LoadingService {
   /** 특정 로딩 정보를 업데이트함, 해당 정보가 없다면 로딩을 새로 만들기
    * @param [only_update=false] 새로 생성하지 않고 업데이트만 하는 경우
    */
-  update(info: LoadingForm, only_update = false) {
+  async update(info: LoadingForm, only_update = false) {
     if (this.stackKeys.includes(info.id)) {
       if (info.forceEnd !== undefined) {
         this.loadingStack[info.id].forceEnd = info.forceEnd;
@@ -210,7 +213,7 @@ export class P5LoadingService {
           this.loadingStack[info.id].progressElement.style(`background: conic-gradient(var(--loading-done-color) 0% ${floatAsPercent}%, var(--loading-waiting-color) ${floatAsPercent}% 100%)`);
         }
       }
-    } else if (!only_update) this.create(info);
+    } else if (!only_update) await this.create(info);
   }
 
   /** 간단한 알림 흉내내기 */

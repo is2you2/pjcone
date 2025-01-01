@@ -462,7 +462,7 @@ export class NakamaService {
   /** 모든 세션을 토글 */
   async toggle_all_session() {
     if (this.TogglingSession) return;
-    const actId = `nakama_toggle_all_session`;
+    const actId = 'nakama_toggle_all_session';
     this.TogglingSession = true;
     if (this.statusBar.settings.groupServer == 'online') {
       this.logout_all_server();
@@ -470,7 +470,7 @@ export class NakamaService {
         text: this.lang.text['Nakama']['SessionLogout'],
       });
     } else {
-      this.p5loading.update({
+      await this.p5loading.update({
         id: actId,
         message: this.lang.text['Nakama']['PendingLogin'],
       });
@@ -480,7 +480,7 @@ export class NakamaService {
           this.p5loading.update({
             id: actId,
             message: this.lang.text['Nakama']['NoLoginServer'],
-          });
+          }, true);
       } catch (e) {
         console.log('테스트 서버 연결 오류: ', e);
       }
@@ -691,9 +691,7 @@ export class NakamaService {
     }
     if (!isExist) savedWebRTCData.push(info);
     await this.indexed.saveTextFileToUserPath(JSON.stringify(savedWebRTCData), 'servers/webrtc_server.json');
-    this.p5toast.show({
-      text: this.lang.text['Nakama']['SaveWebRTCServer'],
-    });
+    this.p5loading.toast(this.lang.text['Nakama']['SaveWebRTCServer']);
     return isExist;
   }
 
