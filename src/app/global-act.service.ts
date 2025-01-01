@@ -1948,7 +1948,7 @@ export class GlobalActService {
       type: 'text/plain' as 'image/png' | 'text/plain' | 'error',
       value: '' as any,
     };
-    const actId = `GetValueFromClipboard_${Date.now()}`;
+    const actId = `GetValueFromClipboard`;
     await this.p5loading.update({
       id: actId,
       message: this.lang.text['GlobalAct']['ClipboardPaste'],
@@ -1996,7 +1996,7 @@ export class GlobalActService {
    */
   async WriteValueToClipboard(type: string, value: any, filename?: string) {
     if (!value) return;
-    const actId = `WriteValueToClipboard_${Date.now()}`;
+    const actId = `WriteValueToClipboard`;
     this.p5loading.update({
       id: actId,
       message: this.lang.text['GlobalAct']['ClipboardCopy']
