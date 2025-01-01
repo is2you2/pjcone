@@ -3891,7 +3891,7 @@ export class NakamaService {
     const actId = `ForceSQL_write_${Date.now()}`;
     this.p5loading.update({
       id: actId,
-      message: this.lang.text['ChatRoom']['forceSQL'],
+      message: `${this.lang.text['ChatRoom']['forceSQL']}: ${this.lang.text['ChatRoom']['SendFile']}: ${_msg.content.filename}`,
     });
     if (!this.OnTransfer[_is_official][_target][msg.channel_id]) this.OnTransfer[_is_official][_target][msg.channel_id] = {};
     if (!this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id])
@@ -3949,6 +3949,11 @@ export class NakamaService {
    */
   async ReadStorage_From_channel(msg: any, path: string, _is_official: string, _target: string, startFrom = 0) {
     let _msg = JSON.parse(JSON.stringify(msg));
+    const actId = `ForceSQL_read_${Date.now()}`;
+    this.p5loading.update({
+      id: actId,
+      message: `${this.lang.text['ChatRoom']['forceSQL']}: ${this.lang.text['ChatRoom']['SavingFile']}: ${_msg.content.filename}`,
+    });
     if (!this.OnTransfer[_is_official][_target][msg.channel_id]) this.OnTransfer[_is_official][_target][msg.channel_id] = {};
     if (!this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id])
       this.OnTransfer[_is_official][_target][msg.channel_id][msg.message_id] = { index: _msg.content['partsize'] };
@@ -3959,6 +3964,10 @@ export class NakamaService {
     let isSuccessful = true;
     for (let i = startFrom, j = _msg.content['partsize']; i < j; i++)
       try {
+        this.p5loading.update({
+          id: actId,
+          progress: i / j,
+        });
         let v = await this.servers[_is_official][_target].client.readStorageObjects(
           this.servers[_is_official][_target].session, {
           object_ids: [{
@@ -3973,8 +3982,10 @@ export class NakamaService {
       } catch (e) {
         console.log('ReadStorage_From_channel: ', e);
         isSuccessful = false;
-        this.p5toast.show({
-          text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`,
+        this.p5loading.update({
+          id: actId,
+          message: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`,
+          progress: 0,
         });
         break;
       }
@@ -3985,9 +3996,6 @@ export class NakamaService {
         msg.content['text'] = [this.lang.text['ChatRoom']['SavingFile']];
         delete msg.content['transfer_index'];
         delete this.OnTransfer[_is_official][_target][_msg.channel_id][_msg.message_id]['index'];
-        this.p5toast.show({
-          text: `${this.lang.text['ChatRoom']['forceSQL']}: ${this.lang.text['ChatRoom']['SavingFile']}: ${_msg.content.filename}`,
-        });
         let GatheringInt8Array = [];
         let ByteSize = 0;
         await new Promise(async (done) => {
@@ -4030,6 +4038,7 @@ export class NakamaService {
       delete this.OnTransfer[_is_official][_target][_msg.channel_id][_msg.message_id];
       delete this.OnTransferMessage[_msg.message_id];
     }
+    this.p5loading.remove(actId);
     return isSuccessful;
   }
 
