@@ -1242,6 +1242,7 @@ export class NakamaService {
     if (!slient)
       this.p5loading.update({
         id: actId,
+        message: `${this.lang.text['TodoDetail']['RemoveTodo']}: ${targetInfo.title}`,
       });
     if (targetInfo.attach && targetInfo.attach.length)
       for (let i = 0, j = targetInfo.attach.length; i < j; i++) // 로컬 FFS 사용을 대비하여 중복 처리

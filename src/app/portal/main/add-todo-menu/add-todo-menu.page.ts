@@ -1409,6 +1409,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     const actId = `add_todo_save_${Date.now()}`;
     this.p5loading.update({
       id: actId,
+      message: `${this.lang.text['TodoDetail']['ApplyingTodo']}: ${this.userInput.title}`,
     });
     if (this.useVoiceRecording) await this.StopAndSaveVoiceRecording();
     let has_attach = Boolean(this.userInput.attach.length);
