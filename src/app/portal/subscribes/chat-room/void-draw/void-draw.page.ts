@@ -586,7 +586,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         p5ColorPicker.elt.oninput = () => {
           strokeRatio = Number(this.LineQuickWeight) || Number(this.LineDefaultWeight) || 1;
           let color = p5ColorPicker['color']().levels;
-          let color_hex = `#${p.hex(color[0], 2)}${p.hex(color[1], 2)}${p.hex(color[2], 2)}${p.hex(this.LineQuickTransparent, 2)}`;
+          let color_hex = `#${p.hex(color[0], 2)}${p.hex(color[1], 2)}${p.hex(color[2], 2)}`;
           ColorCell.childNodes[0].style.color = color_hex;
           this.colorPickRed = color[0];
           this.colorPickGreen = color[1];
@@ -613,7 +613,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           strokeRatio = Number(this.LineDefaultWeight) || 1;
           let color_hex = `#${p.hex((Number(this.colorPickRed) || 0), 2)}${p.hex((Number(this.colorPickGreen) || 0), 2)}${p.hex((Number(this.colorPickBlue) || 0), 2)}`;
           p5ColorPicker.value(color_hex);
-          let color_hex_with_alpha = `#${p.hex((Number(this.colorPickRed) || 0), 2)}${p.hex((Number(this.colorPickGreen) || 0), 2)}${p.hex((Number(this.colorPickBlue) || 0), 2)}${p.hex((Number(this.colorPickAlpha) || 0), 2)}`;
+          let color_hex_with_alpha = `#${p.hex((Number(this.colorPickRed) || 0), 2)}${p.hex((Number(this.colorPickGreen) || 0), 2)}${p.hex((Number(this.colorPickBlue) || 0), 2)}`;
           ColorCell.childNodes[0].style.color = color_hex_with_alpha;
         }
         this.ColorSliderUpdate();
