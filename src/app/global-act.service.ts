@@ -1943,12 +1943,12 @@ export class GlobalActService {
   /** 클립보드에 기록된 정보 불러오기 (이미지/텍스트)
    * @returns 이미지 또는 텍스트
    */
-  async GetValueFromClipboard() {
+  async GetValueFromClipboard(loadingId?: string) {
     let result = {
       type: 'text/plain' as 'image/png' | 'text/plain' | 'error',
       value: '' as any,
     };
-    const actId = `GetValueFromClipboard`;
+    const actId = loadingId || `GetValueFromClipboard`;
     await this.p5loading.update({
       id: actId,
       message: this.lang.text['GlobalAct']['ClipboardPaste'],

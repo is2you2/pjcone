@@ -478,8 +478,9 @@ export class ArcadePage implements OnInit {
 
   /** 이 탭에서 빠른 진입 링크 열람하기 */
   OpenQuickLink() {
+    const actId = `arcade_OpenQuickLink_${Date.now()}`;
     let contextAct = async () => {
-      const from_clipboard = await this.global.GetValueFromClipboard();
+      const from_clipboard = await this.global.GetValueFromClipboard(actId);
       switch (from_clipboard.type) {
         // 텍스트는 주소로 처리하기
         case 'text/plain':
@@ -491,13 +492,19 @@ export class ArcadePage implements OnInit {
             const init = this.global.CatchGETs(address) || {};
             try {
               const actJson = await this.nakama.AddressToQRCodeAct(init, true);
-              this.nakama.act_from_QRInfo(actJson, 'portal/arcade/');
+              await this.nakama.act_from_QRInfo(actJson, 'portal/arcade/');
             } catch (e) {
               console.log('open_url_link: ', e);
               this.p5toast.show({
-                text: `${this.lang.text['ChatRoom']['QRLinkFailed']}: ${e}`,
+                text: `${this.lang.text['AddGroup']['DiffFormat']}: ${e}`,
               });
             }
+          } else {
+            this.p5loading.update({
+              id: actId,
+              message: `${this.lang.text['AddGroup']['DiffFormat']}: ${address}`,
+              progress: 0,
+            });
           }
           break;
         // 이미지는 뷰어로 열기
