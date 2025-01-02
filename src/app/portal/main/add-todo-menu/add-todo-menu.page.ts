@@ -141,7 +141,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       },
       context: () => {
         let Quicklink = async () => {
-          let clipboard = await this.global.GetValueFromClipboard();
+          let clipboard = await this.global.GetValueFromClipboard('voiddraw');
           switch (clipboard.type) {
             // 이미지인 경우 파일 뷰어로 열기
             case 'image/png':
@@ -255,8 +255,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   async StopAndSaveVoiceRecording() {
     this.floatButton.RemoveFloatButton('addtodo-record');
-    const actId = `add_todo_saveVoiceRecording_${Date.now()}`;
-    this.p5loading.update({
+    const actId = 'add_todo';
+    await this.p5loading.update({
       id: actId,
       message: this.lang.text['AddPost']['SavingRecord']
     });
@@ -399,9 +399,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   async selected_blobFile_callback_act(blob: any, showLoading = true) {
-    const actId = `add_todo_add_attach_${Date.now()}`;
+    const actId = 'add_todo';
     if (showLoading)
-      this.p5loading.update({
+      await this.p5loading.update({
         id: actId,
         message: `${this.lang.text['ContentViewer']['OnLoadContent']}: ${blob.name}`,
       });
@@ -570,8 +570,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       has_thumbnail = await this.indexed.checkIfFileExist(`todo/${this.userInput.id}/thumbnail.png`);
     }
     if (this.userInput.attach.length) {
-      const actId = `add_todo_check_attch_${Date.now()}`;
-      this.p5loading.update({
+      const actId = 'add_todo';
+      await this.p5loading.update({
         id: actId,
         message: this.lang.text['AddPost']['SyncAttaches'],
         progress: 0,
@@ -922,15 +922,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         try {
           let result = await this.global.from_camera('tmp_files/todo/', {
             display_name: this.nakama.users.self['display_name'],
-          });
+          }, 'add_todo');
           result.thumbnail = this.sanitizer.bypassSecurityTrustUrl(result.base64);
           this.userInput.attach.push(result);
-        } catch (e) {
-          console.log('촬영 실패: ', e);
-          this.p5toast.show({
-            text: `${this.lang.text['GlobalAct']['ErrorFromCamera']}: ${e}`,
-          });
-        }
+        } catch (e) { }
         this.AddShortCut();
         this.auto_scroll_down(100);
         break;
@@ -988,7 +983,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         let pasted_url: string;
         try {
           try {
-            let clipboard = await this.global.GetValueFromClipboard();
+            let clipboard = await this.global.GetValueFromClipboard('add_todo');
             switch (clipboard.type) {
               case 'text/plain':
                 pasted_url = clipboard.value;
@@ -1062,8 +1057,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   /** 파일 선택시 로컬에서 반영 */
   async inputImageSelected(ev: any) {
     if (!ev.target.files.length) return;
-    const actId = `add_todo_file_input_${Date.now()}`;
-    this.p5loading.update({
+    const actId = 'add_todo';
+    await this.p5loading.update({
       id: actId,
       message: this.lang.text['ContentViewer']['OnLoadContent'],
     });
@@ -1407,8 +1402,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     }
     this.isButtonClicked = true;
     this.navCtrl.pop();
-    const actId = `add_todo_save_${Date.now()}`;
-    this.p5loading.update({
+    const actId = 'add_todo';
+    await this.p5loading.update({
       id: actId,
       message: `${this.lang.text['TodoDetail']['ApplyingTodo']}: ${this.userInput.title}`,
     });

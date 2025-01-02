@@ -149,7 +149,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
 
   async StopAndSaveVoiceRecording() {
     this.floatButton.RemoveFloatButton('sqaure-record');
-    const actId = `minimal_chat_saveVoiceRec_${Date.now()}`;
+    const actId = 'minimal_chat';
     this.p5loading.update({
       id: actId,
       message: this.lang.text['AddPost']['SavingRecord'],
@@ -246,14 +246,9 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     switch (ev.detail.value) {
       case 'camera':
         try {
-          let result = await this.global.from_camera('tmp_files/square/', { display_name: this.client.MyUserName });
+          let result = await this.global.from_camera('tmp_files/square/', { display_name: this.client.MyUserName }, 'minimal_chat');
           if (result) this.TrySendingAttach(result);
-        } catch (e) {
-          console.log('촬영 실패: ', e);
-          this.p5toast.show({
-            text: `${this.lang.text['GlobalAct']['ErrorFromCamera']}: ${e}`,
-          });
-        }
+        } catch (e) { }
         this.AddShortCut();
         this.auto_scroll_down(100);
         break;
@@ -391,7 +386,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
           LastDropAt = _Millis;
           clearTimeout(StartAct);
           StartAct = setTimeout(async () => {
-            const actId = `minimal_chat_dropAct_${Date.now()}`;
+            const actId = 'minimal_chat';
             if (!isMultipleSend) {
               this.p5loading.update({
                 id: actId,
@@ -406,7 +401,6 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                   text: this.lang.text['ChatRoom']['Send'],
                   handler: () => {
                     let SendingAct = async () => {
-                      const actId = `minimal_chat_dropAct_${Date.now()}`;
                       this.p5loading.update({
                         id: actId,
                         progress: 0,

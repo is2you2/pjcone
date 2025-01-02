@@ -601,7 +601,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** URL 링크인 경우 파일을 로컬에 다운받기 */
   async DownloadFileFromURL() {
-    const actId = `ionic_viewer_DownloadFileFromURL_${Date.now()}`;
+    const actId = 'ionicviewer';
     await this.p5loading.update({
       id: actId,
       message: this.lang.text['ContentViewer']['DownloadThisFile'],
@@ -2146,7 +2146,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   /** 저장 후 에디터 모드 종료 */
   async SaveText() {
     this.navCtrl.pop();
-    const actId = `ionic_viewer_SaveText_${Date.now()}`;
+    const actId = 'ionicviewer';
     await this.p5loading.update({
       id: actId,
       message: this.lang.text['ContentViewer']['saveText'],
@@ -2189,12 +2189,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 내장 그림판을 이용하여 그림 편집하기 */
   async modify_image() {
-    const actId = `ionic_viewer_modify_image_${Date.now()}`;
+    const actId = 'voiddraw';
     switch (this.FileInfo['viewer']) {
       case 'image': { // 이미지인 경우, url 일 때
         await this.p5loading.update({
           id: actId,
           message: `${this.lang.text['GlobalAct']['FromVoidDraw']}: ${this.FileInfo.filename}`,
+          image: this.FileURL || null,
         });
         try {
           let blob: Blob;
@@ -2236,7 +2237,15 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           this.image_info['path'] = 'tmp_files/modify_image.png';
           this.image_info['scrollHeight'] = this.p5SyntaxHighlightReader.scrollTop;
           this.p5SyntaxHighlightReader.style.height = 'fit-content';
-          let blob = await domtoimage.toBlob(this.p5SyntaxHighlightReader);
+          const blob = await domtoimage.toBlob(this.p5SyntaxHighlightReader);
+          const FileURL = URL.createObjectURL(blob);
+          this.p5loading.update({
+            id: actId,
+            image: FileURL
+          });
+          setTimeout(() => {
+            URL.revokeObjectURL(FileURL);
+          }, 100);
           await this.indexed.saveBlobToUserPath(blob, this.image_info['path']);
           if (this.global.PageDismissAct[this.navParams.dismiss])
             this.global.PageDismissAct[this.navParams.dismiss]({

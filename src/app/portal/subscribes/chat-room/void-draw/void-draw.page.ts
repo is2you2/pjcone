@@ -102,8 +102,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   async ionViewDidEnter() {
     this.global.StoreShortCutAct('void-draw')
     this.AddShortCut();
-    this.p5loading.update({
-      id: this.voidDrawId,
+    await this.p5loading.update({
+      id: 'voiddraw',
       message: this.lang.text['voidDraw']['UseThisImage'],
     }, true);
   }
@@ -360,7 +360,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                     data: {
                       name: tmp_filename,
                       img: base64,
-                      loadingCtrl: this.voidDrawId,
+                      loadingCtrl: 'voiddraw',
                     }
                   });
                 this.navCtrl.pop();
@@ -1568,8 +1568,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             filename: `voidDrawRemoveImage.${file_ext}`,
           }, {
             user_id: `tmp_${this.QRNavParams.channel}_${this.QRNavParams.user_id}`,
-          }, protocol, address, false, this.voidDrawId);
-          this.p5loading.remove(this.voidDrawId);
+          }, protocol, address, false, 'voiddraw');
+          this.p5loading.remove('voiddraw');
           this.webrtc.dataChannel.send(JSON.stringify({
             type: 'background',
             data: uploaded_address,
@@ -1678,7 +1678,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         return;
       }
       this.p5loading.update({
-        id: this.voidDrawId,
+        id: 'voiddraw',
       });
       this.WithoutSave = false;
       this.p5save_image();
@@ -1714,7 +1714,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   WithoutSave = true;
   ionViewDidLeave() {
     if (this.WithoutSave)
-      this.p5loading.remove(this.voidDrawId);
+      this.p5loading.remove('voiddraw');
   }
   // 아래, LinkQRPage 병합
   @ViewChild('AddrQRShare') AddrQRShare: IonModal;

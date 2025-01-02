@@ -568,15 +568,10 @@ export class AddPostPage implements OnInit, OnDestroy {
           let result = await this.global.from_camera('tmp_files/post/', {
             user_id: this.isOfficial == 'local' ? undefined : this.nakama.servers[this.isOfficial][this.target].session.user_id,
             display_name: this.nakama.users.self['display_name']
-          });
+          }, 'add_post');
           this.AddAttachTextForm();
           this.userInput.attachments.push(result);
-        } catch (e) {
-          console.log('촬영 실패: ', e);
-          this.p5toast.show({
-            text: `${this.lang.text['GlobalAct']['ErrorFromCamera']}: ${e}`,
-          });
-        }
+        } catch (e) { }
       }
     }, { // 5
       icon: 'mic-circle-outline',

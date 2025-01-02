@@ -176,7 +176,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.RemoveChannelBackgroundImage();
               return false;
             }
-            let fromClipboard = await this.global.GetValueFromClipboard();
+            const fromClipboard = await this.global.GetValueFromClipboard();
             switch (fromClipboard.type) {
               case 'image/png':
                 this.ChangeBackgroundImage({ target: { files: [fromClipboard.value] } });
@@ -241,7 +241,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       },
       context: () => {
         let Quicklink = async () => {
-          let clipboard = await this.global.GetValueFromClipboard();
+          const clipboard = await this.global.GetValueFromClipboard('voiddraw');
           switch (clipboard.type) {
             // 이미지인 경우 파일 뷰어로 열기
             case 'image/png':

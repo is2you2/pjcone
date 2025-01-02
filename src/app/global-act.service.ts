@@ -1777,6 +1777,10 @@ export class GlobalActService {
       result.filename = `Camera_${time.toLocaleString().replace(/[:|.|\/]/g, '_')}.${image.format}`;
       result.file_ext = image.format;
       result.base64 = 'data:image/jpeg;base64,' + image.base64String;
+      this.p5loading.update({
+        id: actId,
+        image: result.base64,
+      });
       result.thumbnail = this.sanitizer.bypassSecurityTrustUrl(result.base64);
       result.type = `image/${image.format}`;
       result.typeheader = 'image';
@@ -1798,6 +1802,11 @@ export class GlobalActService {
       result.blob = new Blob([raw], { type: result['type'] });
       result.size = result.blob.size;
     } catch (e) {
+      this.p5loading.update({
+        id: actId,
+        message: `${this.lang.text['GlobalAct']['ErrorFromCamera']}: ${e}`,
+        image: null,
+      });
       console.log('카메라 행동 실패: ', e);
       throw e;
     }
