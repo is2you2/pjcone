@@ -276,7 +276,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   initialize() {
     if (this.BlockReinit) return;
     this.MessageInfo = this.navParams.info;
-    this.OpenInChannelChat = this.MessageInfo['code'] !== undefined;
+    this.OpenInChannelChat = this.navParams['dismiss'] == 'chatroom-ionicviewer';
     this.CurrentViewId = this.MessageInfo.message_id;
     this.FileInfo = this.MessageInfo.content;
     this.ContentBox = document.getElementById(this.ContentBoxId);
@@ -2151,13 +2151,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     if (!this.NewTextFileName) this.NewTextFileName = this.FileInfo.filename;
     if (this.NewTextFileName.indexOf('.') < 0) this.NewTextFileName += '.txt';
     const new_name = this.NewTextFileName || this.FileInfo.filename;
-    await this.p5loading.update({
-      id: actId,
-      message: `${this.lang.text['ContentViewer']['saveText']}: ${new_name}`,
-    });
-    let file_ext = new_name.split('.').pop();
+    const file_ext = new_name.split('.').pop();
     this.FileInfo.type = file_ext == 'html' ? 'text/html' : this.FileInfo.type;
-    let blob = new Blob([this.p5TextArea.value], { type: this.FileInfo.type });
+    const blob = new Blob([this.p5TextArea.value], { type: this.FileInfo.type });
     blob['name'] = new_name;
     if (this.OpenInChannelChat) { // 채널 채팅에서 열람
       if (this.global.PageDismissAct[this.navParams.dismiss])
@@ -2169,7 +2165,11 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           }
         });
     } else { // 할 일에서는 직접 파일 수정 후 임시 교체
-      let tmp_path = `tmp_files/texteditor/${this.FileInfo.filename}`;
+      const tmp_path = `tmp_files/texteditor/${this.FileInfo.filename}`;
+      await this.p5loading.update({
+        id: actId,
+        message: `${this.lang.text['ContentViewer']['saveText']}: ${new_name}`,
+      });
       if (!this.FileInfo.path) this.FileInfo.path = tmp_path;
       await this.indexed.saveBlobToUserPath(blob, tmp_path);
       if (this.global.PageDismissAct[this.navParams.dismiss])
