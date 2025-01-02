@@ -411,7 +411,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           let pasted_url: string;
           try {
             try {
-              let clipboard = await this.global.GetValueFromClipboard();
+              let clipboard = await this.global.GetValueFromClipboard('add_post');
               switch (clipboard.type) {
                 case 'text/plain':
                   pasted_url = clipboard.value;
@@ -510,7 +510,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       },
       context: () => {
         let Quicklink = async () => {
-          let clipboard = await this.global.GetValueFromClipboard();
+          let clipboard = await this.global.GetValueFromClipboard('voiddraw');
           switch (clipboard.type) {
             // 이미지인 경우 파일 뷰어로 열기
             case 'image/png':
@@ -590,7 +590,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           if (req.value) { // 권한 있음
             this.global.useVoiceRecording = 'PostRecording';
             this.extended_buttons[5].icon = 'stop-circle-outline';
-            this.p5loading.toast(this.lang.text['ChatRoom']['StartVRecord']);
+            this.p5loading.toast(this.lang.text['ChatRoom']['StartVRecord'], 'add_post');
             this.p5StartVoiceTimer();
             await VoiceRecorder.startRecording();
             this.CreateFloatingVoiceTimeHistoryAddButton();
@@ -664,7 +664,7 @@ export class AddPostPage implements OnInit, OnDestroy {
 
   async StopAndSaveVoiceRecording() {
     this.floatButton.RemoveFloatButton('addpost-timer');
-    const actId = `add_post_saveVoiceRecording_${Date.now()}`;
+    const actId = 'add_post';
     this.p5loading.update({
       id: actId,
       message: this.lang.text['AddPost']['SavingRecord'],
@@ -707,6 +707,12 @@ export class AddPostPage implements OnInit, OnDestroy {
     const FileURL = URL.createObjectURL(blob);
     this.indexed.saveBlobToUserPath(blob, file.path);
     this.MainPostImage = FileURL;
+    this.p5loading.update({
+      id: 'add_post',
+      message: this.lang.text['AddPost']['SyncMainImage'],
+      image: this.MainPostImage,
+    });
+    this.p5loading.remove('add_post');
   }
 
   /** 파일이 선택되고 나면 */
@@ -772,6 +778,11 @@ export class AddPostPage implements OnInit, OnDestroy {
       file.thumbnail = await this.indexed.loadBlobFromUserPath(file.path, file.type);
     } catch (e) { }
     const FileURL = URL.createObjectURL(file.blob);
+    if (file.viewer == 'image')
+      this.p5loading.update({
+        id: 'add_post',
+        image: FileURL,
+      }, true);
     file['typeheader'] = file.blob.type.split('/')[0] || file.viewer;
     setTimeout(() => {
       URL.revokeObjectURL(FileURL);
@@ -806,7 +817,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         let pasted_url: string;
         try {
           try {
-            let clipboard = await this.global.GetValueFromClipboard();
+            let clipboard = await this.global.GetValueFromClipboard('add_post');
             switch (clipboard.type) {
               case 'text/plain':
                 pasted_url = clipboard.value;
@@ -875,7 +886,7 @@ export class AddPostPage implements OnInit, OnDestroy {
 
   /** 첨부파일 삭제하기 행동 */
   RemoveCurrentAttach(i: number) {
-    this.p5loading.toast(`${this.lang.text['AddPost']['RemoveAttach']}: ${this.userInput.attachments[i].filename}`);
+    this.p5loading.toast(`${this.lang.text['AddPost']['RemoveAttach']}: ${this.userInput.attachments[i].filename}`, 'add_post');
     this.userInput.attachments.splice(i, 1);
     // 첨부파일 링크 텍스트를 삭제하고, 재정렬시킴
     let sep_as_line = this.userInput.content.split('\n');
@@ -920,7 +931,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   /** 파일 첨부하기 */
   async inputFileSelected(ev: any) {
     if (ev.target?.files?.length) {
-      const actId = `add_post_file_added_${Date.now()}`;
+      const actId = 'add_post';
       let is_multiple_files = ev.target.files.length != 1;
       if (is_multiple_files) {
         this.p5loading.update({
