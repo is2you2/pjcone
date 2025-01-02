@@ -2147,14 +2147,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   async SaveText() {
     this.navCtrl.pop();
     const actId = 'ionicviewer';
-    await this.p5loading.update({
-      id: actId,
-      message: this.lang.text['ContentViewer']['saveText'],
-    });
     // 채널 채팅에서는 별도 파일첨부로 처리
     if (!this.NewTextFileName) this.NewTextFileName = this.FileInfo.filename;
     if (this.NewTextFileName.indexOf('.') < 0) this.NewTextFileName += '.txt';
-    let new_name = this.NewTextFileName || this.FileInfo.filename;
+    const new_name = this.NewTextFileName || this.FileInfo.filename;
+    await this.p5loading.update({
+      id: actId,
+      message: `${this.lang.text['ContentViewer']['saveText']}: ${new_name}`,
+    });
     let file_ext = new_name.split('.').pop();
     this.FileInfo.type = file_ext == 'html' ? 'text/html' : this.FileInfo.type;
     let blob = new Blob([this.p5TextArea.value], { type: this.FileInfo.type });
