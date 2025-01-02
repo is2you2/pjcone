@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { IonModal, LoadingController } from '@ionic/angular';
+import { IonModal } from '@ionic/angular';
 import { isPlatform } from 'src/app/app.component';
 import * as p5 from "p5";
 function import_p5sound() {
@@ -31,6 +31,7 @@ import basic from 'highlight.js/lib/languages/basic';
 import properties from 'highlight.js/lib/languages/properties';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as marked from "marked";
+import { P5LoadingService } from 'src/app/p5-loading.service';
 
 @Component({
   selector: 'app-ionic-viewer',
@@ -43,12 +44,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     private indexed: IndexedDBService,
     public lang: LanguageSettingService,
     private p5toast: P5ToastService,
-    private loadingCtrl: LoadingController,
     public global: GlobalActService,
     public nakama: NakamaService,
     private router: Router,
     private route: ActivatedRoute,
     private navCtrl: NavController,
+    private p5loading: P5LoadingService,
   ) { }
 
   ngOnDestroy() {
@@ -600,8 +601,11 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** URL 링크인 경우 파일을 로컬에 다운받기 */
   async DownloadFileFromURL() {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-    loading.present();
+    const actId = `ionic_viewer_DownloadFileFromURL_${Date.now()}`;
+    await this.p5loading.update({
+      id: actId,
+      message: this.lang.text['ContentViewer']['DownloadThisFile'],
+    });
     this.ContentChanging = true;
     try {
       let res = await fetch(this.FileInfo.url, { signal: this.cont.signal });
@@ -610,14 +614,22 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         await this.indexed.saveBlobToUserPath(blob, this.FileInfo.alt_path || this.FileInfo.path);
         this.CurrentFileSize = this.formatBytes(this.FileInfo['size'] || this.FileInfo['filesize'] || blob.size);
       } else throw res.statusText;
+      this.p5loading.update({
+        id: actId,
+        progress: 1,
+      });
     } catch (e) {
       console.log('다운받기 실패: ', e);
       this.p5toast.show({
         text: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`,
       });
+      this.p5loading.update({
+        id: actId,
+        message: `${this.lang.text['Nakama']['FailedDownload']}: ${e}`,
+      });
     }
     this.ContentChanging = false;
-    loading.dismiss();
+    this.p5loading.remove(actId);
   }
   /** p5.video 가 생성된 경우 여기에 기록 */
   CacheMediaObject: any;
@@ -2133,8 +2145,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   NewTextFileName = '';
   /** 저장 후 에디터 모드 종료 */
   async SaveText() {
-    let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-    loading.present();
+    this.navCtrl.pop();
+    const actId = `ionic_viewer_SaveText_${Date.now()}`;
+    await this.p5loading.update({
+      id: actId,
+      message: this.lang.text['ContentViewer']['saveText'],
+    });
     // 채널 채팅에서는 별도 파일첨부로 처리
     if (!this.NewTextFileName) this.NewTextFileName = this.FileInfo.filename;
     if (this.NewTextFileName.indexOf('.') < 0) this.NewTextFileName += '.txt';
@@ -2166,18 +2182,20 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           }
         });
     }
-    loading.dismiss();
-    this.navCtrl.pop();
+    this.p5loading.remove(actId);
   }
 
   image_info = {};
 
   /** 내장 그림판을 이용하여 그림 편집하기 */
   async modify_image() {
+    const actId = `ionic_viewer_modify_image_${Date.now()}`;
     switch (this.FileInfo['viewer']) {
       case 'image': { // 이미지인 경우, url 일 때
-        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-        loading.present();
+        await this.p5loading.update({
+          id: actId,
+          message: `${this.lang.text['GlobalAct']['FromVoidDraw']}: ${this.FileInfo.filename}`,
+        });
         try {
           let blob: Blob;
           this.image_info['path'] = this.FileInfo.alt_path || this.FileInfo.path || this.navParams.path;
@@ -2203,13 +2221,15 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
           });
         }
-        loading.dismiss();
+        this.p5loading.remove(actId);
       }
         break;
       case 'code':
       case 'text': // 텍스트를 이미지화하기
-        let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-        loading.present();
+        await this.p5loading.update({
+          id: actId,
+          message: `${this.lang.text['GlobalAct']['FromVoidDraw']}: ${this.FileInfo.filename}`,
+        });
         try {
           this.image_info['width'] = this.p5SyntaxHighlightReader.clientWidth;
           this.image_info['height'] = this.p5SyntaxHighlightReader.clientHeight;
@@ -2235,20 +2255,22 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             text: `${this.lang.text['ContentViewer']['CannotEditFile']}: ${e}`,
           });
         }
-        loading.dismiss();
+        this.p5loading.remove(actId);
         break;
       case 'video': // 마지막 프레임 저장하기
         try {
-          let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-          loading.present();
+          await this.p5loading.update({
+            id: actId,
+            message: `${this.lang.text['GlobalAct']['FromVoidDraw']}: ${this.FileInfo.filename}`,
+          });
           this.p5canvas.pixelDensity(1);
           this.CacheMediaObject.pause();
           this.CacheMediaObject['size'](this.image_info['width'], this.image_info['height']);
           let canvas = this.p5canvas.createCanvas(this.image_info['width'], this.image_info['height']);
           this.p5canvas.image(this.CacheMediaObject, 0, 0, this.p5canvas.width, this.p5canvas.height);
           let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+          this.p5loading.remove(actId);
           try {
-            loading.dismiss();
             this.image_info['path'] = 'tmp_files/modify_image.png';
             await this.indexed.saveBase64ToUserPath(base64, this.image_info['path']);
             if (this.global.PageDismissAct[this.navParams.dismiss])
@@ -2270,12 +2292,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         break;
       case 'blender': // 마지막 프레임 저장하기
         try {
-          let loading = await this.loadingCtrl.create({ message: this.lang.text['TodoDetail']['WIP'] });
-          loading.present();
+          await this.p5loading.update({
+            id: actId,
+            message: `${this.lang.text['GlobalAct']['FromVoidDraw']}: ${this.FileInfo.filename}`,
+          });
           this.p5canvas.pixelDensity(1);
           let base64 = this.global.BlenderCanvasInside['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+          this.p5loading.remove(actId);
           try {
-            loading.dismiss();
             this.image_info['path'] = 'tmp_files/modify_image.png';
             this.image_info['width'] = this.p5canvas.width;
             this.image_info['height'] = this.p5canvas.height;
