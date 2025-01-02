@@ -170,7 +170,9 @@ export class MainPage implements OnInit {
                     const doneTodo = async () => {
                       try {
                         await nakama.doneTodo(Todos[TodoKeys[i]].json);
-                      } catch (e) { }
+                      } catch (e) {
+                        console.log('할 일 완료 오류: ', e);
+                      }
                     }
                     doneTodo();
                   }
@@ -181,7 +183,9 @@ export class MainPage implements OnInit {
                     const removeTodo = async () => {
                       try {
                         await nakama.deleteTodoFromStorage(true, Todos[TodoKeys[i]].json);
-                      } catch (e) { }
+                      } catch (e) {
+                        console.log('할 일 삭제 오류: ', e);
+                      }
                     }
                     removeTodo();
                   }

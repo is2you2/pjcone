@@ -403,6 +403,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (showLoading)
       this.p5loading.update({
         id: actId,
+        message: `${this.lang.text['ContentViewer']['OnLoadContent']}: ${blob.name}`,
       });
     let this_file: FileInfo = this.global.selected_blobFile_callback_act(blob, 'tmp_files/todo/', {
       display_name: this.nakama.users.self['display_name'],
