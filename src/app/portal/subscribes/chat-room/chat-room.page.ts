@@ -123,9 +123,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (this.info['info']['img']) {
           delete this.info['info']['img'];
           this.indexed.removeFileFromUserPath(`servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
-          this.p5toast.show({
-            text: this.lang.text['ChatRoom']['LocalImageRemoved'],
-          });
+          this.p5loading.toast(this.lang.text['ChatRoom']['LocalImageRemoved'], 'local_img');
         } else document.getElementById('local_channel').click();
       },
       context: () => {
@@ -133,9 +131,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           if (this.info['info']['img']) {
             delete this.info['info']['img'];
             this.indexed.removeFileFromUserPath(`servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
-            this.p5toast.show({
-              text: this.lang.text['ChatRoom']['LocalImageRemoved'],
-            });
+            this.p5loading.toast(this.lang.text['ChatRoom']['LocalImageRemoved'], 'local_img');
           } else try {
             let fromClipboard = await this.global.GetValueFromClipboard();
             switch (fromClipboard.type) {
@@ -689,9 +685,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.info['info']['img'] = rv['canvas'].toDataURL();
             this.indexed.saveTextFileToUserPath(this.info['info']['img'],
               `servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
-            this.p5toast.show({
-              text: this.lang.text['ChatRoom']['LocalImageChanged'],
-            });
+            this.p5loading.toast(this.lang.text['ChatRoom']['LocalImageChanged'], 'local_img');
           });
         } else throw 'DataURL 주소가 아님';
       } catch (e) {
@@ -938,9 +932,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.info['info']['img'] = v['canvas'].toDataURL();
       this.indexed.saveTextFileToUserPath(this.info['info']['img'],
         `servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
-      this.p5toast.show({
-        text: this.lang.text['ChatRoom']['LocalImageChanged'],
-      });
+      this.p5loading.toast(this.lang.text['ChatRoom']['LocalImageChanged'], 'local_img');
     });
   }
 
@@ -1482,8 +1474,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       });
       FindExactAct();
     } else {
-      this.p5toast.show({
-        text: this.lang.text['ChatRoom']['LostOriginMsg'],
+      this.p5loading.update({
+        id: 'FindQoute',
+        message: this.lang.text['ChatRoom']['LostOriginMsg'],
+        progress: 0,
       });
       this.BlockAutoScrollDown = false;
     }
