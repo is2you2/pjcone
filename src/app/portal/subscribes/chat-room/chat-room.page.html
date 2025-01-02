@@ -395,8 +395,8 @@
                   (click)="make_ext_hidden()" [placeholder]="inputPlaceholder"></textarea>
               </td>
               <td>
-                <ion-button fill="clear" mode="md" (click)="send(false)" expand="block"
-                  [disabled]="block_send || !info['status'] || info['status'] == 'missing' || info['status'] == 'offline'">
+                <ion-button fill="clear" mode="md" (click)="send()" expand="block"
+                  [disabled]="!info['status'] || info['status'] == 'missing' || info['status'] == 'offline'">
                   <ion-icon name="send"></ion-icon>
                 </ion-button>
               </td>

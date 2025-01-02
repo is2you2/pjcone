@@ -893,7 +893,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   progress: i / j,
                 });
                 this.selected_blobFile_callback_act(ev.target.files[i]);
-                await this.send(undefined, actId);
+                this.send(undefined, actId);
               }
               this.noti.ClearNoti(7);
               this.p5loading.remove(actId);
@@ -1509,7 +1509,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         message: `${this.lang.text['ChatRoom']['MultipleSend']}: ${Drops[i].file.name}`,
         progress: i / j,
       });
-      await this.send(undefined, actId);
+      this.send(undefined, actId);
     }
     this.p5loading.remove(actId);
     setTimeout(() => {
@@ -2303,10 +2303,225 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     }
   }
 
-  block_send = false;
-  async send(with_key = false, actId?: string) {
+  /** **메시지 보내기 대기열**  
+   * 백그라운드 작업 위주로 진행되므로 보내려는 메시지가 큐에 잡혀있다가 순차적으로 보내져야한다  
+   * userInput 정보가 차곡차곡 쌓임
+   */
+  SendQueue = [];
+  /** 발송중인 경우 토글 */
+  isSendingQueue = false;
+  /** 큐에 잡힌 메시지를 순차적으로 보낸다 */
+  async SendQueuedMessages() {
+    if (this.isSendingQueue) return;
+    this.isSendingQueue = true;
+    while (this.SendQueue.length) {
+      const CurrentMessage = this.SendQueue.shift();
+      // 메시지 편집모드인 경우 이번 발송은 편집처럼 진행
+      try {
+        if (CurrentMessage.text.length > 600) // 메시지가 충분히 깁니다
+          throw '메시지가 충분히 깁니다';
+        if (CurrentMessage.IsMsgEditMode !== undefined) {
+          let edit_well = false;
+          CurrentMessage.IsMsgEditMode.content['msg'] = CurrentMessage.text;
+          CurrentMessage.IsMsgEditMode.content['edited'] = true;
+          if (CurrentMessage.IsMsgEditMode.content['thumbnail'])
+            CurrentMessage.IsMsgEditMode.content['thumbnail'] = CurrentMessage.IsMsgEditMode['thumbnail'];
+          CurrentMessage.IsMsgEditMode['update_time'] = new Date().toISOString();
+          if (!this.info['local']) { // 서버와 연결된 경우
+            try {
+              await this.nakama.servers[this.isOfficial][this.target].socket.updateChatMessage(this.info['id'], CurrentMessage.IsMsgEditMode.message_id, CurrentMessage.IsMsgEditMode.content);
+              edit_well = true;
+            } catch (e) {
+              console.log('메시지 편집 요청 오류: ', e);
+            }
+          } else edit_well = true;
+          if (!edit_well) return;
+          if (this.info['local']) {
+            CurrentMessage.IsMsgEditMode['code'] = 1;
+            this.nakama.content_to_hyperlink(CurrentMessage.IsMsgEditMode, this.isOfficial, this.target);
+            CurrentMessage.IsMsgEditMode['update_time'] = Date.now();
+            this.SendLocalMessage(CurrentMessage.IsMsgEditMode);
+          }
+          this.CancelEditText();
+          return;
+        }
+      } catch (e) {
+        this.CancelEditText();
+      }
+      this.isHidden = true;
+      if (CurrentMessage.text.length > 600) { // 메시지가 충분히 깁니다
+        // 텍스트 파일로 변환하여 전송합니다
+        const fileInfo = await this.LongTextMessageAsFile(CurrentMessage.text);
+        CurrentMessage.file = fileInfo;
+        CurrentMessage.text = '';
+      }
+      let result: FileInfo = {};
+      result['msg'] = CurrentMessage.text;
+      let FileAttach = false;
+      let isURL = false;
+      if (CurrentMessage.qoute) // 메시지 인용시
+        result['qoute'] = CurrentMessage.qoute;
+      if (CurrentMessage.file) { // 파일 첨부시
+        result['filename'] = CurrentMessage.file.filename;
+        result['file_ext'] = CurrentMessage.file.file_ext;
+        result['type'] = CurrentMessage.file.type;
+        try {
+          result['filesize'] = CurrentMessage.file.size || CurrentMessage.file.blob.size;
+          result['partsize'] = Math.ceil(result['filesize'] / FILE_BINARY_LIMIT);
+        } catch (e) {
+          result['url'] = CurrentMessage.file.url;
+          isURL = true;
+        }
+        result['content_creator'] = CurrentMessage.file.content_creator;
+        result['content_related_creator'] = CurrentMessage.file.content_related_creator;
+        if (!isURL && !this.info['local'] && this.useFirstCustomCDN != 2) try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
+          let address = this.nakama.servers[this.isOfficial][this.target].info.address;
+          let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
+          let targetname = `${this.info['group_id'] ||
+            (this.info['user_id_one'] == this.nakama.servers[this.isOfficial][this.target].session.user_id ? this.info['user_id_two'] : this.info['user_id_one'])
+            }_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`;
+          let server_info = this.nakama.servers[this.isOfficial][this.target].info;
+          let savedAddress = await this.global.upload_file_to_storage(CurrentMessage.file,
+            { user_id: targetname, apache_port: server_info.apache_port, cdn_port: server_info.cdn_port }, protocol, address, this.useFirstCustomCDN == 1, CurrentMessage['actId']);
+          isURL = Boolean(savedAddress);
+          if (!isURL) throw '링크 만들기 실패';
+          delete result['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
+          result['url'] = savedAddress;
+          this.noti.PushLocal({
+            id: 7,
+            title: this.lang.text['ChatRoom']['SendFile'],
+            body: CurrentMessage.file.filename,
+            smallIcon_ln: 'diychat',
+          }, this.noti.Current);
+        } catch (e) {
+          console.log('cdn 업로드 처리 실패: ', e);
+          this.noti.PushLocal({
+            id: 7,
+            title: this.lang.text['Nakama']['FailedUpload'],
+            body: `${CurrentMessage.file.filename}: ${e}`,
+            smallIcon_ln: 'diychat',
+          }, this.noti.Current);
+        }
+        FileAttach = true;
+        for (let i = 0, j = result['content_related_creator'].length; i < j; i++) {
+          delete result['content_related_creator'][i]['is_me'];
+          delete result['content_related_creator'][i]['timeDisplay'];
+          delete result['content_related_creator'][i]['various_display'];
+        }
+      }
+      result['local_comp'] = Math.random();
+      let tmp = { content: JSON.parse(JSON.stringify(result)) };
+      this.nakama.content_to_hyperlink(tmp, this.isOfficial, this.target);
+      if (this.info['local']) { // 로컬 채널 전용 행동 (셀프 보내기)
+        /** 업로드가 진행중인 메시지 개체 */
+        let local_msg_id = new Date().getTime().toString();
+        if (FileAttach && !isURL) { // 첨부 파일이 포함된 경우, 링크는 아닌 경우
+          try {
+            let CatchedAddress: string;
+            if (this.useFirstCustomCDN == 1)
+              CatchedAddress = await this.global.try_upload_to_user_custom_fs(CurrentMessage.file, `${this.info.id}_${this.nakama.users.self['display_name']}`);
+            if (CatchedAddress) {
+              delete tmp.content['path'];
+              delete tmp.content['partsize'];
+              tmp.content['url'] = CatchedAddress;
+            } else throw '업로드 실패';
+            this.noti.PushLocal({
+              id: 7,
+              title: this.lang.text['ChatRoom']['SendFile'],
+              body: CurrentMessage.file.filename,
+              smallIcon_ln: 'diychat',
+            }, this.noti.Current);
+          } catch (e) { // 사설 서버 업로드 실패시 직접 저장
+            let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${local_msg_id}.${CurrentMessage.file.file_ext}`;
+            this.noti.PushLocal({
+              id: 7,
+              title: this.lang.text['Nakama']['FailedUpload'],
+              body: `${CurrentMessage.file.filename}: ${e}`,
+              smallIcon_ln: 'diychat',
+            }, this.noti.Current);
+            await this.indexed.saveBlobToUserPath(CurrentMessage.file.blob, path);
+          }
+        }
+        let getNow = new Date().toISOString();
+        let msg = {
+          channel_id: this.info.id,
+          code: 0,
+          color: 'var(--offline-user-color)',
+          color_bg: 'var(--offline-user-bgcolor)',
+          ...tmp,
+          create_time: getNow,
+          update_time: getNow,
+          sender_id: 'local',
+          message_id: local_msg_id,
+          user_display_name: this.nakama.users.self['display_name'],
+          is_me: true,
+        };
+        this.SendLocalMessage(msg);
+        return;
+      } // 아래, 온라인 행동
+      this.sending_msg.push(tmp);
+      if (this.NeedScrollDown())
+        setTimeout(() => {
+          this.scroll_down_logs();
+        }, 100);
+      try {
+        setTimeout(() => {
+          this.ResizeTextArea();
+        }, 0);
+        let v = await this.nakama.servers[this.isOfficial][this.target].socket
+          .writeChatMessage(this.info['id'], result);
+        /** 업로드가 진행중인 메시지 개체 */
+        if (FileAttach) { // 첨부 파일이 포함된 경우, 링크는 아닌 경우
+          if (isURL) {
+            this.auto_open_thumbnail({
+              content: result,
+              message_id: v.message_id,
+            });
+          } else {
+            // 로컬에 파일을 저장
+            let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${CurrentMessage.file.file_ext}`;
+            this.indexed.saveBlobToUserPath(CurrentMessage.file.blob, path, () => {
+              this.auto_open_thumbnail({
+                content: result,
+                message_id: v.message_id,
+              });
+            });
+          }
+        }
+      } catch (e) {
+        switch (e.code) {
+          case 3: // 채널 연결 실패 (삭제된 경우)
+            this.p5toast.show({
+              text: this.lang.text['ChatRoom']['FailedToJoinChannel'],
+            });
+            break;
+          default: // 검토 필요 오류
+            console.log('오류 검토 필요: ', e);
+            this.p5toast.show({
+              text: `${this.lang.text['ChatRoom']['FailedToSend']}: ${typeof e == 'string' ? e : e.message}`,
+            });
+            break;
+        }
+        setTimeout(() => {
+          this.ResizeTextArea();
+        }, 0);
+        setTimeout(() => {
+          for (let i = this.sending_msg.length - 1; i >= 0; i--) {
+            if (this.sending_msg[i]['content']['local_comp'] == result['local_comp'])
+              this.sending_msg.splice(i, 1);
+          }
+        }, 1500);
+      }
+    }
+    this.isSendingQueue = false;
+  }
+
+  send(with_key = false, actId?: string) {
+    // 모바일 엔터키 동작 별도 행동처리, 줄 바꿈으로 행동함
     if (with_key && (isPlatform == 'Android' || isPlatform == 'iOS')) return;
+    // 발송 버튼에 포커스 되므로 즉시 입력칸에 포커싱
     this.userInputTextArea.focus();
+    // 메시지가 전혀 적혀있지 않다면 아무런 동작을 하지 않음
     if (!this.userInput.text.trim() && !this.userInput['file'])
       if (this.IsMsgEditMode === undefined || !this.IsMsgEditMode.content.filename) {
         setTimeout(() => {
@@ -2315,241 +2530,25 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }, 0);
         return;
       }
-    // 메시지 편집모드인 경우 이번 발송은 편집처럼 진행
-    try {
-      if (this.userInput.text.length > 600) // 메시지가 충분히 깁니다
-        throw '메시지가 충분히 깁니다';
-      if (this.IsMsgEditMode !== undefined) {
-        let edit_well = false;
-        this.IsMsgEditMode.content['msg'] = this.userInput.text;
-        this.IsMsgEditMode.content['edited'] = true;
-        if (this.IsMsgEditMode.content['thumbnail'])
-          this.IsMsgEditMode.content['thumbnail'] = this.IsMsgEditMode['thumbnail'];
-        this.IsMsgEditMode['update_time'] = new Date().toISOString();
-        delete this.IsMsgEditMode['msg_string'];
-        delete this.IsMsgEditMode['thumbnail'];
-        if (!this.info['local']) { // 서버와 연결된 경우
-          try {
-            await this.nakama.servers[this.isOfficial][this.target].socket.updateChatMessage(this.info['id'], this.IsMsgEditMode.message_id, this.IsMsgEditMode.content);
-            edit_well = true;
-          } catch (e) {
-            console.log('메시지 편집 요청 오류: ', e);
-          }
-        } else edit_well = true;
-        if (!edit_well) return;
-        if (this.info['local']) {
-          this.IsMsgEditMode['code'] = 1;
-          this.nakama.content_to_hyperlink(this.IsMsgEditMode, this.isOfficial, this.target);
-          this.IsMsgEditMode['update_time'] = Date.now();
-          this.SendLocalMessage(this.IsMsgEditMode);
-        }
-        this.CancelEditText();
-        setTimeout(() => {
-          this.userInput.text = '';
-          this.ResizeTextArea();
-        }, 0);
-        return;
-      }
-    } catch (e) {
-      this.CancelEditText();
-    }
-    if (this.block_send) return;
-    this.block_send = true;
-    // 입력칸 높이를 일시적으로 고정시킴
-    this.userInputTextArea.style.maxHeight = `${this.userInputTextArea.offsetHeight}px`;
+    // 큐에 넣기
+    this.SendQueue.push({
+      ...this.userInput,
+      actId: actId,
+      IsMsgEditMode: this.IsMsgEditMode,
+    });
     setTimeout(() => { // iOS 보정용
+      // 입력칸 초기화
+      this.userInput = {
+        file: undefined,
+        qoute: undefined,
+        text: '',
+      };
+      this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
       this.make_ext_hidden();
       this.userInputTextArea.focus();
+      this.ResizeTextArea();
+      this.SendQueuedMessages();
     }, 0);
-    this.isHidden = true;
-    let result: FileInfo = {};
-    result['msg'] = this.userInput.text;
-    let FileAttach = false;
-    let isURL = false;
-    let isLongText = '';
-    if (this.userInput.qoute) { // 메시지 인용시
-      delete this.userInput.qoute.url;
-      result['qoute'] = this.userInput.qoute;
-    }
-    if (this.userInput.file) { // 파일 첨부시
-      result['filename'] = this.userInput.file.filename;
-      result['file_ext'] = this.userInput.file.file_ext;
-      result['type'] = this.userInput.file.type;
-      try {
-        result['filesize'] = this.userInput.file.size || this.userInput.file.blob.size;
-        result['partsize'] = Math.ceil(result['filesize'] / FILE_BINARY_LIMIT);
-      } catch (e) {
-        result['url'] = this.userInput.file.url;
-        isURL = true;
-      }
-      if (result['msg'].length > 600) { // 메시지가 충분히 깁니다
-        isLongText = result['msg'];
-        delete result['msg'];
-      } else result['msg'] = result['msg'];
-      result['content_creator'] = this.userInput.file.content_creator;
-      result['content_related_creator'] = this.userInput.file.content_related_creator;
-      if (!isURL && !this.info['local'] && this.useFirstCustomCDN != 2) try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
-        let address = this.nakama.servers[this.isOfficial][this.target].info.address;
-        let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
-        let targetname = `${this.info['group_id'] ||
-          (this.info['user_id_one'] == this.nakama.servers[this.isOfficial][this.target].session.user_id ? this.info['user_id_two'] : this.info['user_id_one'])
-          }_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`;
-        let server_info = this.nakama.servers[this.isOfficial][this.target].info;
-        let savedAddress = await this.global.upload_file_to_storage(this.userInput.file,
-          { user_id: targetname, apache_port: server_info.apache_port, cdn_port: server_info.cdn_port }, protocol, address, this.useFirstCustomCDN == 1, actId);
-        isURL = Boolean(savedAddress);
-        if (!isURL) throw '링크 만들기 실패';
-        delete result['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
-        result['url'] = savedAddress;
-        this.noti.PushLocal({
-          id: 7,
-          title: this.lang.text['ChatRoom']['SendFile'],
-          body: this.userInput.file.filename,
-          smallIcon_ln: 'diychat',
-        }, this.noti.Current);
-      } catch (e) {
-        console.log('cdn 업로드 처리 실패: ', e);
-        this.noti.PushLocal({
-          id: 7,
-          title: this.lang.text['Nakama']['FailedUpload'],
-          body: `${this.userInput.file.filename}: ${e}`,
-          smallIcon_ln: 'diychat',
-        }, this.noti.Current);
-      }
-      FileAttach = true;
-      for (let i = 0, j = result['content_related_creator'].length; i < j; i++) {
-        delete result['content_related_creator'][i]['is_me'];
-        delete result['content_related_creator'][i]['timeDisplay'];
-        delete result['content_related_creator'][i]['various_display'];
-      }
-    } else { // 파일은 없지만 메시지가 충분히 깁니다
-      if (result['msg'].length > 600) {
-        this.LongTextMessageAsFile(result);
-        return;
-      }
-    }
-    result['local_comp'] = Math.random();
-    let tmp = { content: JSON.parse(JSON.stringify(result)) };
-    this.nakama.content_to_hyperlink(tmp, this.isOfficial, this.target);
-    if (this.info['local']) { // 로컬 채널 전용 행동 (셀프 보내기)
-      /** 업로드가 진행중인 메시지 개체 */
-      let local_msg_id = new Date().getTime().toString();
-      if (FileAttach && !isURL) { // 첨부 파일이 포함된 경우, 링크는 아닌 경우
-        try {
-          let CatchedAddress: string;
-          if (this.useFirstCustomCDN == 1)
-            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.file, `${this.info.id}_${this.nakama.users.self['display_name']}`);
-          if (CatchedAddress) {
-            delete tmp.content['path'];
-            delete tmp.content['partsize'];
-            tmp.content['url'] = CatchedAddress;
-          } else throw '업로드 실패';
-          this.noti.PushLocal({
-            id: 7,
-            title: this.lang.text['ChatRoom']['SendFile'],
-            body: this.userInput.file.filename,
-            smallIcon_ln: 'diychat',
-          }, this.noti.Current);
-        } catch (e) { // 사설 서버 업로드 실패시 직접 저장
-          let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${local_msg_id}.${this.userInput.file.file_ext}`;
-          this.noti.PushLocal({
-            id: 7,
-            title: this.lang.text['Nakama']['FailedUpload'],
-            body: `${this.userInput.file.filename}: ${e}`,
-            smallIcon_ln: 'diychat',
-          }, this.noti.Current);
-          await this.indexed.saveBlobToUserPath(this.userInput.file.blob, path);
-        }
-      }
-      delete this.userInput.file;
-      delete this.userInput.qoute;
-      if (isLongText) {
-        tmp['msg'] = isLongText;
-        this.LongTextMessageAsFile(tmp);
-      }
-      let getNow = new Date().toISOString();
-      let msg = {
-        channel_id: this.info.id,
-        code: 0,
-        color: 'var(--offline-user-color)',
-        color_bg: 'var(--offline-user-bgcolor)',
-        ...tmp,
-        create_time: getNow,
-        update_time: getNow,
-        sender_id: 'local',
-        message_id: local_msg_id,
-        user_display_name: this.nakama.users.self['display_name'],
-        is_me: true,
-      };
-      this.SendLocalMessage(msg);
-      this.userInputTextArea.style.maxHeight = null;
-      this.block_send = false;
-      return;
-    } // 아래, 온라인 행동
-    this.sending_msg.push(tmp);
-    if (this.NeedScrollDown())
-      setTimeout(() => {
-        this.scroll_down_logs();
-      }, 100);
-    try {
-      setTimeout(() => {
-        this.userInput.text = '';
-        this.ResizeTextArea();
-      }, 0);
-      let v = await this.nakama.servers[this.isOfficial][this.target].socket
-        .writeChatMessage(this.info['id'], result);
-      /** 업로드가 진행중인 메시지 개체 */
-      if (FileAttach) { // 첨부 파일이 포함된 경우, 링크는 아닌 경우
-        if (isURL) {
-          this.auto_open_thumbnail({
-            content: result,
-            message_id: v.message_id,
-          });
-        } else {
-          // 로컬에 파일을 저장
-          let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${this.userInput.file.file_ext}`;
-          this.indexed.saveBlobToUserPath(this.userInput.file.blob, path, () => {
-            this.auto_open_thumbnail({
-              content: result,
-              message_id: v.message_id,
-            });
-          });
-        }
-      }
-      delete this.userInput.file;
-      delete this.userInput.qoute;
-      this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
-      if (isLongText) {
-        result['msg'] = isLongText;
-        this.LongTextMessageAsFile(result);
-      }
-    } catch (e) {
-      switch (e.code) {
-        case 3: // 채널 연결 실패 (삭제된 경우)
-          this.p5toast.show({
-            text: this.lang.text['ChatRoom']['FailedToJoinChannel'],
-          });
-          break;
-        default: // 검토 필요 오류
-          console.log('오류 검토 필요: ', e);
-          this.p5toast.show({
-            text: `${this.lang.text['ChatRoom']['FailedToSend']}: ${typeof e == 'string' ? e : e.message}`,
-          });
-          break;
-      }
-      setTimeout(() => {
-        this.userInput.text = '';
-        this.ResizeTextArea();
-      }, 0);
-      setTimeout(() => {
-        for (let i = this.sending_msg.length - 1; i >= 0; i--) {
-          if (this.sending_msg[i]['content']['local_comp'] == result['local_comp'])
-            this.sending_msg.splice(i, 1);
-        }
-      }, 1500);
-    }
-    this.userInputTextArea.style.maxHeight = null;
-    this.block_send = false;
   }
 
   /** 하이퍼링크 열기 행동 후 포커스 빼기 */
@@ -2576,18 +2575,15 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     if (msg.code != 2) this.nakama.channels_orig[this.isOfficial][this.target][this.info.id]['last_comment'] = hasFile +
       (MsgText || msg.content['noti'] || '');
     setTimeout(() => {
-      this.userInput.text = '';
-      this.ResizeTextArea();
-      this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
       if (this.NeedScrollDown())
         this.scroll_down_logs();
     }, 0);
   }
 
   /** 바로 전달하기 어려운 긴 글은 파일화 시켜서 보내기 */
-  async LongTextMessageAsFile(result: any) {
-    let blob = new Blob([result['msg']]);
-    await this.indexed.saveBlobToUserPath(blob, `tmp_files/chatroom/${this.lang.text['ChatRoom']['LongText']}_${result['msg'].substring(0, 10)}.txt`);
+  async LongTextMessageAsFile(msg: string): Promise<FileInfo> {
+    let blob = new Blob([msg]);
+    await this.indexed.saveBlobToUserPath(blob, `tmp_files/chatroom/${this.lang.text['ChatRoom']['LongText']}_${msg.substring(0, 10)}.txt`);
     let this_file: FileInfo = {};
     this_file.blob = blob;
     this_file['content_related_creator'] = [{
@@ -2602,27 +2598,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       display_name: this.nakama.users.self['display_name'],
       various: 'long_text',
     };
-    let file_name_header_part = result['msg'].substring(0, 24);
+    let file_name_header_part = msg.substring(0, 24);
     this_file.path = `tmp_files/chatroom/${this.lang.text['ChatRoom']['LongText']}_${file_name_header_part}~.txt`;
     this_file.file_ext = 'txt';
     this_file.filename = `[${this.lang.text['ChatRoom']['LongText']}] ${file_name_header_part}~.txt`;
     this.global.set_viewer_category_from_ext(this_file);
     this_file.type = 'text/plain';
     this_file.typeheader = 'text';
-    delete result['msg'];
-    delete this.userInput.file;
-    delete this.userInput.qoute;
-    this.userInput.text = '';
-    this.ResizeTextArea();
-    this.inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
-    this.userInput.file = this_file;
     this.CancelEditText();
-    this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
-    this.create_selected_thumbnail();
-    this.p5toast.show({
-      text: this.lang.text['ChatRoom']['CreateAsTextFile'],
-    });
-    this.block_send = false;
+    this.p5loading.toast(this.lang.text['ChatRoom']['CreateAsTextFile']);
+    return this_file;
   }
 
   /** 메시지 상세 행동 조율용 변수, 이 변수 따라오면 아래 함수 보고 이해할 수 있음 */
@@ -2677,94 +2662,100 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       message: new IonicSafeString(result_form),
       buttons: [{
         text: this.lang.text['ChatRoom']['EditChat'],
-        handler: async () => {
-          this.userInput.qoute = undefined;
-          let copied = JSON.parse(JSON.stringify(msg));
-          copied['msg_string'] = MsgText;
-          this.IsMsgEditMode = copied;
-          // 파일이 첨부된 메시지라면 썸네일 보여주기
-          try {
-            let blob = await this.indexed.loadBlobFromUserPath(copied.content.path, copied.content.type);
-            let FileURL = URL.createObjectURL(blob);
-            copied['thumbnail'] = FileURL;
-          } catch (e) { }
-          this.userInput.text = orig_msg;
-          setTimeout(() => {
-            this.ResizeTextArea();
-            this.userInputTextArea.style.height = this.userInputTextArea.scrollHeight + 'px';
-          }, 0);
-          this.make_ext_hidden();
-          this.userInputTextArea.focus();
+        handler: () => {
+          const editAct = async () => {
+            this.userInput.qoute = undefined;
+            let copied = JSON.parse(JSON.stringify(msg));
+            copied['msg_string'] = MsgText;
+            this.IsMsgEditMode = copied;
+            // 파일이 첨부된 메시지라면 썸네일 보여주기
+            try {
+              let blob = await this.indexed.loadBlobFromUserPath(copied.content.path, copied.content.type);
+              let FileURL = URL.createObjectURL(blob);
+              copied['thumbnail'] = FileURL;
+            } catch (e) { }
+            this.userInput.text = orig_msg;
+            setTimeout(() => {
+              this.ResizeTextArea();
+              this.userInputTextArea.style.height = this.userInputTextArea.scrollHeight + 'px';
+            }, 0);
+            this.make_ext_hidden();
+            this.userInputTextArea.focus();
+          }
+          editAct();
         },
       }, {
         text: this.lang.text['UserFsDir']['Delete'],
         cssClass: 'redfont',
-        handler: async () => {
-          this.CancelEditText();
-          const actId = `remove_chat_msg_file_${this.info.id}_${Date.now()}`;
-          if (!this.info['local']) { // 서버와 연결된 채널인 경우
-            try {
-              await this.nakama.servers[this.isOfficial][this.target].socket.removeChatMessage(this.info['id'], msg.message_id);
-              if (FileURL) { // 첨부파일이 포함되어 있는 경우
-                this.p5loading.update({
-                  id: actId,
-                  message: this.lang.text['UserFsDir']['DeleteFile'],
-                });
-                let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
-                if (msg.content.url) { // 링크된 파일인 경우
-                  if (msg.content.url.indexOf(msg.group_id) >= 0 && msg.content.type !== '')
-                    this.global.remove_file_from_storage(msg.content.url, server_info);
-                } else { // 파트 업로드 파일인 경우
-                  for (let i = 0; i < msg.content['partsize']; i++) {
-                    try { // 파일이 없어도 순회 작업 진행
-                      await this.nakama.servers[this.isOfficial][this.target].client.deleteStorageObjects(
-                        this.nakama.servers[this.isOfficial][this.target].session, {
-                        object_ids: [{
-                          collection: `file_${msg.channel_id.replace(/[.]/g, '_')}`,
-                          key: `msg_${msg.message_id}_${i}`,
-                        }],
+        handler: () => {
+          const removeAct = async () => {
+            this.CancelEditText();
+            const actId = `remove_chat_msg_file_${this.info.id}_${Date.now()}`;
+            if (!this.info['local']) { // 서버와 연결된 채널인 경우
+              try {
+                await this.nakama.servers[this.isOfficial][this.target].socket.removeChatMessage(this.info['id'], msg.message_id);
+                if (FileURL) { // 첨부파일이 포함되어 있는 경우
+                  this.p5loading.update({
+                    id: actId,
+                    message: this.lang.text['UserFsDir']['DeleteFile'],
+                  });
+                  let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
+                  if (msg.content.url) { // 링크된 파일인 경우
+                    if (msg.content.url.indexOf(msg.group_id) >= 0 && msg.content.type !== '')
+                      this.global.remove_file_from_storage(msg.content.url, server_info);
+                  } else { // 파트 업로드 파일인 경우
+                    for (let i = 0; i < msg.content['partsize']; i++) {
+                      try { // 파일이 없어도 순회 작업 진행
+                        await this.nakama.servers[this.isOfficial][this.target].client.deleteStorageObjects(
+                          this.nakama.servers[this.isOfficial][this.target].session, {
+                          object_ids: [{
+                            collection: `file_${msg.channel_id.replace(/[.]/g, '_')}`,
+                            key: `msg_${msg.message_id}_${i}`,
+                          }],
+                        });
+                      } catch (e) { }
+                      this.p5loading.update({
+                        id: actId,
+                        message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${msg.content['filename']} (${msg.content['partsize'] - i})`,
+                        progress: i / msg.content['partsize'],
                       });
-                    } catch (e) { }
-                    this.p5loading.update({
-                      id: actId,
-                      message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${msg.content['filename']} (${msg.content['partsize'] - i})`,
-                      progress: i / msg.content['partsize'],
-                    });
-                  } // 서버에서 삭제되지 않았을 경우 파일을 남겨두기
+                    } // 서버에서 삭제되지 않았을 경우 파일을 남겨두기
+                  }
+                  let list = await this.indexed.GetFileListFromDB(path);
+                  for (let path of list)
+                    await this.indexed.removeFileFromUserPath(path);
                 }
+              } catch (e) {
+                console.error('채널 메시지 삭제 오류: ', e);
+              }
+            } else { // 로컬 채널인경우 첨부파일을 즉시 삭제
+              if (FileURL) {
+                let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
+                if (msg.content.url && msg.content.type !== '') // 링크된 파일인 경우
+                  this.global.remove_file_from_storage(msg.content.url, server_info);
                 let list = await this.indexed.GetFileListFromDB(path);
                 for (let path of list)
                   await this.indexed.removeFileFromUserPath(path);
               }
-            } catch (e) {
-              console.error('채널 메시지 삭제 오류: ', e);
             }
-          } else { // 로컬 채널인경우 첨부파일을 즉시 삭제
-            if (FileURL) {
-              let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
-              if (msg.content.url && msg.content.type !== '') // 링크된 파일인 경우
-                this.global.remove_file_from_storage(msg.content.url, server_info);
-              let list = await this.indexed.GetFileListFromDB(path);
-              for (let path of list)
-                await this.indexed.removeFileFromUserPath(path);
-            }
+            this.ViewableMessage.splice(index, 1);
+            for (let i = 0, j = this.messages.length; i < j; i++)
+              if (this.messages[i]['message_id'] == msg['message_id']) {
+                this.messages.splice(i, 1);
+                break;
+              }
+            msg['update_time'] = Date.now();
+            msg['code'] = 2;
+            this.SendLocalMessage(msg);
+            for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
+              this.modulate_chatmsg(i, this.ViewableMessage.length);
+            this.p5loading.update({
+              id: actId,
+              message: this.lang.text['ChatRoom']['MsgRemoved'],
+            });
+            this.p5loading.remove(actId);
           }
-          this.ViewableMessage.splice(index, 1);
-          for (let i = 0, j = this.messages.length; i < j; i++)
-            if (this.messages[i]['message_id'] == msg['message_id']) {
-              this.messages.splice(i, 1);
-              break;
-            }
-          msg['update_time'] = Date.now();
-          msg['code'] = 2;
-          this.SendLocalMessage(msg);
-          for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
-            this.modulate_chatmsg(i, this.ViewableMessage.length);
-          this.p5loading.update({
-            id: actId,
-            message: this.lang.text['ChatRoom']['MsgRemoved'],
-          });
-          this.p5loading.remove(actId);
+          removeAct();
         }
       }]
     };
