@@ -857,12 +857,14 @@ export class GlobalActService {
       case 'text':
         if (msg_content['url']) {
           let text = await fetch(msg_content['url'], { signal: cont?.signal }).then(r => r.text());
-          msg_content['text'] = text.split('\n');
+          msg_content['text'] = text.substring(0, 45).split('\n');
         } else new p5((p: p5) => {
           p.setup = () => {
             p.noCanvas();
             p.loadStrings(ObjectURL, v => {
-              msg_content['text'] = v;
+              const all_text = v.join('\n');
+              const reduce_len = all_text.substring(0, 45);
+              msg_content['text'] = reduce_len.split('\n');
               URL.revokeObjectURL(ObjectURL);
               p.remove();
             }, e => {
