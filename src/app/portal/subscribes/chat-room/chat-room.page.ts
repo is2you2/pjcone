@@ -143,7 +143,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             });
             this.p5loading.remove('local_img');
           } else try {
-            let fromClipboard = await this.global.GetValueFromClipboard();
+            let fromClipboard = await this.global.GetValueFromClipboard('local_img');
             switch (fromClipboard.type) {
               case 'image/png':
                 this.LocalChannelImageChanged({ target: { files: [fromClipboard.value] } });
@@ -730,7 +730,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let pasted_url = override.url;
           if (!this.userInput.file && pasted_url === undefined)
             try {
-              let clipboard = await this.global.GetValueFromClipboard();
+              let clipboard = await this.global.GetValueFromClipboard('chatroom_fileInput');
               switch (clipboard.type) {
                 case 'text/plain':
                   pasted_url = clipboard.value;
@@ -923,7 +923,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         });
         alert.present();
       } else {
-        const actId = `chatroom_fileInput_multiple_${this.info.id}_${Date.now()}`;
+        const actId = 'chatroom_fileInput';
         this.p5loading.update({
           id: actId,
         });
