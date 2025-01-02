@@ -189,7 +189,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             this.global.useVoiceRecording = 'TodoRecording';
             this.extended_buttons[4].icon = 'stop-circle-outline';
             this.extended_buttons[4].name = this.lang.text['ChatRoom']['VoiceStop'];
-            this.p5loading.toast(this.lang.text['ChatRoom']['StartVRecord']);
+            this.p5loading.toast(this.lang.text['ChatRoom']['StartVRecord'], 'add_todo');
             await VoiceRecorder.startRecording();
             this.CreateFloatingVoiceTimeHistoryAddButton();
           } else { // 권한이 없다면 권한 요청 및 UI 복구
@@ -404,14 +404,20 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       await this.p5loading.update({
         id: actId,
         message: `${this.lang.text['ContentViewer']['OnLoadContent']}: ${blob.name}`,
+        image: null,
       });
     let this_file: FileInfo = this.global.selected_blobFile_callback_act(blob, 'tmp_files/todo/', {
       display_name: this.nakama.users.self['display_name'],
     });
     await this.checkHasSameFileAndRename(this_file);
     const FileURL = URL.createObjectURL(blob);
-    if (this_file['viewer'] == 'image')
+    if (this_file['viewer'] == 'image') {
       this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
+      this.p5loading.update({
+        id: actId,
+        image: FileURL,
+      });
+    }
     try {
       await this.indexed.saveBlobToUserPath(blob, this_file['path']);
       this.userInput.attach.push(this_file);
@@ -450,6 +456,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     if (!this.isStoreAtChangable) return false;
     let LoadAct = async () => {
       const FileURL = URL.createObjectURL(_FileInfo.blob);
+      await this.p5loading.update({
+        id: 'voiddraw',
+        image: FileURL,
+      });
       new p5((p: p5) => {
         p.setup = () => {
           p.noCanvas();

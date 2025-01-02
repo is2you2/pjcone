@@ -124,11 +124,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           delete this.info['info']['img'];
           this.indexed.removeFileFromUserPath(`servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
           this.p5loading.update({
-            id: 'local_img',
+            id: 'chatroom',
             message: this.lang.text['ChatRoom']['LocalImageRemoved'],
             image: null,
           });
-          this.p5loading.remove('local_img');
+          this.p5loading.remove('chatroom');
         } else document.getElementById('local_channel').click();
       },
       context: () => {
@@ -137,13 +137,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             delete this.info['info']['img'];
             this.indexed.removeFileFromUserPath(`servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
             this.p5loading.update({
-              id: 'local_img',
+              id: 'chatroom',
               message: this.lang.text['ChatRoom']['LocalImageRemoved'],
               image: null,
             });
-            this.p5loading.remove('local_img');
+            this.p5loading.remove('chatroom');
           } else try {
-            let fromClipboard = await this.global.GetValueFromClipboard('local_img');
+            let fromClipboard = await this.global.GetValueFromClipboard('chatroom');
             switch (fromClipboard.type) {
               case 'image/png':
                 this.LocalChannelImageChanged({ target: { files: [fromClipboard.value] } });
@@ -176,7 +176,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.RemoveChannelBackgroundImage();
               return false;
             }
-            const fromClipboard = await this.global.GetValueFromClipboard();
+            const fromClipboard = await this.global.GetValueFromClipboard('chatroom');
             switch (fromClipboard.type) {
               case 'image/png':
                 this.ChangeBackgroundImage({ target: { files: [fromClipboard.value] } });
@@ -213,6 +213,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               try {
                 if (this.userInput.file.url)
                   this.userInput.file.blob = await fetch(this.userInput.file.url, { signal: this.cont.signal }).then(r => r.blob());
+                const FileURL = URL.createObjectURL(this.userInput.file.blob);
+                await this.p5loading.update({
+                  id: 'voiddraw',
+                  image: FileURL,
+                });
+                setTimeout(() => {
+                  URL.revokeObjectURL(FileURL);
+                }, 100);
                 let tmp_work_path = `tmp_files/chatroom/attached.${this.userInput.file.file_ext}`;
                 await this.indexed.saveBlobToUserPath(this.userInput.file.blob, tmp_work_path);
                 let thumbnail_image = document.getElementById('ChatroomSelectedImage');
@@ -336,7 +344,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.extended_buttons[7].name = this.lang.text['ChatRoom']['VoiceStop'];
             await VoiceRecorder.startRecording();
             this.CreateFloatingVoiceTimeHistoryAddButton();
-            this.p5loading.toast(this.lang.text['ChatRoom']['StartVRecord']);
+            this.p5loading.toast(this.lang.text['ChatRoom']['StartVRecord'], 'chatroom');
           } else await VoiceRecorder.requestAudioRecordingPermission();
         } else { // 녹음 종료
           this.StopAndSaveVoiceRecording();
@@ -612,7 +620,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   async StopAndSaveVoiceRecording() {
     this.floatButton.RemoveFloatButton('chatroom-record');
-    const actId = `RecordingVoice_${this.info.id}_${Date.now()}`;
+    const actId = 'chatroom';
     this.p5loading.update({
       id: actId,
       message: this.lang.text['AddPost']['SavingRecord'],
@@ -696,11 +704,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.indexed.saveTextFileToUserPath(this.info['info']['img'],
               `servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
             this.p5loading.update({
-              id: 'local_img',
+              id: 'chatroom',
               message: this.lang.text['ChatRoom']['LocalImageChanged'],
               image: this.info['info']['img'],
             });
-            this.p5loading.remove('local_img');
+            this.p5loading.remove('chatroom');
           });
         } else throw 'DataURL 주소가 아님';
       } catch (e) {
@@ -730,7 +738,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let pasted_url = override.url;
           if (!this.userInput.file && pasted_url === undefined)
             try {
-              let clipboard = await this.global.GetValueFromClipboard('chatroom_fileInput');
+              let clipboard = await this.global.GetValueFromClipboard('chatroom');
               switch (clipboard.type) {
                 case 'text/plain':
                   pasted_url = clipboard.value;
@@ -889,7 +897,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           buttons: [{
             text: this.lang.text['ChatRoom']['Send'],
             handler: async () => {
-              const actId = `chatroom_fileInput_${this.info.id}_${Date.now()}`;
+              const actId = 'chatroom';
               this.p5loading.update({
                 id: actId,
                 message: this.lang.text['ChatRoom']['MultipleSend'],
@@ -923,7 +931,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         });
         alert.present();
       } else {
-        const actId = 'chatroom_fileInput';
+        const actId = 'chatroom';
         this.p5loading.update({
           id: actId,
         });
@@ -948,11 +956,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.indexed.saveTextFileToUserPath(this.info['info']['img'],
         `servers/${this.info['server']['isOfficial']}/${this.info['server']['target']}/groups/${this.info['id']}.img`);
       this.p5loading.update({
-        id: 'local_img',
+        id: 'chatroom',
         message: this.lang.text['ChatRoom']['LocalImageChanged'],
         image: this.info['info']['img'],
       });
-      this.p5loading.remove('local_img');
+      this.p5loading.remove('chatroom');
     });
   }
 
@@ -1239,7 +1247,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           StartAct = setTimeout(async () => {
             if (this.WillLeave) return;
             if (!isMultipleSend) {
-              const actId = `filedrop_${this.info.id}_${Date.now()}`;
+              const actId = 'chatroom';
               this.p5loading.update({
                 id: actId,
               });
@@ -1589,6 +1597,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       return;
     }
     const FileURL = URL.createObjectURL(this.userInput.file.blob);
+    await this.p5loading.update({
+      id: 'chatroom',
+      message: `${this.lang.text['ContentViewer']['OnLoadContent']}: ${this.userInput.file.blob.name}`,
+      image: null,
+    });
+    if (this.userInput.file.viewer == 'image')
+      this.p5loading.update({
+        id: 'chatroom',
+        image: FileURL,
+      });
+    this.p5loading.remove('chatroom');
     this.userInput.file['typeheader'] = this.userInput.file.blob.type.split('/')[0] || this.userInput.file.viewer;
     setTimeout(() => {
       URL.revokeObjectURL(FileURL);

@@ -106,6 +106,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       id: 'voiddraw',
       message: this.lang.text['voidDraw']['UseThisImage'],
     }, true);
+    this.p5loading.remove('voiddraw');
   }
 
   AddShortCut() {
@@ -366,7 +367,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                 this.navCtrl.pop();
               } else {
                 // 그냥 지금 그림 저장하기
-                this.p5loading.toast(`${this.lang.text['ContentViewer']['DownloadThisFile']}: ${tmp_filename}`);
+                this.p5loading.toast(`${this.lang.text['ContentViewer']['DownloadThisFile']}: ${tmp_filename}`, 'voiddraw');
                 let link = sp.createA(base64, null);
                 link.elt.download = tmp_filename;
                 link.hide();
