@@ -373,7 +373,8 @@ export class InstantCallPage implements OnInit, OnDestroy {
     this.PageOut = true;
     if (this.global.WaitingConnect || this.global.InitEnd) {
       let float_button = this.floatbutton.AddFloatButton('instant-call', 'call-outline');
-      float_button.mouseClicked(() => {
+      float_button?.mouseClicked(() => {
+        this.global.SelectArcadeTab();
         this.navCtrl.navigateForward('portal/arcade/instant-call', {
           animation: iosTransitionAnimation,
         });

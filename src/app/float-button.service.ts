@@ -19,6 +19,10 @@ export class FloatButtonService {
   private AddButtonQueue: Function;
   /** 이 버튼을 제거하고 제거 애니메이션 재생 */
   private RemoveButtonQueue: Function;
+  /** 마지막에 삭제하려는 버튼 정보 표시 */
+  private LastRemoveKey: string;
+  /** 마지막에 지우게될 버튼 개체 기억 */
+  private LastRemoveQueue: p5.Element;
 
   /** float-button 생성하기 */
   private CreateFloatButton() {
@@ -31,7 +35,6 @@ export class FloatButtonService {
         p.loop();
       }
       let LastAddedQueue: p5.Element;
-      let LastRemoveQueue: p5.Element;
       let AddButtonAnim = (button: p5.Element) => {
         LastAddedQueue = button;
         button.style('transform-origin', '50% 50%');
@@ -40,11 +43,10 @@ export class FloatButtonService {
         AnimLerp = 0;
         p.loop();
       }
-      let RemoveButtonAnim = (button: p5.Element) => {
-        LastRemoveQueue = button;
-        button.style('transform-origin', '50% 50%');
-        button.style('opacity', '1');
-        button.style('transform', 'scale(1)')
+      let RemoveButtonAnim = () => {
+        this.LastRemoveQueue.style('transform-origin', '50% 50%');
+        this.LastRemoveQueue.style('opacity', '1');
+        this.LastRemoveQueue.style('transform', 'scale(1)')
         AnimLerp = 0;
         p.loop();
       }
@@ -66,9 +68,11 @@ export class FloatButtonService {
           AnimLerp = 1;
           if (LastAddedQueue)
             LastAddedQueue = null;
-          if (LastRemoveQueue) {
-            LastRemoveQueue.remove();
-            LastRemoveQueue = null;
+          if (this.LastRemoveQueue) {
+            this.LastRemoveQueue.remove();
+            this.LastRemoveQueue = null;
+            this.LastRemoveKey = null;
+            this.RemoveLock = false;
             if (!this.ArrayKeys.length && this.p5canvas)
               this.p5canvas.remove();
           }
@@ -78,9 +82,9 @@ export class FloatButtonService {
           LastAddedQueue.style('opacity', `${AnimLerp}`);
           LastAddedQueue.style('transform', `scale(${asSineGraph(AnimLerp)})`);
         }
-        if (LastRemoveQueue) {
-          LastRemoveQueue.style('opacity', `${1 - AnimLerp}`);
-          LastRemoveQueue.style('transform', `scale(${asSineGraph(1 - AnimLerp)})`);
+        if (this.LastRemoveQueue) {
+          this.LastRemoveQueue.style('opacity', `${1 - AnimLerp}`);
+          this.LastRemoveQueue.style('transform', `scale(${asSineGraph(1 - AnimLerp)})`);
         }
         for (let i = AnimatedButton.length - 1; i >= 0; i--) {
           let right = p.lerp(AnimatedButton[i].start, AnimatedButton[i].end, asSineGraph(AnimLerp))
@@ -95,6 +99,7 @@ export class FloatButtonService {
    * @returns 생성된 FloatButton: p5.Element
    */
   AddFloatButton(key: string, icon: string) {
+    if (this.LastRemoveKey == key) return;
     // 캔버스가 없으면 생성
     if (!this.p5canvas)
       this.CreateFloatButton();
@@ -124,9 +129,16 @@ export class FloatButtonService {
     return float_button;
   }
 
+  /** 버튼 삭제 관리 */
+  RemoveLock = false;
   RemoveFloatButton(key: string) {
     // 버튼 개체 삭제
     if (!this.Buttons[key]) return;
+    if (this.RemoveLock) return;
+    this.RemoveLock = true;
+    this.LastRemoveKey = key;
+    this.LastRemoveQueue = this.Buttons[key];
+    delete this.Buttons[key];
     // 남아있는 버튼 개체들 재조정
     let RemovedIndex = -1;
     for (let i = this.ArrayKeys.length - 1; i >= 0; i--) {
@@ -141,7 +153,7 @@ export class FloatButtonService {
       }
       // 해당 키 정보 삭제하기
       if (this.ArrayKeys[i] == key) {
-        this.RemoveButtonQueue(this.Buttons[this.ArrayKeys[i]]);
+        this.RemoveButtonQueue();
         this.ArrayKeys.splice(i, 1);
         RemovedIndex = i;
       }
