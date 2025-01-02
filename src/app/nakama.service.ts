@@ -3137,17 +3137,19 @@ export class NakamaService {
     let isOfficial = info['server']['isOfficial'];
     let target = info['server']['target'];
     const actId = loadingId || `nakama_RemovePost_${Date.now()}`;
-    if (!slient) this.p5loading.update({
-      id: actId,
-      message: this.lang.text['PostViewer']['RemovePost'],
-    });
+    if (!slient)
+      await this.p5loading.update({
+        id: actId,
+        message: this.lang.text['PostViewer']['RemovePost'],
+      });
     let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/posts/${info['creator_id']}/${info['id']}`);
     for (let i = 0, j = list.length; i < j; i++) {
-      if (!slient) this.p5loading.update({
-        id: actId,
-        message: `${this.lang.text['PostViewer']['RemovePost']}: ${list[i]}`,
-        progress: i / j,
-      });
+      if (!slient)
+        this.p5loading.update({
+          id: actId,
+          message: `${this.lang.text['PostViewer']['RemovePost']}: ${list[i]}`,
+          progress: i / j,
+        });
       await this.indexed.removeFileFromUserPath(list[i]);
     }
     if (!slient)
@@ -3206,6 +3208,11 @@ export class NakamaService {
       if (!info.server.local)
         if (!slient) await this.sync_remove_file(info['id'], isOfficial, target, 'server_post', '', `${info['id']}`);
     } catch (e) { }
+    if (!slient)
+      this.p5loading.update({
+        id: actId,
+        message: `${this.lang.text['PostViewer']['RemovePost']}: ${info['title']}`,
+      });
     if (!slient && !loadingId) this.p5loading.remove(actId);
     try {
       delete this.posts_orig[isOfficial][target][info['creator_id']][info['id']];

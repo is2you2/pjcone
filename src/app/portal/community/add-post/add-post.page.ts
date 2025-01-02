@@ -1076,9 +1076,9 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.isApplyPostData = true;
     this.navCtrl.navigateBack('portal/community');
     const actId = `postData_${Date.now()}`;
-    this.p5loading.update({
+    await this.p5loading.update({
       id: actId,
-      message: `${this.lang.text['AddPost']['WIP']}: ${this.userInput.title}`
+      message: `${this.lang.text['AddPost']['WIP']}: ${this.userInput.title}`,
     });
     // 음성 녹음중이라면 녹음을 마무리하여 파일로 저장한 후 게시물 저장처리 진행
     if (this.useVoiceRecording) await this.StopAndSaveVoiceRecording();
@@ -1132,6 +1132,10 @@ export class AddPostPage implements OnInit, OnDestroy {
       if (this.OriginalInfo) // 기존 게시물 정보 삭제
         await this.nakama.RemovePost(this.OriginalInfo, undefined, actId);
     }
+    this.p5loading.update({
+      id: actId,
+      message: `${this.lang.text['AddPost']['WIP']}: ${this.userInput.title}`,
+    });
     try {
       // 게시물 아이디 구성하기
       if (!this.isModify || this.isServerChanged) { // 새 게시물 작성시에만 생성
