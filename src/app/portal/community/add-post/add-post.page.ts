@@ -878,6 +878,34 @@ export class AddPostPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 첨부파일 삭제하기 행동 */
+  RemoveCurrentAttach(i: number) {
+    this.p5loading.toast(`${this.lang.text['AddPost']['RemoveAttach']}: ${this.userInput.attachments[i].filename}`);
+    this.userInput.attachments.splice(i, 1);
+    // 첨부파일 링크 텍스트를 삭제하고, 재정렬시킴
+    let sep_as_line = this.userInput.content.split('\n');
+    for (let k = sep_as_line.length - 1; k >= 0; k--) {
+      // 첨부파일인지 체크
+      let is_attach = false;
+      let content_len = sep_as_line[k].length - 1;
+      let index = 0;
+      try {
+        index = Number(sep_as_line[k].substring(1, content_len));
+        is_attach = sep_as_line[k].charAt(0) == '{' && sep_as_line[k].charAt(content_len) == '}' && !isNaN(index);
+      } catch (e) { }
+      if (is_attach) {
+        if (i == index) { // 삭제된 파일에 해당하는 줄은 삭제
+          if (sep_as_line[k + 1] == '') try {
+            sep_as_line.splice(k + 1, 1);
+          } catch (e) { }
+          sep_as_line.splice(k, 1);
+        } else if (i < index) // 해당 파일보다 큰 순번은 숫자를 줄여 정렬처리
+          sep_as_line[k] = `{${index - 1}}`;
+      }
+    }
+    this.userInput.content = sep_as_line.join('\n');
+  }
+
   /** 첨부파일 우클릭하여 삭제 */
   PostAttachContextMenu(i: number) {
     this.alertCtrl.create({
@@ -886,30 +914,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       buttons: [{
         text: this.lang.text['UserFsDir']['RemoveApply'],
         handler: () => {
-          this.p5loading.toast(`${this.lang.text['AddPost']['RemoveAttach']}: ${this.userInput.attachments[i].filename}`);
-          this.userInput.attachments.splice(i, 1);
-          // 첨부파일 링크 텍스트를 삭제하고, 재정렬시킴
-          let sep_as_line = this.userInput.content.split('\n');
-          for (let k = sep_as_line.length - 1; k >= 0; k--) {
-            // 첨부파일인지 체크
-            let is_attach = false;
-            let content_len = sep_as_line[k].length - 1;
-            let index = 0;
-            try {
-              index = Number(sep_as_line[k].substring(1, content_len));
-              is_attach = sep_as_line[k].charAt(0) == '{' && sep_as_line[k].charAt(content_len) == '}' && !isNaN(index);
-            } catch (e) { }
-            if (is_attach) {
-              if (i == index) { // 삭제된 파일에 해당하는 줄은 삭제
-                if (sep_as_line[k + 1] == '') try {
-                  sep_as_line.splice(k + 1, 1);
-                } catch (e) { }
-                sep_as_line.splice(k, 1);
-              } else if (i < index) // 해당 파일보다 큰 순번은 숫자를 줄여 정렬처리
-                sep_as_line[k] = `{${index - 1}}`;
-            }
-          }
-          this.userInput.content = sep_as_line.join('\n');
+          this.RemoveCurrentAttach(i);
         },
         cssClass: 'redfont',
       }]
@@ -1255,8 +1260,17 @@ export class AddPostPage implements OnInit, OnDestroy {
                 this.userInput.attachments[i]['url'] = CatchedAddress;
               } else throw '업로드 실패';
             } catch (e) {
-              this.userInput.attachments[i].path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/[${i}]${this.userInput.attachments[i].filename}`;
-              await this.indexed.saveBlobToUserPath(this.userInput.attachments[i].blob, this.userInput.attachments[i].path);
+              try {
+                this.userInput.attachments[i].path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/[${i}]${this.userInput.attachments[i].filename}`;
+                await this.indexed.saveBlobToUserPath(this.userInput.attachments[i].blob, this.userInput.attachments[i].path);
+              } catch (e) {
+                // 컴퓨터에서 올린 첨부파일이 삭제된 경우
+                this.p5toast.show({
+                  text: `{${i}} ${this.lang.text['AddPost']['AttachError']}: ${e}`,
+                  lateable: true,
+                });
+                this.RemoveCurrentAttach(i);
+              }
             }
           } else {
             try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
@@ -1271,9 +1285,18 @@ export class AddPostPage implements OnInit, OnDestroy {
               delete this.userInput.attachments[i]['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
               this.userInput.attachments[i]['url'] = savedAddress;
             } catch (e) {
-              if (e == 'SQL 강제' && this.userInput.attachments[i].url && !this.userInput.attachments[i].blob)
-                this.userInput.attachments[i].blob = await (await fetch(this.userInput.attachments[i].url, { signal: this.cont.signal })).blob();
-              await this.nakama.sync_save_file(this.userInput.attachments[i], isOfficial, target, 'server_post', `${this.userInput.id}_attach_${i}`);
+              try {
+                if (e == 'SQL 강제' && this.userInput.attachments[i].url && !this.userInput.attachments[i].blob)
+                  this.userInput.attachments[i].blob = await (await fetch(this.userInput.attachments[i].url, { signal: this.cont.signal })).blob();
+                await this.nakama.sync_save_file(this.userInput.attachments[i], isOfficial, target, 'server_post', `${this.userInput.id}_attach_${i}`);
+              } catch (e) {
+                // 컴퓨터에서 올린 첨부파일이 삭제된 경우
+                this.p5toast.show({
+                  text: `{${i}} ${this.lang.text['AddPost']['AttachError']}: ${e}`,
+                  lateable: true,
+                });
+                this.RemoveCurrentAttach(i);
+              }
             }
           }
         }
