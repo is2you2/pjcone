@@ -595,39 +595,48 @@ export class UserFsDirPage implements OnInit, OnDestroy {
   }
 
   RemoveDirectoryRecursive(dir = this.CurrentDir) {
+    const CheckIfSpecificFolder = dir.substring(dir.lastIndexOf('/') + 1);
+    console.log(CheckIfSpecificFolder);
     this.alertCtrl.create({
-      header: dir.substring(dir.lastIndexOf('/') + 1) || this.lang.text['UserFsDir']['ResetDB'],
+      header: CheckIfSpecificFolder || this.lang.text['UserFsDir']['ResetDB'],
       message: this.lang.text['UserFsDir']['RemoveThisFolder'],
       buttons: [{
         text: this.lang.text['UserFsDir']['RemoveApply'],
-        handler: async () => {
-          const actId = `userfs_RemoveDirectoryRecursive_${Date.now()}`;
-          this.p5loading.update({
-            id: actId,
-            message: this.lang.text['UserFsDir']['DeleteFile'],
-          });
-          let list = await this.indexed.GetFileListFromDB(dir);
-          for (let i = 0, j = list.length; i < j; i++) {
-            if (this.StopIndexing) {
-              this.p5loading.remove(actId);
-              return;
-            }
+        handler: () => {
+          const RemoveAct = async () => {
+            const actId = `userfs_RemoveDirectoryRecursive_${Date.now()}`;
             this.p5loading.update({
               id: actId,
-              message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${list[i].split('/').pop()}`,
-              progress: i / j,
+              message: this.lang.text['UserFsDir']['DeleteFile'],
             });
-            await this.indexed.removeFileFromUserPath(list[i]);
+            let list = await this.indexed.GetFileListFromDB(dir);
+            for (let i = 0, j = list.length; i < j; i++) {
+              if (this.StopIndexing) {
+                this.p5loading.remove(actId);
+                return;
+              }
+              this.p5loading.update({
+                id: actId,
+                message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${list[i].split('/').pop()}`,
+                progress: i / j,
+              });
+              await this.indexed.removeFileFromUserPath(list[i]);
+            }
+            for (let i = this.DirList.length - 1; i >= 0; i--)
+              if (this.DirList[i].path.indexOf(dir) == 0)
+                this.DirList.splice(i, 1);
+            for (let i = this.FileList.length - 1; i >= 0; i--)
+              if (this.FileList[i].path.indexOf(dir) == 0)
+                this.FileList.splice(i, 1);
+            if (dir === this.CurrentDir) this.MoveToUpDir();
+            this.p5loading.remove(actId);
+            this.noti.ClearNoti(4);
+            if (!CheckIfSpecificFolder) {
+              const CurrentAddress = this.global.GetConnectedAddress();
+              window.location.href = CurrentAddress;
+            }
           }
-          for (let i = this.DirList.length - 1; i >= 0; i--)
-            if (this.DirList[i].path.indexOf(dir) == 0)
-              this.DirList.splice(i, 1);
-          for (let i = this.FileList.length - 1; i >= 0; i--)
-            if (this.FileList[i].path.indexOf(dir) == 0)
-              this.FileList.splice(i, 1);
-          if (dir === this.CurrentDir) this.MoveToUpDir();
-          this.p5loading.remove(actId);
-          this.noti.ClearNoti(4);
+          RemoveAct();
         },
         cssClass: 'redfont',
       }],
