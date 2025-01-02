@@ -1309,9 +1309,14 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   AlreadyExistServer = false;
   /** 누구든 이 코드를 사용하면 지정 주소로 진입하여 공유 그림판을 사용할 수 있음 */
   async CreateRemoteLocalClient(_address: string, channel_id?: string, hasServerInfo?: ServerInfo) {
+    const actId = `voiddraw_CreateRemoteLocalClient_${Date.now()}`;
     let split_fullAddress = _address.split('://');
     let address = split_fullAddress.pop().split(':');
     this.TargetRemoteAddress = address[0];
+    await this.p5loading.update({
+      id: actId,
+      message: `${this.lang.text['InstantCall']['Connecting']}: ${address[0]}`,
+    });
     let protocol = split_fullAddress.pop();
     if (protocol) {
       protocol += ':';
@@ -1328,9 +1333,12 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     this.AddShortCut();
     this.isDrawServerCreated = true;
     this.IceWebRTCWsClient.onopen = async () => {
-      this.p5toast.show({
-        text: `${this.lang.text['voidDraw']['Connected']}: ${address[0]}`,
+      this.p5loading.update({
+        id: actId,
+        message: `${this.lang.text['voidDraw']['Connected']}: ${address[0]}`,
+        progress: 1,
       });
+      this.p5loading.remove(actId);
       if (channel_id) { // 준비된 채널로 진입
         this.IceWebRTCWsClient.send(JSON.stringify({
           type: 'join',
