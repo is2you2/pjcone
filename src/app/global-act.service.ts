@@ -835,7 +835,7 @@ export class GlobalActService {
   async modulate_thumbnail(msg_content: FileInfo, ObjectURL: string, cont?: AbortController) {
     try { // 대안 썸네일이 있다면 보여주고 끝내기
       let blob = await this.indexed.loadBlobFromUserPath(`${msg_content['path']}_thumbnail.png`, 'image/png');
-      let FileURL = URL.createObjectURL(blob);
+      const FileURL = URL.createObjectURL(blob);
       msg_content['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
       setTimeout(() => {
         URL.revokeObjectURL(FileURL);
@@ -1950,10 +1950,11 @@ export class GlobalActService {
       type: 'text/plain' as 'image/png' | 'text/plain' | 'error',
       value: '' as any,
     };
-    const actId = loadingId || `GetValueFromClipboard`;
+    const actId = loadingId || `clipboardAct`;
     await this.p5loading.update({
       id: actId,
       message: this.lang.text['GlobalAct']['ClipboardPaste'],
+      image: null,
     });
     try {
       const clipboardItems = await navigator.clipboard.read();
@@ -1998,17 +1999,30 @@ export class GlobalActService {
    */
   async WriteValueToClipboard(type: string, value: any, filename?: string) {
     if (!value) return;
-    const actId = `WriteValueToClipboard`;
-    this.p5loading.update({
+    const actId = 'clipboardAct';
+    await this.p5loading.update({
       id: actId,
-      message: this.lang.text['GlobalAct']['ClipboardCopy']
+      message: this.lang.text['GlobalAct']['ClipboardCopy'],
+      image: null,
     });
     try {
       let data = {};
       let _value = value;
-      if (type == 'text/plain') {
-        _value = new Blob([value], { type: type });
-        value = this.truncateString(value, 80);
+      switch (type) {
+        case 'text/plain':
+          _value = new Blob([value], { type: type });
+          value = this.truncateString(value, 80);
+          break;
+        case 'image/png':
+          const FileURL = URL.createObjectURL(_value);
+          this.p5loading.update({
+            id: actId,
+            image: FileURL,
+          });
+          setTimeout(() => {
+            URL.revokeObjectURL(FileURL);
+          }, 100);
+          break;
       }
       data[type] = _value;
       await navigator.clipboard.write([

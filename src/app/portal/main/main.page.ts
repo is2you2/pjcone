@@ -153,7 +153,7 @@ export class MainPage implements OnInit {
                   thumbnail_path = `todo/${Todos[TodoKeys[i]].json.id}/thumbnail.png`;
                 }
                 let blob = await indexed.loadBlobFromUserPath(thumbnail_path, 'image/png');
-                let FileURL = URL.createObjectURL(blob);
+                const FileURL = URL.createObjectURL(blob);
                 image_form = `<div style="text-align: center"><img src="${FileURL}" alt="todo_image" style="border-radius: 2px"></div>`;
                 setTimeout(() => {
                   URL.revokeObjectURL(FileURL);
@@ -665,7 +665,7 @@ export class MainPage implements OnInit {
           }
           indexed.loadBlobFromUserPath(thumbnail_path, '')
             .then(blob => {
-              let FileURL = URL.createObjectURL(blob);
+              const FileURL = URL.createObjectURL(blob);
               p.loadImage(FileURL, v => {
                 this.ThumbnailImage = v;
                 this.ThumbnailImage.mask(ImageMask[importance]);

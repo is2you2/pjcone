@@ -646,7 +646,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         // 사용자 그리기 판넬 생성
         if (initData['path']) { // 배경 이미지 파일이 포함됨
           let blob = await this.indexed.loadBlobFromUserPath(initData['path'], initData['type']);
-          let FileURL = URL.createObjectURL(blob);
+          const FileURL = URL.createObjectURL(blob);
           p.loadImage(FileURL, v => {
             this.p5BaseImage = v;
             ImageCanvas.image(this.p5BaseImage, 0, 0);

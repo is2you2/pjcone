@@ -225,7 +225,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     const TMP_PATH = `tmp_files/todo/${file.name}`;
     await this.indexed.saveBlobToUserPath(file, TMP_PATH);
     let blob = await this.indexed.loadBlobFromUserPath(TMP_PATH, file.type);
-    let FileURL = URL.createObjectURL(blob);
+    const FileURL = URL.createObjectURL(blob);
     new p5((p: p5) => {
       p.setup = () => {
         document.getElementById(this.voidDrawContextId)['value'] = '';
@@ -409,7 +409,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       display_name: this.nakama.users.self['display_name'],
     });
     await this.checkHasSameFileAndRename(this_file);
-    let FileURL = URL.createObjectURL(blob);
+    const FileURL = URL.createObjectURL(blob);
     if (this_file['viewer'] == 'image')
       this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
     try {
@@ -449,7 +449,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   AttachmentContextMenu(_FileInfo: FileInfo, index: number) {
     if (!this.isStoreAtChangable) return false;
     let LoadAct = async () => {
-      let FileURL = URL.createObjectURL(_FileInfo.blob);
+      const FileURL = URL.createObjectURL(_FileInfo.blob);
       new p5((p: p5) => {
         p.setup = () => {
           p.noCanvas();

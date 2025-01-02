@@ -632,7 +632,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     const TMP_PATH = `tmp_files/chatroom/${file.name}`;
     await this.indexed.saveBlobToUserPath(file, TMP_PATH);
     let blob = await this.indexed.loadBlobFromUserPath(TMP_PATH, file.type);
-    let FileURL = URL.createObjectURL(blob);
+    const FileURL = URL.createObjectURL(blob);
     new p5((p: p5) => {
       p.setup = () => {
         document.getElementById(this.voidDrawContextId)['value'] = '';
@@ -868,7 +868,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     try {
       let main_table = document.getElementById('main_table');
       let imageFile = ev.target.files[0];
-      let FileURL = URL.createObjectURL(imageFile);
+      const FileURL = URL.createObjectURL(imageFile);
       main_table.style.backgroundImage = `url('${FileURL}')`;
       this.indexed.saveBlobToUserPath(imageFile, `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/backgroundImage.png`);
       this.HasBackgroundImage = true;
@@ -1340,7 +1340,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                       let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/${this.userInput.qoute.path}`;
                       this.indexed.checkIfFileExist(path, b => {
                         if (b) this.indexed.loadBlobFromUserPath(path, target_msg.content.type, blob => {
-                          let FileURL = URL.createObjectURL(blob);
+                          const FileURL = URL.createObjectURL(blob);
                           this.userInput.qoute['url'] = FileURL;
                           setTimeout(() => {
                             URL.revokeObjectURL(FileURL);
@@ -1352,7 +1352,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 } else { // 이미지가 아닌 다른 파일에 대해서
                   try { // 대안 썸네일이 있는지 확인
                     this.indexed.loadBlobFromUserPath(`${target_msg.content['path']}_thumbnail.png`, 'image/png', blob => {
-                      let FileURL = URL.createObjectURL(blob);
+                      const FileURL = URL.createObjectURL(blob);
                       this.userInput.qoute['url'] = FileURL;
                       setTimeout(() => {
                         URL.revokeObjectURL(FileURL);
@@ -1588,7 +1588,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.userInput.file.typeheader = this.userInput.file.viewer;
       return;
     }
-    let FileURL = URL.createObjectURL(this.userInput.file.blob);
+    const FileURL = URL.createObjectURL(this.userInput.file.blob);
     this.userInput.file['typeheader'] = this.userInput.file.blob.type.split('/')[0] || this.userInput.file.viewer;
     setTimeout(() => {
       URL.revokeObjectURL(FileURL);
@@ -1784,7 +1784,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           break;
       }
       if (b) this.indexed.loadBlobFromUserPath(path, file_type, blob => {
-        let FileURL = URL.createObjectURL(blob);
+        const FileURL = URL.createObjectURL(blob);
         c.content.qoute['url'] = FileURL;
         setTimeout(() => {
           URL.revokeObjectURL(FileURL);
@@ -1799,7 +1799,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           // 썸네일 파일인 경우에 한해서 동작
           if (getlong && getlong.indexOf('_thumbnail.png')) {
             this.indexed.loadBlobFromUserPath(getlong, file_type, blob => {
-              let FileURL = URL.createObjectURL(blob);
+              const FileURL = URL.createObjectURL(blob);
               c.content.qoute['url'] = FileURL;
               setTimeout(() => {
                 URL.revokeObjectURL(FileURL);
@@ -2685,7 +2685,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             // 파일이 첨부된 메시지라면 썸네일 보여주기
             try {
               let blob = await this.indexed.loadBlobFromUserPath(copied.content.path, copied.content.type);
-              let FileURL = URL.createObjectURL(blob);
+              const FileURL = URL.createObjectURL(blob);
               copied['thumbnail'] = FileURL;
             } catch (e) { }
             this.userInput.text = orig_msg;
@@ -2793,7 +2793,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 메시지 편집을 취소할 경우 */
   CancelEditText() {
     try {
-      let FileURL = this.IsMsgEditMode['thumbnail'];
+      const FileURL = this.IsMsgEditMode['thumbnail'];
       this.IsMsgEditMode = undefined;
       setTimeout(() => {
         URL.revokeObjectURL(FileURL);
@@ -2896,7 +2896,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     if (this.ViewableMessage[i]['content']['url']) {
       try { // 대안 썸네일이 있다면 보여주고 끝내기
         let blob = await this.indexed.loadBlobFromUserPath(`${this.ViewableMessage[i]['content']['path']}_thumbnail.png`, 'image/png');
-        let FileURL = URL.createObjectURL(blob);
+        const FileURL = URL.createObjectURL(blob);
         this.ViewableMessage[i]['content']['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
         setTimeout(() => {
           URL.revokeObjectURL(FileURL);
@@ -2958,7 +2958,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       } else { // 대안 썸네일 생성
         try {
           let blob = await this.indexed.loadBlobFromUserPath(`${msg.content['path']}_thumbnail.png`, 'image/png');
-          let FileURL = URL.createObjectURL(blob);
+          const FileURL = URL.createObjectURL(blob);
           this.global.modulate_thumbnail(msg.content, FileURL, this.cont);
         } catch (e) { }
       }

@@ -4635,7 +4635,7 @@ export class NakamaService {
           } else { // URL 주소가 아니라면 이미지 직접 불러오기
             let blob = await this.indexed.loadBlobFromUserPath(json['mainImage']['path'], json['mainImage']['type']);
             json['mainImage']['blob'] = blob;
-            let FileURL = URL.createObjectURL(blob);
+            const FileURL = URL.createObjectURL(blob);
             json['mainImage']['thumbnail'] = FileURL;
             setTimeout(() => {
               URL.revokeObjectURL(FileURL);
@@ -4760,7 +4760,7 @@ export class NakamaService {
           let synced = await this.sync_load_file(info, isOfficial, target, 'server_post', user_id, `${post_id}_mainImage`, false);
           let blob = synced.value;
           json['mainImage']['blob'] = blob;
-          let FileURL = URL.createObjectURL(blob);
+          const FileURL = URL.createObjectURL(blob);
           json['mainImage']['thumbnail'] = FileURL;
           setTimeout(() => {
             URL.revokeObjectURL(FileURL);

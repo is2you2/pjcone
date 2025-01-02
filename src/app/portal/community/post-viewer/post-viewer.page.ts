@@ -568,7 +568,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                         let blob = await this.indexed.loadBlobFromUserPath(this.PostInfo['attachments'][index]['alt_path'] || this.PostInfo['attachments'][index]['path'], this.PostInfo['attachments'][index]['type']);
                         this.PostInfo['attachments'][index]['blob'] = blob;
                       }
-                      let FileURL = URL.createObjectURL(this.PostInfo['attachments'][index]['blob']);
+                      const FileURL = URL.createObjectURL(this.PostInfo['attachments'][index]['blob']);
                       this.FileURLs.push(FileURL);
                       // 화면에 표시
                       let HTMLDiv = p.createElement('iframe');

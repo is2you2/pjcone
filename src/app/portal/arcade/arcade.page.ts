@@ -362,7 +362,7 @@ export class ArcadePage implements OnInit {
     const TMP_PATH = `tmp_files/quick_act/${file.name}`;
     await this.indexed.saveBlobToUserPath(file, TMP_PATH);
     let blob = await this.indexed.loadBlobFromUserPath(TMP_PATH, file.type);
-    let FileURL = URL.createObjectURL(blob);
+    const FileURL = URL.createObjectURL(blob);
     new p5((p: p5) => {
       p.setup = () => {
         document.getElementById('arcade_voiddraw_img')['value'] = '';

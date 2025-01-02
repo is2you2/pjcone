@@ -139,7 +139,7 @@ export class AddPostPage implements OnInit, OnDestroy {
               this.userInput.attachments[i].thumbnail = this.userInput.attachments[i].url;
             else {
               let blob = await this.indexed.loadBlobFromUserPath(this.userInput.attachments[i].path, this.userInput.attachments[i].type);
-              let FileURL = URL.createObjectURL(blob);
+              const FileURL = URL.createObjectURL(blob);
               this.userInput.attachments[i].thumbnail = FileURL;
               setTimeout(() => {
                 URL.revokeObjectURL(FileURL);
@@ -301,7 +301,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     const TMP_PATH = `tmp_files/add_post/${file.name}`;
     await this.indexed.saveBlobToUserPath(file, TMP_PATH);
     let blob = await this.indexed.loadBlobFromUserPath(TMP_PATH, file.type);
-    let FileURL = URL.createObjectURL(blob);
+    const FileURL = URL.createObjectURL(blob);
     new p5((p: p5) => {
       p.setup = () => {
         document.getElementById(this.voidDrawContextId)['value'] = '';
@@ -709,7 +709,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     file.blob = blob;
     file.path = `tmp_files/post/MainImage.${file['file_ext']}`;
     this.userInput.mainImage = file;
-    let FileURL = URL.createObjectURL(blob);
+    const FileURL = URL.createObjectURL(blob);
     this.indexed.saveBlobToUserPath(blob, file.path);
     this.MainPostImage = FileURL;
   }
@@ -776,7 +776,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     } else try {
       file.thumbnail = await this.indexed.loadBlobFromUserPath(file.path, file.type);
     } catch (e) { }
-    let FileURL = URL.createObjectURL(file.blob);
+    const FileURL = URL.createObjectURL(file.blob);
     file['typeheader'] = file.blob.type.split('/')[0] || file.viewer;
     setTimeout(() => {
       URL.revokeObjectURL(FileURL);
