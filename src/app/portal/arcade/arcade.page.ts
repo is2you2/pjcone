@@ -485,7 +485,9 @@ export class ArcadePage implements OnInit {
         case 'text/plain':
           const address = from_clipboard.value;
           const custom_default = this.global.GetConnectedAddress();
-          if (address.indexOf('https://is2you2.github.io/pjcone_pwa/?') == 0 || custom_default.indexOf(`${address}?`) == 0) {
+          const header_address = await this.global.GetHeaderAddress();
+          if (address.indexOf('https://is2you2.github.io/pjcone_pwa/?') == 0 || address.indexOf(`${custom_default}?`) == 0
+            || address.indexOf(`${header_address}?`) == 0) {
             const init = this.global.CatchGETs(address) || {};
             try {
               const actJson = await this.nakama.AddressToQRCodeAct(init, true);
