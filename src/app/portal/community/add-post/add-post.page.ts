@@ -1207,6 +1207,10 @@ export class AddPostPage implements OnInit, OnDestroy {
             this.userInput.mainImage.blob = blob;
           } catch (e) { }
         }
+        this.p5loading.update({
+          id: actId,
+          image: this.MainPostImage,
+        });
         if (is_local) {
           try { // FFS 업로드 시도
             if (this.userInput.CDN != 1) throw 'FFS 사용 순위에 없음';
@@ -1407,6 +1411,10 @@ export class AddPostPage implements OnInit, OnDestroy {
         persistent: false,
       });
     } catch (e) { }
+    await this.p5loading.update({
+      id: actId,
+      message: `${this.lang.text['AddPost']['WIP']}: ${this.userInput.title}`,
+    });
     this.p5loading.remove(actId);
   }
 
