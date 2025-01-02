@@ -2758,10 +2758,12 @@ export class NakamaService {
             }
               break;
             case MatchOpCode.CHATROOM_CHECKED: {
+              // 채널 점등 제거
               delete this.channels_orig[_is_official][_target][m['data_str']]['is_new'];
+              // 로컬 알림 제거
+              this.noti.ClearNoti(this.channels_orig[_is_official][_target][m['data_str']]['cnoti_id']);
               this.rearrange_channels();
-              // 하단 탭 알림등 검토
-              {
+              { // 하단 탭 알림등 검토
                 let keys = Object.keys(this.channels_orig[_is_official][_target]);
                 let hasNew = false;
                 for (let channel_id of keys)

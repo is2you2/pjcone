@@ -262,8 +262,6 @@ export class SubscribesPage implements OnInit {
     if (!this.lock_chatroom) {
       this.lock_chatroom = true;
       this.nakama.go_to_chatroom(info);
-      if (info['status'] != 'online' || info['status'] != 'pending')
-        delete info['is_new'];
       this.lock_chatroom = false;
     }
   }

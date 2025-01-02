@@ -1030,6 +1030,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.global.StoreShortCutAct('chat-room');
     this.WillLeave = false;
     for (let func of this.QueuedAct) func();
+    // PWA: 윈도우 창을 다시 보게 될 때 알림 삭제
+    if (!window.onfocus)
+      window.onfocus = () => {
+        if (this.info['cnoti_id']) {
+          this.noti.ClearNoti(this.info['cnoti_id']);
+          this.SelfSyncNotiInfo();
+        }
+      }
     this.QueuedAct.length = 0;
     this.ChatContDiv = document.getElementById('chatroom_content_div');
     try {
@@ -1186,8 +1194,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   init_noties() {
     this.noti.Current = this.info['cnoti_id'];
-    if (this.info['cnoti_id'])
+    if (this.info['cnoti_id']) {
       this.noti.ClearNoti(this.info['cnoti_id']);
+      this.SelfSyncNotiInfo();
+    }
     this.isOtherAct = false;
     this.useFirstCustomCDN = this.info['CDN'] || 0;
     this.toggle_custom_attach(this.useFirstCustomCDN);
@@ -1599,6 +1609,21 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     is_me: undefined,
   };
 
+  /** 알림 정보 동기화처리  
+   * 셀프 매치에 해당 채널을 읽었다고 표시하기
+   */
+  async SelfSyncNotiInfo() {
+    if (this.info['is_new']) {
+      try {
+        await this.nakama.servers[this.isOfficial][this.target]
+          .socket.sendMatchState(this.nakama.self_match[this.isOfficial][this.target].match_id, MatchOpCode.CHATROOM_CHECKED,
+            encodeURIComponent(`${this.info.id}`));
+      } catch (e) { }
+      this.info['is_new'] = false;
+      this.nakama.has_new_channel_msg = false;
+    }
+  }
+
   /** @param [comeback=false] 페이지 복귀한 경우 일부 데이터 초기화하지 않음 */
   async init_chatroom() {
     if (!this.InitWithFileImport) {
@@ -1623,12 +1648,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.init_last_message_viewer();
       this.file_sel_id = `chatroom_${this.info.id}_${new Date().getTime()}`;
       this.ChannelUserInputId = `chatroom_input_${this.info.id}_${new Date().getTime()}`;
-      // PWA: 윈도우 창을 다시 보게 될 때 알림 삭제
-      window.onfocus = null;
-      window.onfocus = () => {
-        if (this.info['cnoti_id'])
-          this.noti.ClearNoti(this.info['cnoti_id']);
-      }
       this.isOfficial = this.info['server']['isOfficial'];
       this.target = this.info['server']['target'];
       this.info = this.nakama.channels_orig[this.isOfficial][this.target][this.info.id];
@@ -1638,11 +1657,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         target: this.target,
         id: this.info.id,
       }
-      try {
-        await this.nakama.servers[this.isOfficial][this.target]
-          .socket.sendMatchState(this.nakama.self_match[this.isOfficial][this.target].match_id, MatchOpCode.CHATROOM_CHECKED,
-            encodeURIComponent(`${this.info.id}`));
-      } catch (e) { }
       this.foundLastRead = this.info['last_read_id'] == this.info['last_comment_id'];
       this.SetExtensionButtons();
     }
@@ -1705,8 +1719,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (this.useSpeaker) this.SpeechReceivedMessage(c);
         setTimeout(() => {
           if (this.WillLeave) return;
-          this.info['is_new'] = false;
-          this.nakama.has_new_channel_msg = false;
           if (this.NeedScrollDown() && !this.ShowRecentMsg) {
             this.init_last_message_viewer();
             this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollHeight, behavior: 'smooth' });
@@ -1978,7 +1990,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         let v = await this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
           this.nakama.servers[this.isOfficial][this.target].session,
           this.info['id'], this.RefreshCount, false, this.next_cursor);
-        this.info['is_new'] = false;
         v.messages.forEach(msg => {
           msg = this.nakama.modulation_channel_message(msg, this.isOfficial, this.target);
           this.nakama.check_sender_and_show_name(msg, this.isOfficial, this.target);
@@ -2614,6 +2625,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.block_send = false;
   }
 
+  /** 메시지 상세 행동 조율용 변수, 이 변수 따라오면 아래 함수 보고 이해할 수 있음 */
   isOtherAct = false;
   /** 다른 행동을 하는 경우 메시지 상세 행동을 하지 않음 */
   SetOtherAct() {
@@ -3005,8 +3017,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }
         }
         this.noti.Current = this.info['cnoti_id'];
-        if (this.info['cnoti_id'])
-          this.noti.ClearNoti(this.info['cnoti_id']);
         delete this.global.PageDismissAct['chatroom-ionicviewer'];
       }
       this.noti.Current = 'IonicViewerPage';
