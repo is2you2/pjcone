@@ -1965,6 +1965,14 @@ export class GlobalActService {
             result.type = type;
             let file = new File([value], 'image.png');
             result.value = file;
+            const FileURL = URL.createObjectURL(file);
+            this.p5loading.update({
+              id: actId,
+              image: FileURL,
+            });
+            setTimeout(() => {
+              URL.revokeObjectURL(FileURL);
+            }, 100);
             break;
           }
           if (type == 'text/plain') {
