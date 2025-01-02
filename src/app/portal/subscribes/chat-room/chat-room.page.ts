@@ -571,7 +571,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               for (let i = 0, j = list.length; i < j; i++) {
                 this.p5loading.update({
                   id: actId,
-                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${list[i].split('/').pop()}`,
+                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${this.info['title']} (${list[i].split('/').pop()})`,
                 });
                 await this.indexed.removeFileFromUserPath(list[i]);
               }
@@ -2727,7 +2727,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                     } catch (e) { }
                     this.p5loading.update({
                       id: actId,
-                      message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${msg.content['filename']}_${msg.content['partsize'] - i}`,
+                      message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${msg.content['filename']} (${msg.content['partsize'] - i})`,
                       progress: i / msg.content['partsize'],
                     });
                   } // 서버에서 삭제되지 않았을 경우 파일을 남겨두기

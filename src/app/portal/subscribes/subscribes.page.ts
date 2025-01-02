@@ -98,7 +98,7 @@ export class SubscribesPage implements OnInit {
       document.getElementById('SelfColorBg').style.backgroundImage = `linear-gradient(to top, rgba(${color}, .5), rgba(${color}, 0))`;
     }, 0);
   }
-  
+
   copy_info(target: string) {
     this.global.WriteValueToClipboard('text/plain', target);
   }
@@ -174,7 +174,7 @@ export class SubscribesPage implements OnInit {
               for (let i = 0, j = list.length; i < j; i++) {
                 this.p5loading.update({
                   id: actId,
-                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${list[i].split('/').pop()}`,
+                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${targetHeader} (${list[i].split('/').pop()})`,
                   progress: i / j,
                 });
                 await this.indexed.removeFileFromUserPath(list[i]);
@@ -227,7 +227,7 @@ export class SubscribesPage implements OnInit {
               for (let i = 0, j = list.length; i < j; i++) {
                 this.p5loading.update({
                   id: actId,
-                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${list[i].split('/').pop()}`,
+                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${targetHeader} (${list[i].split('/').pop()})`,
                   progress: i / j,
                 });
                 await this.indexed.removeFileFromUserPath(list[i]);
