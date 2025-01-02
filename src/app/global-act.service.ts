@@ -2014,9 +2014,9 @@ export class GlobalActService {
    * @param value 복사하려는 값 (Blob / String): 기본으로 이걸 쓰세요 text/plain
    * @param filename 이미지인 경우 파일 이름 명시
    */
-  async WriteValueToClipboard(type: string, value: any, filename?: string) {
+  async WriteValueToClipboard(type: string, value: any, filename?: string, loadingId?: string) {
     if (!value) return;
-    const actId = 'clipboardAct';
+    const actId = loadingId || 'clipboardAct';
     await this.p5loading.update({
       id: actId,
       message: this.lang.text['GlobalAct']['ClipboardCopy'],

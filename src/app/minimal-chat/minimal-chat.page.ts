@@ -713,7 +713,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
 
   /** 보여지는 QRCode 정보 복사 */
   copy_qr_address(target_string = this.QRCodeTargetString) {
-    this.global.WriteValueToClipboard('text/plain', target_string);
+    this.global.WriteValueToClipboard('text/plain', target_string, 'minimal_chat');
   }
 
   /** 파일 첨부 버튼 클릭시 */

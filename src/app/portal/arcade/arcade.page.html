@@ -150,7 +150,7 @@
               <ion-icon style="width: 36px; height: 36px" name="camera-reverse-outline"></ion-icon>
             </div>
             <iframe id="qr_scan_frame" style="width: 100%; height: 368px; margin-bottom: 8px;" frameborder="0"></iframe>
-            <ion-item button (click)="copy_info(QRScanResult)">
+            <ion-item button (click)="copy_address(QRScanResult)">
               <ion-label *ngIf="!QRScanResult" class="ion-text-center"
                 color="medium">{{lang.text['Subscribes']['QRScanPlaceholder']}}</ion-label>
               <ion-label *ngIf="QRScanResult" class="ion-text-center">{{QRScanResult}}</ion-label>

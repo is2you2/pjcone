@@ -343,12 +343,24 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                 sp.image(DrawBeforeCanvas, 0, 0, this.resolutionEffectedWidth, this.resolutionEffectedHeight);
               if (ActualCanvas && ActualCanvas.elt)
                 sp.image(ActualCanvas, 0, 0, this.resolutionEffectedWidth, this.resolutionEffectedHeight);
-              let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
-              let tmp_filename = `voidDraw_${sp.year()}-${sp.nf(sp.month(), 2)}-${sp.nf(sp.day(), 2)}_${sp.nf(sp.hour(), 2)}-${sp.nf(sp.minute(), 2)}-${sp.nf(sp.second(), 2)}.png`;
+              const base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+              const tmp_filename = `voidDraw_${sp.year()}-${sp.nf(sp.month(), 2)}-${sp.nf(sp.day(), 2)}_${sp.nf(sp.hour(), 2)}-${sp.nf(sp.minute(), 2)}-${sp.nf(sp.second(), 2)}.png`;
+              const blob = this.global.Base64ToBlob(base64, 'image/png');
+              let showToast = async () => {
+                const FileURL = URL.createObjectURL(blob);
+                await this.p5loading.update({
+                  id: 'voiddraw',
+                  image: FileURL,
+                });
+                setTimeout(() => {
+                  URL.revokeObjectURL(FileURL);
+                }, 100);
+                this.p5loading.remove('voiddraw');
+              }
+              showToast();
               // 결과물을 클립보드에 저장하기
               if (for_clipboard) {
-                let blob = this.global.Base64ToBlob(base64, 'image/png');
-                this.global.WriteValueToClipboard('image/png', blob, 'image.png')
+                this.global.WriteValueToClipboard('image/png', blob, 'image.png', 'voiddraw')
                   .catch(_e => {
                     // 아케이드에서 원격 연결 후 벗어날 때 오류발생, 무시 가능함
                   });

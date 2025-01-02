@@ -527,8 +527,4 @@ export class ArcadePage implements OnInit {
     contextAct();
     return false;
   }
-
-  copy_info(target: string) {
-    this.global.WriteValueToClipboard('text/plain', target);
-  }
 }
