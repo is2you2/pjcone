@@ -1583,6 +1583,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             header_image = URL.createObjectURL(blob);
           } catch (e) { }
       }
+      this.p5loading.update({
+        id: actId,
+        image: header_image,
+      });
       if (header_image) { // 대표 이미지가 있다면
         await new Promise((done: any) => {
           new p5((p: p5) => {
@@ -1612,6 +1616,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 p.remove();
               }, e => {
                 console.error('Todo-등록된 이미지 불러오기 실패: ', e);
+                this.p5loading.update({
+                  id: actId,
+                  image: null,
+                });
                 done();
                 URL.revokeObjectURL(header_image);
                 p.remove();

@@ -8,6 +8,8 @@ interface LoadingForm {
   id: string;
   /** 대표이미지 주소, 값이 있는 경우 이미지가 표시됨 */
   image?: string;
+  /** 이미지 개체 (p5.Element) */
+  imageElement?: p5.Element;
   /** 표시되는 메시지 */
   message?: string;
   /** message 를 보여주는 개체 */
@@ -90,6 +92,7 @@ export class P5LoadingService {
               img.style('border-radius: 24px;');
               // 양식은 만들어두고 숨기기
               if (!info.image) img.hide();
+              info.imageElement = img;
               img.parent(flex_outlook);
               // 텍스트 및 진행도 내용물 구성 틀
               const contentForm = p.createDiv();
@@ -212,6 +215,17 @@ export class P5LoadingService {
           this.loadingStack[info.id].progress = info.progress;
           const floatAsPercent = Math.floor(info.progress * 100);
           this.loadingStack[info.id].progressElement.style(`background: conic-gradient(var(--loading-done-color) 0% ${floatAsPercent}%, var(--loading-waiting-color) ${floatAsPercent}% 100%)`);
+        }
+      }
+      if (info.image !== undefined) {
+        if (info.image === null) {
+          delete this.loadingStack[info.id].image;
+          this.loadingStack[info.id].imageElement.hide();
+          this.loadingStack[info.id].imageElement.removeAttribute('src');
+        } else {
+          this.loadingStack[info.id].image = info.image;
+          this.loadingStack[info.id].imageElement.attribute('src', info.image);
+          this.loadingStack[info.id].imageElement.show();
         }
       }
     } else if (!only_update) await this.create(info);
