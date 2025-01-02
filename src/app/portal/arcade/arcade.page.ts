@@ -416,6 +416,11 @@ export class ArcadePage implements OnInit {
   ChangeDeviceFunc: Function;
   /** QR스캐너 열기 */
   async OpenScanner() {
+    const actId = `arcade_OpenScanner_${Date.now()}`;
+    await this.p5loading.update({
+      id: actId,
+      message: this.lang.text['Arcade']['OpeningCamera'],
+    });
     this.QRScanResult = null;
     this.global.StoreShortCutAct('qrcode-scanner');
     let zxing_scanner = await fetch('assets/p5js/zxing_scanner.js');
@@ -446,6 +451,7 @@ export class ArcadePage implements OnInit {
       this.global.RestoreShortCutAct('qrcode-scanner');
     });
     await this.InAppQRScanner.present();
+    this.p5loading.remove(actId);
     let iframe = document.getElementById('qr_scan_frame') as HTMLIFrameElement;
     iframe.src = MainURL;
     let contentWindow = iframe.contentWindow || iframe.contentDocument;
