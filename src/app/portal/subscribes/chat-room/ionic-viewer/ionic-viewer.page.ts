@@ -80,7 +80,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.global.RestoreShortCutAct('ionic-viewer');
     this.route.queryParams['unsubscribe']();
     if (this.global.PageDismissAct[this.navParams.dismiss])
-      this.global.PageDismissAct[this.navParams.dismiss]({});
+      this.global.PageDismissAct[this.navParams.dismiss]({
+        index: this.RelevanceIndex - 1,
+      });
     this.RemoveP5Relative();
   }
 

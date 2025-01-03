@@ -39,6 +39,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
   cont: AbortController;
 
   ngOnInit() {
+    this.ModalDismissId = `postviewer_modal_${Date.now()}`;
     this.cont = new AbortController();
     this.route.queryParams.subscribe(_p => {
       try {
@@ -82,8 +83,12 @@ export class PostViewerPage implements OnInit, OnDestroy {
   PlayableElements = [];
   /** 이 페이지를 보고 있는지 */
   IsFocusOnHere = true;
-  /** 첨부파일을 게시된 순서대로 기억하기 */
+  /** 첨부파일을 게시된 순서대로 기억하기 (게시물 정보) */
   RearrangedRelevance = [];
+  /** 첨부파일 개체 기억하기 (elements) */
+  RearrangedContents = [];
+  /** 게시물 창이 2개씩 뜰 수 있으니 아이디 별도관리하기 */
+  ModalDismissId = 'postviewer_modal';
   /** PC에서 키를 눌러 컨텐츠 전환 */
   ChangeContentWithKeyInput() {
     if (this.p5canvas) {
@@ -113,11 +118,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
             break;
           case 'KeyQ': // 첫번째 첨부파일 열기
             if (!this.RearrangedRelevance.length) return;
-            this.global.PageDismissAct['post-viewer-image-view'] = async (v: any) => {
-              await this.WaitingCurrent();
-              if (v.data && v.data['share']) this.navCtrl.pop();
-              this.IsFocusOnHere = true;
-              delete this.global.PageDismissAct['post-viewer-image-view'];
+            this.global.PageDismissAct[this.ModalDismissId] = (v: any) => {
+              this.ExitModalAct(v);
             }
             let _is_official: string;
             let _target: string;
@@ -140,7 +142,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
               path: this.RearrangedRelevance[0].content['path'],
               relevance: this.RearrangedRelevance,
               noEdit: true,
-              dismiss: 'post-viewer-image-view',
+              dismiss: this.ModalDismissId,
             });
             break;
         }
@@ -188,9 +190,21 @@ export class PostViewerPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 페이지 돌아오기 공통 행동 */
+  async ExitModalAct(v: any) {
+    await this.WaitingCurrent();
+    if (v.data && v.data['share']) this.navCtrl.pop();
+    this.IsFocusOnHere = true;
+    // 게시된 콘텐츠에 한해서 행동
+    if (v.index < this.RearrangedContents.length)
+      this.RearrangedContents[v.index].elt?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    delete this.global.PageDismissAct[this.ModalDismissId];
+  }
+
   /** 진입 정보를 어떻게 활용할 것인가 */
   initialize() {
     this.RearrangedRelevance.length = 0;
+    this.RearrangedContents.length = 0;
     if (this.PostInfo['mainImage']) {
       try {
         let FileURL = this.PostInfo['mainImage']['url'];
@@ -370,11 +384,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   let img = p.createImg(FileURL, `${index}`);
                   img.style('cursor', 'pointer');
                   img.mouseClicked(() => {
-                    this.global.PageDismissAct['post-viewer-image-view'] = async (v: any) => {
-                      await this.WaitingCurrent();
-                      if (v.data && v.data['share']) this.navCtrl.pop();
-                      this.IsFocusOnHere = true;
-                      delete this.global.PageDismissAct['post-viewer-image-view'];
+                    this.global.PageDismissAct[this.ModalDismissId] = (v: any) => {
+                      this.ExitModalAct(v);
                     }
                     let _is_official: string;
                     let _target: string;
@@ -399,7 +410,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       path: this.PostInfo['attachments'][index]['path'],
                       relevance: this.RearrangedRelevance,
                       noEdit: true,
-                      dismiss: 'post-viewer-image-view',
+                      dismiss: this.ModalDismissId,
                     });
                   });
                   img.parent(pimg);
@@ -460,9 +471,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       try {
                         CreateClickPanel(godot_frame, index);
                         godot_frame.mouseClicked(() => {
-                          this.global.PageDismissAct['post-viewer-file-view'] = () => {
-                            this.IsFocusOnHere = true;
-                            delete this.global.PageDismissAct['post-viewer-file-view'];
+                          this.global.PageDismissAct[this.ModalDismissId] = (v: any) => {
+                            this.ExitModalAct(v);
                           }
                           let _is_official: string;
                           let _target: string;
@@ -487,7 +497,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                             path: this.PostInfo['attachments'][index]['path'],
                             relevance: this.RearrangedRelevance,
                             noEdit: true,
-                            dismiss: 'post-viewer-file-view',
+                            dismiss: this.ModalDismissId,
                           });
                         });
                       } catch (e) {
@@ -502,9 +512,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
                           try {
                             CreateClickPanel(godot_frame, index);
                             godot_frame.mouseClicked(() => {
-                              this.global.PageDismissAct['post-viewer-file-view'] = () => {
-                                this.IsFocusOnHere = true;
-                                delete this.global.PageDismissAct['post-viewer-file-view'];
+                              this.global.PageDismissAct[this.ModalDismissId] = (v: any) => {
+                                this.ExitModalAct(v);
                               }
                               let _is_official: string;
                               let _target: string;
@@ -529,7 +538,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                                 path: this.PostInfo['attachments'][index]['path'],
                                 relevance: this.RearrangedRelevance,
                                 noEdit: true,
-                                dismiss: 'post-viewer-file-view',
+                                dismiss: this.ModalDismissId,
                               });
                             });
                           } catch (e) {
@@ -594,9 +603,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
                   EmptyDiv.parent(contentDiv);
                   CreateClickPanel(EmptyDiv, index);
                   EmptyDiv.mouseClicked(() => {
-                    this.global.PageDismissAct['post-viewer-file-view'] = () => {
-                      this.IsFocusOnHere = true;
-                      delete this.global.PageDismissAct['post-viewer-file-view'];
+                    this.global.PageDismissAct[this.ModalDismissId] = (v: any) => {
+                      this.ExitModalAct(v);
                     }
                     let _is_official: string;
                     let _target: string;
@@ -621,7 +629,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       path: this.PostInfo['attachments'][index]['path'],
                       relevance: this.RearrangedRelevance,
                       noEdit: true,
-                      dismiss: 'post-viewer-file-view',
+                      dismiss: this.ModalDismissId,
                     });
                   });
                   content[i] = EmptyDiv;
@@ -673,6 +681,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
             json['filename'] = `[${index}] ${json['filename']}`;
             this.RearrangedRelevance.push({ content: json });
           }
+          // 게시물에 텍스트와 콘텐츠를 바로 볼 수 있게 순차적 배치
           let result = [];
           let CollectResult = () => {
             if (result.length) {
@@ -685,11 +694,14 @@ export class PostViewerPage implements OnInit, OnDestroy {
             }
           }
           for (let i = 0, j = content.length; i < j; i++) {
+            // 게시물 텍스트를 수집
             if (typeof content[i] == 'string') {
               result.push(content[i]);
             } else {
+              // 문자열이 아니라면 콘텐츠로 인식
               CollectResult();
               content[i].parent(contentDiv);
+              this.RearrangedContents.push(content[i]);
             }
           }
           CollectResult();
