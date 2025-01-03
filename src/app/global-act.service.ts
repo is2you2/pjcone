@@ -501,6 +501,7 @@ export class GlobalActService {
 
   /** Arcade 페이지에서 게임이 불러와졌는지 여부 검토 */
   ArcadeLoaded = false;
+  /** 정확히는, true 일 때 하단 탭을 숨깁니다 */
   ArcadeWithFullScreen = false;
   /** WebRTC 순환 참조 우회 */
   WebRTCService: any;

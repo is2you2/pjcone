@@ -70,7 +70,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       this.global.PIPLinkedVideoElement = null;
       URL.revokeObjectURL(this.FileURL);
     }
-
+    this.p5loading.remove('ionicviewer');
     this.cont.abort('파일 뷰어 벗어남');
     this.cont = null;
     if (this.FilenameElement) {
@@ -458,6 +458,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       this.ContentChanging = false;
       return;
     }
+    await this.p5loading.update({
+      id: 'ionicviewer',
+      message: this.lang.text['ContentViewer']['ChangingContent']
+    });
     if (this.ChangeToAnotherAdditionalAct)
       this.ChangeToAnotherAdditionalAct();
     this.ChangeToAnotherAdditionalAct = null;
@@ -465,6 +469,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.RelevanceIndex = tmp_calced;
     this.FileInfo = { file_ext: '' };
     await this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
+    this.p5loading.update({
+      id: 'ionicviewer',
+      forceEnd: 0,
+    }, true);
     this.ContentChanging = false;
     this.CanInputValue = false;
   }
@@ -1535,6 +1543,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           FileMenu.push(() => this.download_file());
         if (!this.NeedDownloadFile && this.FileInfo['viewer'] == 'image')
           FileMenu.push(() => this.CopyImageToClipboard());
+        if (!this.NeedDownloadFile)
+          FileMenu.push(() => this.ToggleFocusMode());
         FileMenu.push(() => this.open_bottom_modal());
         if (this.CurrentFileSize && this.FileInfo['url'])
           FileMenu.push(() => this.RemoveFile());
@@ -2362,10 +2372,22 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 집중 모드 켜기, 메뉴들이 전부 숨겨집니다 */
+  ToggleFocusMode() {
+    this.FileMenu.dismiss();
+    this.global.ArcadeWithFullScreen = !this.global.ArcadeWithFullScreen;
+    this.p5canvas?.windowResized();
+  }
+
   /** 덮어쓰기 전단계 */
   forceWrite = false;
   /** url 파일로부터 파일 다운받기 */
   async download_file() {
+    const actId = `download_file_${Date.now()}`;
+    await this.p5loading.update({
+      id: actId,
+      message: `${this.lang.text['ContentViewer']['Download']}: ${this.FileInfo.filename}`,
+    });
     let hasFile = await this.indexed.checkIfFileExist(this.FileInfo.alt_path || this.FileInfo.path);
     if (hasFile) {
       this.indexed.DownloadFileFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo['type'], this.FileInfo['filename'] || this.FileInfo['name']);
@@ -2386,6 +2408,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         });
       }
     }
+    this.p5loading.remove(actId);
   }
 
   QRCodeSRC: any;
@@ -2494,6 +2517,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
    */
   PageWillDestroy = false;
   async ionViewWillLeave() {
+    this.global.ArcadeWithFullScreen = false;
     this.useP5Navigator = false;
     this.global.portalHint = true;
     this.global.BlockMainShortcut = false;

@@ -1,4 +1,4 @@
-<ion-header class="ion-no-border">
+<ion-header *ngIf="!global.ArcadeWithFullScreen" class="ion-no-border">
   <ion-toolbar>
     <ion-title>{{lang.text['ContentViewer']['Title']}}</ion-title>
     <ion-buttons slot="start">
@@ -37,13 +37,12 @@
 
 <ion-content [id]="ContentBoxId">
   <table class="main_table_elt">
-    <tr style="height: 0;">
+    <tr style="height: 0;" [hidden]="global.ArcadeWithFullScreen">
       <td>
         <ion-list-header [id]="FileHeaderId" style="max-width: 100vw;">
           <ion-label *ngIf="!isTextEditMode" text-wrap style="overflow-x: auto;">{{FileInfo.filename}}</ion-label>
           <ion-input *ngIf="isTextEditMode" [id]="TextEditorFileNameId" type="text" [(ngModel)]="NewTextFileName"
-            [placeholder]="FileInfo.filename" text-warp
-            style="overflow-x: auto; overflow-y: hidden;"></ion-input>
+            [placeholder]="FileInfo.filename" text-warp style="overflow-x: auto; overflow-y: hidden;"></ion-input>
           <ion-button *ngIf="isTextEditMode" (click)="close_text_edit()">
             <ion-icon name="close-circle-outline"></ion-icon>
           </ion-button>
@@ -85,6 +84,11 @@
                     <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">Shift + C</div>
                     <ion-item button (click)="CopyImageToClipboard()">
                       <ion-label>{{lang.text['ContentViewer']['CopyToClipboard']}}</ion-label>
+                    </ion-item>
+                  </div>
+                  <div *ngIf="!NeedDownloadFile">
+                    <ion-item button (click)="ToggleFocusMode()">
+                      <ion-label>{{lang.text['ContentViewer']['FocusMode']}}</ion-label>
                     </ion-item>
                   </div>
                   <div>
