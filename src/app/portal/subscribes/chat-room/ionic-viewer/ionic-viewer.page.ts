@@ -370,6 +370,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 채널 채팅을 통해 진입한 경우, 해당 메시지 찾아주기 기능 */
   FindMessage() {
+    if (!(this.IsMyMessage && this.channelId)) return;
     if (this.global.PageDismissAct[this.navParams.dismiss])
       this.global.PageDismissAct[this.navParams.dismiss]({
         data: {
@@ -476,6 +477,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 지원하지 않는 파일에 대해 강제로 텍스트 읽기 시도 */
   ForceReadAsText() {
+    if (this.FileInfo.viewer != 'disabled') return;
     if (this.ChangeToAnotherAdditionalAct)
       this.ChangeToAnotherAdditionalAct();
     this.ChangeToAnotherAdditionalAct = null;
@@ -610,6 +612,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** URL 링크인 경우 파일을 로컬에 다운받기 */
   async DownloadFileFromURL() {
+    if (!(!this.CurrentFileSize && !this.NeedDownloadFile && this.FileInfo['path'] && !this.isQuickLaunchViewer)) return;
     const actId = 'ionicviewer';
     await this.p5loading.update({
       id: actId,
@@ -2200,6 +2203,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 내장 그림판을 이용하여 그림 편집하기 */
   async modify_image() {
+    if (!(!this.NeedDownloadFile && !this.isHTMLViewer && this.FileInfo['viewer'] != 'audio' && this.showEdit)) return;
     const actId = 'voiddraw';
     switch (this.FileInfo['viewer']) {
       case 'image': { // 이미지인 경우, url 일 때
@@ -2354,6 +2358,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 클립보드에 이미지 복사하기 */
   async CopyImageToClipboard() {
+    if (!(!this.NeedDownloadFile && this.FileInfo['viewer'] == 'image')) return;
     let blob: Blob;
     try {
       if (this.FileInfo.url) {
@@ -2371,6 +2376,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 집중 모드 켜기, 메뉴들이 전부 숨겨집니다 */
   ToggleFocusMode() {
+    if (this.NeedDownloadFile) return;
     this.FileMenu.dismiss();
     this.global.ArcadeWithFullScreen = !this.global.ArcadeWithFullScreen;
     this.p5canvas?.windowResized();
@@ -2380,6 +2386,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   forceWrite = false;
   /** url 파일로부터 파일 다운받기 */
   async download_file() {
+    if (this.NeedDownloadFile) return;
     const actId = `download_file_${Date.now()}`;
     await this.p5loading.update({
       id: actId,
@@ -2417,6 +2424,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
    * 이 링크를 사용하면 즉시 파일 뷰어로 해당 파일을 열 수 있음
    */
   async CopyQuickViewer() {
+    if (!(this.IsMyMessage && this.FileInfo['url'] && !this.isQuickLaunchViewer)) return;
     this.FileMenu.dismiss();
     this.ContentChanging = true;
     this.useP5Navigator = false;
@@ -2448,6 +2456,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   /** 이 페이지에 있는지를 검토하는 녀석으로 사용중, p5 단축키 기능 제한용 */
   InnerChangedPage = false;
   ShareContent() {
+    if (this.NeedDownloadFile || this.isQuickLaunchViewer) return;
     this.FileMenu.dismiss();
     let channels = this.nakama.rearrange_channels();
     for (let i = channels.length - 1; i >= 0; i--) {
@@ -2486,6 +2495,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   RemoveFile() {
+    if (!(this.CurrentFileSize && (this.FileInfo['url'] || !this.NeedDownloadFile))) return;
     this.RemoveFileAct();
     this.p5toast.show({
       text: `${this.lang.text['ContentViewer']['RemoveFile']}: ${this.FileInfo.alt_path || this.FileInfo.path}`,
