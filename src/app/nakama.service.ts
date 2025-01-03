@@ -2837,24 +2837,34 @@ export class NakamaService {
   /** 날짜별로 대화 기록 저장하기 */
   saveMessageByDate(info: any, channel_info: any, _is_official: string, _target: string) {
     if (!info.msg || !info.msg.length) return;
-    let SepByDate = JSON.parse(JSON.stringify(info));
-    let DateSep = SepByDate['target'].split('-');
+    const SepByDate = JSON.parse(JSON.stringify(info));
+    const DateSep = SepByDate['target'].split('-');
     this.indexed.loadTextFromUserPath(`servers/${_is_official}/${_target}/channels/${channel_info.id}/chats/${DateSep[0]}/${DateSep[1]}/${DateSep[2]}`, (e, v) => {
+      /** 기존에 있었던 메시지들 */
       let base: any[] = [];
+      /** 추가가 필요한 메시지들 */
       let added: any[] = [];
-      if (e && v)
-        base = JSON.parse(v);
+      if (e && v) base = JSON.parse(v);
       SepByDate['msg'].forEach(_msg => {
-        let isDuplicate = false;
-        for (let i = 0, j = base.length; i < j; i++)
+        for (let i = base.length - 1; i >= 0; i--)
           if (base[i]['message_id'] == _msg['message_id']) {
-            isDuplicate = true;
-            base[i] = _msg;
+            base.splice(i, 1);
             break;
           }
-        if (!isDuplicate) added.push(_msg);
+        added.push(_msg);
       });
-      let result = [...base, ...added];
+      /** 삭제된 것으로 추정되는 메시지 */
+      let removed = [];
+      // 기존 메시지에서 불러온 메시지 기준 과거 메시지와 불러와진 메시지를 분리
+      const FrontTime = new Date(added[0].create_time).getTime();
+      for (let i = base.length - 1; i >= 0; i--) {
+        if (FrontTime < new Date(base[i].create_time).getTime()) {
+          let setRemove = base.splice(i, 1);
+          setRemove[0]['code'] = 2;
+          removed.push(setRemove[0]);
+        }
+      }
+      let result = [...base, ...removed, ...added];
       result.sort((a, b) => {
         if (a['create_time'] < b['create_time'])
           return -1;
@@ -3307,11 +3317,11 @@ export class NakamaService {
           let json = await this.global.GetHrefThumbnail(targetURL, reqAddress, cont)
           if (!json || json['error']) throw json;
           msg.content['hasLink'] = json;
+          this.saveListedMessage([msg], this.channels_orig[_is_official][_target][msg.channel_id], _is_official, _target);
         } catch (e) {
           console.log('href 간략정보 받아오기 실패: ', e);
         }
       } else delete msg.content['hasLink'];
-      this.saveListedMessage([msg], this.channels_orig[_is_official][_target][msg.channel_id], _is_official, _target);
     } catch (e) { }
   }
 
