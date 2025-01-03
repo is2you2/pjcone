@@ -2182,15 +2182,31 @@ export class NakamaService {
    * 채널 관리자라면 모든 파일 삭제  
    * 구성원이라면 자신의 파일만 삭제하기
    */
-  remove_channel_files(_is_official: string, _target: string, channel_id: string, is_creator?: boolean) {
+  async remove_channel_files(_is_official: string, _target: string, channel_id: string, is_creator?: boolean, loadingId?: string) {
+    const actId = loadingId || 'remove_channel_files';
     try {
-      this.servers[_is_official][_target].client.rpc(
+      await this.p5loading.update({
+        id: actId,
+        message: `${this.lang.text['GroupDetail']['BreakupGroup']}: `,
+      });
+      await this.servers[_is_official][_target].client.rpc(
         this.servers[_is_official][_target].session,
         'remove_channel_file', {
         collection: `file_${channel_id.replace(/[.]/g, '_')}`,
         is_creator: is_creator,
-      }).catch(_e => { });
-    } catch (e) { }
+      });
+      this.p5loading.update({
+        id: actId,
+        progress: 1,
+      }, true);
+    } catch (e) {
+      this.p5loading.update({
+        id: actId,
+        message: `${this.lang.text['AdminTools']['FailedClear']}: ${e}`,
+        progress: 0,
+      }, true);
+    }
+    if (!loadingId) this.p5loading.remove(actId);
   }
 
   /** 연결된 서버에서 자신이 참여한 그룹을 리모트에서 가져오기  

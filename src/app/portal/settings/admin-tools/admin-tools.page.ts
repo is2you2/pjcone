@@ -245,22 +245,36 @@ export class AdminToolsPage implements OnInit {
   }
 
   async ForceBreakupGroupAct(group: any) {
-    this.nakama.servers[this.isOfficial][this.target].client.rpc(
-      this.nakama.servers[this.isOfficial][this.target].session,
-      'force_remove_group', { group_id: group.id })
-      .then(_v => {
-        this.p5toast.show({
-          text: `${this.lang.text['AdminTools']['ForceBreaked']}: ${group.name}`,
-        })
-        this.refresh_all_user();
-        this.refresh_all_groups();
-      }).catch(e => {
-        console.log('force_breakup_group: ', e);
-        this.p5toast.show({
-          text: `${this.lang.text['AdminTools']['ForceBreakedFailed']}: ${e.statusText}`,
-        });
+    const actId = `remove_channel_files_${group.name}`;
+    await this.p5loading.update({
+      id: actId,
+      message: `${this.lang.text['GroupDetail']['ForceBreaked']}: ${group.name}`,
+    });
+    try {
+      await this.nakama.servers[this.isOfficial][this.target].client.rpc(
+        this.nakama.servers[this.isOfficial][this.target].session,
+        'force_remove_group', { group_id: group.id });
+      this.p5toast.show({
+        text: `${this.lang.text['AdminTools']['ForceBreaked']}: ${group.name}`,
+      })
+      this.refresh_all_user();
+      this.refresh_all_groups();
+    } catch (e) {
+      console.log('force_breakup_group: ', e);
+      this.p5toast.show({
+        text: `${this.lang.text['AdminTools']['ForceBreakedFailed']}: ${e.statusText}`,
+        lateable: true,
       });
-    this.nakama.remove_channel_files(this.isOfficial, this.target, this.nakama.groups[this.isOfficial][this.target][group.id]['channel_id']);
+    }
+    try {
+      await this.nakama.remove_channel_files(this.isOfficial, this.target, this.nakama.groups[this.isOfficial][this.target][group.id]['channel_id'], undefined, actId);
+    } catch (e) {
+      console.log('채널 파일 삭제 오류: ', e);
+      this.p5toast.show({
+        text: `${this.lang.text['AdminTools']['FailedClear']}: ${e}`,
+        lateable: true,
+      });
+    }
     let server_info = this.nakama.servers[this.isOfficial][this.target].info;
     try { // FFS 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
       let fallback = localStorage.getItem('fallback_fs');
@@ -273,14 +287,38 @@ export class AdminToolsPage implements OnInit {
       } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
       let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
       // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
-      this.global.remove_files_from_storage_with_key(target_address, group.id, {});
-    } catch (e) { }
+      await this.p5loading.update({
+        id: actId,
+        message: `${this.lang.text['AdminTools']['ClearFFSKey']}: ${group.name}`,
+      });
+      await this.global.remove_files_from_storage_with_key(target_address, group.id, {});
+    } catch (e) {
+      console.log('ffs 파일 삭제 실패: ', e);
+      this.p5toast.show({
+        text: `${this.lang.text['AdminTools']['FailedFFSClear']}: ${e}`,
+        lateable: true,
+      });
+    }
     try { // cdn 파일들 일괄 삭제처리
       let target_address = `${server_info.useSSL ? 'https' : 'http'}://${server_info.address}`;
-      this.global.remove_files_from_storage_with_key(target_address, group.id, { cdn_port: server_info.cdn_port, apache_port: server_info.apache_port });
+      await this.p5loading.update({
+        id: actId,
+        message: `${this.lang.text['AdminTools']['ClearCDN']}: ${group.name}`,
+      });
+      await this.global.remove_files_from_storage_with_key(target_address, group.id, { cdn_port: server_info.cdn_port, apache_port: server_info.apache_port });
     } catch (e) {
       console.log('파일 일괄 삭제 요청 실패: ', e);
+      this.p5toast.show({
+        text: `${this.lang.text['AdminTools']['FailedClear']}: ${e}`,
+        lateable: true,
+      });
     }
+    await this.p5loading.update({
+      id: actId,
+      message: `${this.lang.text['GroupDetail']['BreakupGroup']}: ${group.name}`,
+      progress: 1,
+      forceEnd: 1000,
+    });
   }
 
   change_user_list_page(forward: number) {

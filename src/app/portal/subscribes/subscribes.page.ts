@@ -141,7 +141,7 @@ export class SubscribesPage implements OnInit {
               }
               await this.nakama.remove_group_list(this.nakama.groups[isOfficial][target][channel['group_id']], isOfficial, target, true);
               delete this.nakama.channels_orig[isOfficial][target][channel.id];
-              this.nakama.remove_channel_files(isOfficial, target, channel.id);
+              this.nakama.remove_channel_files(isOfficial, target, channel.id, undefined, actId);
               // 해당 채널과 관련된 파일 일괄 삭제 (cdn / ffs)
               try { // FFS 요청 우선
                 let fallback = localStorage.getItem('fallback_fs');
