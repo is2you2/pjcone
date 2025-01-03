@@ -1441,6 +1441,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     if (!targetChat) { // 메시지가 안보이면 이전 메시지에서 찾기
       let whileBreaker = false;
       while (!targetChat && this.pullable && !whileBreaker && this.next_cursor) {
+        if (!this.nakama.ChatroomLinkAct) return;
         await this.pull_msg_history();
         await new Promise((done) => setTimeout(done, 200));
         for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
