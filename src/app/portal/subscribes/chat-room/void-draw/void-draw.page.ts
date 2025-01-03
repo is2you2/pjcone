@@ -93,10 +93,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   ionViewWillEnter() {
     this.WillLeaveHere = false;
     this.global.portalHint = false;
-    if (this.QueueAfterLoad)
-      this.QueueAfterLoad();
+    this.QueueAfterLoad?.();
+    this.p5SetCanvasViewportInit?.();
     this.QueueAfterLoad = null;
-    if (this.p5SetDrawable) this.p5SetDrawable(true);
+    this.p5SetDrawable?.(true);
   }
 
   async ionViewDidEnter() {
