@@ -1526,8 +1526,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 한번에 여러파일 보내기 */
   async DropSendAct(Drops: any) {
-    const actId = `drop_multiple_act_${this.info.id}_${Date.now()}`;
-    this.p5loading.update({
+    const actId = 'chatroom';
+    await this.p5loading.update({
       id: actId,
       progress: 0,
     });
