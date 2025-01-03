@@ -1296,6 +1296,7 @@ export class AddPostPage implements OnInit, OnDestroy {
                 protocol, address, this.userInput.CDN == 1, actId);
               let isURL = Boolean(savedAddress);
               if (!isURL) throw '링크 만들기 실패';
+              delete this.userInput.attachments[i]['path'];
               delete this.userInput.attachments[i]['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
               this.userInput.attachments[i]['url'] = savedAddress;
             } catch (e) {
