@@ -81,7 +81,12 @@ export class IndexedDBService {
     let lastIndexOf = path.lastIndexOf('/');
     let dir = path.substring(0, lastIndexOf);
     if (!dir) return;
-    this.checkIfFileExist(dir).then(_b => {
+    this.checkIfFileExist(dir).then(b => {
+      // 이미 있는 폴더라면 재동작하지 않음
+      if (b) {
+        this.createRecursiveDirectory(dir, targetDB);
+        return;
+      }
       let put = targetDB.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
         timestamp: new Date(),
         mode: 16893,
@@ -106,7 +111,8 @@ export class IndexedDBService {
   /** 인앱탐색기 편의기능 */
   createDirectory(path: string) {
     return new Promise((done, err) => {
-      this.checkIfFileExist(path).then(_b => {
+      this.checkIfFileExist(path).then(b => {
+        if (b) err(this.lang.text['UserFsDir']['AlreadyExistFolder']);
         let put = this.ionicDB.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
           timestamp: new Date(),
           mode: 16893,
