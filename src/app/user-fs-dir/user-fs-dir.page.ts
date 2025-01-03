@@ -272,10 +272,11 @@ export class UserFsDirPage implements OnInit, OnDestroy {
       _info.file_ext = _info.name.split('.').pop();
       this.global.set_viewer_category_from_ext(_info);
       if (_info.viewer == 'image')
-        this.indexed.loadBlobFromUserPath(_info.path, '', blob => {
-          let TmpURL = URL.createObjectURL(blob);
-          _info.thumbnail = this.sanitizer.bypassSecurityTrustUrl(TmpURL);
-        });
+        this.indexed.loadBlobFromUserPath(_info.path, '')
+          .then(blob => {
+            let TmpURL = URL.createObjectURL(blob);
+            _info.thumbnail = this.sanitizer.bypassSecurityTrustUrl(TmpURL);
+          });
       try { // 사용자 이름 재지정
         let sep = _info.path.split('/');
         if (sep.length != 5 || sep[3] != 'groups') throw '그룹 이미지 파일이 아님';
@@ -371,7 +372,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
         message: message,
         progress: i / _list.length
       });
-      await this.indexed.GetFileInfoFromDB(_list[i], (info) => {
+      await this.indexed.GetFileInfoFromDB(_list[i]).then(info => {
         let _info: FileDir = {
           path: _list[i],
           mode: info['mode'],
@@ -384,7 +385,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
             _info.file_ext = _info.name.split('.').pop();
             this.global.set_viewer_category_from_ext(_info);
             if (_info.viewer == 'image')
-              this.indexed.loadBlobFromUserPath(_info.path, '', blob => {
+              this.indexed.loadBlobFromUserPath(_info.path, '').then(blob => {
                 let TmpURL = URL.createObjectURL(blob);
                 _info.thumbnail = this.sanitizer.bypassSecurityTrustUrl(TmpURL);
               });
@@ -658,7 +659,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
       buttons: [{
         text: this.lang.text['UserFsDir']['DeleteAccept'],
         handler: () => {
-          this.indexed.removeFileFromUserPath(info.path, () => {
+          this.indexed.removeFileFromUserPath(info.path).then(() => {
             this.FileList.splice(i, 1);
           });
         },

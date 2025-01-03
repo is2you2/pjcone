@@ -1346,8 +1346,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                     this.userInput.qoute.path = target_msg.content.path.split('/').pop();
                     if (!this.userInput.qoute.url) {
                       let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/${this.userInput.qoute.path}`;
-                      this.indexed.checkIfFileExist(path, b => {
-                        if (b) this.indexed.loadBlobFromUserPath(path, target_msg.content.type, blob => {
+                      this.indexed.checkIfFileExist(path).then(b => {
+                        if (b) this.indexed.loadBlobFromUserPath(path, target_msg.content.type).then(blob => {
                           const FileURL = URL.createObjectURL(blob);
                           this.userInput.qoute['url'] = FileURL;
                           setTimeout(() => {
@@ -1359,7 +1359,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   }
                 } else { // 이미지가 아닌 다른 파일에 대해서
                   try { // 대안 썸네일이 있는지 확인
-                    this.indexed.loadBlobFromUserPath(`${target_msg.content['path']}_thumbnail.png`, 'image/png', blob => {
+                    this.indexed.loadBlobFromUserPath(`${target_msg.content['path']}_thumbnail.png`, 'image/png').then(blob => {
                       const FileURL = URL.createObjectURL(blob);
                       this.userInput.qoute['url'] = FileURL;
                       setTimeout(() => {
@@ -1794,7 +1794,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 메시지에 인용이 포함되어있다면 인용 썸네일 생성 시도 */
   OpenQouteThumbnail(c: any) {
     let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/${c.content.qoute.path}`;
-    this.indexed.checkIfFileExist(path, b => {
+    this.indexed.checkIfFileExist(path).then(b => {
       let file_ext = path.split('.').pop();
       let file_type = '';
       switch (file_ext) {
@@ -1802,7 +1802,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           file_type = 'image/svg+xml';
           break;
       }
-      if (b) this.indexed.loadBlobFromUserPath(path, file_type, blob => {
+      if (b) this.indexed.loadBlobFromUserPath(path, file_type).then(blob => {
         const FileURL = URL.createObjectURL(blob);
         c.content.qoute['url'] = FileURL;
         setTimeout(() => {
@@ -1813,11 +1813,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         c.content.qoute['url'] = c.content.qoute.path;
       else {
         let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${c.content.qoute.id}`;
-        this.indexed.GetFileListFromDB(path, list => {
+        this.indexed.GetFileListFromDB(path).then(list => {
           let getlong = list.pop();
           // 썸네일 파일인 경우에 한해서 동작
           if (getlong && getlong.indexOf('_thumbnail.png')) {
-            this.indexed.loadBlobFromUserPath(getlong, file_type, blob => {
+            this.indexed.loadBlobFromUserPath(getlong, file_type).then(blob => {
               const FileURL = URL.createObjectURL(blob);
               c.content.qoute['url'] = FileURL;
               setTimeout(() => {
@@ -1948,8 +1948,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.global.modulate_thumbnail(msg.content, '', this.cont);
         } else {
           this.indexed.loadBlobFromUserPath(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`,
-            msg.content['type'],
-            v => {
+            msg.content['type']).then(v => {
               msg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
               let url = URL.createObjectURL(v);
               this.global.modulate_thumbnail(msg.content, url, this.cont);
@@ -2070,11 +2069,14 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             if (!this.ViewableMessage[i].content['file_ext']) throw '파일이 없는 메시지';
             if (this.ViewableMessage[i].content['url']) throw '링크된 파일';
             this.ViewableMessage[i].content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${this.ViewableMessage[i].message_id}.${this.ViewableMessage[i].content['file_ext']}`;
-            this.indexed.checkIfFileExist(this.ViewableMessage[i].content['path'], b => {
-              if (b) this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.type, (blob) => {
-                FileURL = URL.createObjectURL(blob);
-                this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL, this.cont);
-              });
+            this.indexed.checkIfFileExist(this.ViewableMessage[i].content['path']).then(b => {
+              if (b) {
+                this.indexed.loadBlobFromUserPath(this.ViewableMessage[i].content['path'], this.ViewableMessage[i].content.type)
+                  .then(blob => {
+                    FileURL = URL.createObjectURL(blob);
+                    this.global.modulate_thumbnail(this.ViewableMessage[i].content, FileURL, this.cont);
+                  }).catch(e => { });
+              }
             })
           } catch (e) {
             this.global.modulate_thumbnail(this.ViewableMessage[i].content, '');
@@ -2513,7 +2515,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           } else {
             // 로컬에 파일을 저장
             let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${v.message_id}.${CurrentMessage.file.file_ext}`;
-            this.indexed.saveBlobToUserPath(CurrentMessage.file.blob, path, () => {
+            this.indexed.saveBlobToUserPath(CurrentMessage.file.blob, path).then(() => {
               this.auto_open_thumbnail({
                 content: result,
                 message_id: v.message_id,
@@ -2864,8 +2866,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (!msg.content['text'])
           msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
         this.indexed.loadBlobFromUserPath(path,
-          msg.content['type'],
-          v => {
+          msg.content['type']).then(v => {
             msg.content['path'] = path;
             let url = URL.createObjectURL(v);
             if (!msg.content['thumbnail']) this.global.modulate_thumbnail(msg.content, url, this.cont);
@@ -2947,7 +2948,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       msg.content['transfer_index'] = this.nakama.OnTransfer[this.isOfficial][this.target][msg.channel_id][msg.message_id];
     } catch (e) { }
     if (!msg.content['transfer_index'])
-      this.indexed.checkIfFileExist(`${path}.history`, b => {
+      this.indexed.checkIfFileExist(`${path}.history`).then(b => {
         if (b) this.indexed.loadTextFromUserPath(`${path}.history`, (e, v) => {
           if (e && v) {
             let json = JSON.parse(v);
@@ -2960,12 +2961,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         });
       });
     this.global.set_viewer_category(msg.content);
-    this.indexed.checkIfFileExist(path, async (b) => {
+    this.indexed.checkIfFileExist(path).then(async b => {
       if (b) {
         msg.content['text'] = [this.lang.text['ChatRoom']['downloaded']];
         this.indexed.loadBlobFromUserPath(path,
-          msg.content['type'],
-          v => {
+          msg.content['type']).then(v => {
             msg.content['path'] = path;
             let url = URL.createObjectURL(v);
             this.global.modulate_thumbnail(msg.content, url, this.cont);
@@ -3122,7 +3122,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     if (isPlatform != 'DesktopPWA')
       this.global.ArcadeWithFullScreen = false;
     this.global.portalHint = true;
-    this.indexed.GetFileListFromDB('tmp_files/chatroom', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
+    this.indexed.GetFileListFromDB('tmp_files/chatroom').then(list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     this.route.queryParams['unsubscribe']();
     try {
       delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']]['update'];

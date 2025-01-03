@@ -53,7 +53,7 @@ export class AppComponent {
       nakama.AddressToQRCodeAct(init);
       noti.initialize();
       noti.load_settings();
-      indexed.GetFileListFromDB('tmp_files', list => {
+      indexed.GetFileListFromDB('tmp_files').then(list => {
         list.forEach(path => indexed.removeFileFromUserPath(path));
       });
     });

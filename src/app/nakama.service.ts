@@ -648,7 +648,7 @@ export class NakamaService {
           let list: string[] = [];
           if (e && v) list = v.split('\n');
           list.push(line);
-          this.indexed.saveTextFileToUserPath(list.join('\n'), 'servers/list_detail.csv', (_v) => {
+          this.indexed.saveTextFileToUserPath(list.join('\n'), 'servers/list_detail.csv').then(() => {
             this.init_server(info);
             this.servers[info.isOfficial][info.target].info = { ...info };
             _CallBack();
@@ -2102,7 +2102,7 @@ export class NakamaService {
         if (!GroupId.length) delete copied_group[_is_official][_target];
       });
     });
-    this.indexed.saveTextFileToUserPath(JSON.stringify(copied_group), 'servers/groups.json', () => {
+    this.indexed.saveTextFileToUserPath(JSON.stringify(copied_group), 'servers/groups.json').then(() => {
       _CallBack();
     });
   }
@@ -2619,7 +2619,7 @@ export class NakamaService {
                       let todo_info = JSON.parse(v);
                       todo_info.done = true;
                       await this.modify_remote_info_as_local(todo_info, _is_official, _target);
-                      this.indexed.GetFileListFromDB(`todo/${todo_info.id}`, (v) => {
+                      this.indexed.GetFileListFromDB(`todo/${todo_info.id}`).then(v => {
                         v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
                         this.RemoveLocalPushSchedule(todo_info);
                         this.removeRegisteredId(todo_info.noti_id);
@@ -2632,7 +2632,7 @@ export class NakamaService {
                           let todo_info = JSON.parse(v);
                           todo_info.done = true;
                           await this.modify_remote_info_as_local(todo_info, _is_official, _target);
-                          this.indexed.GetFileListFromDB(`todo/${todo_info.id}`, (v) => {
+                          this.indexed.GetFileListFromDB(`todo/${todo_info.id}`).then(v => {
                             v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
                             this.RemoveLocalPushSchedule(todo_info);
                             this.removeRegisteredId(todo_info.noti_id);
@@ -2648,7 +2648,7 @@ export class NakamaService {
                   this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, (e, v) => {
                     if (e && v) {
                       let todo_info = JSON.parse(v);
-                      this.indexed.GetFileListFromDB(`todo/${todo_info.id}`, (v) => {
+                      this.indexed.GetFileListFromDB(`todo/${todo_info.id}`).then(v => {
                         v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
                         this.RemoveLocalPushSchedule(todo_info);
                         this.removeRegisteredId(todo_info.noti_id);
@@ -2661,7 +2661,7 @@ export class NakamaService {
                       this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
                         if (e && v) {
                           let todo_info = JSON.parse(v);
-                          this.indexed.GetFileListFromDB(`todo/${todo_info.id}`, (v) => {
+                          this.indexed.GetFileListFromDB(`todo/${todo_info.id}`).then(v => {
                             v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
                             this.RemoveLocalPushSchedule(todo_info);
                             this.removeRegisteredId(todo_info.noti_id);

@@ -81,7 +81,7 @@ export class IndexedDBService {
     let lastIndexOf = path.lastIndexOf('/');
     let dir = path.substring(0, lastIndexOf);
     if (!dir) return;
-    this.checkIfFileExist(dir, _b => {
+    this.checkIfFileExist(dir).then(_b => {
       let put = targetDB.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
         timestamp: new Date(),
         mode: 16893,
@@ -106,7 +106,7 @@ export class IndexedDBService {
   /** 인앱탐색기 편의기능 */
   createDirectory(path: string) {
     return new Promise((done, err) => {
-      this.checkIfFileExist(path, _b => {
+      this.checkIfFileExist(path).then(_b => {
         let put = this.ionicDB.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
           timestamp: new Date(),
           mode: 16893,
@@ -135,7 +135,7 @@ export class IndexedDBService {
    * @param text 문서에 포함될 텍스트
    * @param path 저장될 상대 경로(user://~)
    */
-  saveTextFileToUserPath(text: string, path: string, _CallBack = (_v: any) => { }, targetDB = this.ionicDB): Promise<any> {
+  saveTextFileToUserPath(text: string, path: string, targetDB = this.ionicDB): Promise<any> {
     this.createRecursiveDirectory(path, targetDB);
     return new Promise((done, error) => {
       let put = targetDB.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put({
@@ -150,7 +150,6 @@ export class IndexedDBService {
       put.onsuccess = (ev) => {
         if (ev.type != 'success')
           console.error('저장 실패: ', path);
-        _CallBack(ev);
         removeSignals();
         done(ev);
       }
@@ -166,7 +165,7 @@ export class IndexedDBService {
    * @param base64 문서에 포함될 base64 텍스트
    * @param path 저장될 상대 경로(user://~)
    */
-  saveBase64ToUserPath(base64: string, path: string, _CallBack = (_int8array: Int8Array) => { }, targetDB = this.ionicDB): Promise<Int8Array> {
+  saveBase64ToUserPath(base64: string, path: string, targetDB = this.ionicDB): Promise<Int8Array> {
     return new Promise((done, error) => {
       let byteStr = atob(base64.split(',')[1]);
       let arrayBuffer = new ArrayBuffer(byteStr.length);
@@ -184,7 +183,6 @@ export class IndexedDBService {
           console.error('저장 실패: ', path);
         put.onsuccess = null;
         put.onerror = null;
-        _CallBack(int8Array);
         done(int8Array);
       }
       put.onerror = (e) => {
@@ -228,7 +226,7 @@ export class IndexedDBService {
    * @param blob 파일정보 | blob
    * @param path 저장될 상대 경로(user://~)
    */
-  saveBlobToUserPath(blob: Blob, path: string, _CallBack = (_int8array: Int8Array) => { }, targetDB = this.ionicDB): Promise<Int8Array> {
+  saveBlobToUserPath(blob: Blob, path: string, targetDB = this.ionicDB): Promise<Int8Array> {
     return new Promise(async (done, error) => {
       let int8Array: Int8Array;
       try {
@@ -248,7 +246,6 @@ export class IndexedDBService {
           console.error('저장 실패: ', path);
         put.onsuccess = null;
         put.onerror = null;
-        _CallBack(int8Array);
         done(int8Array);
       }
       put.onerror = (e) => {
@@ -264,7 +261,7 @@ export class IndexedDBService {
    * @param file GetFileInfoFromDB 로 받은 파일/폴더 정보
    * @param path 저장될 상대 경로(user://~)
    */
-  saveFileToUserPath(file: any, path: string, _CallBack = (_v: any) => { }, targetDB = this.ionicDB): Promise<any> {
+  saveFileToUserPath(file: any, path: string, targetDB = this.ionicDB): Promise<any> {
     this.createRecursiveDirectory(path, targetDB);
     return new Promise((done, error) => {
       let put = targetDB.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').put(file, `/userfs/${path}`);
@@ -273,7 +270,6 @@ export class IndexedDBService {
           console.error('저장 실패: ', path);
         put.onsuccess = null;
         put.onerror = null;
-        _CallBack(ev);
         done(ev);
       }
       put.onerror = (e) => {
@@ -285,14 +281,13 @@ export class IndexedDBService {
   }
 
   /** 파일이 있는지 검토 */
-  checkIfFileExist(path: string, _CallBack = (_b: boolean) => { }, targetDB = this.ionicDB): Promise<boolean> {
+  checkIfFileExist(path: string, targetDB = this.ionicDB): Promise<boolean> {
     return new Promise((done, error) => {
       let data = targetDB.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').count(`/userfs/${path}`);
       data.onsuccess = (ev) => {
         let cursor = ev.target['result'];
         data.onsuccess = null;
         data.onerror = null;
-        _CallBack(cursor);
         done(cursor);
       }
       data.onerror = (e) => {
@@ -304,7 +299,7 @@ export class IndexedDBService {
   }
 
   /** 모든 파일 리스트로부터 대상 폴더와 겹치는 파일 리스트 추출하기 */
-  GetFileListFromDB(path: string, _CallBack = (_list: string[]) => { }, targetDB = this.ionicDB): Promise<string[]> {
+  GetFileListFromDB(path: string, targetDB = this.ionicDB): Promise<string[]> {
     let data = targetDB.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').getAllKeys();
     return new Promise((done, error) => {
       data.onsuccess = (ev) => {
@@ -316,7 +311,6 @@ export class IndexedDBService {
         }
         data.onsuccess = null;
         data.onerror = null;
-        _CallBack(keys);
         done(keys);
       }
       data.onerror = (e) => {
@@ -328,14 +322,13 @@ export class IndexedDBService {
   }
 
   /** 경로 파일 정보 불러오기 */
-  GetFileInfoFromDB(path: string, _CallBack = (info: any) => { }, targetDB = this.ionicDB): Promise<any> {
+  GetFileInfoFromDB(path: string, targetDB = this.ionicDB): Promise<any> {
     let data = targetDB.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').get(`/userfs/${path}`);
     return new Promise((done, error) => {
       data.onsuccess = (ev) => {
         const result = ev.target['result'];
         data.onsuccess = null;
         data.onerror = null;
-        _CallBack(result);
         done(result);
       }
       data.onerror = (e) => {
@@ -378,9 +371,8 @@ export class IndexedDBService {
 
   /** 고도엔진의 'user://~'에 해당하는 파일 Blob 상태로 받기
      * @param path 'user://~'에 들어가는 사용자 폴더 경로
-     * @param _CallBack 받은 Blob 활용하기
      */
-  loadBlobFromUserPath(path: string, mime: string, _CallBack = (_blob: Blob) => { }, targetDB = this.ionicDB): Promise<Blob> {
+  loadBlobFromUserPath(path: string, mime: string, targetDB = this.ionicDB): Promise<Blob> {
     let data = targetDB.transaction('FILE_DATA', 'readonly').objectStore('FILE_DATA').get(`/userfs/${path}`);
     return new Promise((done, error) => {
       data.onsuccess = (ev) => {
@@ -388,7 +380,6 @@ export class IndexedDBService {
           let blob = new Blob([ev.target['result']['contents']], { type: mime });
           data.onsuccess = null;
           data.onerror = null;
-          _CallBack(blob);
           done(blob);
         } catch (e) {
           data.onsuccess = null;
@@ -438,13 +429,12 @@ export class IndexedDBService {
     }
   }
 
-  removeFileFromUserPath(path: string, _CallBack = (_ev: any) => { }, targetDB = this.ionicDB): Promise<any> {
+  removeFileFromUserPath(path: string, targetDB = this.ionicDB): Promise<any> {
     let data = targetDB.transaction('FILE_DATA', 'readwrite').objectStore('FILE_DATA').delete(`/userfs/${path}`);
     return new Promise((done, error) => {
       data.onsuccess = (ev) => {
         data.onsuccess = null;
         data.onerror = null;
-        _CallBack(ev);
         done(ev);
       }
       data.onerror = (e) => {

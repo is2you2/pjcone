@@ -54,7 +54,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           URL.revokeObjectURL(this.MainPostImage);
         }, 1000);
     } catch (e) { }
-    this.indexed.GetFileListFromDB('tmp_files/post', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
+    this.indexed.GetFileListFromDB('tmp_files/post').then(list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     this.global.portalHint = true;
   }
 

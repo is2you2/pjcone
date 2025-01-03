@@ -650,7 +650,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                         } catch (e) {
                           path = `todo/${this.userInput.id}/thumbnail.png`;
                         }
-                        this.indexed.saveBase64ToUserPath(base64, path, (_) => {
+                        this.indexed.saveBase64ToUserPath(base64, path).then(_ => {
                           if (this.global.p5todoAddtodo)
                             this.global.p5todoAddtodo(JSON.stringify(this.userInput));
                           done();
@@ -1615,7 +1615,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 } catch (e) {
                   path = `todo/${this.userInput.id}/thumbnail.png`;
                 }
-                this.indexed.saveBase64ToUserPath(base64, path, (_) => {
+                this.indexed.saveBase64ToUserPath(base64, path).then(_ => {
                   done();
                 });
                 URL.revokeObjectURL(header_image);
@@ -1870,7 +1870,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.PageDestoryed = true;
     if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
     this.global.portalHint = true;
-    this.indexed.GetFileListFromDB('tmp_files/todo', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
+    this.indexed.GetFileListFromDB('tmp_files/todo').then(list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     delete this.nakama.socket_reactive['add_todo_menu'];
     this.route.queryParams['unsubscribe']();
     if (this.desc_input) this.desc_input.onpaste = null;

@@ -1421,7 +1421,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         if (!this.FileInfo.blob)
           try {
             this.FileInfo.blob = await this.indexed.loadBlobFromUserPath(
-              this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.path, '', undefined, this.indexed.ionicDB);
+              this.FileInfo['alt_path'] || this.FileInfo['path'] || this.navParams.path, '', this.indexed.ionicDB);
           } catch (e) { }
         if (!this.NeedDownloadFile && this.CurrentViewId == GetViewId)
           setTimeout(() => {
@@ -2555,8 +2555,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             if (!this.FileInfo.alt_path && !this.FileInfo.path) throw '경로 없는 파일';
             this.global.godot_window['filename'] = this.FileInfo.filename;
             this.global.godot_window['create_thumbnail'](this.FileInfo);
-            let list = await this.indexed.GetFileListFromDB('tmp_files', undefined, this.indexed.godotDB);
-            list.forEach(path => this.indexed.removeFileFromUserPath(path, undefined, this.indexed.godotDB))
+            let list = await this.indexed.GetFileListFromDB('tmp_files', this.indexed.godotDB);
+            list.forEach(path => this.indexed.removeFileFromUserPath(path, this.indexed.godotDB))
           } catch (e) {
             console.log('godot 썸네일 저장 오류: ', e);
           }

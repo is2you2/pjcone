@@ -569,7 +569,7 @@ export class GlobalActService {
       if (this.indexed.godotDB) {
         try {
           await this.indexed.GetGodotIndexedDB();
-          await this.indexed.saveBlobToUserPath(target.blob, SavePath, undefined, this.indexed.godotDB);
+          await this.indexed.saveBlobToUserPath(target.blob, SavePath, this.indexed.godotDB);
           SuccessCreateIndexedDB = true;
         } catch (e) {
           console.log('내부 파일 없음: ', e);
@@ -579,7 +579,7 @@ export class GlobalActService {
       if (!SuccessCreateIndexedDB) {
         try { // 내부에 파일이 있는지 검토
           await this.indexed.GetGodotIndexedDB();
-          await this.indexed.saveBlobToUserPath(target.blob, SavePath, undefined, this.indexed.godotDB);
+          await this.indexed.saveBlobToUserPath(target.blob, SavePath, this.indexed.godotDB);
         } catch (e) { }
         await this.CreateGodotIFrame(_frame_name, keys);
       }

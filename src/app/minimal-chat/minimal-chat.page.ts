@@ -561,14 +561,14 @@ export class MinimalChatPage implements OnInit, OnDestroy {
                 break;
               case 'part': // 분할 파일 정보 수신
                 this.client.DownloadPartManager[data.uid][data.temp_id]['Progress']--;
-                this.indexed.checkIfFileExist(data.path, b => {
+                this.indexed.checkIfFileExist(data.path).then(b => {
                   if (!b) { // 파일이 없다면 파트파일 받기
                     this.indexed.saveBase64ToUserPath(',' + data.part, `${data.path}_${data.index}`);
                   }
                 });
                 return; // 알림 생성하지 않음
               case 'EOF': // 파일 수신 마무리하기
-                this.indexed.checkIfFileExist(data.path, async b => {
+                this.indexed.checkIfFileExist(data.path).then(async b => {
                   if (!b) { // 파일이 없다면 파트를 모아서 파일 만들기
                     await new Promise(async (done, err) => {
                       let GatheringInt8Array = [];
@@ -949,7 +949,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     this.noti.ClearNoti(this.lnId);
     if (this.client.status == 'idle') this.navCtrl.pop();
     // 첨부했던 파일들 삭제
-    this.indexed.GetFileListFromDB('tmp_files/sqaure', list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
+    this.indexed.GetFileListFromDB('tmp_files/sqaure').then(list => list.forEach(path => this.indexed.removeFileFromUserPath(path)));
     this.client.disconnect();
     this.client.DownloadPartManager = {};
   }
