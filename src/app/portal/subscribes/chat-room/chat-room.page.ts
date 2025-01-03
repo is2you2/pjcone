@@ -2549,7 +2549,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.isSendingQueue = false;
   }
 
-  send(with_key = false, actId?: string) {
+  send(with_key = false, actId: string = 'chatroom') {
     // 모바일 엔터키 동작 별도 행동처리, 줄 바꿈으로 행동함
     if (with_key && (isPlatform == 'Android' || isPlatform == 'iOS')) return;
     // 발송 버튼에 포커스 되므로 즉시 입력칸에 포커싱
