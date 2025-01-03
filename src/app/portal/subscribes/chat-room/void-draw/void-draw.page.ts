@@ -87,6 +87,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         this.p5SetDrawable(true);
       }
     });
+    this.ToggleAutoResolution = Boolean(localStorage.getItem('voiddraw_autoRes'));
   }
 
   voidDrawId = 'voidDraw';
@@ -455,8 +456,9 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         }
         this.UserToggleAutoResolution = (own = true) => {
           if (this.ToggleAutoResolution) {
+            localStorage.setItem('voiddraw_autoRes', `1`);
             this.p5SetCanvasViewportInit();
-          }
+          } else localStorage.removeItem('voiddraw_autoRes');
           if (this.ReadyToShareAct && own)
             this.webrtc.dataChannel.send(JSON.stringify({
               type: 'res_tog',
