@@ -792,9 +792,12 @@ export class PostViewerPage implements OnInit, OnDestroy {
       buttons: [{
         text: this.lang.text['ChatRoom']['Delete'],
         cssClass: 'redfont',
-        handler: async () => {
-          await this.nakama.RemovePost(this.PostInfo);
-          this.navCtrl.pop();
+        handler: () => {
+          const removePost = async () => {
+            await this.nakama.RemovePost(this.PostInfo);
+            this.navCtrl.pop();
+          }
+          removePost();
         }
       }],
     }).then(v => v.present());

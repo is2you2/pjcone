@@ -356,18 +356,21 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         buttons: [{
           text: this.lang.text['Nakama']['LocalNotiOK'],
           cssClass: 'redfont',
-          handler: async () => {
-            // 이 할 일 삭제 행동 모방
-            this.isButtonClicked = true;
-            await this.nakama.deleteTodoFromStorage(true, JSON.parse(JSON.stringify(this.userInput)));
-            // 이 할 일을 로컬에 저장하기
-            this.StoreAtSelChanged({ detail: { value: 'local' } });
-            this.isModify = false;
-            this.userInput.id = undefined;
-            this.userInput.noti_id = undefined;
-            this.userInput.create_at = undefined;
-            delete this.userInput['modified'];
-            this.saveData();
+          handler: () => {
+            const togglelocalact = async () => {
+              // 이 할 일 삭제 행동 모방
+              this.isButtonClicked = true;
+              await this.nakama.deleteTodoFromStorage(true, JSON.parse(JSON.stringify(this.userInput)));
+              // 이 할 일을 로컬에 저장하기
+              this.StoreAtSelChanged({ detail: { value: 'local' } });
+              this.isModify = false;
+              this.userInput.id = undefined;
+              this.userInput.noti_id = undefined;
+              this.userInput.create_at = undefined;
+              delete this.userInput['modified'];
+              this.saveData();
+            }
+            togglelocalact();
           }
         }]
       }).then(v => v.present());
@@ -1859,10 +1862,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       message: this.lang.text['ChatRoom']['CannotUndone'],
       buttons: [{
         text: this.lang.text['TodoDetail']['remove'],
-        handler: async () => {
-          this.isButtonClicked = true;
-          await this.nakama.deleteTodoFromStorage(true, this.userInput);
-          this.navCtrl.pop();
+        handler: () => {
+          const deleteAct = async () => {
+            this.isButtonClicked = true;
+            await this.nakama.deleteTodoFromStorage(true, this.userInput);
+            this.navCtrl.pop();
+          }
+          deleteAct();
         },
         cssClass: 'redfont',
       }]

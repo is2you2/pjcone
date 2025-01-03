@@ -3578,13 +3578,16 @@ export class NakamaService {
           message: new IonicSafeString(result_form),
           buttons: [{
             text: this.lang.text['Nakama']['LocalNotiOK'],
-            handler: async () => {
-              try {
-                await this.servers[_is_official][_target].client.deleteNotifications(
-                  this.servers[_is_official][_target].session, [this_noti.id]);
-              } catch (e) { }
-              this.noti.ClearNoti(this_noti.code);
-              this.update_notifications(_is_official, _target);
+            handler: () => {
+              const getNotiAct = async () => {
+                try {
+                  await this.servers[_is_official][_target].client.deleteNotifications(
+                    this.servers[_is_official][_target].session, [this_noti.id]);
+                } catch (e) { }
+                this.noti.ClearNoti(this_noti.code);
+                this.update_notifications(_is_official, _target);
+              }
+              getNotiAct();
             }
           }]
         }).then(v => v.present());
@@ -3615,33 +3618,39 @@ export class NakamaService {
               message: msg,
               buttons: [{
                 text: this.lang.text['Nakama']['ReqContAccept'],
-                handler: async () => {
-                  try {
-                    let user = await this_server.client.addGroupUsers(this_server.session, this_noti['content']['group_id'], [other_user.users[0].id]);
-                    if (!user) console.log('밴인 경우인 것 같음, 확인 필요');
-                    this.noti.ClearNoti(this_noti.code);
+                handler: () => {
+                  const groupJoinAct = async () => {
                     try {
-                      let noti = await this_server.client.deleteNotifications(this_server.session, [this_noti['id']]);
-                      if (noti) this.update_notifications(_is_official, _target);
-                      else console.log('알림 지우기 실패: ', noti);
+                      let user = await this_server.client.addGroupUsers(this_server.session, this_noti['content']['group_id'], [other_user.users[0].id]);
+                      if (!user) console.log('밴인 경우인 것 같음, 확인 필요');
+                      this.noti.ClearNoti(this_noti.code);
+                      try {
+                        let noti = await this_server.client.deleteNotifications(this_server.session, [this_noti['id']]);
+                        if (noti) this.update_notifications(_is_official, _target);
+                        else console.log('알림 지우기 실패: ', noti);
+                      } catch (e) {
+                        console.error('알림 삭제 오류: ', e);
+                      }
                     } catch (e) {
-                      console.error('알림 삭제 오류: ', e);
+                      console.error('그룹에 사용자 추가 오류: ', e);
                     }
-                  } catch (e) {
-                    console.error('그룹에 사용자 추가 오류: ', e);
                   }
+                  groupJoinAct();
                 }
               }, {
                 text: this.lang.text['Nakama']['ReqContReject'],
-                handler: async () => {
-                  try {
-                    let kick = await this_server.client.kickGroupUsers(this_server.session, this_noti['content']['group_id'], [other_user.users[0].id]);
-                    if (!kick) console.log('그룹 참여 거절을 kick한 경우 오류');
-                    await this_server.client.deleteNotifications(this_server.session, [this_noti['id']]);
-                    this.update_notifications(_is_official, _target);
-                  } catch (e) {
-                    console.error('사용자 강퇴 오류: ', e);
+                handler: () => {
+                  const joinRejectAct = async () => {
+                    try {
+                      let kick = await this_server.client.kickGroupUsers(this_server.session, this_noti['content']['group_id'], [other_user.users[0].id]);
+                      if (!kick) console.log('그룹 참여 거절을 kick한 경우 오류');
+                      await this_server.client.deleteNotifications(this_server.session, [this_noti['id']]);
+                      this.update_notifications(_is_official, _target);
+                    } catch (e) {
+                      console.error('사용자 강퇴 오류: ', e);
+                    }
                   }
+                  joinRejectAct();
                 },
                 cssClass: 'redfont',
               }],
@@ -3772,13 +3781,16 @@ export class NakamaService {
             message: new IonicSafeString(result_form),
             buttons: [{
               text: this.lang.text['Nakama']['LocalNotiOK'],
-              handler: async () => {
-                try {
-                  await this.servers[_is_official][_target].client.deleteNotifications(
-                    this.servers[_is_official][_target].session, [v.id]);
-                } catch (e) { }
-                this.noti.ClearNoti(v.code);
-                this.update_notifications(_is_official, _target);
+              handler: () => {
+                const notiAllAct = async () => {
+                  try {
+                    await this.servers[_is_official][_target].client.deleteNotifications(
+                      this.servers[_is_official][_target].session, [v.id]);
+                  } catch (e) { }
+                  this.noti.ClearNoti(v.code);
+                  this.update_notifications(_is_official, _target);
+                }
+                notiAllAct();
               }
             }]
           }).then(v => v.present());

@@ -164,32 +164,35 @@ export class UserFsDirPage implements OnInit, OnDestroy {
       }],
       buttons: [{
         text: this.lang.text['UserFsDir']['Create'],
-        handler: async (ev: any) => {
-          if (ev[0]) {
-            try {
-              let targetPath = `${this.CurrentDir ? (this.CurrentDir + '/') : ''}${ev[0]}`;
-              await this.indexed.createDirectory(targetPath);
-              let info = await this.indexed.GetFileInfoFromDB(targetPath);
-              let _info: FileDir = {
-                path: targetPath,
-                mode: info['mode'],
-                timestamp: info['timestamp'],
-                db: this.indexed.ionicDB,
-              };
-              _info.name = ev[0];
-              _info.dir = this.CurrentDir;
-              this.DirList.push(_info);
-            } catch (e) {
-              console.error('폴더 생성 실패: ', e);
+        handler: (ev: any) => {
+          const handerAct = async () => {
+            if (ev[0]) {
+              try {
+                let targetPath = `${this.CurrentDir ? (this.CurrentDir + '/') : ''}${ev[0]}`;
+                await this.indexed.createDirectory(targetPath);
+                let info = await this.indexed.GetFileInfoFromDB(targetPath);
+                let _info: FileDir = {
+                  path: targetPath,
+                  mode: info['mode'],
+                  timestamp: info['timestamp'],
+                  db: this.indexed.ionicDB,
+                };
+                _info.name = ev[0];
+                _info.dir = this.CurrentDir;
+                this.DirList.push(_info);
+              } catch (e) {
+                console.error('폴더 생성 실패: ', e);
+                this.p5toast.show({
+                  text: `${this.lang.text['UserFsDir']['FailedToCreateFolder']}: ${e}`,
+                });
+              }
+            } else {
               this.p5toast.show({
-                text: `${this.lang.text['UserFsDir']['FailedToCreateFolder']}: ${e}`,
+                text: this.lang.text['UserFsDir']['NeedFolderName'],
               });
             }
-          } else {
-            this.p5toast.show({
-              text: this.lang.text['UserFsDir']['NeedFolderName'],
-            });
           }
+          handerAct();
         }
       }]
     }).then(v => {

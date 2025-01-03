@@ -127,60 +127,63 @@ export class SubscribesPage implements OnInit {
           message: this.lang.text['ChatRoom']['RemoveChannelLogs'],
           buttons: [{
             text: this.lang.text['ChatRoom']['Delete'],
-            handler: async () => {
-              const actId = `subscribes_remove_1:1_${Date.now()}`;
-              this.p5loading.update({
-                id: actId,
-              });
-              let info: any;
-              try {
-                info = this.nakama.servers[isOfficial][target].info;
-              } catch (e) {
-                // 만약 실패한다면, 삭제된 서버여서 그럴 가능성이 높다
-                console.log('삭제된 서버의 채널 삭제: ', e);
-              }
-              await this.nakama.remove_group_list(this.nakama.groups[isOfficial][target][channel['group_id']], isOfficial, target, true);
-              delete this.nakama.channels_orig[isOfficial][target][channel.id];
-              this.nakama.remove_channel_files(isOfficial, target, channel.id, undefined, actId);
-              // 해당 채널과 관련된 파일 일괄 삭제 (cdn / ffs)
-              try { // FFS 요청 우선
-                let fallback = localStorage.getItem('fallback_fs');
-                if (!fallback) throw '사용자 지정 서버 없음';
-                let split_fullAddress = fallback.split('://');
-                let address = split_fullAddress.pop().split(':');
-                let protocol = split_fullAddress.pop();
-                if (protocol) {
-                  protocol += ':';
-                } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
-                let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
-                // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
-                let target_key = `${channel.id}_${this.nakama.users.self['display_name']}`;
-                try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
-                  target_key = `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`
-                } catch (e) { }
-                if (address)
-                  this.global.remove_files_from_storage_with_key(target_address, target_key, {});
-              } catch (e) { }
-              try { // cdn 삭제 요청, 로컬 채널은 주소 만들다가 알아서 튕김
-                let protocol = channel['info'].server.useSSL ? 'https:' : 'http:';
-                let address = channel['info'].server.address;
-                let target_address = `${[protocol]}//${address}:${info.apache_port || 9002}/`;
-                if (address) {
-                  this.global.remove_files_from_storage_with_key(target_address, `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`,
-                    { apache_port: info.apache_port, cdn_port: info.cdn_port });
-                }
-              } catch (e) { }
-              let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${channel.id}`);
-              for (let i = 0, j = list.length; i < j; i++) {
+            handler: () => {
+              const handerAct = async () => {
+                const actId = `subscribes_remove_1:1_${Date.now()}`;
                 this.p5loading.update({
                   id: actId,
-                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${targetHeader} (${list[i].split('/').pop()})`,
-                  progress: i / j,
                 });
-                await this.indexed.removeFileFromUserPath(list[i]);
+                let info: any;
+                try {
+                  info = this.nakama.servers[isOfficial][target].info;
+                } catch (e) {
+                  // 만약 실패한다면, 삭제된 서버여서 그럴 가능성이 높다
+                  console.log('삭제된 서버의 채널 삭제: ', e);
+                }
+                await this.nakama.remove_group_list(this.nakama.groups[isOfficial][target][channel['group_id']], isOfficial, target, true);
+                delete this.nakama.channels_orig[isOfficial][target][channel.id];
+                this.nakama.remove_channel_files(isOfficial, target, channel.id, undefined, actId);
+                // 해당 채널과 관련된 파일 일괄 삭제 (cdn / ffs)
+                try { // FFS 요청 우선
+                  let fallback = localStorage.getItem('fallback_fs');
+                  if (!fallback) throw '사용자 지정 서버 없음';
+                  let split_fullAddress = fallback.split('://');
+                  let address = split_fullAddress.pop().split(':');
+                  let protocol = split_fullAddress.pop();
+                  if (protocol) {
+                    protocol += ':';
+                  } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
+                  let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
+                  // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
+                  let target_key = `${channel.id}_${this.nakama.users.self['display_name']}`;
+                  try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
+                    target_key = `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`
+                  } catch (e) { }
+                  if (address)
+                    this.global.remove_files_from_storage_with_key(target_address, target_key, {});
+                } catch (e) { }
+                try { // cdn 삭제 요청, 로컬 채널은 주소 만들다가 알아서 튕김
+                  let protocol = channel['info'].server.useSSL ? 'https:' : 'http:';
+                  let address = channel['info'].server.address;
+                  let target_address = `${[protocol]}//${address}:${info.apache_port || 9002}/`;
+                  if (address) {
+                    this.global.remove_files_from_storage_with_key(target_address, `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`,
+                      { apache_port: info.apache_port, cdn_port: info.cdn_port });
+                  }
+                } catch (e) { }
+                let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${channel.id}`);
+                for (let i = 0, j = list.length; i < j; i++) {
+                  this.p5loading.update({
+                    id: actId,
+                    message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${targetHeader} (${list[i].split('/').pop()})`,
+                    progress: i / j,
+                  });
+                  await this.indexed.removeFileFromUserPath(list[i]);
+                }
+                this.p5loading.remove(actId);
+                this.nakama.rearrange_channels();
               }
-              this.p5loading.remove(actId);
-              this.nakama.rearrange_channels();
+              handerAct();
             },
             cssClass: 'redfont',
           }]
@@ -192,48 +195,51 @@ export class SubscribesPage implements OnInit {
           message: this.lang.text['ChatRoom']['RemoveChannelLogs'],
           buttons: [{
             text: this.lang.text['ChatRoom']['Delete'],
-            handler: async () => {
-              const actId = `subscribes_remove_local_${Date.now()}`;
-              this.p5loading.update({
-                id: actId,
-              });
-              delete this.nakama.channels_orig[isOfficial][target][channel.id];
-              try { // 그룹 이미지 삭제
-                await this.indexed.removeFileFromUserPath(`servers/${isOfficial}/${target}/groups/${channel.id}.img`);
-              } catch (e) {
-                console.log('그룹 이미지 삭제 오류: ', e);
-              }
-              this.nakama.save_groups_with_less_info();
-              // 해당 채널과 관련된 파일 일괄 삭제 (cdn)
-              try { // FFS 요청 우선
-                let fallback = localStorage.getItem('fallback_fs');
-                if (!fallback) throw '사용자 지정 서버 없음';
-                let split_fullAddress = fallback.split('://');
-                let address = split_fullAddress.pop().split(':');
-                let protocol = split_fullAddress.pop();
-                if (protocol) {
-                  protocol += ':';
-                } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
-                let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
-                // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
-                let target_key = `${channel.id}_${this.nakama.users.self['display_name']}`;
-                try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
-                  target_key = `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`
-                } catch (e) { }
-                if (address[0])
-                  this.global.remove_files_from_storage_with_key(target_address, target_key, {});
-              } catch (e) { }
-              let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${channel.id}`);
-              for (let i = 0, j = list.length; i < j; i++) {
+            handler: () => {
+              const handlerAct = async () => {
+                const actId = `subscribes_remove_local_${Date.now()}`;
                 this.p5loading.update({
                   id: actId,
-                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${targetHeader} (${list[i].split('/').pop()})`,
-                  progress: i / j,
                 });
-                await this.indexed.removeFileFromUserPath(list[i]);
+                delete this.nakama.channels_orig[isOfficial][target][channel.id];
+                try { // 그룹 이미지 삭제
+                  await this.indexed.removeFileFromUserPath(`servers/${isOfficial}/${target}/groups/${channel.id}.img`);
+                } catch (e) {
+                  console.log('그룹 이미지 삭제 오류: ', e);
+                }
+                this.nakama.save_groups_with_less_info();
+                // 해당 채널과 관련된 파일 일괄 삭제 (cdn)
+                try { // FFS 요청 우선
+                  let fallback = localStorage.getItem('fallback_fs');
+                  if (!fallback) throw '사용자 지정 서버 없음';
+                  let split_fullAddress = fallback.split('://');
+                  let address = split_fullAddress.pop().split(':');
+                  let protocol = split_fullAddress.pop();
+                  if (protocol) {
+                    protocol += ':';
+                  } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
+                  let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
+                  // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
+                  let target_key = `${channel.id}_${this.nakama.users.self['display_name']}`;
+                  try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
+                    target_key = `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`
+                  } catch (e) { }
+                  if (address[0])
+                    this.global.remove_files_from_storage_with_key(target_address, target_key, {});
+                } catch (e) { }
+                let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/channels/${channel.id}`);
+                for (let i = 0, j = list.length; i < j; i++) {
+                  this.p5loading.update({
+                    id: actId,
+                    message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${targetHeader} (${list[i].split('/').pop()})`,
+                    progress: i / j,
+                  });
+                  await this.indexed.removeFileFromUserPath(list[i]);
+                }
+                this.p5loading.remove(actId);
+                this.nakama.rearrange_channels();
               }
-              this.p5loading.remove(actId);
-              this.nakama.rearrange_channels();
+              handlerAct();
             },
             cssClass: 'redfont',
           }]

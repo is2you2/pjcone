@@ -527,74 +527,77 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           message: this.lang.text['ChatRoom']['CannotUndone'],
           buttons: [{
             text: this.lang.text['ChatRoom']['Delete'],
-            handler: async () => {
-              const actId = `remove_chatroom_${this.info.id}_${Date.now()}`;
-              this.p5loading.update({
-                id: actId,
-              });
-              let server_info = {};
-              try {
-                let info = this.nakama.servers[this.isOfficial][this.target].info;
-                server_info['cdn_port'] = info.cdn_port;
-                server_info['apache_port'] = info.apache_port;
-              } catch (e) {
-                server_info = {};
-              }
-              delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
-              try { // 그룹 이미지 삭제
-                switch (this.info['redirect']['type']) {
-                  case 3: // 그룹방
-                    await this.nakama.remove_group_list(
-                      this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target, true);
-                    break;
-                  case 0: // 로컬 채널
-                    await this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
-                    break;
-                }
-              } catch (e) {
-                console.log('그룹 이미지 삭제 오류: ', e);
-              }
-              try { // 그룹 정보 삭제
-                delete this.nakama.groups[this.isOfficial][this.target][this.info['group_id']];
-              } catch (e) {
-                console.log('DeleteGroupFailed: ', e);
-              }
-              this.nakama.save_groups_with_less_info();
-              // 해당 채널과 관련된 파일 일괄 삭제 (cdn / ffs)
-              try { // FFS 요청 우선
-                let fallback = localStorage.getItem('fallback_fs');
-                if (!fallback) throw '사용자 지정 서버 없음';
-                let split_fullAddress = fallback.split('://');
-                let address = split_fullAddress.pop().split(':');
-                let protocol = split_fullAddress.pop();
-                if (protocol) {
-                  protocol += ':';
-                } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
-                let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
-                // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
-                let target_key = `${this.info.id}_${this.nakama.users.self['display_name']}`;
-                try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
-                  target_key = `${this.info['info'].id}_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`
-                } catch (e) { }
-                this.global.remove_files_from_storage_with_key(target_address, target_key, {});
-              } catch (e) { }
-              try { // cdn 삭제 요청, 로컬 채널은 주소 만들다가 알아서 튕김
-                let protocol = this.info['info'].server.useSSL ? 'https:' : 'http:';
-                let address = this.info['info'].server.address;
-                let target_address = `${[protocol]}//${address}:${server_info['apache_port'] || 9002}/`;
-                this.global.remove_files_from_storage_with_key(target_address, `${this.info['info'].id}_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`, server_info);
-              } catch (e) { }
-              // 해당 채널과 관련된 파일 일괄 삭제 (로컬)
-              let list = await this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`);
-              for (let i = 0, j = list.length; i < j; i++) {
+            handler: () => {
+              const handlerAct = async () => {
+                const actId = `remove_chatroom_${this.info.id}_${Date.now()}`;
                 this.p5loading.update({
                   id: actId,
-                  message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${this.info['title']} (${list[i].split('/').pop()})`,
                 });
-                await this.indexed.removeFileFromUserPath(list[i]);
+                let server_info = {};
+                try {
+                  let info = this.nakama.servers[this.isOfficial][this.target].info;
+                  server_info['cdn_port'] = info.cdn_port;
+                  server_info['apache_port'] = info.apache_port;
+                } catch (e) {
+                  server_info = {};
+                }
+                delete this.nakama.channels_orig[this.isOfficial][this.target][this.info['id']];
+                try { // 그룹 이미지 삭제
+                  switch (this.info['redirect']['type']) {
+                    case 3: // 그룹방
+                      await this.nakama.remove_group_list(
+                        this.nakama.groups[this.isOfficial][this.target][this.info['group_id']] || this.info['info'], this.isOfficial, this.target, true);
+                      break;
+                    case 0: // 로컬 채널
+                      await this.indexed.removeFileFromUserPath(`servers/${this.isOfficial}/${this.target}/groups/${this.info.id}.img`);
+                      break;
+                  }
+                } catch (e) {
+                  console.log('그룹 이미지 삭제 오류: ', e);
+                }
+                try { // 그룹 정보 삭제
+                  delete this.nakama.groups[this.isOfficial][this.target][this.info['group_id']];
+                } catch (e) {
+                  console.log('DeleteGroupFailed: ', e);
+                }
+                this.nakama.save_groups_with_less_info();
+                // 해당 채널과 관련된 파일 일괄 삭제 (cdn / ffs)
+                try { // FFS 요청 우선
+                  let fallback = localStorage.getItem('fallback_fs');
+                  if (!fallback) throw '사용자 지정 서버 없음';
+                  let split_fullAddress = fallback.split('://');
+                  let address = split_fullAddress.pop().split(':');
+                  let protocol = split_fullAddress.pop();
+                  if (protocol) {
+                    protocol += ':';
+                  } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
+                  let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
+                  // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
+                  let target_key = `${this.info.id}_${this.nakama.users.self['display_name']}`;
+                  try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
+                    target_key = `${this.info['info'].id}_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`
+                  } catch (e) { }
+                  this.global.remove_files_from_storage_with_key(target_address, target_key, {});
+                } catch (e) { }
+                try { // cdn 삭제 요청, 로컬 채널은 주소 만들다가 알아서 튕김
+                  let protocol = this.info['info'].server.useSSL ? 'https:' : 'http:';
+                  let address = this.info['info'].server.address;
+                  let target_address = `${[protocol]}//${address}:${server_info['apache_port'] || 9002}/`;
+                  this.global.remove_files_from_storage_with_key(target_address, `${this.info['info'].id}_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`, server_info);
+                } catch (e) { }
+                // 해당 채널과 관련된 파일 일괄 삭제 (로컬)
+                let list = await this.indexed.GetFileListFromDB(`servers/${this.isOfficial}/${this.target}/channels/${this.info.id}`);
+                for (let i = 0, j = list.length; i < j; i++) {
+                  this.p5loading.update({
+                    id: actId,
+                    message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${this.info['title']} (${list[i].split('/').pop()})`,
+                  });
+                  await this.indexed.removeFileFromUserPath(list[i]);
+                }
+                this.p5loading.remove(actId);
+                this.navCtrl.pop();
               }
-              this.p5loading.remove(actId);
-              this.navCtrl.pop();
+              handlerAct();
             },
             cssClass: 'redfont',
           }]
