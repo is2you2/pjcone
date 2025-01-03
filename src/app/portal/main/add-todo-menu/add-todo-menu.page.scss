@@ -10,6 +10,14 @@
     scroll-behavior: smooth;
 }
 
+.group_background {
+    --background: var(--todo-worker-group-bg);
+}
+
+.worker_background {
+    --background: var(--todo-worker-bg);
+}
+
 .logs {
     background: var(--voidDraw-menu-background);
     border-radius: 8px;

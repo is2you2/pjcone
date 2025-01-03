@@ -51,19 +51,20 @@
                 <ion-accordion-group #ManageWorker>
                   <ion-accordion>
                     <ion-item button slot="header">
-                      <ion-label>{{lang.text['TodoDetail']['ManageWorker']}}</ion-label>
+                      <ion-label>{{lang.text['TodoDetail']['ManageWorker'] + ' (' + (this.userInput.workers.length) +
+                        ')'}}</ion-label>
                     </ion-item>
                     <div slot="content">
                       <ion-accordion-group #Groups>
                         <ion-accordion *ngFor="let key of WorkerGroups" [value]="key.id">
-                          <ion-item button slot="header">
+                          <ion-item button slot="header" class="group_background">
                             <ion-label>{{key.name}}</ion-label>
                           </ion-item>
                           <div slot="content">
-                            <ion-item button (click)="toggle_all_user(key.id)">
+                            <ion-item button (click)="toggle_all_user(key.id)" class="worker_background">
                               <ion-label>{{lang.text['TodoDetail']['ToggleWorkers']}}</ion-label>
                             </ion-item>
-                            <ion-item *ngFor="let worker of AvailableWorker[key.id]">
+                            <ion-item *ngFor="let worker of AvailableWorker[key.id]" class="worker_background">
                               <ion-checkbox [(ngModel)]="worker.todo_checked">{{worker.override_name ||
                                 worker.display_name}}</ion-checkbox>
                             </ion-item>
