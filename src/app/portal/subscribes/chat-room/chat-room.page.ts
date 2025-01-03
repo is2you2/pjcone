@@ -1484,6 +1484,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }, 3500);
     }
     await new Promise((done) => setTimeout(done, 1000));
+    if (!this.nakama.ChatroomLinkAct) return;
     // 찾기를 진행하면서 다른 페이지로 넘어간 경우 찾기 행동을 보류함
     if (targetChat === null || this.WillLeave) {
       this.p5loading.update({
