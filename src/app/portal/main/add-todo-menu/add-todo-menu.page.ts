@@ -1830,8 +1830,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         this.p5loading.update({
           id: actId,
           message: `${this.lang.text['TodoDetail']['ApplyingTodo']}: ${this.userInput.title}`,
+          forceEnd: 1000,
         });
-        this.p5loading.remove(actId);
         return;
       }
     }
@@ -1848,8 +1848,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.p5loading.update({
       id: actId,
       message: `${this.lang.text['TodoDetail']['ApplyingTodo']}: ${this.userInput.title}`,
+      forceEnd: 1000,
     });
-    this.p5loading.remove(actId);
   }
 
   /** 이 해야할 일 삭제 (삭제 버튼 전용) */

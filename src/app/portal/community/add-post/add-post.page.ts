@@ -711,8 +711,8 @@ export class AddPostPage implements OnInit, OnDestroy {
       id: 'add_post',
       message: this.lang.text['AddPost']['SyncMainImage'],
       image: this.MainPostImage,
+      forceEnd: 1000,
     });
-    this.p5loading.remove('add_post');
   }
 
   /** 파일이 선택되고 나면 */
@@ -1421,8 +1421,8 @@ export class AddPostPage implements OnInit, OnDestroy {
     await this.p5loading.update({
       id: actId,
       message: `${this.lang.text['AddPost']['WIP']}: ${this.userInput.title}`,
+      forceEnd: 1000,
     });
-    this.p5loading.remove(actId);
   }
 
   /** 이 페이지를 떠날 예정 */

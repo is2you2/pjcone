@@ -127,8 +127,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             id: 'chatroom',
             message: this.lang.text['ChatRoom']['LocalImageRemoved'],
             image: null,
+            forceEnd: 1000,
           });
-          this.p5loading.remove('chatroom');
         } else document.getElementById('local_channel').click();
       },
       context: () => {
@@ -140,8 +140,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               id: 'chatroom',
               message: this.lang.text['ChatRoom']['LocalImageRemoved'],
               image: null,
+              forceEnd: 1000,
             });
-            this.p5loading.remove('chatroom');
           } else try {
             let fromClipboard = await this.global.GetValueFromClipboard('chatroom');
             switch (fromClipboard.type) {
@@ -711,8 +711,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               id: 'chatroom',
               message: this.lang.text['ChatRoom']['LocalImageChanged'],
               image: this.info['info']['img'],
+              forceEnd: 1000,
             });
-            this.p5loading.remove('chatroom');
           });
         } else throw 'DataURL 주소가 아님';
       } catch (e) {
@@ -900,7 +900,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           message: `${this.lang.text['ChatRoom']['CountFile']}: ${ev.target.files.length}`,
           buttons: [{
             text: this.lang.text['ChatRoom']['Send'],
-            handler: async () => {
+            handler: () => {
               const actId = 'chatroom';
               this.p5loading.update({
                 id: actId,
@@ -938,9 +938,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         const actId = 'chatroom';
         this.p5loading.update({
           id: actId,
+          forceEnd: 1000,
         });
         this.selected_blobFile_callback_act(ev.target.files[0]);
-        this.p5loading.remove(actId);
         let input = document.getElementById(this.file_sel_id) as HTMLInputElement;
         input.value = '';
       }
@@ -963,8 +963,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         id: 'chatroom',
         message: this.lang.text['ChatRoom']['LocalImageChanged'],
         image: this.info['info']['img'],
+        forceEnd: 1000,
       });
-      this.p5loading.remove('chatroom');
     });
   }
 
@@ -1254,9 +1254,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               const actId = 'chatroom';
               this.p5loading.update({
                 id: actId,
+                forceEnd: 1000,
               });
               this.selected_blobFile_callback_act(file.file);
-              this.p5loading.remove(actId);
             } else { // 여러 파일 발송 여부 검토 후, 아니라고 하면 첫 파일만
               this.alertCtrl.create({
                 header: this.lang.text['ChatRoom']['MultipleSend'],
@@ -2791,8 +2791,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.p5loading.update({
               id: actId,
               message: this.lang.text['ChatRoom']['MsgRemoved'],
+              forceEnd: 1000,
             });
-            this.p5loading.remove(actId);
           }
           removeAct();
         }

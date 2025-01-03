@@ -176,32 +176,35 @@ export class GroupDetailPage implements OnInit, OnDestroy {
       }],
       buttons: [{
         text: this.lang.text['GroupDetail']['ChangeMaxCount'],
-        handler: async (ev) => {
-          const actId = `group_detail_updateMemberMaximum_${Date.now()}`;
-          this.p5loading.update({
-            id: actId,
-          });
-          let newCount = Number(ev['0']);
-          try {
-            await this.nakama.servers[this.isOfficial][this.target].client.rpc(
-              this.nakama.servers[this.isOfficial][this.target].session,
-              'update_group_info_fn', {
-              group_id: this.info['id'],
-              max_count: newCount,
+        handler: (ev) => {
+          const changeLimitAct = async () => {
+            const actId = `group_detail_updateMemberMaximum_${Date.now()}`;
+            this.p5loading.update({
+              id: actId,
             });
-            this.info['max_count'] = newCount;
-            if (newCount == 1) {
-              this.nakama.channels_orig[this.isOfficial][this.target][this.info['channel_id']]['status'] = 'online';
-            } else {
-              await this.nakama.count_channel_online_member(this.nakama.channels_orig[this.isOfficial][this.target][this.info['channel_id']], this.isOfficial, this.target);
+            let newCount = Number(ev['0']);
+            try {
+              await this.nakama.servers[this.isOfficial][this.target].client.rpc(
+                this.nakama.servers[this.isOfficial][this.target].session,
+                'update_group_info_fn', {
+                group_id: this.info['id'],
+                max_count: newCount,
+              });
+              this.info['max_count'] = newCount;
+              if (newCount == 1) {
+                this.nakama.channels_orig[this.isOfficial][this.target][this.info['channel_id']]['status'] = 'online';
+              } else {
+                await this.nakama.count_channel_online_member(this.nakama.channels_orig[this.isOfficial][this.target][this.info['channel_id']], this.isOfficial, this.target);
+              }
+            } catch (e) {
+              console.log('채널 최대인원 변경 실패: ', e);
+              this.p5toast.show({
+                text: `${this.lang.text['GroupDetail']['FailedToChangeMax']}: ${e.statusText || e} (${e.status})`,
+              });
             }
-          } catch (e) {
-            console.log('채널 최대인원 변경 실패: ', e);
-            this.p5toast.show({
-              text: `${this.lang.text['GroupDetail']['FailedToChangeMax']}: ${e.statusText || e} (${e.status})`,
-            });
+            this.p5loading.remove(actId);
           }
-          this.p5loading.remove(actId);
+          changeLimitAct();
         }
       }]
     }).then(v => v.present());

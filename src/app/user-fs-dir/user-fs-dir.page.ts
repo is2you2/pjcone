@@ -231,7 +231,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
       const actId = `userfs_inputFileSelected_${Date.now()}`;
       let is_multiple_files = ev.target.files.length != 1;
       if (is_multiple_files) {
-        this.p5loading.update({
+        await this.p5loading.update({
           id: actId,
           message: this.lang.text['UserFsDir']['MultipleSave'],
         });
@@ -247,7 +247,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
         this.noti.ClearNoti(4);
         this.p5loading.remove(actId);
       } else {
-        this.p5loading.update({
+        await this.p5loading.update({
           id: actId,
         });
         await this.importSelected(ev.target.files[0]);
@@ -322,7 +322,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
 
   /** 폴더를 선택했을 때 */
   async LoadAllIndexedFiles() {
-    this.p5loading.update({
+    await this.p5loading.update({
       id: this.InitIndexingId,
       message: this.lang.text['UserFsDir']['LoadingExplorer'],
     });
@@ -559,7 +559,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
   }
   async inputImageSelected(ev: any) {
     const actId = `userfs_inputImageSelected_${Date.now()}`;
-    this.p5loading.update({
+    await this.p5loading.update({
       id: actId,
       message: this.lang.text['UserFsDir']['LoadingExplorer'],
     });
@@ -606,7 +606,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
         handler: () => {
           const RemoveAct = async () => {
             const actId = `userfs_RemoveDirectoryRecursive_${Date.now()}`;
-            this.p5loading.update({
+            await this.p5loading.update({
               id: actId,
               message: this.lang.text['UserFsDir']['DeleteFile'],
             });

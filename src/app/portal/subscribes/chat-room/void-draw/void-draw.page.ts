@@ -106,6 +106,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       id: 'voiddraw',
       message: this.lang.text['voidDraw']['UseThisImage'],
     }, true);
+    // 다른 페이지에서 진입하는 경우가 있으므로 remove가 분리되어있어야함
     this.p5loading.remove('voiddraw');
   }
 
@@ -351,11 +352,11 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                 await this.p5loading.update({
                   id: 'voiddraw',
                   image: FileURL,
+                  forceEnd: 1000,
                 });
                 setTimeout(() => {
                   URL.revokeObjectURL(FileURL);
                 }, 100);
-                this.p5loading.remove('voiddraw');
               }
               showToast();
               // 결과물을 클립보드에 저장하기
@@ -1350,8 +1351,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         id: actId,
         message: `${this.lang.text['voidDraw']['Connected']}: ${address[0]}`,
         progress: 1,
+        forceEnd: 1000,
       });
-      this.p5loading.remove(actId);
       if (channel_id) { // 준비된 채널로 진입
         this.IceWebRTCWsClient.send(JSON.stringify({
           type: 'join',
