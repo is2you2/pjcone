@@ -1430,6 +1430,10 @@ export class AddPostPage implements OnInit, OnDestroy {
   /** 이 페이지 내에서 페이지가 전환됨 */
   WillLeavePageInside = false;
   ionViewWillLeave() {
+    this.p5loading.update({
+      id: 'add_post',
+      forceEnd: 0,
+    }, true);
     this.WillLeavePage = true;
     if (!this.WillLeavePageInside)
       this.global.RestoreShortCutAct('AddPostPage');

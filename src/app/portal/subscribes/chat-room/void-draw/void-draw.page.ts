@@ -8,7 +8,7 @@ import { NakamaService, ServerInfo } from 'src/app/nakama.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { WebrtcService } from 'src/app/webrtc.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IonModal, Platform } from '@ionic/angular/common';
+import { IonModal } from '@ionic/angular/common';
 import { P5LoadingService } from 'src/app/p5-loading.service';
 
 @Component({
@@ -30,7 +30,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private navCtrl: NavController,
-    private platform: Platform,
     private p5loading: P5LoadingService,
   ) { }
   ngOnDestroy(): void {
@@ -1718,7 +1717,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       this.p5loading.update({
         id: 'voiddraw',
       });
-      this.WithoutSave = false;
       this.p5save_image();
     }
   }
@@ -1742,6 +1740,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   WillLeaveHere = false;
   ionViewWillLeave() {
+    this.p5loading.update({
+      id: 'voiddraw',
+      forceEnd: 0,
+    }, true);
     this.global.ArcadeWithFullScreen = false;
     this.global.portalHint = true;
     if (this.p5SetDrawable) this.p5SetDrawable(false);
@@ -1750,11 +1752,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     this.global.RestoreShortCutAct('void-draw')
   }
 
-  WithoutSave = true;
-  ionViewDidLeave() {
-    if (this.WithoutSave)
-      this.p5loading.remove('voiddraw');
-  }
   // 아래, LinkQRPage 병합
   @ViewChild('AddrQRShare') AddrQRShare: IonModal;
   QRCodeSRC: any;

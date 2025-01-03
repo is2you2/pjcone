@@ -967,6 +967,10 @@ export class MinimalChatPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.p5loading.update({
+      id: 'minimal_chat',
+      forceEnd: 0,
+    }, true);
     this.global.RestoreShortCutAct('minimal-chat-init');
     this.route.queryParams['unsubscribe']();
     window.onfocus = null;

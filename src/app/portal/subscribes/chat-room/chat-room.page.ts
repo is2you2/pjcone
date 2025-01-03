@@ -3104,6 +3104,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   ionViewWillLeave() {
+    this.p5loading.update({
+      id: 'chatroom',
+      forceEnd: 0,
+    }, true);
     this.WillLeave = true;
     this.noti.Current = '';
     this.removeShortCutKey();
@@ -3124,7 +3128,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.p5loading.remove('FindQoute');
+    this.p5loading.update({
+      id: 'FindQoute',
+      forceEnd: 0,
+    }, true);
     if (this.useVoiceRecording) this.StopAndSaveVoiceRecording();
     if (isPlatform != 'DesktopPWA')
       this.global.ArcadeWithFullScreen = false;

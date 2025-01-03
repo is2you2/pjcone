@@ -70,7 +70,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       this.global.PIPLinkedVideoElement = null;
       URL.revokeObjectURL(this.FileURL);
     }
-    this.p5loading.remove('ionicviewer');
     this.cont.abort('파일 뷰어 벗어남');
     this.cont = null;
     if (this.FilenameElement) {
@@ -2530,6 +2529,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
    */
   PageWillDestroy = false;
   async ionViewWillLeave() {
+    this.p5loading.update({
+      id: 'ionicviewer',
+      forceEnd: 0,
+    }, true);
     this.global.ArcadeWithFullScreen = false;
     this.useP5Navigator = false;
     this.global.portalHint = true;

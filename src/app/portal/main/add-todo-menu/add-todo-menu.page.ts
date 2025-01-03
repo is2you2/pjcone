@@ -1888,6 +1888,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   WillLeavePage = false;
   async ionViewWillLeave() {
+    this.p5loading.update({
+      id: 'add_todo',
+      forceEnd: 0,
+    }, true);
     this.global.RestoreShortCutAct('add-todo');
     this.WillLeavePage = true;
     this.WaitingLoaded = false;
