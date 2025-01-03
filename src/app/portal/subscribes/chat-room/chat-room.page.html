@@ -391,7 +391,7 @@
                   style="z-index: 32;">Backspace
                 </div>
                 <textarea [id]="ChannelUserInputId" [(ngModel)]="userInput.text" (keyup)="check_key($event)"
-                  (keydown)="check_key($event)" class="TextAreaInput imageForm" style="overflow: auto; z-index: 16;"
+                  (keydown)="check_key($event)" class="TextAreaInput imageForm" style="overflow: auto;"
                   (click)="make_ext_hidden()" [placeholder]="inputPlaceholder"></textarea>
               </td>
               <td>

@@ -52,7 +52,7 @@
       [(ngModel)]="userInput.title"></ion-input>
   </ion-item>
   <div style="position: relative;">
-    <div *ngIf="global.ShowHint && CheckIfTitleInputFocus" class="shortcut_hint">Enter</div>
+    <div *ngIf="global.ShowHint && CheckIfTitleInputFocus" class="shortcut_hint" style="z-index: 32;">Enter</div>
     <textarea id="add_post_content" class="infobox" style="height: 360px;" [disabled]="isSaveClicked"
       [placeholder]="lang.text['AddPost']['ContentPlaceHolder']" [(ngModel)]="userInput.content"></textarea>
   </div>

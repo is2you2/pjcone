@@ -139,7 +139,7 @@
                 </ion-accordion>
               </ion-accordion-group>
               <div style="position: relative;">
-                <div *ngIf="global.ShowHint && CheckIfTitleFocus" class="shortcut_hint">Enter</div>
+                <div *ngIf="global.ShowHint && CheckIfTitleFocus" class="shortcut_hint" style="z-index: 32;">Enter</div>
                 <textarea id="descInput" class="infobox" style="height: 240px;" [(ngModel)]="userInput.description"
                   [placeholder]="lang.text['TodoDetail']['description']"></textarea>
               </div>

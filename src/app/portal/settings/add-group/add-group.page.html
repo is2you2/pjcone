@@ -57,7 +57,7 @@
       <ion-label>{{lang.text['AddGroup']['GroupDetail']}}</ion-label>
     </ion-item-divider>
     <div style="position: relative;">
-      <div *ngIf="global.ShowHint && CheckIfTitleFocus" class="shortcut_hint">Enter</div>
+      <div *ngIf="global.ShowHint && CheckIfTitleFocus" class="shortcut_hint" style="z-index: 32;">Enter</div>
       <textarea id="group_desc" class="infobox" [disabled]="isSaveClicked || userInput.id != ''"
         [(ngModel)]="userInput.description" [placeholder]="lang.text['AddGroup']['GroupDetail_placeholder']"></textarea>
     </div>
