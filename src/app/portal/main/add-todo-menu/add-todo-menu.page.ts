@@ -1208,6 +1208,26 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.toggle_logs[group_id] = !this.toggle_logs[group_id];
     for (let i = 0, j = this.AvailableWorker[group_id].length; i < j; i++)
       this.AvailableWorker[group_id][i]['todo_checked'] = this.toggle_logs[group_id];
+    this.count_selected_worker();
+  }
+
+  /** 선택된 작업자 수 */
+  SelectedWorkers = 0;
+  count_selected_worker() {
+    let keys = Object.keys(this.AvailableWorker);
+    let check_duplicate = [];
+    for (let i = 0, j = keys.length; i < j; i++)
+      for (let k = 0, l = this.AvailableWorker[keys[i]].length; k < l; k++) {
+        let target_id = this.AvailableWorker[keys[i]][k].id || this.AvailableWorker[keys[i]][k].user_id;
+        if (this.AvailableWorker[keys[i]][k].todo_checked && !check_duplicate.includes(target_id)) {
+          this.userInput.workers.push({
+            id: target_id,
+            name: this.nakama.load_other_user(target_id, this.userInput.remote.isOfficial, this.userInput.remote.target)['display_name'],
+          });
+          check_duplicate.push(target_id);
+        }
+      }
+    this.SelectedWorkers = check_duplicate.length;
   }
 
   worker_done = 0;
