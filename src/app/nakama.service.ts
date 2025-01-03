@@ -2809,13 +2809,19 @@ export class NakamaService {
   /** 현재 보여지는 메시지들을 저장함  
    * @param messages 메시지[]
    */
-  saveListedMessage(messages: any[], channel_info: any, _is_official: string, _target: string) {
+  saveListedMessage(messages: any[], channel_info: any, _is_official: string, _target: string, force_removeFront?: boolean) {
     let SepByDate = {};
     let tmp_msg: any[] = JSON.parse(JSON.stringify(messages));
+    /** 날짜별 첫 메시지가 삭제되는 경우 검토용  
+     * true 인 경우 최초 메시지보다 오래된 것은 삭제된 것으로 간주함
+     */
+    let removeFront = force_removeFront || false;
     while (tmp_msg.length) {
       if (SepByDate['target'] != tmp_msg[0]['msgDate']) {
-        if (SepByDate['msg'])
-          this.saveMessageByDate(SepByDate, channel_info, _is_official, _target);
+        if (SepByDate['msg']) {
+          this.saveMessageByDate(SepByDate, channel_info, _is_official, _target, removeFront);
+          removeFront = true;
+        }
         SepByDate['target'] = tmp_msg[0]['msgDate'];
         SepByDate['msg'] = [];
       }
@@ -2831,11 +2837,11 @@ export class NakamaService {
       delete msg['showInfo'];
       SepByDate['msg'].push(msg);
     }
-    this.saveMessageByDate(SepByDate, channel_info, _is_official, _target);
+    this.saveMessageByDate(SepByDate, channel_info, _is_official, _target, removeFront);
   }
 
   /** 날짜별로 대화 기록 저장하기 */
-  saveMessageByDate(info: any, channel_info: any, _is_official: string, _target: string) {
+  saveMessageByDate(info: any, channel_info: any, _is_official: string, _target: string, removeFront = false) {
     if (!info.msg || !info.msg.length) return;
     const SepByDate = JSON.parse(JSON.stringify(info));
     const DateSep = SepByDate['target'].split('-');
@@ -2858,7 +2864,7 @@ export class NakamaService {
       // 기존 메시지에서 불러온 메시지 기준 과거 메시지와 불러와진 메시지를 분리
       const FrontTime = new Date(added[0].create_time).getTime();
       for (let i = base.length - 1; i >= 0; i--) {
-        if (FrontTime < new Date(base[i].create_time).getTime()) {
+        if (removeFront || FrontTime < new Date(base[i].create_time).getTime()) {
           let setRemove = base.splice(i, 1);
           setRemove[0]['code'] = 2;
           removed.push(setRemove[0]);

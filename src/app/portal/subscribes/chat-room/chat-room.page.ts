@@ -2093,7 +2093,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.next_cursor = v.next_cursor;
         this.prev_cursor = v.prev_cursor;
         this.pullable = true;
-        this.nakama.saveListedMessage(this.messages, this.info, this.isOfficial, this.target);
+        this.nakama.saveListedMessage(this.messages, this.info, this.isOfficial, this.target, this.next_cursor === undefined);
       } catch (e) {
         await this.LoadLocalChatHistory();
       }
