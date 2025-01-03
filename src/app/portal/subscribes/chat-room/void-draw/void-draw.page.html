@@ -1,4 +1,4 @@
-<ion-header class="ion-no-border">
+<ion-header *ngIf="!global.ArcadeWithFullScreen" class="ion-no-border">
   <ion-toolbar>
     <ion-title>{{lang.text['ChatRoom']['voidDraw']}}</ion-title>
     <ion-buttons slot="start">

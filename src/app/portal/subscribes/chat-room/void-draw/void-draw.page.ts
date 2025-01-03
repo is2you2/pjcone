@@ -143,6 +143,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       } else this.dismiss_draw();
     }
     this.global.p5KeyShortCut['FKeyAct'] = () => {
+      this.ToggleFocusMode();
     }
     this.global.p5KeyShortCut['Escape'] = () => {
       if (this.isDrawServerCreated)
@@ -567,7 +568,16 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             else ApplyCell.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="checkmark"></ion-icon>`;
           }
         }
-
+        // 포커스 모드
+        let FocusMode = top_row.insertCell(3); // 추가
+        if (this.global.ShowHint)
+          FocusMode.innerHTML = `<div><div class="shortcut_hint shortcut_voiddraw">F</div><ion-icon style="width: 27px; height: 27px" name="expand-outline"></ion-icon></div>`;
+        else FocusMode.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="wifi-outline"></ion-icon>`;
+        FocusMode.style.textAlign = 'center';
+        FocusMode.style.cursor = 'pointer';
+        FocusMode.onclick = () => {
+          this.ToggleFocusMode();
+        }
         BottomMenu = p.createElement('table');
         BottomMenu.style('position: absolute; bottom: 0px;');
         BottomMenu.style(`width: 100%; height: ${BUTTON_HEIGHT}px;`);
@@ -1250,6 +1260,12 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 집중 모드 토글 행동 */
+  ToggleFocusMode() {
+    this.global.ArcadeWithFullScreen = !this.global.ArcadeWithFullScreen;
+    this.p5voidDraw?.windowResized();
+  }
+
   /** 중계서버 사용 가능한 서버 */
   ServerList = [];
   /** 로컬 웹소켓 서버 생성 여부 검토 */
@@ -1720,6 +1736,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   WillLeaveHere = false;
   ionViewWillLeave() {
+    this.global.ArcadeWithFullScreen = false;
     this.global.portalHint = true;
     if (this.p5SetDrawable) this.p5SetDrawable(false);
     this.WillLeaveHere = true;
