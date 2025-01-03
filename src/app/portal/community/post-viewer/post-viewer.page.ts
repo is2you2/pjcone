@@ -387,9 +387,11 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       _is_official = 'local';
                     }
                     this.IsFocusOnHere = false;
+                    let json = JSON.parse(JSON.stringify(this.PostInfo['attachments'][index]))
+                    json['filename'] = `[${index}] ${json['filename']}`;
                     this.global.ActLikeModal('portal/community/post-viewer/ionic-viewer', {
                       info: {
-                        content: this.PostInfo['attachments'][index],
+                        content: json,
                         sender_id: creator,
                       },
                       isOfficial: _is_official,
@@ -473,9 +475,11 @@ export class PostViewerPage implements OnInit, OnDestroy {
                             _is_official = 'local';
                           }
                           this.IsFocusOnHere = false;
+                          let json = JSON.parse(JSON.stringify(this.PostInfo['attachments'][index]))
+                          json['filename'] = `[${index}] ${json['filename']}`;
                           this.global.ActLikeModal('portal/community/post-viewer/ionic-viewer', {
                             info: {
-                              content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])),
+                              content: json,
                               sender_id: creator,
                             },
                             isOfficial: _is_official,
@@ -513,9 +517,11 @@ export class PostViewerPage implements OnInit, OnDestroy {
                                 _is_official = 'local';
                               }
                               this.IsFocusOnHere = false;
+                              let json = JSON.parse(JSON.stringify(this.PostInfo['attachments'][index]))
+                              json['filename'] = `[${index}] ${json['filename']}`;
                               this.global.ActLikeModal('portal/community/post-viewer/ionic-viewer', {
                                 info: {
-                                  content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])),
+                                  content: json,
                                   sender_id: creator,
                                 },
                                 isOfficial: _is_official,
@@ -603,9 +609,11 @@ export class PostViewerPage implements OnInit, OnDestroy {
                       _is_official = 'local';
                     }
                     this.IsFocusOnHere = false;
+                    let json = JSON.parse(JSON.stringify(this.PostInfo['attachments'][index]))
+                    json['filename'] = `[${index}] ${json['filename']}`;
                     this.global.ActLikeModal('portal/community/post-viewer/ionic-viewer', {
                       info: {
-                        content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])),
+                        content: json,
                         sender_id: creator,
                       },
                       isOfficial: _is_official,
@@ -660,8 +668,11 @@ export class PostViewerPage implements OnInit, OnDestroy {
           for (let i = 0; i < attach_len; i++)
             if (!RelevanceIndexes.includes(i))
               RelevanceIndexes.push(i);
-          for (let index of RelevanceIndexes)
-            this.RearrangedRelevance.push({ content: JSON.parse(JSON.stringify(this.PostInfo['attachments'][index])) });
+          for (let index of RelevanceIndexes) {
+            let json = JSON.parse(JSON.stringify(this.PostInfo['attachments'][index]))
+            json['filename'] = `[${index}] ${json['filename']}`;
+            this.RearrangedRelevance.push({ content: json });
+          }
           let result = [];
           let CollectResult = () => {
             if (result.length) {
