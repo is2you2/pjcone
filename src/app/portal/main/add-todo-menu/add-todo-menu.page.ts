@@ -416,10 +416,11 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     const FileURL = URL.createObjectURL(blob);
     if (this_file['viewer'] == 'image') {
       this_file['thumbnail'] = this.sanitizer.bypassSecurityTrustUrl(FileURL);
-      this.p5loading.update({
-        id: actId,
-        image: FileURL,
-      });
+      if (showLoading)
+        this.p5loading.update({
+          id: actId,
+          image: FileURL,
+        });
     }
     try {
       await this.indexed.saveBlobToUserPath(blob, this_file['path']);
