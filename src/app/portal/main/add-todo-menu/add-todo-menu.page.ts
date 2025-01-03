@@ -1807,6 +1807,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           text: this.lang.text['TodoDetail']['CanAddToServer'],
         });
         this.isButtonClicked = false;
+        this.p5loading.update({
+          id: actId,
+          message: `${this.lang.text['TodoDetail']['ApplyingTodo']}: ${this.userInput.title}`,
+        });
         this.p5loading.remove(actId);
         return;
       }
@@ -1821,6 +1825,10 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       path = `todo/${this.userInput.id}/info.todo`;
     }
     await this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), path);
+    this.p5loading.update({
+      id: actId,
+      message: `${this.lang.text['TodoDetail']['ApplyingTodo']}: ${this.userInput.title}`,
+    });
     this.p5loading.remove(actId);
   }
 
