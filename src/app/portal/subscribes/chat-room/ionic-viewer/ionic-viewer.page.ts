@@ -1564,16 +1564,16 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             this.ChangeToAnother(-1);
             break;
           case 'KeyW': // 위로 이동
-            if (this.p5SyntaxHighlightReader)
-              this.p5SyntaxHighlightReader.scrollTo({ top: this.p5SyntaxHighlightReader.scrollTop - this.p5SyntaxHighlightReader.clientHeight / 2, behavior: 'smooth' });
+            if (ev['shiftKey']) {
+              this.ToggleFocusMode();
+            } else
+              this.p5SyntaxHighlightReader?.scrollTo({ top: this.p5SyntaxHighlightReader.scrollTop - this.p5SyntaxHighlightReader.clientHeight / 2, behavior: 'smooth' });
             break;
           case 'KeyS': // 아래로 이동
             if (ev['shiftKey']) {
               this.ShareContent();
-            } else {
-              if (this.p5SyntaxHighlightReader)
-                this.p5SyntaxHighlightReader.scrollTo({ top: this.p5SyntaxHighlightReader.scrollTop + this.p5SyntaxHighlightReader.clientHeight / 2, behavior: 'smooth' });
-            }
+            } else
+              this.p5SyntaxHighlightReader?.scrollTo({ top: this.p5SyntaxHighlightReader.scrollTop + this.p5SyntaxHighlightReader.clientHeight / 2, behavior: 'smooth' });
             break;
           case 'KeyD': // 오른쪽 이동
             // 다운로드
@@ -1592,6 +1592,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               this.modify_image();
               this.FileMenu.dismiss();
             }
+            break;
+          case 'KeyT': // 텍스트 편집
+            if (ev['shiftKey'])
+              this.open_text_editor();
             break;
           case 'KeyF': // 메뉴 열기 (우클릭)
             if (!ev['ctrlKey']) {
@@ -2365,7 +2369,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         let res = await fetch(this.FileInfo.url);
         blob = await res.blob();
       } else blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.path, this.FileInfo.type);
-      this.global.WriteValueToClipboard(blob.type, blob, 'image.png');
+      this.global.WriteValueToClipboard(blob.type, blob, 'image.png', 'ionicviewer');
     } catch (e) {
       this.p5toast.show({
         text: `${this.lang.text['GlobalAct']['ClipboardFailed']}`,
@@ -2379,7 +2383,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     if (this.NeedDownloadFile) return;
     this.FileMenu.dismiss();
     this.global.ArcadeWithFullScreen = !this.global.ArcadeWithFullScreen;
-    this.p5canvas?.windowResized();
+    this.p5canvas?.windowResized?.();
+    if (this.p5SyntaxHighlightReader)
+      this.p5SyntaxHighlightReader.style.height = 'fit-content';
   }
 
   /** 덮어쓰기 전단계 */
@@ -2659,6 +2665,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   copy_url(data: string) {
-    this.global.WriteValueToClipboard('text/plain', data);
+    this.global.WriteValueToClipboard('text/plain', data, undefined, 'ionicviewer');
   }
 }
