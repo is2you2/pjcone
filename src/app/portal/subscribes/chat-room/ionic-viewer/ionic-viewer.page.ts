@@ -180,7 +180,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       this.p5canvas.remove();
       // 온전한 재생을 위해 저장 후 재생시킴
       if (this.FileURL.indexOf('blob:') != 0) {
-        await this.DownloadFileFromURL();
+        await this.DownloadFileFromURL(true);
         let blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo.type);
         this.FileURL = URL.createObjectURL(blob);
       }
@@ -613,8 +613,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   /** URL 링크인 경우 파일을 로컬에 다운받기 */
-  async DownloadFileFromURL() {
-    if (!(!this.CurrentFileSize && !this.NeedDownloadFile && this.FileInfo['path'] && !this.isQuickLaunchViewer)) return;
+  async DownloadFileFromURL(force = false) {
+    if (force || !(!this.CurrentFileSize && !this.NeedDownloadFile && this.FileInfo['path'] && !this.isQuickLaunchViewer)) return;
     const actId = 'ionicviewer';
     await this.p5loading.update({
       id: actId,
