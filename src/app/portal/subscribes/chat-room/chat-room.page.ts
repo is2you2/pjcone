@@ -2377,7 +2377,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               console.log('메시지 편집 요청 오류: ', e);
             }
           } else edit_well = true;
-          if (!edit_well) break;
+          if (!edit_well) continue;
           if (this.info['local']) {
             CurrentMessage.IsMsgEditMode['code'] = 1;
             this.nakama.content_to_hyperlink(CurrentMessage.IsMsgEditMode, this.isOfficial, this.target);
@@ -2385,7 +2385,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.SendLocalMessage(CurrentMessage.IsMsgEditMode);
           }
           this.CancelEditText();
-          break;
+          continue;
         }
       } catch (e) {
         this.CancelEditText();
@@ -2499,7 +2499,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           is_me: true,
         };
         this.SendLocalMessage(msg);
-        break;
+        continue;
       } // 아래, 온라인 행동
       this.sending_msg.push(tmp);
       if (this.NeedScrollDown())
