@@ -1203,7 +1203,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   open_first_file() {
     for (let i = 0, j = this.ViewableMessage.length; i < j; i++)
       if (this.ViewableMessage[i].content.filename) {
-        this.open_viewer(this.ViewableMessage[i], this.ViewableMessage[i].content.url || this.ViewableMessage[i].content.path);
+        this.file_detail(this.ViewableMessage[i]);
         break;
       }
   }
@@ -1211,7 +1211,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   open_last_file() {
     for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
       if (this.ViewableMessage[i].content.filename) {
-        this.open_viewer(this.ViewableMessage[i], this.ViewableMessage[i].content.url || this.ViewableMessage[i].content.path);
+        this.file_detail(this.ViewableMessage[i]);
         break;
       }
   }
