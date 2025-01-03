@@ -280,7 +280,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           },
           no_edit: undefined,
         };
-        if (this.userInput.file) { // 선택한 파일을 편집하는 경우
+        try {
+          if (!this.userInput.file) throw '새 파일 생성';
           switch (this.userInput.file.viewer) {
             case 'code':
             case 'text':
@@ -291,8 +292,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               props.info.content.viewer = this.userInput.file.viewer;
               props.info.content.filename = this.userInput.file.filename;
               break;
+            default:
+              throw '감당 불가한 파일';
           }
-        } else { // 새 텍스트 파일
+        } catch (e) {
+          // 새 텍스트 파일
           props.info.content.is_new = 'text';
           props.info.content.filename = this.global.TextEditorNewFileName();
           props.no_edit = true;
