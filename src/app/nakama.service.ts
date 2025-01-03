@@ -2389,7 +2389,7 @@ export class NakamaService {
         // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
         this.global.remove_files_from_storage_with_key(target_address, my_uid, {});
       } catch (e) { }
-      this.servers[_is_official][_target].client.rpc(
+      await this.servers[_is_official][_target].client.rpc(
         this.servers[_is_official][_target].session,
         'remove_account_fn', { user_id: my_uid }).catch(e => { }); // 계정 삭제시 오래 걸리므로 무시처리
     } catch (e) { }
@@ -4251,13 +4251,15 @@ export class NakamaService {
       });
       let info_json: FileInfo = file_info.objects[0].value;
       try {
-        this.servers[_is_official][_target].client.rpc(
+        await this.servers[_is_official][_target].client.rpc(
           this.servers[_is_official][_target].session,
           'remove_channel_file', {
           collection: _collection,
           key: (force_path || info_json.path.replace(/:|\?|\/|\\|<|>|\.| |\(|\)|\-/g, '_').substring(0, 120)) + '_',
         });
-      } catch (e) { }
+      } catch (e) {
+        console.log('SQL 강제 파일 삭제 오류: ', e);
+      }
       await this.servers[_is_official][_target].client.deleteStorageObjects(
         this.servers[_is_official][_target].session, {
         object_ids: [{
