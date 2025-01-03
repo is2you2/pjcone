@@ -327,23 +327,24 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         // 채널 채팅으로부터 들어온 경우 모든 대화 목록으로부터 연관 콘테츠 불러오기
         if (this.channelId) {
           const VeryFirstTime = new Date(this.navParams?.relevance[0]?.create_time).getTime();
-          let LoadAllRelevances = async () => {
+          const LoadAllRelevances = async () => {
             const TARGET_FOLDER_PATH = `servers/${this.isOfficial}/${this.target}/channels/${this.channelId}/chats/`;
-            let list = await this.indexed.GetFileListFromDB(TARGET_FOLDER_PATH);
+            const list = await this.indexed.GetFileListFromDB(TARGET_FOLDER_PATH);
             for (let i = list.length - 1; i >= 0; i--) {
               if (!this.cont) return;
-              let fileInfo = await this.indexed.GetFileInfoFromDB(list[i]);
+              const fileInfo = await this.indexed.GetFileInfoFromDB(list[i]);
               switch (fileInfo.mode) {
                 // 파일인 경우
                 case 33206:
-                  let blob = await this.indexed.loadBlobFromUserPath(list[i], '');
-                  let text = await blob.text();
-                  let json = JSON.parse(text);
+                  const blob = await this.indexed.loadBlobFromUserPath(list[i], '');
+                  const text = await blob.text();
+                  const json = JSON.parse(text);
                   for (let j = json.length - 1; j >= 0; j--) {
-                    const CurrentMsg = json[j];
+                    let CurrentMsg = json[j];
                     // 파일이 있는 메시지에 한해서 누적시키기
-                    if (json[j]?.code != 2 && json[j]?.content?.filename) {
-                      if (VeryFirstTime > new Date(json[j].create_time).getTime()) {
+                    if (CurrentMsg.code != 2 && CurrentMsg.content?.filename) {
+                      if (VeryFirstTime > new Date(CurrentMsg.create_time).getTime()) {
+                        CurrentMsg.content['path'] = `servers/${this.isOfficial}/${this.target}/channels/${this.channelId}/files/msg_${CurrentMsg.message_id}.${CurrentMsg.content['file_ext']}`;
                         this.Relevances.unshift(CurrentMsg);
                         this.RelevanceIndex++;
                       }
@@ -413,12 +414,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           this.canvasDiv.removeChild(this.canvasDiv.childNodes[i]);
         } catch (e) { }
     URL.revokeObjectURL(this.FileURL);
+    this.FileURL = null;
     if (this.FileInfo.url) {
       this.CreateContentInfo();
       this.NeedDownloadFile = false;
       await this.init_viewer();
     } else {
-      let path = this.FileInfo['alt_path'] || this.FileInfo['path'] ||
+      const path = this.FileInfo['alt_path'] || this.FileInfo['path'] ||
         `servers/${this.isOfficial}/${this.target}/channels/${msg.channel_id}/files/msg_${msg.message_id}.${msg.content['file_ext']}`;
       this.image_info['path'] = path;
       this.NeedDownloadFile = await this.indexed.checkIfFileExist(`${path}.history`);
