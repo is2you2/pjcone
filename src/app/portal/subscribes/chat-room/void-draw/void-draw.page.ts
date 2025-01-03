@@ -572,7 +572,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         let FocusMode = top_row.insertCell(3); // 추가
         if (this.global.ShowHint)
           FocusMode.innerHTML = `<div><div class="shortcut_hint shortcut_voiddraw">F</div><ion-icon style="width: 27px; height: 27px" name="expand-outline"></ion-icon></div>`;
-        else FocusMode.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="wifi-outline"></ion-icon>`;
+        else FocusMode.innerHTML = `<ion-icon style="width: 27px; height: 27px" name="expand-outline"></ion-icon>`;
         FocusMode.style.textAlign = 'center';
         FocusMode.style.cursor = 'pointer';
         FocusMode.onclick = () => {
