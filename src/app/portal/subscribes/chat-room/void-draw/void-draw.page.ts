@@ -276,6 +276,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         this.colorPickAlpha = this.LineQuickTransparent;
         strokeRatio = Number(this.LineQuickWeight) || 1;
       }
+      let canvas: p5.Renderer;
       p.setup = async () => {
         const DefaultStrokeWeight = localStorage.getItem('voiddraw-lineweight') || 1;
         strokeRatio = Number(DefaultStrokeWeight);
@@ -289,7 +290,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         p.noLoop();
         p.noFill();
         p.imageMode(p.CENTER);
-        let canvas = p.createCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
+        canvas = p.createCanvas(targetDiv.clientWidth, targetDiv.clientHeight);
         canvas.parent(targetDiv);
         CamPosition.x = p.width / 2;
         CamPosition.y = p.height / 2;
@@ -911,7 +912,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         RemoteDraw = null;
         p.redraw();
       }
-      const BUTTON_HEIGHT = this.platform.is('iphone') ? 50 : 56;
+      const BUTTON_HEIGHT = 56;
       /** 모든 터치 또는 마우스 포인터의 현재 지점 */
       let MouseAct: p5.Vector;
       /** 이동 연산용 시작점 */
@@ -932,7 +933,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       let isClickOnMenu = false;
       p.mousePressed = (ev: any) => {
         if (!Drawable) return;
-        if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) {
+        if (ev.target != canvas.elt) {
           isClickOnMenu = true;
           return;
         }
@@ -1023,7 +1024,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       }
       p.mouseWheel = (ev: any) => {
         if (!Drawable) return;
-        if (p.mouseY < BUTTON_HEIGHT || p.mouseY > p.height - BUTTON_HEIGHT) {
+        if (ev.target != canvas.elt) {
           isClickOnMenu = true;
           return;
         }
@@ -1085,13 +1086,11 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       let SetDrawable = (tog: boolean) => {
         Drawable = tog;
       }
-      const HEADER_HEIGHT = this.platform.is('iphone') ? 44 : 56;
       p.touchStarted = (ev: any) => {
         if (!Drawable) return;
         isClickOnMenu = false;
         touches = ev['touches'];
-        if (ev['changedTouches'][0].clientY < BUTTON_HEIGHT + HEADER_HEIGHT
-          || ev['changedTouches'][0].clientY > p.height) {
+        if (ev.target != canvas.elt) {
           isClickOnMenu = true;
           return;
         }
@@ -1099,12 +1098,12 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         switch (touches.length) {
           case 1: // 그리기
             if (this.isCropMode) {
-              CropModeStartAct(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - HEADER_HEIGHT);
-            } else DrawStartAct(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - HEADER_HEIGHT);
+              CropModeStartAct(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - this.HeaderHeight);
+            } else DrawStartAct(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - this.HeaderHeight);
             break;
           case 2: // 패닝, 스케일
-            let One = p.createVector(touches[0].clientX, touches[0].clientY - HEADER_HEIGHT);
-            let Two = p.createVector(touches[1].clientX, touches[1].clientY - HEADER_HEIGHT);
+            let One = p.createVector(touches[0].clientX, touches[0].clientY - this.HeaderHeight);
+            let Two = p.createVector(touches[1].clientX, touches[1].clientY - this.HeaderHeight);
             TouchBetween = One.dist(Two);
             MovementStartPosition = One.copy().add(Two).div(2);
             TempStartCamPosition = CamPosition.copy();
@@ -1128,13 +1127,13 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         switch (touches.length) {
           case 1: { // 그리기
             if (this.isCropMode && !isClickOnMenu) {
-              let CurrentPosition = p.createVector(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - HEADER_HEIGHT);
+              let CurrentPosition = p.createVector(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - this.HeaderHeight);
               if (isCropSizing) {
                 CropSize = CropStartSize.copy().add(CropStartScalePos.copy().sub(CurrentPosition).div(-CamScale));
               } else CropModePosition = CropStartPosition.copy().sub(CurrentPosition).div(-CamScale);
               p.redraw();
             } else {
-              let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - HEADER_HEIGHT);
+              let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - this.HeaderHeight);
               pos.sub(CropPosition);
               pos.add(ActualCanvasSizeHalf);
               let _pos = { x: pos.x, y: pos.y };
@@ -1151,8 +1150,8 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           }
             break;
           case 2: { // 스케일과 패닝
-            let One = p.createVector(touches[0].clientX, touches[0].clientY - HEADER_HEIGHT);
-            let Two = p.createVector(touches[1].clientX, touches[1].clientY - HEADER_HEIGHT);
+            let One = p.createVector(touches[0].clientX, touches[0].clientY - this.HeaderHeight);
+            let Two = p.createVector(touches[1].clientX, touches[1].clientY - this.HeaderHeight);
             let CenterPos = One.copy().add(Two).div(2);
             let dist = One.dist(Two);
             CamScale = dist / TouchBetween * ScaleStartRatio;
@@ -1173,7 +1172,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             if (this.isCropMode) {
             } else if (!isClickOnMenu) {
               if (CurrentDraw) {
-                let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - HEADER_HEIGHT);
+                let pos = MappingPosition(ev['changedTouches'][0].clientX, ev['changedTouches'][0].clientY - this.HeaderHeight);
                 pos.sub(CropPosition);
                 pos.add(ActualCanvasSizeHalf);
                 let _pos = { x: pos.x, y: pos.y };
@@ -1199,7 +1198,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         isClickOnMenu = false;
       }
       let PanningInit = () => {
-        MovementStartPosition = p.createVector(touches[0].clientX, touches[0].clientY - HEADER_HEIGHT);
+        MovementStartPosition = p.createVector(touches[0].clientX, touches[0].clientY - this.HeaderHeight);
         TempStartCamPosition = CamPosition.copy();
       }
       /** 모든 입력을 제거했을 때 공통 행동 */
@@ -1260,9 +1259,16 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     }
   }
 
+  /** 상단 헤더의 크기 */
+  HeaderHeight = 56;
   /** 집중 모드 토글 행동 */
   ToggleFocusMode() {
     this.global.ArcadeWithFullScreen = !this.global.ArcadeWithFullScreen;
+    if (this.global.ArcadeWithFullScreen) {
+      this.HeaderHeight = 0;
+    } else {
+      this.HeaderHeight = 56;
+    }
     this.p5voidDraw?.windowResized();
   }
 
