@@ -1611,7 +1611,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       message: `${this.lang.text['ContentViewer']['OnLoadContent']}: ${this.userInput.file.blob.name}`,
       image: null,
     });
-    if (this.userInput.file.viewer == 'image')
+    if (this.userInput.file?.viewer == 'image')
       this.p5loading.update({
         id: 'chatroom',
         image: FileURL,

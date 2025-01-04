@@ -1693,7 +1693,6 @@ export class NakamaService {
           this.channels_orig[_is_official][_target][channel_info.id]['color'] = (group_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6);
           if (this.channels_orig[_is_official][_target][channel_info.id]['status'] == 'missing')
             delete this.channels_orig[_is_official][_target][channel_info.id]['status'];
-          this.load_groups(_is_official, _target, group_id, true);
         } catch (e) {
           console.error('그룹 채널 생성 오류: ', e);
         }
@@ -2487,7 +2486,6 @@ export class NakamaService {
       });
       delete this.groups[_is_official][_target];
     } catch (e) { }
-    this.save_groups_with_less_info();
     // 그룹서버 정리
     this.p5loading.update({
       id: actId,
@@ -2958,7 +2956,6 @@ export class NakamaService {
           c['title'] = this.groups[_is_official][_target][targetId]['name'];
           c['info'] = this.groups[_is_official][_target][targetId];
           this.groups[_is_official][_target][targetId]['channel_id'] = c.id;
-          this.save_groups_with_less_info();
           break;
         default:
           console.error('예상하지 못한 채널 정보: ', type);
