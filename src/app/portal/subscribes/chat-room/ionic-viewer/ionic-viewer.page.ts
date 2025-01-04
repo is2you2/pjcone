@@ -1285,15 +1285,18 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             ReinitLerp = 0;
             p.loop();
           }
+          const ReinitDataValues = () => {
+            LastScale = StartScale;
+            StartPositionX = lastPos.x;
+            StartPositionY = lastPos.y;
+          }
           p.draw = () => {
             if (ReinitVideo) {
               ReinitLerp += .07;
               if (ReinitLerp >= 1) {
                 ReinitVideo = false;
                 ReinitLerp = 1;
-                LastScale = StartScale;
-                StartPositionX = lastPos.x;
-                StartPositionY = lastPos.y;
+                ReinitDataValues();
                 isInitStatus = true;
                 p.noLoop();
               }
@@ -1364,9 +1367,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                   startPos = firstCopy.add(touches[1]).div(2).copy();
                   break;
                 default: // 그 이상은 정렬
-                  LastScale = StartScale;
-                  StartPositionX = lastPos.x;
-                  StartPositionY = lastPos.y;
+                  ReinitDataValues();
                   Repositioning = true;
                   RePositioningVideo();
                   break;
@@ -1414,9 +1415,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               let size = Object.keys(touches).length;
               switch (size) {
                 case 0: // 손을 전부 뗌
-                  LastScale = StartScale;
-                  StartPositionX = lastPos.x;
-                  StartPositionY = lastPos.y;
+                  ReinitDataValues();
                   if (isInitStatus && !Repositioning) {
                     lastReleasePos.sub(startPos);
                     if (lastReleasePos.x > SWIPE_SIZE)
