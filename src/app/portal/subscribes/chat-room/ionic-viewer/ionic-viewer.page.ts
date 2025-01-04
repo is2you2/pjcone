@@ -705,17 +705,16 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               this.image_info['height'] = img.elt.naturalHeight;
               imageOriginalSize = p.createVector(img.elt.naturalWidth, img.elt.naturalHeight);
               if (this.image_info['width'] / this.image_info['height'] < this.canvasDiv.clientWidth / this.canvasDiv.clientHeight) {
-                let tmp_width = this.image_info['width'] * this.canvasDiv.clientHeight / this.image_info['height'];
-                this.canvasDiv.style.backgroundSize = `${tmp_width}px`;
-                this.canvasDiv.style.backgroundPositionX = `${(this.canvasDiv.clientWidth - tmp_width) / 2}px`;
-                this.canvasDiv.style.backgroundPositionY = `0px`;
+                const tmp_width = this.image_info['width'] * this.canvasDiv.clientHeight / this.image_info['height'];
+                StartBackgroundSize = tmp_width;
+                StartPositionX = (this.canvasDiv.clientWidth - tmp_width) / 2;
+                StartPositionY = 0;
               } else {
-                this.canvasDiv.style.backgroundSize = `${this.canvasDiv.clientWidth}px`;
-                this.canvasDiv.style.backgroundPositionX = `0px`;
-                let imageRatio = this.canvasDiv.clientWidth / imageOriginalSize.x;
-                let centerHeight =
+                StartBackgroundSize = this.canvasDiv.clientWidth;
+                StartPositionX = 0;
+                const imageRatio = this.canvasDiv.clientWidth / imageOriginalSize.x;
+                StartPositionY =
                   this.canvasDiv.clientHeight / 2 - imageOriginalSize.y * imageRatio / 2;
-                this.canvasDiv.style.backgroundPositionY = `${centerHeight}px`;
               }
               RePositioningImage();
               img.remove();
@@ -737,16 +736,19 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               if (this.image_info['width'] / this.image_info['height'] < this.canvasDiv.clientWidth / this.canvasDiv.clientHeight) {
                 let tmp_width = this.image_info['width'] * this.canvasDiv.clientHeight / this.image_info['height'];
                 this.canvasDiv.style.backgroundSize = `${p.lerp(StartBackgroundSize, tmp_width, ReinitLerp)}px`;
-                this.canvasDiv.style.backgroundPositionX = `${p.lerp(StartPositionX, (this.canvasDiv.clientWidth - tmp_width) / 2, ReinitLerp)}px`;
-                this.canvasDiv.style.backgroundPositionY = `${p.lerp(StartPositionY, 0, ReinitLerp)}px`;
+                lastPos.x = p.lerp(StartPositionX, (this.canvasDiv.clientWidth - tmp_width) / 2, ReinitLerp)
+                lastPos.y = p.lerp(StartPositionY, 0, ReinitLerp)
               } else {
+                StartBackgroundSize
                 this.canvasDiv.style.backgroundSize = `${p.lerp(StartBackgroundSize, this.canvasDiv.clientWidth, ReinitLerp)}px`;
-                this.canvasDiv.style.backgroundPositionX = `${p.lerp(StartPositionX, 0, ReinitLerp)}px`;
+                lastPos.x = p.lerp(StartPositionX, 0, ReinitLerp);
                 let imageRatio = this.canvasDiv.clientWidth / imageOriginalSize.x;
                 let centerHeight =
                   this.canvasDiv.clientHeight / 2 - imageOriginalSize.y * imageRatio / 2;
-                this.canvasDiv.style.backgroundPositionY = `${p.lerp(StartPositionY, centerHeight, ReinitLerp)}px`;
+                lastPos.y = p.lerp(StartPositionY, centerHeight, ReinitLerp);
               }
+              this.canvasDiv.style.backgroundPositionX = `${lastPos.x}px`;
+              this.canvasDiv.style.backgroundPositionY = `${lastPos.y}px`;
             }
           }
           // 재조정 애니메이션을 위한 추가 변수
@@ -759,9 +761,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let RePositioningImage = () => {
             ReinitImage = true;
             ReinitLerp = 0;
-            StartBackgroundSize = Number(this.canvasDiv.style.backgroundSize.split('px').shift());
-            StartPositionX = Number(this.canvasDiv.style.backgroundPositionX.split('px').shift());
-            StartPositionY = Number(this.canvasDiv.style.backgroundPositionY.split('px').shift());
             p.loop();
           }
           p.windowResized = () => {
@@ -775,20 +774,21 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let endPos: p5.Vector = p.createVector();
           let lastScale: number = 1;
           let TransformImage = () => {
-            this.canvasDiv.style.backgroundPositionX = `${lastPos.x + endPos.x}px`;
-            this.canvasDiv.style.backgroundPositionY = `${lastPos.y + endPos.y}px`;
+            StartPositionX = lastPos.x + endPos.x;
+            StartPositionY = lastPos.y + endPos.y;
+            this.canvasDiv.style.backgroundPositionX = `${StartPositionX}px`;
+            this.canvasDiv.style.backgroundPositionY = `${StartPositionY}px`;
           }
           let ScaleImage = (center: p5.Vector, ratio: number) => {
-            let beforeCalced = lastScale;
-            let Calced = lastScale * ratio;
-            let posX = Number(this.canvasDiv.style.backgroundPositionX.split('px')[0]);
-            let posY = Number(this.canvasDiv.style.backgroundPositionY.split('px')[0]);
-            let widthMoved = (beforeCalced - Calced) * p.map(center.x, posX, posX + beforeCalced, 0, 1);
-            let scaledImageHeight = (beforeCalced - Calced) / imageOriginalSize.x * imageOriginalSize.y;
-            let heightMoved = scaledImageHeight * p.map(center.y, posY, posY + beforeCalced / imageOriginalSize.x * imageOriginalSize.y, 0, 1);
-            this.canvasDiv.style.backgroundPositionX = `${posX + widthMoved}px`
-            this.canvasDiv.style.backgroundPositionY = `${posY + heightMoved}px`;
-            this.canvasDiv.style.backgroundSize = `${Calced}px`;
+            StartBackgroundSize = lastScale * ratio;
+            const widthMoved = (lastScale - StartBackgroundSize) * p.map(center.x, StartPositionX, StartPositionX + lastScale, 0, 1);
+            const scaledImageHeight = (lastScale - StartBackgroundSize) / imageOriginalSize.x * imageOriginalSize.y;
+            const heightMoved = scaledImageHeight * p.map(center.y, StartPositionY, StartPositionY + lastScale / imageOriginalSize.x * imageOriginalSize.y, 0, 1);
+            StartPositionX = StartPositionX + widthMoved;
+            StartPositionY = StartPositionY + heightMoved;
+            this.canvasDiv.style.backgroundPositionX = `${StartPositionX}px`;
+            this.canvasDiv.style.backgroundPositionY = `${StartPositionY}px`;
+            this.canvasDiv.style.backgroundSize = `${StartBackgroundSize}px`;
           }
           p.mousePressed = () => {
             if (!this.useP5Navigator) return;
@@ -1229,15 +1229,27 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               } catch (e) {
                 mediaObject.remove();
               }
-              this.image_info['width'] = mediaObject['elt']['videoWidth'];
-              this.image_info['height'] = mediaObject['elt']['videoHeight'];
-              RePositioningVideo();
-              mediaObject['elt'].hidden = false;
-              mediaObject['elt'].style.position = 'absolute';
-              mediaObject['elt'].onloadedmetadata = () => {
+              const InitAct = () => {
                 this.image_info['width'] = mediaObject['elt']['videoWidth'];
                 this.image_info['height'] = mediaObject['elt']['videoHeight'];
+                const ContextBoxHeightWithBottomPadding = this.ContentBox.clientHeight - (this.global.ArcadeWithFullScreen ? 0 : 45);
+                if (this.image_info['width'] / this.image_info['height'] < this.ContentBox.clientWidth / ContextBoxHeightWithBottomPadding) {
+                  StartScale = ContextBoxHeightWithBottomPadding / this.image_info['height'];
+                  StartPositionX = this.ContentBox.clientWidth / 2 - this.image_info['width'] * StartScale / 2;
+                  StartPositionY = 0;
+                } else {
+                  StartScale = this.ContentBox.clientWidth / this.image_info['width'];
+                  StartPositionX = 0;
+                  StartPositionY = ContextBoxHeightWithBottomPadding / 2 - this.image_info['height'] * StartScale / 2;
+                }
                 RePositioningVideo();
+              }
+              InitAct();
+              mediaObject['elt'].hidden = false;
+              mediaObject['elt'].style.position = 'absolute';
+              // 파일 전환시 이곳에서 정확한 정보로 작업됨
+              mediaObject['elt'].onloadedmetadata = () => {
+                InitAct();
                 mediaObject['elt'].hidden = false;
                 mediaObject['elt'].onloadedmetadata = null;
               }
@@ -1269,19 +1281,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let EndScale = 1;
           let StartPositionX = 0;
           let StartPositionY = 0;
-          let LastPositionX = 0;
-          let LastPositionY = 0;
-          let EndPositionX = 0;
-          let EndPositionY = 0;
           /** init 직후 스케일 조정이 없는 상태인 경우 */
           let isInitStatus = true;
           /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
           let RePositioningVideo = () => {
             ReinitVideo = true;
             ReinitLerp = 0;
-            StartPositionX = LastPositionX;
-            StartPositionY = LastPositionY;
-            StartScale = LastScale;
             p.loop();
           }
           p.draw = () => {
@@ -1297,19 +1302,19 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               // 비디오 스케일과 위치 조정
               if (this.image_info['width'] / this.image_info['height'] < this.ContentBox.clientWidth / ContextBoxHeightWithBottomPadding) {
                 EndScale = ContextBoxHeightWithBottomPadding / this.image_info['height'];
-                EndPositionX = this.ContentBox.clientWidth / 2 - this.image_info['width'] * EndScale / 2;
-                EndPositionY = 0;
+                endPos.x = this.ContentBox.clientWidth / 2 - this.image_info['width'] * EndScale / 2;
+                endPos.y = 0;
               } else {
                 EndScale = this.ContentBox.clientWidth / this.image_info['width'];
-                EndPositionX = 0;
-                EndPositionY = ContextBoxHeightWithBottomPadding / 2 - this.image_info['height'] * EndScale / 2;
+                endPos.x = 0;
+                endPos.y = ContextBoxHeightWithBottomPadding / 2 - this.image_info['height'] * EndScale / 2;
               }
               LastScale = p.lerp(StartScale, EndScale, ReinitLerp);
-              LastPositionX = p.lerp(StartPositionX, EndPositionX, ReinitLerp);
-              LastPositionY = p.lerp(StartPositionY, EndPositionY, ReinitLerp);
+              lastPos.x = p.lerp(StartPositionX, endPos.x, ReinitLerp);
+              lastPos.y = p.lerp(StartPositionY, endPos.y, ReinitLerp);
               mediaObject['size'](this.image_info['width'] * LastScale, this.image_info['height'] * LastScale);
-              mediaObject['elt'].style.left = `${LastPositionX}px`;
-              mediaObject['elt'].style.top = `${LastPositionY}px`;
+              mediaObject['elt'].style.left = `${lastPos.x}px`;
+              mediaObject['elt'].style.top = `${lastPos.y}px`;
             }
           }
           let SearchAndPlayNextVideo = async () => {
@@ -1341,7 +1346,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             }, 50);
           }
           let startPos: p5.Vector = p.createVector();
+          let lastPos: p5.Vector = p.createVector();
+          let endPos: p5.Vector = p.createVector();
           let touches: { [id: string]: p5.Vector } = {};
+          /** 두 점 사이의 거리 */
+          let dist_two: number;
+          let Repositioning = false;
           p.touchStarted = (ev: any) => {
             if (!this.useP5Navigator || document.pictureInPictureElement) return;
             if ('changedTouches' in ev) {
@@ -1353,10 +1363,50 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 case 1: // 첫 탭
                   startPos = touches[ev.changedTouches[0].identifier].copy();
                   break;
-                default: // 그 이상은 무시
+                case 2: // 두번째 손가락이 들어옴
+                  let firstCopy = touches[0].copy();
+                  dist_two = firstCopy.dist(touches[1]);
+                  startPos = firstCopy.add(touches[1]).div(2).copy();
+                  break;
+                default: // 그 이상은 정렬
+                  Repositioning = true;
+                  RePositioningVideo();
                   break;
               }
             }
+          }
+          let ScaleAndTransformVideo = (center: p5.Vector, ratio: number) => {
+            StartScale = LastScale * ratio;
+            const widthMoved = (LastScale - StartScale) * p.map(center.x, StartPositionX, StartPositionX + LastScale, 0, 1);
+            const scaledImageHeight = (LastScale - StartScale) / this.image_info['width'] * this.image_info['height'];
+            const heightMoved = scaledImageHeight * p.map(center.y, StartPositionY, StartPositionY + LastScale / this.image_info['width'] * this.image_info['height'], 0, 1);
+            StartPositionX = StartPositionX + widthMoved;
+            StartPositionY = StartPositionY + heightMoved;
+            mediaObject['elt'].style.left = `${startPos.x}px`;
+            mediaObject['elt'].style.top = `${startPos.y}px`;
+            mediaObject['size'](this.image_info['width'] * StartScale, this.image_info['height'] * StartScale);
+          }
+          p.touchMoved = (ev: any) => {
+            if (!this.useP5Navigator || !ev.changedTouches) return;
+            if (!Repositioning) {
+              for (let i = 0, j = ev.changedTouches.length; i < j; i++)
+                touches[ev.changedTouches[i].identifier] =
+                  p.createVector(ev.changedTouches[i].clientX, ev.changedTouches[i].clientY);
+              let size = Object.keys(touches).length;
+              switch (size) {
+                case 2: // 이동, 스케일
+                  isInitStatus = false;
+                  let firstCopy = touches[0].copy();
+                  let dist = firstCopy.dist(touches[1]);
+                  endPos = firstCopy.add(touches[1]).div(2).copy();
+                  let centerPos = endPos.copy()
+                  endPos.sub(startPos);
+                  ScaleAndTransformVideo(centerPos, dist / dist_two);
+                  break;
+              }
+            }
+            if (!this.PageWillDestroy)
+              return false;
           }
           const SWIPE_SIZE = 50;
           p.touchEnded = (ev: any) => {
@@ -1370,11 +1420,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               let size = Object.keys(touches).length;
               switch (size) {
                 case 0: // 손을 전부 뗌
-                  lastPos.sub(startPos);
-                  if (lastPos.x > SWIPE_SIZE)
-                    this.ChangeToAnother(-1);
-                  else if (lastPos.x < -SWIPE_SIZE)
-                    this.ChangeToAnother(1);
+                  if (isInitStatus && !Repositioning) {
+                    lastPos.sub(startPos);
+                    if (lastPos.x > SWIPE_SIZE)
+                      this.ChangeToAnother(-1);
+                    else if (lastPos.x < -SWIPE_SIZE)
+                      this.ChangeToAnother(1);
+                  }
+                  Repositioning = false;
                   break;
               }
             }
@@ -1422,7 +1475,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let startPos: p5.Vector = p.createVector();
           let touches: { [id: string]: p5.Vector } = {};
           p.touchStarted = (ev: any) => {
-            if (!this.useP5Navigator || document.pictureInPictureElement || !ev.changedTouches) return;
+            if (!this.useP5Navigator || document.pictureInPictureElement) return;
             if ('changedTouches' in ev) {
               for (let i = 0, j = ev.changedTouches.length; i < j; i++)
                 touches[ev.changedTouches[i].identifier] =
@@ -1439,7 +1492,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           }
           const SWIPE_SIZE = 50;
           p.touchEnded = (ev: any) => {
-            if (!this.useP5Navigator || document.pictureInPictureElement || !ev.changedTouches) return;
+            if (!this.useP5Navigator || document.pictureInPictureElement) return;
             if ('changedTouches' in ev) {
               let lastPos: p5.Vector;
               for (let i = 0, j = ev.changedTouches.length; i < j; i++) {
