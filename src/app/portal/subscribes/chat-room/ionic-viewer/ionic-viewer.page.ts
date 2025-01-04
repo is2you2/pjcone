@@ -841,6 +841,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 startPos = touches[ev.changedTouches[0].identifier].copy();
                 break;
               case 2: // 두번째 손가락이 들어옴
+                isInitStatus = false;
                 lastPos =
                   p.createVector(
                     Number(this.canvasDiv.style.backgroundPositionX.split('px')[0]),
@@ -874,7 +875,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                   break;
                 case 2: // 이동, 스케일
                   ReinitDataValues();
-                  isInitStatus = false;
                   let firstCopy = touches[0].copy();
                   let dist = firstCopy.dist(touches[1]);
                   endPos = firstCopy.add(touches[1]).div(2).copy();
@@ -1368,9 +1368,11 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               let size = Object.keys(touches).length;
               switch (size) {
                 case 1: // 첫 탭
+                  isInitStatus = true;
                   startPos = touches[ev.changedTouches[0].identifier].copy();
                   break;
                 case 2: // 두번째 손가락이 들어옴
+                  isInitStatus = false;
                   let firstCopy = touches[0].copy();
                   dist_two = firstCopy.dist(touches[1]);
                   startPos = firstCopy.add(touches[1]).div(2).copy();
@@ -1400,7 +1402,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               let size = Object.keys(touches).length;
               switch (size) {
                 case 2: // 이동, 스케일
-                  isInitStatus = false;
                   let firstCopy = touches[0].copy();
                   let dist = firstCopy.dist(touches[1]);
                   endPos = firstCopy.add(touches[1]).div(2).copy();
