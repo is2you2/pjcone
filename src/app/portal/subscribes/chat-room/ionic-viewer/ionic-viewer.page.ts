@@ -1231,12 +1231,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               }
               this.image_info['width'] = mediaObject['elt']['videoWidth'];
               this.image_info['height'] = mediaObject['elt']['videoHeight'];
-              ResizeVideo();
+              RePositioningVideo();
               mediaObject['elt'].hidden = false;
               mediaObject['elt'].onloadedmetadata = () => {
                 this.image_info['width'] = mediaObject['elt']['videoWidth'];
                 this.image_info['height'] = mediaObject['elt']['videoHeight'];
-                ResizeVideo();
+                mediaObject['elt'].style.position = 'absolute';
+                RePositioningVideo();
                 mediaObject['elt'].hidden = false;
                 mediaObject['elt'].onloadedmetadata = null;
               }
@@ -1259,6 +1260,52 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               this.ContentFailedLoad = false;
             });
             this.CacheMediaObject = mediaObject;
+          }
+          // 재조정 애니메이션을 위한 추가 변수
+          let ReinitVideo = false;
+          let ReinitLerp = 0;
+          let StartScale = 1;
+          let LastScale = 1;
+          let EndScale = 1;
+          let StartPositionX = 0;
+          let StartPositionY = 0;
+          let LastPositionX = 0;
+          let LastPositionY = 0;
+          let EndPositionX = 0;
+          let EndPositionY = 0;
+          /** init 직후 스케일 조정이 없는 상태인 경우 */
+          let isInitStatus = true;
+          /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
+          let RePositioningVideo = () => {
+            ReinitVideo = true;
+            ReinitLerp = 0;
+            StartPositionX = LastPositionX;
+            StartPositionY = LastPositionY;
+            StartScale = LastScale;
+            p.loop();
+          }
+          p.draw = () => {
+            if (ReinitVideo) {
+              ReinitLerp += .07;
+              if (ReinitLerp >= 1) {
+                ReinitVideo = false;
+                ReinitLerp = 1;
+                isInitStatus = true;
+                p.noLoop();
+              }
+              const BottomPadding = (this.global.ArcadeWithFullScreen ? 0 : 45);
+              // 스케일링
+              if (this.image_info['width'] / this.image_info['height'] < this.ContentBox.clientWidth / (this.ContentBox.clientHeight - BottomPadding)) {
+                EndScale = (this.ContentBox.clientHeight - BottomPadding) / this.image_info['height'];
+                LastScale = p.lerp(StartScale, EndScale, ReinitLerp);
+                mediaObject['size'](this.image_info['width'] * LastScale, this.image_info['height'] * LastScale);
+              } else {
+                EndScale = this.ContentBox.clientWidth / this.image_info['width'];
+                LastScale = p.lerp(StartScale, EndScale, ReinitLerp);
+                mediaObject['elt'].style.width = `${this.image_info['width'] * LastScale}px`;
+                mediaObject['elt'].style.height = `${this.image_info['height'] * LastScale}px`;
+              }
+            }
           }
           let SearchAndPlayNextVideo = async () => {
             let tmp_calced = this.RelevanceIndex + 1;
@@ -1283,29 +1330,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             mediaObject['elt'].src = this.FileURL;
             mediaObject.play();
           }
-          /** 미디어 플레이어 크기 및 캔버스 크기 조정 */
-          let ResizeVideo = () => {
-            let canvasWidth = this.ContentBox.offsetWidth;
-            let canvasHeight = this.ContentBox.offsetHeight - this.FileHeader.offsetHeight;
-            let width = mediaObject['elt']['videoWidth'];
-            let height = mediaObject['elt']['videoHeight'];
-            if (width == 0 || height == 0) return;
-            let canvasRatio = canvasWidth / canvasHeight;
-            let videoRatio = width / height;
-            if (canvasRatio > videoRatio) { // 세로 영상
-              height = canvasHeight;
-              width = width / mediaObject['elt']['videoHeight'] * height;
-              mediaObject['elt'].setAttribute('style', 'position: relative; left: 50%; transform: translateX(-50%);');
-            } else { // 가로 영상
-              width = canvasWidth;
-              height = (height / mediaObject['elt']['videoWidth'] * width) || (canvasHeight / 2);
-              mediaObject['elt'].setAttribute('style', 'position: relative; top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%);');
-            }
-            mediaObject['size'](width, height);
-          }
           p.windowResized = () => {
             setTimeout(() => {
-              ResizeVideo();
+              RePositioningVideo();
             }, 50);
           }
           let startPos: p5.Vector = p.createVector();
@@ -1390,7 +1417,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let startPos: p5.Vector = p.createVector();
           let touches: { [id: string]: p5.Vector } = {};
           p.touchStarted = (ev: any) => {
-            if (!this.useP5Navigator || document.pictureInPictureElement) return;
+            if (!this.useP5Navigator || document.pictureInPictureElement || !ev.changedTouches) return;
             if ('changedTouches' in ev) {
               for (let i = 0, j = ev.changedTouches.length; i < j; i++)
                 touches[ev.changedTouches[i].identifier] =
@@ -1407,7 +1434,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           }
           const SWIPE_SIZE = 50;
           p.touchEnded = (ev: any) => {
-            if (!this.useP5Navigator || document.pictureInPictureElement) return;
+            if (!this.useP5Navigator || document.pictureInPictureElement || !ev.changedTouches) return;
             if ('changedTouches' in ev) {
               let lastPos: p5.Vector;
               for (let i = 0, j = ev.changedTouches.length; i < j; i++) {
