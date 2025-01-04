@@ -1233,10 +1233,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               this.image_info['height'] = mediaObject['elt']['videoHeight'];
               RePositioningVideo();
               mediaObject['elt'].hidden = false;
+              mediaObject['elt'].style.position = 'absolute';
               mediaObject['elt'].onloadedmetadata = () => {
                 this.image_info['width'] = mediaObject['elt']['videoWidth'];
                 this.image_info['height'] = mediaObject['elt']['videoHeight'];
-                mediaObject['elt'].style.position = 'absolute';
                 RePositioningVideo();
                 mediaObject['elt'].hidden = false;
                 mediaObject['elt'].onloadedmetadata = null;
@@ -1293,18 +1293,23 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 isInitStatus = true;
                 p.noLoop();
               }
-              const BottomPadding = (this.global.ArcadeWithFullScreen ? 0 : 45);
-              // 스케일링
-              if (this.image_info['width'] / this.image_info['height'] < this.ContentBox.clientWidth / (this.ContentBox.clientHeight - BottomPadding)) {
-                EndScale = (this.ContentBox.clientHeight - BottomPadding) / this.image_info['height'];
-                LastScale = p.lerp(StartScale, EndScale, ReinitLerp);
-                mediaObject['size'](this.image_info['width'] * LastScale, this.image_info['height'] * LastScale);
+              const ContextBoxHeightWithBottomPadding = this.ContentBox.clientHeight - (this.global.ArcadeWithFullScreen ? 0 : 45);
+              // 비디오 스케일과 위치 조정
+              if (this.image_info['width'] / this.image_info['height'] < this.ContentBox.clientWidth / ContextBoxHeightWithBottomPadding) {
+                EndScale = ContextBoxHeightWithBottomPadding / this.image_info['height'];
+                EndPositionX = this.ContentBox.clientWidth / 2 - this.image_info['width'] * EndScale / 2;
+                EndPositionY = 0;
               } else {
                 EndScale = this.ContentBox.clientWidth / this.image_info['width'];
-                LastScale = p.lerp(StartScale, EndScale, ReinitLerp);
-                mediaObject['elt'].style.width = `${this.image_info['width'] * LastScale}px`;
-                mediaObject['elt'].style.height = `${this.image_info['height'] * LastScale}px`;
+                EndPositionX = 0;
+                EndPositionY = ContextBoxHeightWithBottomPadding / 2 - this.image_info['height'] * EndScale / 2;
               }
+              LastScale = p.lerp(StartScale, EndScale, ReinitLerp);
+              LastPositionX = p.lerp(StartPositionX, EndPositionX, ReinitLerp);
+              LastPositionY = p.lerp(StartPositionY, EndPositionY, ReinitLerp);
+              mediaObject['size'](this.image_info['width'] * LastScale, this.image_info['height'] * LastScale);
+              mediaObject['elt'].style.left = `${LastPositionX}px`;
+              mediaObject['elt'].style.top = `${LastPositionY}px`;
             }
           }
           let SearchAndPlayNextVideo = async () => {
