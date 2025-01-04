@@ -1689,8 +1689,8 @@ export class GlobalActService {
       }
       p.windowResized = () => {
         setTimeout(() => {
-          canvasDiv.style.maxHeight = (window.innerHeight - 56 - 45) + 'px';
-          if (LogDiv) LogDiv.style('max-height', `${canvasDiv.clientHeight}px`);
+          canvasDiv.style.maxHeight = (window.innerHeight - (this.ArcadeWithFullScreen ? 0 : (56 - 45))) + 'px';
+          LogDiv?.style('max-height', `${canvasDiv.clientHeight}px`);
           p.resizeCanvas(canvasDiv.clientWidth, canvasDiv.clientHeight);
         }, 50);
       }
