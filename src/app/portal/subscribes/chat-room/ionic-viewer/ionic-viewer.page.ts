@@ -867,11 +867,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               let size = Object.keys(touches).length;
               switch (size) {
                 case 1: // 이동
-                  if (!isInitStatus) {
-                    endPos = touches[ev.changedTouches[0].identifier].copy();
-                    endPos.sub(startPos);
+                  endPos = touches[ev.changedTouches[0].identifier].copy();
+                  endPos.sub(startPos);
+                  if (!isInitStatus)
                     TransformImage();
-                  }
                   break;
                 case 2: // 이동, 스케일
                   ReinitDataValues();
