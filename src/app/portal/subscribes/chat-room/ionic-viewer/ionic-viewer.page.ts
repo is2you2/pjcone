@@ -614,7 +614,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** URL 링크인 경우 파일을 로컬에 다운받기 */
   async DownloadFileFromURL(force = false) {
-    if (force || !(!this.CurrentFileSize && !this.NeedDownloadFile && this.FileInfo['path'] && !this.isQuickLaunchViewer)) return;
+    if (!force && !(!this.CurrentFileSize && !this.NeedDownloadFile && this.FileInfo['path'] && !this.isQuickLaunchViewer)) return;
     const actId = 'ionicviewer';
     await this.p5loading.update({
       id: actId,
