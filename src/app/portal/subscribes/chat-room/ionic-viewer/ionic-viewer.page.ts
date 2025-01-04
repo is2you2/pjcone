@@ -739,7 +739,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 lastPos.x = p.lerp(StartPositionX, (this.canvasDiv.clientWidth - tmp_width) / 2, ReinitLerp)
                 lastPos.y = p.lerp(StartPositionY, 0, ReinitLerp)
               } else {
-                StartBackgroundSize
                 this.canvasDiv.style.backgroundSize = `${p.lerp(StartBackgroundSize, this.canvasDiv.clientWidth, ReinitLerp)}px`;
                 lastPos.x = p.lerp(StartPositionX, 0, ReinitLerp);
                 let imageRatio = this.canvasDiv.clientWidth / imageOriginalSize.x;
@@ -1292,6 +1291,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               if (ReinitLerp >= 1) {
                 ReinitVideo = false;
                 ReinitLerp = 1;
+                LastScale = StartScale;
+                StartPositionX = lastPos.x;
+                StartPositionY = lastPos.y;
                 isInitStatus = true;
                 p.noLoop();
               }
@@ -1362,21 +1364,21 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                   startPos = firstCopy.add(touches[1]).div(2).copy();
                   break;
                 default: // 그 이상은 정렬
+                  LastScale = StartScale;
+                  StartPositionX = lastPos.x;
+                  StartPositionY = lastPos.y;
                   Repositioning = true;
                   RePositioningVideo();
                   break;
               }
             }
           }
-          let ScaleAndTransformVideo = (center: p5.Vector, ratio: number) => {
+          let ScaleAndTransformVideo = (ratio: number) => {
             StartScale = LastScale * ratio;
-            const CalcedScale = LastScale - StartScale;
-            console.log(StartScale);
-            const widthMoved = CalcedScale * p.map(center.x, StartPositionX, StartPositionX + LastScale, 0, 1);
-            const scaledImageHeight = CalcedScale / this.image_info['width'] * this.image_info['height'];
-            const heightMoved = scaledImageHeight * p.map(center.y, StartPositionY, StartPositionY + LastScale / this.image_info['width'] * this.image_info['height'], 0, 1);
-            mediaObject['elt'].style.left = `${StartPositionX + endPos.x}px`;
-            mediaObject['elt'].style.top = `${StartPositionY + endPos.y}px`;
+            lastPos.x = StartPositionX + endPos.x;
+            lastPos.y = StartPositionY + endPos.y;
+            mediaObject['elt'].style.left = `${lastPos.x}px`;
+            mediaObject['elt'].style.top = `${lastPos.y}px`;
             mediaObject['size'](this.image_info['width'] * StartScale, this.image_info['height'] * StartScale);
           }
           p.touchMoved = (ev: any) => {
@@ -1392,9 +1394,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                   let firstCopy = touches[0].copy();
                   let dist = firstCopy.dist(touches[1]);
                   endPos = firstCopy.add(touches[1]).div(2).copy();
-                  let centerPos = endPos.copy()
                   endPos.sub(startPos);
-                  ScaleAndTransformVideo(centerPos, dist / dist_two);
+                  ScaleAndTransformVideo(dist / dist_two);
                   break;
               }
             }
@@ -1405,19 +1406,22 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           p.touchEnded = (ev: any) => {
             if (!this.useP5Navigator || document.pictureInPictureElement) return;
             if ('changedTouches' in ev) {
-              let lastPos: p5.Vector;
+              let lastReleasePos: p5.Vector;
               for (let i = 0, j = ev.changedTouches.length; i < j; i++) {
-                lastPos = p.createVector(ev.changedTouches[i].clientX, ev.changedTouches[i].clientY);
+                lastReleasePos = p.createVector(ev.changedTouches[i].clientX, ev.changedTouches[i].clientY);
                 delete touches[ev.changedTouches[i].identifier];
               }
               let size = Object.keys(touches).length;
               switch (size) {
                 case 0: // 손을 전부 뗌
+                  LastScale = StartScale;
+                  StartPositionX = lastPos.x;
+                  StartPositionY = lastPos.y;
                   if (isInitStatus && !Repositioning) {
-                    lastPos.sub(startPos);
-                    if (lastPos.x > SWIPE_SIZE)
+                    lastReleasePos.sub(startPos);
+                    if (lastReleasePos.x > SWIPE_SIZE)
                       this.ChangeToAnother(-1);
-                    else if (lastPos.x < -SWIPE_SIZE)
+                    else if (lastReleasePos.x < -SWIPE_SIZE)
                       this.ChangeToAnother(1);
                   }
                   Repositioning = false;
