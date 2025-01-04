@@ -731,6 +731,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 ReinitImage = false;
                 ReinitLerp = 1;
                 isInitStatus = true;
+                ReinitDataValues();
                 p.noLoop();
               }
               if (this.image_info['width'] / this.image_info['height'] < this.canvasDiv.clientWidth / this.canvasDiv.clientHeight) {
@@ -761,6 +762,11 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             ReinitImage = true;
             ReinitLerp = 0;
             p.loop();
+          }
+          const ReinitDataValues = () => {
+            StartBackgroundSize = Number(this.canvasDiv.style.backgroundSize.split('px')[0]);
+            StartPositionX = Number(this.canvasDiv.style.backgroundPositionX.split('px')[0]);
+            StartPositionY = Number(this.canvasDiv.style.backgroundPositionY.split('px')[0]);
           }
           p.windowResized = () => {
             setTimeout(() => {
@@ -847,6 +853,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 break;
               default: // 그 이상은 정렬
                 Repositioning = true;
+                ReinitDataValues();
                 RePositioningImage();
                 break;
             }
@@ -860,12 +867,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               let size = Object.keys(touches).length;
               switch (size) {
                 case 1: // 이동
-                  endPos = touches[ev.changedTouches[0].identifier].copy();
-                  endPos.sub(startPos);
-                  if (!isInitStatus)
+                  if (!isInitStatus) {
+                    endPos = touches[ev.changedTouches[0].identifier].copy();
+                    endPos.sub(startPos);
                     TransformImage();
+                  }
                   break;
                 case 2: // 이동, 스케일
+                  ReinitDataValues();
                   isInitStatus = false;
                   let firstCopy = touches[0].copy();
                   let dist = firstCopy.dist(touches[1]);
@@ -896,6 +905,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                   startPos = touches[Object.keys(touches)[0]].copy();
                   break;
                 case 0: // 손을 전부 뗌
+                  ReinitDataValues();
                   if (isInitStatus && !Repositioning) {
                     if (endPos.x > SWIPE_SIZE)
                       this.ChangeToAnother(-1);
