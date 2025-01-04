@@ -456,6 +456,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     let tmp_calced = this.RelevanceIndex + direction;
     if (tmp_calced <= 0 || tmp_calced > this.Relevances.length) {
       this.ContentChanging = false;
+      await this.p5loading.update({
+        id: 'ionicviewer',
+        message: `${this.lang.text['ContentViewer']['EndOfList']}: ${this.RelevanceIndex} / ${this.Relevances.length}`,
+        progress: 1,
+        forceEnd: 350,
+      });
       return;
     }
     if (this.ChangeToAnotherAdditionalAct)
@@ -466,6 +472,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     await this.p5loading.update({
       id: 'ionicviewer',
       message: `${this.lang.text['ContentViewer']['ChangingContent']}: ${this.Relevances[this.RelevanceIndex - 1]?.content?.filename}`,
+      progress: null,
     });
     this.FileInfo = { file_ext: '' };
     await this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
