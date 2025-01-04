@@ -1762,7 +1762,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   async init_gen_qrcode() {
     let extract = this.QRNavParams.address;
-    this.SelectedAddress = `${await this.global.GetHeaderAddress()}?voidDraw=${extract},${this.QRNavParams.channel},${this.Port || ''},${this.username || ''},${this.password || ''}`.replace(' ', '%20');
+    this.SelectedAddress = `${await this.global.GetHeaderAddress()}?voidDraw=${extract},${this.QRNavParams.channel},${this.Port || ''},${this.username || ''},${this.password || ''}`.replace(/ /g, '%20');
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.SelectedAddress);
   }
 

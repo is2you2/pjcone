@@ -4437,7 +4437,7 @@ export class NakamaService {
   /** 서버 정보를 QR코드 문자열로 반환 */
   async GenerateQRCode(dedicated_info: ServerInfo) {
     let address = await this.global.GetHeaderAddress();
-    let QRCodeSRC = `${address}?server=${dedicated_info.useSSL ? 'https' : 'http'}://${dedicated_info.address || ''}${dedicated_info.nakama_port ? `:${dedicated_info.nakama_port}` : ''},${dedicated_info.key || ''},${dedicated_info.cdn_port || ''},${dedicated_info.apache_port || ''},${dedicated_info.square_port || ''},${dedicated_info.webrtc_port || ''}`.replace(' ', '%20');
+    let QRCodeSRC = `${address}?server=${dedicated_info.useSSL ? 'https' : 'http'}://${dedicated_info.address || ''}${dedicated_info.nakama_port ? `:${dedicated_info.nakama_port}` : ''},${dedicated_info.key || ''},${dedicated_info.cdn_port || ''},${dedicated_info.apache_port || ''},${dedicated_info.square_port || ''},${dedicated_info.webrtc_port || ''}`.replace(/ /g, '%20');
     return QRCodeSRC;
   }
 

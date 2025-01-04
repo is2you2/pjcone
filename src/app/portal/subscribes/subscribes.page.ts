@@ -86,7 +86,7 @@ export class SubscribesPage implements OnInit {
     this.nakama.GenerateQRCode(this.nakama.servers[this.servers[i].isOfficial][this.servers[i].target].info)
       .then(result => {
         this.InvitationAddress = result;
-        this.InvitationAddress += `&open_prv_channel=${this.user_id},${address}`.replace(' ', '%20');
+        this.InvitationAddress += `&open_prv_channel=${this.user_id},${address}`.replace(/ /g, '%20');
         this.QRCodeSRC = this.global.readasQRCodeFromString(this.InvitationAddress);
       });
     let userColor = `${(this.user_id.replace(/[^5-79a-b]/g, '') + 'abcdef').substring(0, 6)}`;

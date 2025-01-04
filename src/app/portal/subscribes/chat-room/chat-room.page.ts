@@ -1900,7 +1900,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         try {
           if (!msg.content.url) throw 'URL 없음';
           if (this.isOfficial == 'local' || msg.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id)
-            text = msg.content.url.replace(' ', '%20');
+            text = msg.content.url.replace(/ /g, '%20');
         } catch (e) {
           let path = msg.content.path;
           let blob = await this.indexed.loadBlobFromUserPath(path, msg.content.type);

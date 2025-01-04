@@ -66,7 +66,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
         this.target = this.info.server['target'];
         this.nakama.GenerateQRCode(this.nakama.servers[this.isOfficial][this.target].info)
           .then(result => {
-            result += `&group=${this.info.name},${this.info.id}`.replace(' ', '%20');
+            result += `&group=${this.info.name},${this.info.id}`.replace(/ /g, '%20');
             this.QRAddressAsString = result;
             this.QRCodeSRC = this.global.readasQRCodeFromString(this.QRAddressAsString);
           });

@@ -2445,7 +2445,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.useP5Navigator = false;
     this.OpenModal = true;
     let address = await this.global.GetHeaderAddress();
-    this.QuickMainAddress = `${address}?fileviewer=${this.FileInfo.url},${this.FileInfo.viewer}`.replace(' ', '%20');
+    this.QuickMainAddress = `${address}?fileviewer=${this.FileInfo.url},${this.FileInfo.viewer}`.replace(/ /g, '%20');
     this.QRCodeSRC = this.global.readasQRCodeFromString(this.QuickMainAddress);
     this.QuickFileViewer.onDidDismiss().then(() => {
       this.ContentChanging = false;
@@ -2674,7 +2674,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   /** 파일이 URL로 구성되어있는 경우 URL 주소를 복사함 */
   CopyURL() {
     if (this.FileInfo.url && this.IsMyMessage)
-      this.copy_url(this.FileInfo.url.replace(' ', '%20'))
+      this.copy_url(this.FileInfo.url.replace(/ /g, '%20'))
   }
 
   copy_url(data: string) {
