@@ -980,7 +980,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 p.remove();
                 return;
               }
-              mediaObject['elt'].setAttribute('style', 'position: absolute; top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%); width: 100%');
+              mediaObject['elt'].setAttribute('style', 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%');
               let audioElements = document.querySelectorAll('audio');
               for (let i = 0, j = audioElements.length; i < j; i++)
                 if (audioElements[i] != mediaObject.elt)
@@ -1235,18 +1235,15 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 const ContextBoxHeightWithBottomPadding = this.ContentBox.clientHeight - (this.global.ArcadeWithFullScreen ? 0 : 45);
                 if (this.image_info['width'] / this.image_info['height'] < this.ContentBox.clientWidth / ContextBoxHeightWithBottomPadding) {
                   StartScale = ContextBoxHeightWithBottomPadding / this.image_info['height'];
-                  StartPositionX = this.ContentBox.clientWidth / 2 - this.image_info['width'] * StartScale / 2;
-                  StartPositionY = 0;
-                } else {
-                  StartScale = this.ContentBox.clientWidth / this.image_info['width'];
-                  StartPositionX = 0;
-                  StartPositionY = ContextBoxHeightWithBottomPadding / 2 - this.image_info['height'] * StartScale / 2;
-                }
+                } else StartScale = this.ContentBox.clientWidth / this.image_info['width'];
+                StartPositionX = this.ContentBox.clientWidth / 2;
+                StartPositionY = ContextBoxHeightWithBottomPadding / 2;
                 RePositioningVideo();
               }
               InitAct();
               mediaObject['elt'].hidden = false;
               mediaObject['elt'].style.position = 'absolute';
+              mediaObject['elt'].style.transform = 'translate(-50%, -50%)';
               // 파일 전환시 이곳에서 정확한 정보로 작업됨
               mediaObject['elt'].onloadedmetadata = () => {
                 InitAct();
@@ -1302,13 +1299,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               // 비디오 스케일과 위치 조정
               if (this.image_info['width'] / this.image_info['height'] < this.ContentBox.clientWidth / ContextBoxHeightWithBottomPadding) {
                 EndScale = ContextBoxHeightWithBottomPadding / this.image_info['height'];
-                endPos.x = this.ContentBox.clientWidth / 2 - this.image_info['width'] * EndScale / 2;
-                endPos.y = 0;
-              } else {
-                EndScale = this.ContentBox.clientWidth / this.image_info['width'];
-                endPos.x = 0;
-                endPos.y = ContextBoxHeightWithBottomPadding / 2 - this.image_info['height'] * EndScale / 2;
-              }
+              } else EndScale = this.ContentBox.clientWidth / this.image_info['width'];
+              endPos.x = this.ContentBox.clientWidth / 2;
+              endPos.y = ContextBoxHeightWithBottomPadding / 2;
               LastScale = p.lerp(StartScale, EndScale, ReinitLerp);
               lastPos.x = p.lerp(StartPositionX, endPos.x, ReinitLerp);
               lastPos.y = p.lerp(StartPositionY, endPos.y, ReinitLerp);
@@ -1377,13 +1370,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           }
           let ScaleAndTransformVideo = (center: p5.Vector, ratio: number) => {
             StartScale = LastScale * ratio;
-            const widthMoved = (LastScale - StartScale) * p.map(center.x, StartPositionX, StartPositionX + LastScale, 0, 1);
-            const scaledImageHeight = (LastScale - StartScale) / this.image_info['width'] * this.image_info['height'];
+            const CalcedScale = LastScale - StartScale;
+            console.log(StartScale);
+            const widthMoved = CalcedScale * p.map(center.x, StartPositionX, StartPositionX + LastScale, 0, 1);
+            const scaledImageHeight = CalcedScale / this.image_info['width'] * this.image_info['height'];
             const heightMoved = scaledImageHeight * p.map(center.y, StartPositionY, StartPositionY + LastScale / this.image_info['width'] * this.image_info['height'], 0, 1);
-            StartPositionX = StartPositionX + widthMoved;
-            StartPositionY = StartPositionY + heightMoved;
-            mediaObject['elt'].style.left = `${startPos.x}px`;
-            mediaObject['elt'].style.top = `${startPos.y}px`;
+            mediaObject['elt'].style.left = `${StartPositionX + endPos.x}px`;
+            mediaObject['elt'].style.top = `${StartPositionY + endPos.y}px`;
             mediaObject['size'](this.image_info['width'] * StartScale, this.image_info['height'] * StartScale);
           }
           p.touchMoved = (ev: any) => {
