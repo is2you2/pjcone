@@ -1424,7 +1424,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   isButtonClicked = false;
   /** 이 해야할 일 정보를 저장 */
-  async saveData() {
+  async saveData(newWrite = true) {
     if (!this.userInput.title) {
       this.p5toast.show({
         text: this.lang.text['TodoDetail']['needDisplayName'],
@@ -1435,7 +1435,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       return;
     }
     this.isButtonClicked = true;
-    this.navCtrl.pop();
+    if (newWrite) this.navCtrl.pop();
     const actId = 'add_todo';
     await this.p5loading.update({
       id: actId,
@@ -1827,9 +1827,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           }
           await this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), path);
           this.navCtrl.pop();
-        } else this.p5toast.show({
-          text: this.lang.text['TodoDetail']['CanAddToServer'],
-        });
+        } else {
+          this.StoreAtSelChanged({ detail: { value: 'local' } });
+          this.saveData(false);
+          this.p5toast.show({
+            text: this.lang.text['TodoDetail']['CanAddToServer'],
+          });
+        }
         this.isButtonClicked = false;
         this.p5loading.update({
           id: actId,
