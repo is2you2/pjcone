@@ -437,12 +437,24 @@ export class NakamaService {
 
   /** 모든 pending 세션 켜기 */
   async init_all_sessions() {
+    const actId = 'nakama_toggle_session';
     let Targets = Object.keys(this.servers['official']);
-    for (let i = 0, j = Targets.length; i < j; i++)
+    for (let i = 0, j = Targets.length; i < j; i++) {
+      await this.p5loading.update({
+        id: actId,
+        message: `${this.lang.text['Nakama']['PendingLogin']}: ${this.servers['unofficial'][Targets[i]].info.name}`,
+      }, true);
       await this.init_session(this.servers['official'][Targets[i]].info);
+    }
     let unTargets = Object.keys(this.servers['unofficial']);
-    for (let i = 0, j = unTargets.length; i < j; i++)
+    for (let i = 0, j = unTargets.length; i < j; i++) {
+      await this.p5loading.update({
+        id: actId,
+        message: `${this.lang.text['Nakama']['PendingLogin']}: ${this.servers['unofficial'][unTargets[i]].info.name}`,
+      }, true);
+      console.log();
       await this.init_session(this.servers['unofficial'][unTargets[i]].info);
+    }
     return Targets.length + unTargets.length;
   }
 
@@ -467,7 +479,7 @@ export class NakamaService {
   /** 모든 세션을 토글 */
   async toggle_all_session() {
     if (this.TogglingSession) return;
-    const actId = 'nakama_toggle_all_session';
+    const actId = 'nakama_toggle_session';
     this.TogglingSession = true;
     if (this.statusBar.settings.groupServer == 'online') {
       this.logout_all_server();
