@@ -471,7 +471,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.RelevanceIndex = tmp_calced;
     await this.p5loading.update({
       id: 'ionicviewer',
-      message: `${this.lang.text['ContentViewer']['ChangingContent']}: ${this.Relevances[this.RelevanceIndex - 1]?.content?.filename}`,
+      message: `${this.lang.text['ContentViewer']['ChangingContent']}: ${this.Relevances[this.RelevanceIndex - 1]?.content?.filename} (${this.RelevanceIndex} / ${this.Relevances.length})`,
       progress: null,
     });
     this.FileInfo = { file_ext: '' };
