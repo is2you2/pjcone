@@ -443,6 +443,7 @@ export class NakamaService {
       await this.p5loading.update({
         id: actId,
         message: `${this.lang.text['Nakama']['PendingLogin']}: ${this.servers['unofficial'][Targets[i]].info.name}`,
+        forceEnd: null,
       }, true);
       await this.init_session(this.servers['official'][Targets[i]].info);
     }
@@ -451,6 +452,7 @@ export class NakamaService {
       await this.p5loading.update({
         id: actId,
         message: `${this.lang.text['Nakama']['PendingLogin']}: ${this.servers['unofficial'][unTargets[i]].info.name}`,
+        forceEnd: null,
       }, true);
       console.log();
       await this.init_session(this.servers['unofficial'][unTargets[i]].info);
@@ -490,6 +492,7 @@ export class NakamaService {
       await this.p5loading.update({
         id: actId,
         message: this.lang.text['Nakama']['PendingLogin'],
+        forceEnd: null,
       });
       try {
         let count_server = await this.init_all_sessions();
@@ -2199,6 +2202,7 @@ export class NakamaService {
       await this.p5loading.update({
         id: actId,
         message: `${this.lang.text['GroupDetail']['BreakupGroup']}: `,
+        forceEnd: null,
       });
       await this.servers[_is_official][_target].client.rpc(
         this.servers[_is_official][_target].session,
@@ -3183,6 +3187,7 @@ export class NakamaService {
       await this.p5loading.update({
         id: actId,
         message: this.lang.text['PostViewer']['RemovePost'],
+        forceEnd: null,
       });
     let list = await this.indexed.GetFileListFromDB(`servers/${isOfficial}/${target}/posts/${info['creator_id']}/${info['id']}`);
     for (let i = 0, j = list.length; i < j; i++) {

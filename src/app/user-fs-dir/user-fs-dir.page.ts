@@ -237,6 +237,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
         await this.p5loading.update({
           id: actId,
           message: this.lang.text['UserFsDir']['MultipleSave'],
+          forceEnd: null,
         });
         for (let i = 0, j = ev.target.files.length; i < j; i++) {
           if (this.StopIndexing) break;
@@ -252,6 +253,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
       } else {
         await this.p5loading.update({
           id: actId,
+          forceEnd: null,
         });
         await this.importSelected(ev.target.files[0]);
         this.p5loading.remove(actId);
@@ -328,6 +330,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
     await this.p5loading.update({
       id: this.InitIndexingId,
       message: this.lang.text['UserFsDir']['LoadingExplorer'],
+      forceEnd: null,
     });
     this.DirList.length = 0;
     this.FileList.length = 0;
@@ -565,6 +568,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
     await this.p5loading.update({
       id: actId,
       message: this.lang.text['UserFsDir']['LoadingExplorer'],
+      forceEnd: null,
     });
     for (let i = 0, j = ev.target.files.length; i < j; i++) {
       if (this.StopIndexing) {
@@ -612,6 +616,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
             await this.p5loading.update({
               id: actId,
               message: this.lang.text['UserFsDir']['DeleteFile'],
+              forceEnd: null,
             });
             let list = await this.indexed.GetFileListFromDB(dir);
             for (let i = 0, j = list.length; i < j; i++) {

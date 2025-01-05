@@ -217,6 +217,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                 await this.p5loading.update({
                   id: 'voiddraw',
                   image: FileURL,
+                  forceEnd: null,
                 });
                 setTimeout(() => {
                   URL.revokeObjectURL(FileURL);
@@ -1587,6 +1588,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       id: 'chatroom',
       message: `${this.lang.text['ContentViewer']['OnLoadContent']}: ${this.userInput.file.blob.name}`,
       image: null,
+      forceEnd: null,
     });
     if (this.userInput.file?.viewer == 'image')
       this.p5loading.update({

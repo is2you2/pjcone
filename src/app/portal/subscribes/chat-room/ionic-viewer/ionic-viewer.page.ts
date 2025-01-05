@@ -473,6 +473,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       id: 'ionicviewer',
       message: `${this.lang.text['ContentViewer']['ChangingContent']}: ${this.Relevances[this.RelevanceIndex - 1]?.content?.filename} (${this.RelevanceIndex} / ${this.Relevances.length})`,
       progress: null,
+      forceEnd: null,
     });
     this.FileInfo = { file_ext: '' };
     await this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
@@ -626,6 +627,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     await this.p5loading.update({
       id: actId,
       message: this.lang.text['ContentViewer']['DownloadThisFile'],
+      forceEnd: null,
     });
     this.ContentChanging = true;
     try {
@@ -2336,6 +2338,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       await this.p5loading.update({
         id: actId,
         message: `${this.lang.text['ContentViewer']['saveText']}: ${new_name}`,
+        forceEnd: null,
       });
       if (!this.FileInfo.path) this.FileInfo.path = tmp_path;
       await this.indexed.saveBlobToUserPath(blob, tmp_path);
@@ -2364,6 +2367,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           id: actId,
           message: `${this.lang.text['GlobalAct']['FromVoidDraw']}: ${this.FileInfo.filename}`,
           image: this.FileURL || null,
+          forceEnd: null,
         });
         try {
           let blob: Blob;
@@ -2398,6 +2402,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         await this.p5loading.update({
           id: actId,
           message: `${this.lang.text['GlobalAct']['FromVoidDraw']}: ${this.FileInfo.filename}`,
+          forceEnd: null,
         });
         try {
           this.image_info['width'] = this.p5SyntaxHighlightReader.clientWidth;
@@ -2439,6 +2444,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           await this.p5loading.update({
             id: actId,
             message: `${this.lang.text['GlobalAct']['FromVoidDraw']}: ${this.FileInfo.filename}`,
+            forceEnd: null,
           });
           this.p5canvas.pixelDensity(1);
           this.CacheMediaObject.pause();
@@ -2476,6 +2482,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           await this.p5loading.update({
             id: actId,
             message: `${this.lang.text['GlobalAct']['FromVoidDraw']}: ${this.FileInfo.filename}`,
+            forceEnd: null,
           });
           this.p5canvas.pixelDensity(1);
           let base64 = this.global.BlenderCanvasInside['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
@@ -2554,6 +2561,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     await this.p5loading.update({
       id: actId,
       message: `${this.lang.text['ContentViewer']['Download']}: ${this.FileInfo.filename}`,
+      forceEnd: null,
     });
     let hasFile = await this.indexed.checkIfFileExist(this.FileInfo.alt_path || this.FileInfo.path);
     if (hasFile) {

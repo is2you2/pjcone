@@ -420,6 +420,7 @@ export class ArcadePage implements OnInit {
     await this.p5loading.update({
       id: actId,
       message: this.lang.text['Arcade']['OpeningCamera'],
+      forceEnd: null,
     });
     this.QRScanResult = null;
     this.global.StoreShortCutAct('qrcode-scanner');

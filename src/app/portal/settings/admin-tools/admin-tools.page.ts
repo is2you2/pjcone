@@ -249,6 +249,7 @@ export class AdminToolsPage implements OnInit {
     await this.p5loading.update({
       id: actId,
       message: `${this.lang.text['GroupDetail']['ForceBreaked']}: ${group.name}`,
+      forceEnd: null,
     });
     try {
       await this.nakama.servers[this.isOfficial][this.target].client.rpc(
@@ -290,6 +291,7 @@ export class AdminToolsPage implements OnInit {
       await this.p5loading.update({
         id: actId,
         message: `${this.lang.text['AdminTools']['ClearFFSKey']}: ${group.name}`,
+        forceEnd: null,
       });
       await this.global.remove_files_from_storage_with_key(target_address, group.id, {});
     } catch (e) {
@@ -304,6 +306,7 @@ export class AdminToolsPage implements OnInit {
       await this.p5loading.update({
         id: actId,
         message: `${this.lang.text['AdminTools']['ClearCDN']}: ${group.name}`,
+        forceEnd: null,
       });
       await this.global.remove_files_from_storage_with_key(target_address, group.id, { cdn_port: server_info.cdn_port, apache_port: server_info.apache_port });
     } catch (e) {

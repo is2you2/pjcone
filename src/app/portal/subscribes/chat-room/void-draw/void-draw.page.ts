@@ -105,6 +105,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     await this.p5loading.update({
       id: 'voiddraw',
       message: this.lang.text['voidDraw']['UseThisImage'],
+      forceEnd: null,
     }, true);
     // 다른 페이지에서 진입하는 경우가 있으므로 remove가 분리되어있어야함
     this.p5loading.remove('voiddraw');
@@ -1343,6 +1344,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     await this.p5loading.update({
       id: actId,
       message: `${this.lang.text['InstantCall']['Connecting']}: ${address[0]}`,
+      forceEnd: null,
     });
     let protocol = split_fullAddress.pop();
     if (protocol) {

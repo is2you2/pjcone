@@ -258,7 +258,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     const actId = 'add_todo';
     await this.p5loading.update({
       id: actId,
-      message: this.lang.text['AddPost']['SavingRecord']
+      message: this.lang.text['AddPost']['SavingRecord'],
+      forceEnd: null,
     });
     try {
       let blob = await this.global.StopAndSaveVoiceRecording();
@@ -408,6 +409,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         id: actId,
         message: `${this.lang.text['ContentViewer']['OnLoadContent']}: ${blob.name}`,
         image: null,
+        forceEnd: null,
       });
     let this_file: FileInfo = this.global.selected_blobFile_callback_act(blob, 'tmp_files/todo/', {
       display_name: this.nakama.users.self['display_name'],
@@ -463,6 +465,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       await this.p5loading.update({
         id: 'voiddraw',
         image: FileURL,
+        forceEnd: null,
       });
       new p5((p: p5) => {
         p.setup = () => {
@@ -589,6 +592,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         id: actId,
         message: this.lang.text['AddPost']['SyncAttaches'],
         progress: 0,
+        forceEnd: null,
       });
       for (let i = 0, j = this.userInput.attach.length; i < j; i++) {
         if (this.PageDestoryed) break;
@@ -1080,6 +1084,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     await this.p5loading.update({
       id: actId,
       message: this.lang.text['ContentViewer']['OnLoadContent'],
+      forceEnd: null,
     });
     for (let i = 0, j = ev.target.files.length; i < j; i++) {
       const loadingInfo = {
@@ -1462,6 +1467,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     await this.p5loading.update({
       id: actId,
       message: `${this.lang.text['TodoDetail']['ApplyingTodo']}: ${this.userInput.title}`,
+      forceEnd: null,
     });
     if (this.useVoiceRecording) await this.StopAndSaveVoiceRecording();
     let has_attach = Boolean(this.userInput.attach.length);

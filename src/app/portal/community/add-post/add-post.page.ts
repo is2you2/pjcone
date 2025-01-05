@@ -1084,6 +1084,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     await this.p5loading.update({
       id: actId,
       message: `${this.lang.text['AddPost']['WIP']}: ${this.userInput.title}`,
+      forceEnd: null,
     });
     // 음성 녹음중이라면 녹음을 마무리하여 파일로 저장한 후 게시물 저장처리 진행
     if (this.useVoiceRecording) await this.StopAndSaveVoiceRecording();

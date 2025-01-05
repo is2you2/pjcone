@@ -1045,6 +1045,7 @@ export class GlobalActService {
     await this.p5loading.update({
       id: actId,
       message: this.lang.text['Settings']['TryToFallbackFS'],
+      forceEnd: null,
     });
     let Catched = false;
     let CatchedAddress: string;
@@ -1973,6 +1974,7 @@ export class GlobalActService {
       id: actId,
       message: this.lang.text['GlobalAct']['ClipboardPaste'],
       image: null,
+      forceEnd: null,
     });
     try {
       const clipboardItems = await navigator.clipboard.read();
@@ -2030,6 +2032,7 @@ export class GlobalActService {
       id: actId,
       message: this.lang.text['GlobalAct']['ClipboardCopy'],
       image: null,
+      forceEnd: null,
     });
     try {
       let data = {};
