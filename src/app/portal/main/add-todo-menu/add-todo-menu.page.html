@@ -21,7 +21,8 @@
               <ion-grid *ngIf="isModify" fixed>
                 <ion-row>
                   <ion-col col-33>
-                    <ion-item button color="success" [disabled]="isButtonClicked" (click)="doneTodo()">
+                    <ion-item button color="success" [disabled]="isButtonClicked" (click)="doneTodo()"
+                      (contextmenu)="doneContextMenu()">
                       <ion-label class="ion-text-center">{{lang.text['TodoDetail']['TodoComplete']}}</ion-label>
                     </ion-item>
                   </ion-col>

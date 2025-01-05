@@ -1399,6 +1399,25 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.nakama.doneTodo(this.userInput);
   }
 
+  doneContextMenu() {
+    let showMenuAct = () => {
+      this.alertCtrl.create({
+        header: this.userInput.title,
+        message: this.userInput.description,
+        buttons: [{
+          text: this.lang.text['TodoDetail']['buttonDisplay_modify'],
+          handler: () => this.saveData(),
+        }, {
+          text: this.lang.text['TodoDetail']['remove'],
+          cssClass: 'redfont',
+          handler: () => this.deleteData(),
+        }]
+      }).then(v => v.present());
+    }
+    showMenuAct();
+    return false;
+  }
+
   isCDNToggleClicked = false;
   async toggle_custom_attach(force?: number) {
     this.isCDNToggleClicked = true;
@@ -1423,7 +1442,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   }
 
   isButtonClicked = false;
-  /** 이 해야할 일 정보를 저장 */
+  /** 이 해야할 일 정보를 저장
+   * @param [newWrite=true] 할 일 실패시 로컬 저장 재귀용, 사용하면 안됨
+   */
   async saveData(newWrite = true) {
     if (!this.userInput.title) {
       this.p5toast.show({
