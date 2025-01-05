@@ -1078,6 +1078,10 @@ export class GlobalActService {
       formData.append("files", _file);
       let up_res = await fetch(`${protocol}//${address}:${info?.cdn_port || 9001}/cdn/${filename}`, { method: "POST", body: formData });
       if (!up_res.ok) throw '업로드 단계에서 실패';
+      this.p5loading.update({
+        id: actId,
+        message: `${file.filename}: 100%`,
+      });
       clearInterval(progress);
       let res = await fetch(CatchedAddress);
       if (res.ok) Catched = true;
@@ -1090,7 +1094,7 @@ export class GlobalActService {
       });
       console.warn('cdn 파일 업로드 단계 실패:', e);
     }
-    this.p5loading.remove(actId);
+    if (!loadingId) this.p5loading.remove(actId);
     return Catched ? CatchedAddress : undefined;
   }
 
@@ -1162,6 +1166,10 @@ export class GlobalActService {
       }, 700);
       let up_res = await fetch(`${protocol}//${address[0]}:9001/cdn/${filename}`, { method: "POST", body: formData });
       if (!up_res.ok) throw '업로드 단계에서 실패';
+      this.p5loading.update({
+        id: actId,
+        message: `${file.filename}: 100%`,
+      });
       clearInterval(progress);
       let res = await fetch(CatchedAddress);
       if (!loadingId) this.p5loading.remove(actId);

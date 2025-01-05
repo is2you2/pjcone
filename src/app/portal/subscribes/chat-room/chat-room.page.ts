@@ -2463,7 +2463,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           try {
             let CatchedAddress: string;
             if (this.useFirstCustomCDN == 1)
-              CatchedAddress = await this.global.try_upload_to_user_custom_fs(CurrentMessage.file, `${this.info.id}_${this.nakama.users.self['display_name']}`);
+              CatchedAddress = await this.global.try_upload_to_user_custom_fs(CurrentMessage.file, `${this.info.id}_${this.nakama.users.self['display_name']}`, CurrentMessage['actId']);
             if (CatchedAddress) {
               delete tmp.content['path'];
               delete tmp.content['partsize'];
@@ -2556,6 +2556,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }
         }, 1500);
       }
+      this.p5loading.remove(CurrentMessage['actId']);
     }
     this.isSendingQueue = false;
   }
@@ -2574,6 +2575,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }, 0);
         return;
       }
+    if (this.userInput.file) actId = 'chatroom_withfile';
     // 큐에 넣기
     this.SendQueue.push({
       ...this.userInput,
