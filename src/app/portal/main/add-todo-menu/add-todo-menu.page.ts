@@ -685,7 +685,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       }
       this.p5loading.update({
         id: actId,
-        message: `${this.lang.text['AddPost']['SyncAttaches']}`,
+        message: `${this.lang.text['AddPost']['SyncAttaches']}: ${this.lang.text['TodoDetail']['TodoComplete']}`,
         progress: 1,
         forceEnd: 1000,
       });
