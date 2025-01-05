@@ -1542,6 +1542,11 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               background: ThumbnailURL,
               receive_image: async (base64: string, width: number, height: number) => {
                 let tmp_path = 'tmp_files/modify_image.png';
+                this.p5loading.update({
+                  id: 'voiddraw',
+                  image: `data:image/png;base64,${base64}`,
+                  forceEnd: 1000,
+                });
                 await this.indexed.saveBase64ToUserPath(',' + base64, tmp_path);
                 if (this.global.PageDismissAct[this.navParams.dismiss])
                   this.global.PageDismissAct[this.navParams.dismiss]({
@@ -2360,7 +2365,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           const FileURL = URL.createObjectURL(blob);
           this.p5loading.update({
             id: actId,
-            image: FileURL
+            image: FileURL,
           });
           setTimeout(() => {
             URL.revokeObjectURL(FileURL);
@@ -2390,7 +2395,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           await this.p5loading.update({
             id: actId,
             message: `${this.lang.text['GlobalAct']['FromVoidDraw']}: ${this.FileInfo.filename}`,
-            forceEnd: 1000,
           });
           this.p5canvas.pixelDensity(1);
           this.CacheMediaObject.pause();
@@ -2398,6 +2402,11 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let canvas = this.p5canvas.createCanvas(this.image_info['width'], this.image_info['height']);
           this.p5canvas.image(this.CacheMediaObject, 0, 0, this.p5canvas.width, this.p5canvas.height);
           let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+          this.p5loading.update({
+            id: actId,
+            image: base64 || null,
+            forceEnd: 1000,
+          });
           try {
             this.image_info['path'] = 'tmp_files/modify_image.png';
             await this.indexed.saveBase64ToUserPath(base64, this.image_info['path']);
@@ -2423,10 +2432,14 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           await this.p5loading.update({
             id: actId,
             message: `${this.lang.text['GlobalAct']['FromVoidDraw']}: ${this.FileInfo.filename}`,
-            forceEnd: 1000,
           });
           this.p5canvas.pixelDensity(1);
           let base64 = this.global.BlenderCanvasInside['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+          this.p5loading.update({
+            id: actId,
+            image: base64 || null,
+            forceEnd: 1000,
+          });
           try {
             this.image_info['path'] = 'tmp_files/modify_image.png';
             this.image_info['width'] = this.p5canvas.width;
