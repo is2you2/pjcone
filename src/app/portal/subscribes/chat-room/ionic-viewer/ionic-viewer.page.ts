@@ -716,7 +716,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                 StartPositionY =
                   this.canvasDiv.clientHeight / 2 - imageOriginalSize.y * imageRatio / 2;
               }
-              ReinitDataValues();
+              this.canvasDiv.style.backgroundSize = `${StartBackgroundSize}px`;
+              this.canvasDiv.style.backgroundPositionX = `${StartPositionX}px`;
+              this.canvasDiv.style.backgroundPositionY = `${StartPositionY}px`;
               RePositioningImage();
               img.remove();
               this.ContentOnLoad = true;
