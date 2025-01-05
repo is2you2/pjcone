@@ -904,23 +904,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           buttons: [{
             text: this.lang.text['ChatRoom']['Send'],
             handler: () => {
-              const actId = `chatroom_fileInput_${Date.now()}`;
-              this.p5loading.update({
-                id: actId,
-                message: this.lang.text['ChatRoom']['MultipleSend'],
-                progress: 0,
-              });
               for (let i = 0, j = ev.target.files.length; i < j; i++) {
-                this.p5loading.update({
-                  id: actId,
-                  message: `${this.lang.text['ChatRoom']['MultipleSend']}: ${ev.target.files[i].name}`,
-                  progress: i / j,
-                });
                 this.selected_blobFile_callback_act(ev.target.files[i]);
-                this.send(undefined, actId);
+                this.send(undefined);
               }
               this.noti.ClearNoti(7);
-              this.p5loading.remove(actId);
             }
           }]
         });
@@ -1528,21 +1516,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 한번에 여러파일 보내기 */
   async DropSendAct(Drops: any) {
-    const actId = `chatroom_fileDrop_${Date.now()}`;
-    await this.p5loading.update({
-      id: actId,
-      progress: 0,
-    });
     for (let i = 0, j = Drops.length; i < j; i++) {
       this.selected_blobFile_callback_act(Drops[i].file);
-      this.p5loading.update({
-        id: actId,
-        message: `${this.lang.text['ChatRoom']['MultipleSend']}: ${Drops[i].file.name}`,
-        progress: i / j,
-      });
-      this.send(undefined, actId);
+      this.send(undefined);
     }
-    this.p5loading.remove(actId);
     setTimeout(() => {
       this.scroll_down_logs();
     }, 300);

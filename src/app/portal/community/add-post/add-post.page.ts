@@ -778,11 +778,10 @@ export class AddPostPage implements OnInit, OnDestroy {
       file.thumbnail = await this.indexed.loadBlobFromUserPath(file.path, file.type);
     } catch (e) { }
     const FileURL = URL.createObjectURL(file.blob);
-    if (file.viewer == 'image')
-      this.p5loading.update({
-        id: 'add_post',
-        image: FileURL,
-      }, true);
+    this.p5loading.update({
+      id: 'add_post',
+      image: file.viewer == 'image' ? FileURL : null,
+    }, true);
     file['typeheader'] = file.blob.type.split('/')[0] || file.viewer;
     setTimeout(() => {
       URL.revokeObjectURL(FileURL);
@@ -936,13 +935,13 @@ export class AddPostPage implements OnInit, OnDestroy {
       if (is_multiple_files) {
         this.p5loading.update({
           id: actId,
-          message: this.lang.text['ChatRoom']['MultipleSend'],
+          message: this.lang.text['ContentViewer']['OnLoadContent'],
           progress: 0,
         });
         for (let i = 0, j = ev.target.files.length; i < j; i++) {
           this.p5loading.update({
             id: actId,
-            message: `${this.lang.text['ChatRoom']['MultipleSend']}: ${ev.target.files[i].name}`,
+            message: `${this.lang.text['ContentViewer']['OnLoadContent']}: ${ev.target.files[i].name}`,
             progress: i / j,
           });
           await this.selected_blobFile_callback_act(ev.target.files[i]);
