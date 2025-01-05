@@ -1009,8 +1009,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                     return;
                   }
                   this.ChangeToAnotherAdditionalAct = () => {
-                    sound.disconnect();
-                    gainNode.disconnect();
+                    sound?.disconnect();
+                    gainNode?.disconnect();
                   }
                   sound = v;
                   this.ContentOnLoad = true;
@@ -1049,7 +1049,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                       }
                       mediaObject['elt'].src = this.FileURL;
                       mediaObject.play();
-                      // 리스트 및 이퀄라이저 변경
+                      // 리스트 업데이트
                       playListdivList.forEach(div => div.remove());
                       playListdivList.length = 0;
                       /** 음악들만 모은 리스트 정보 */
@@ -1080,6 +1080,12 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                         playListdivList.push(item);
                         item.parent(musicList);
                       }
+                      // 이퀄라이저는 영구적으로 끊기
+                      sound.disconnect();
+                      sound = null;
+                      gainNode.disconnect();
+                      gainNode = null;
+                      fft = null;
                     } else this.ChangeToAnother(ChangeTo);
                   }
                 }
@@ -1126,7 +1132,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             if (!isSafePage) return;
             p.clear(255, 255, 255, 0);
             try {
-              if (sound && mediaObject) {
+              if (sound && mediaObject && fft) {
                 if (isPlatform == 'DesktopPWA') {
                   let spectrum = fft.analyze();
                   let binSize = Math.floor(spectrum.length / numBins);  // 각 구간에 해당하는 스펙트럼 크기
