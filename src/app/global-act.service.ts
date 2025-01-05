@@ -2071,7 +2071,7 @@ export class GlobalActService {
 
   /** 문자열 제한하기 */
   truncateString(str: string, maxlength: number) {
-    return (str.length > maxlength) ? str.slice(0, maxlength - 1) + '…' : str;
+    return (str?.length > maxlength) ? str.slice(0, maxlength - 1) + '…' : str;
   }
 
   /** 웹 소켓 클라이언트 발송 대기 시간 통합 관리용 */

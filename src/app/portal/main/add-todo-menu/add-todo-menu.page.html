@@ -4,6 +4,8 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="portal/main"></ion-back-button>
     </ion-buttons>
+    <ion-icon *ngIf="isModify" class="relevance_change" style="padding-right: 16px;" slot="end" name="menu-outline"
+      (click)="QuickBottomMenu()"></ion-icon>
   </ion-toolbar>
 </ion-header>
 
@@ -21,8 +23,7 @@
               <ion-grid *ngIf="isModify" fixed>
                 <ion-row>
                   <ion-col col-33>
-                    <ion-item button color="success" [disabled]="isButtonClicked" (click)="doneTodo()"
-                      (contextmenu)="doneContextMenu()">
+                    <ion-item button color="success" [disabled]="isButtonClicked" (click)="doneTodo()">
                       <ion-label class="ion-text-center">{{lang.text['TodoDetail']['TodoComplete']}}</ion-label>
                     </ion-item>
                   </ion-col>

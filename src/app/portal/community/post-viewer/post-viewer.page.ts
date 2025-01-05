@@ -53,6 +53,22 @@ export class PostViewerPage implements OnInit, OnDestroy {
     this.RelevancesInputId = `post-viewer_RelevancesInputId_${Date.now}`;
   }
 
+  /** 게시물이 길 경우를 대비해 우클릭하여 빠른 메뉴 동작 제시 */
+  showQuickMenu() {
+    this.alertCtrl.create({
+      header: this.PostInfo['title'],
+      message: this.global.truncateString(this.PostInfo['content'], 20),
+      buttons: [{
+        text: this.lang.text['ChatRoom']['EditChat'],
+        handler: () => this.EditPost(),
+      }, {
+        text: this.lang.text['Profile']['remove_content'],
+        cssClass: 'redfont',
+        handler: () => this.RemovePost(),
+      }],
+    }).then(v => v.present());
+  }
+
   WaitingLoaded = false;
   /** 정확히 현재 페이지가 처리되어야하는 경우 사용 */
   async WaitingCurrent() {

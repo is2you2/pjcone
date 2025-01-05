@@ -1399,23 +1399,19 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.nakama.doneTodo(this.userInput);
   }
 
-  doneContextMenu() {
-    let showMenuAct = () => {
-      this.alertCtrl.create({
-        header: this.userInput.title,
-        message: this.userInput.description,
-        buttons: [{
-          text: this.lang.text['TodoDetail']['buttonDisplay_modify'],
-          handler: () => this.saveData(),
-        }, {
-          text: this.lang.text['TodoDetail']['remove'],
-          cssClass: 'redfont',
-          handler: () => this.deleteData(),
-        }]
-      }).then(v => v.present());
-    }
-    showMenuAct();
-    return false;
+  QuickBottomMenu() {
+    this.alertCtrl.create({
+      header: this.userInput.title,
+      message: this.userInput.description,
+      buttons: [{
+        text: this.lang.text['TodoDetail']['buttonDisplay_modify'],
+        handler: () => this.saveData(),
+      }, {
+        text: this.lang.text['TodoDetail']['remove'],
+        cssClass: 'redfont',
+        handler: () => this.deleteData(),
+      }]
+    }).then(v => v.present());
   }
 
   isCDNToggleClicked = false;
