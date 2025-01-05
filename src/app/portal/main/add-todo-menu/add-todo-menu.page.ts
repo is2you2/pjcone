@@ -683,7 +683,12 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
         }
         this.userInput.attach[i]['exist'] = true;
       }
-      this.p5loading.remove(actId);
+      this.p5loading.update({
+        id: actId,
+        message: `${this.lang.text['AddPost']['SyncAttaches']}`,
+        progress: 1,
+        forceEnd: 1000,
+      });
     }
     // 저장소 표기 적용
     try {

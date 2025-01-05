@@ -127,7 +127,7 @@ AttachError,파일 첨부 오류,File attachment error
 WIP,게시물을 등록합니다,Register a post
 SyncPostInfo,게시물 등록중,Registering post info
 SyncMainImage,대표이미지 등록중,Registering representative image
-SyncAttaches,첨부파일 동기화중,Synchronizing attachments
+SyncAttaches,첨부파일 동기화,Attachment Synchronization
 SyncErr,게시물 저장 오류,Error saving post
 NSFW,후방주의,NSFW
 NoOutLink,공개,Public
