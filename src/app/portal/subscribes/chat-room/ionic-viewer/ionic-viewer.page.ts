@@ -936,6 +936,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           let isSyncing = false;
           /** 보안 페이지로 스펙트럼 표시가 가능한지 검토 */
           let isSafePage = false;
+          /** 플레이 리스트 관리 */
+          let playListdivList: p5.Element[] = [];
           p.setup = () => {
             isSafePage = (window.location.protocol != 'http:' || window.location.host.indexOf('localhost') == 0);
             if (isSafePage) {
@@ -974,6 +976,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                   if (CurrentIndex < 0) return;
                   if (targetIndex != 0) this.ChangeToAnother(targetIndex);
                 });
+                playListdivList.push(item);
                 item.parent(musicList);
               }
               if (FocusOnThis) FocusOnThis.elt.scrollIntoView({ block: 'center', behavior: 'smooth' });
@@ -1034,6 +1037,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                   if (ChangeTo > 0) {
                     if (this.PageWillDestroy) {
                       if (ChangeTo > this.Relevances.length) return;
+                      // 표시 정보 변경
                       this.RelevanceIndex = this.RelevanceIndex + ChangeTo;
                       let nextFileInfo = this.Relevances[this.RelevanceIndex - 1];
                       URL.revokeObjectURL(this.FileURL);
@@ -1045,6 +1049,37 @@ export class IonicViewerPage implements OnInit, OnDestroy {
                       }
                       mediaObject['elt'].src = this.FileURL;
                       mediaObject.play();
+                      // 리스트 및 이퀄라이저 변경
+                      playListdivList.forEach(div => div.remove());
+                      playListdivList.length = 0;
+                      /** 음악들만 모은 리스트 정보 */
+                      let playList = [];
+                      for (let i = 0, j = this.Relevances.length; i < j; i++)
+                        if (this.Relevances[i].content.viewer == 'audio') {
+                          if (i == this.RelevanceIndex - 1) CurrentIndex = playList.length;
+                          playList.push(this.Relevances[i]);
+                        } else playList.push(null);
+                      for (let i = 0, j = playList.length; i < j; i++) {
+                        if (!playList[i]) continue;
+                        const item = p.createDiv(playList[i].content.filename);
+                        item.style('padding', '10px');
+                        item.style('border', '1px solid #ccc');
+                        item.style('background-color', 'transparent');
+                        item.style('margin-bottom', '5px');
+                        item.style('border-radius', '5px');
+                        item.style('cursor', 'pointer');
+                        const targetIndex = i - CurrentIndex;
+                        if (targetIndex == 0) {
+                          item.style('background-color', 'var(--list-shortcut-hint-background)');
+                          FocusOnThis = item;
+                        }
+                        item.mouseClicked(() => {
+                          if (CurrentIndex < 0) return;
+                          if (targetIndex != 0) this.ChangeToAnother(targetIndex);
+                        });
+                        playListdivList.push(item);
+                        item.parent(musicList);
+                      }
                     } else this.ChangeToAnother(ChangeTo);
                   }
                 }
