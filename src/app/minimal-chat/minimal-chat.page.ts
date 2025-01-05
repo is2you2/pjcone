@@ -764,7 +764,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         console.log('대상 주소 생성 오류: ', e);
       }
       let url = await this.global.try_upload_to_user_custom_fs(FileInfo, `tmp_${this.client.JoinedChannel || 'public'}_${this.client.uuid}`,
-        actId, TargetAddress);
+        actId, this.lang.text['MinimalChat']['header_title_group'], TargetAddress);
       if (!url) throw '분할 전송 시도 필요';
       else {
         FileInfo.url = url;

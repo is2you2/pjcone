@@ -1605,7 +1605,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             filename: `voidDrawRemoveImage.${file_ext}`,
           }, {
             user_id: `tmp_${this.QRNavParams.channel}_${this.QRNavParams.user_id}`,
-          }, protocol, address, false, 'voiddraw');
+          }, protocol, address, false, 'voiddraw', this.lang.text['ChatRoom']['voidDraw']);
           this.p5loading.remove('voiddraw');
           this.webrtc.dataChannel.send(JSON.stringify({
             type: 'background',

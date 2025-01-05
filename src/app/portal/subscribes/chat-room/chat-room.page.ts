@@ -2403,7 +2403,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`;
           let server_info = this.nakama.servers[this.isOfficial][this.target].info;
           let savedAddress = await this.global.upload_file_to_storage(CurrentMessage.file,
-            { user_id: targetname, apache_port: server_info.apache_port, cdn_port: server_info.cdn_port }, protocol, address, this.useFirstCustomCDN == 1, CurrentMessage['actId']);
+            { user_id: targetname, apache_port: server_info.apache_port, cdn_port: server_info.cdn_port }, protocol, address, this.useFirstCustomCDN == 1, CurrentMessage['actId'], this.info.title);
           isURL = Boolean(savedAddress);
           if (!isURL) throw '링크 만들기 실패';
           delete result['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
@@ -2440,7 +2440,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           try {
             let CatchedAddress: string;
             if (this.useFirstCustomCDN == 1)
-              CatchedAddress = await this.global.try_upload_to_user_custom_fs(CurrentMessage.file, `${this.info.id}_${this.nakama.users.self['display_name']}`, CurrentMessage['actId']);
+              CatchedAddress = await this.global.try_upload_to_user_custom_fs(CurrentMessage.file, `${this.info.id}_${this.nakama.users.self['display_name']}`, CurrentMessage['actId'], this.info.title);
             if (CatchedAddress) {
               delete tmp.content['path'];
               delete tmp.content['partsize'];

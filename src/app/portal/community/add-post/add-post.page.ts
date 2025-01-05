@@ -1224,7 +1224,7 @@ export class AddPostPage implements OnInit, OnDestroy {
               message: `${this.lang.text['AddPost']['SyncMainImage']}: ${this.userInput.mainImage.filename}`,
             });
             let CatchedAddress: string;
-            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.mainImage, this.nakama.users.self['display_name'], actId);
+            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.mainImage, this.nakama.users.self['display_name'], actId, this.userInput.title);
             if (CatchedAddress) {
               delete this.userInput.mainImage['path'];
               delete this.userInput.mainImage['partsize'];
@@ -1240,7 +1240,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
             let savedAddress = await this.global.upload_file_to_storage(this.userInput.mainImage,
               { user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
-              protocol, address, this.userInput.CDN == 1, actId);
+              protocol, address, this.userInput.CDN == 1, actId, this.userInput.title);
             let isURL = Boolean(savedAddress);
             if (!isURL) throw '링크 만들기 실패';
             delete this.userInput.mainImage['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
@@ -1266,7 +1266,7 @@ export class AddPostPage implements OnInit, OnDestroy {
                 message: `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`,
               });
               let CatchedAddress: string;
-              CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], this.nakama.users.self['display_name'], actId);
+              CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], this.nakama.users.self['display_name'], actId, this.userInput.title);
               if (CatchedAddress) {
                 delete this.userInput.attachments[i]['path'];
                 delete this.userInput.attachments[i]['partsize'];
@@ -1292,7 +1292,7 @@ export class AddPostPage implements OnInit, OnDestroy {
               let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
               let savedAddress = await this.global.upload_file_to_storage(this.userInput.attachments[i],
                 { user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
-                protocol, address, this.userInput.CDN == 1, actId);
+                protocol, address, this.userInput.CDN == 1, actId, this.userInput.title);
               let isURL = Boolean(savedAddress);
               if (!isURL) throw '링크 만들기 실패';
               delete this.userInput.attachments[i]['path'];
@@ -1340,7 +1340,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           });
           let outlink = await this.global.upload_file_to_storage(file,
             { user_id: user_id, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
-            protocol, address, this.userInput.CDN == 1, actId);
+            protocol, address, this.userInput.CDN == 1, actId, this.userInput.title);
           if (outlink) {
             this.userInput.OutSource = outlink;
           } else throw '업로드 실패';
@@ -1351,7 +1351,7 @@ export class AddPostPage implements OnInit, OnDestroy {
               id: actId,
               message: `${this.lang.text['AddPost']['SyncPostInfo']}`,
             });
-            let outlink = await this.global.try_upload_to_user_custom_fs(file, user_id);
+            let outlink = await this.global.try_upload_to_user_custom_fs(file, user_id, actId, this.userInput.title);
             if (outlink) {
               this.userInput.OutSource = outlink;
             } else throw '업로드 실패';

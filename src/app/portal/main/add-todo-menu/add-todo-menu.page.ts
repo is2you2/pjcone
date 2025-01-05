@@ -1590,7 +1590,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
           try { // FFS 업로드 시도
             if (this.userInput.CDN != 1) throw 'FFS 사용 순위에 없음';
             let CatchedAddress: string;
-            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attach[i], this.nakama.users.self['display_name'], actId);
+            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attach[i], this.nakama.users.self['display_name'], actId, this.userInput.title);
             if (CatchedAddress) {
               delete this.userInput.attach[i]['partsize'];
               delete this.userInput.attach[i]['size'];
@@ -1745,7 +1745,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               targetname = `${this.userInput.id}_${this.userInput.remote.creator_id}`;
             } catch (e) { }
             let savedAddress = await this.global.upload_file_to_storage(this.userInput.attach[i],
-              { user_id: targetname, apache_port: server_info['apache_port'], cdn_port: server_info['cdn_port'] }, protocol, address, this.userInput.CDN == 1, actId);
+              { user_id: targetname, apache_port: server_info['apache_port'], cdn_port: server_info['cdn_port'] }, protocol, address, this.userInput.CDN == 1, actId, this.userInput.title);
             let isURL = Boolean(savedAddress);
             if (!isURL) throw '링크 만들기 실패';
             delete this.userInput.attach[i]['size'];

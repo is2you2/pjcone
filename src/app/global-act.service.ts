@@ -1049,7 +1049,7 @@ export class GlobalActService {
     let Catched = false;
     let CatchedAddress: string;
     if (useCustomServer)
-      CatchedAddress = await this.try_upload_to_user_custom_fs(file, info?.user_id, actId);
+      CatchedAddress = await this.try_upload_to_user_custom_fs(file, info?.user_id, actId, override_try_msg);
     this.p5loading.update({
       id: actId,
       message: override_try_msg ?? `${this.lang.text['GlobalAct']['CheckCdnServer']}: ${file.filename}`,
@@ -1070,7 +1070,7 @@ export class GlobalActService {
         let progressPercent = Math.floor(currentSize / file.size * 100);
         this.p5loading.update({
           id: actId,
-          message: `${file.filename}: ${progressPercent || 0}%`,
+          message: `${override_try_msg ? override_try_msg + ': ' : ''}${file.filename}: ${progressPercent || 0}%`,
         });
       }, 700);
       let formData = new FormData();
@@ -1080,7 +1080,7 @@ export class GlobalActService {
       if (!up_res.ok) throw '업로드 단계에서 실패';
       this.p5loading.update({
         id: actId,
-        message: `${file.filename}: 100%`,
+        message: `${override_try_msg ? override_try_msg + ': ' : ''}${file.filename}: 100%`,
       });
       clearInterval(progress);
       let res = await fetch(CatchedAddress);
@@ -1130,7 +1130,7 @@ export class GlobalActService {
   }
 
   /** 사용자 지정 서버에 업로드 시도 */
-  async try_upload_to_user_custom_fs(file: FileInfo, user_id: string, loadingId?: string, override_ffs_str?: string) {
+  async try_upload_to_user_custom_fs(file: FileInfo, user_id: string, loadingId?: string, override_try_msg?: string, override_ffs_str?: string) {
     const actId = loadingId || `try_upload_to_user_custom_fs_${Date.now()}`;
     this.p5loading.update({
       id: actId,
@@ -1161,14 +1161,14 @@ export class GlobalActService {
         let progressPercent = Math.floor(currentSize / file.size * 100);
         this.p5loading.update({
           id: actId,
-          message: `${file.filename}: ${progressPercent || 0}%`,
+          message: `${override_try_msg ? override_try_msg + ': ' : ''}${file.filename}: ${progressPercent || 0}%`,
         });
       }, 700);
       let up_res = await fetch(`${protocol}//${address[0]}:9001/cdn/${filename}`, { method: "POST", body: formData });
       if (!up_res.ok) throw '업로드 단계에서 실패';
       this.p5loading.update({
         id: actId,
-        message: `${file.filename}: 100%`,
+        message: `${override_try_msg ? override_try_msg + ': ' : ''}${file.filename}: 100%`,
       });
       clearInterval(progress);
       let res = await fetch(CatchedAddress);
