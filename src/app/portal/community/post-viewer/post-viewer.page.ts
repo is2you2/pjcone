@@ -268,7 +268,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
     this.CurrentIndex = tmp_calced;
     await this.p5loading.update({
       id: 'postviewer',
-      message: `${this.lang.text['ContentViewer']['ChangingContent']}: ${this.nakama.posts[this.CurrentIndex - 1]?.title} (${this.CurrentIndex} / ${this.nakama.posts.length})`,
+      message: `${this.lang.text['PostViewer']['PreparingPost']}: ${this.nakama.posts[this.CurrentIndex - 1]?.title} (${this.CurrentIndex} / ${this.nakama.posts.length})`,
       progress: null,
       forceEnd: null,
     });
@@ -383,8 +383,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
             if (is_attach) {
               this.p5loading.update({
                 id: 'postviewer',
-                message: `${this.lang.text['ContentViewer']['ChangingContent']}: ${this.PostInfo['attachments'][index]['filename']}`,
-                progress: null,
+                message: `${this.lang.text['PostViewer']['PreparingPost']}: ${this.PostInfo['attachments'][index]['filename']}`,
+                progress: index / this.PostInfo['attachments'].length,
                 forceEnd: null,
               });
               if (!Number.isNaN(index) && !RelevanceIndexes.includes(index))
@@ -749,7 +749,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
         this.ContentChanging = false;
         this.p5loading.update({
           id: 'postviewer',
-          message: `${this.lang.text['ContentViewer']['ChangingContent']}: ${this.lang.text['TodoDetail']['TodoComplete']}`,
+          message: `${this.lang.text['PostViewer']['ReadyToSee']}: ${this.PostInfo['title']}`,
+          progress: 1,
           forceEnd: 350,
         });
       }
