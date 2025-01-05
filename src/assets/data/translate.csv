@@ -91,7 +91,7 @@ NoPosts,게시물 추가하기,Add posts
 ## Arcade,,
 Title,아케이드,Arcade
 Preparing,준비중,On Preparing
-AddCustom,즉시 실행,Run immediately
+AddCustom,이 탭에서 실행,Run in this tab
 OfficialList,공식 리스트,Official list
 DediList,개인 서버로부터 리스트,List from private server
 Search,검색..,Search..
