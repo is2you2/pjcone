@@ -1042,7 +1042,7 @@ export class GlobalActService {
    */
   async upload_file_to_storage(file: FileInfo, info: ServerInfoShort, protocol: string, address: string, useCustomServer: boolean, loadingId?: string, override_try_msg?: string): Promise<string> {
     const actId = loadingId || `upload_file_to_storage_${Date.now()}`;
-    this.p5loading.update({
+    await this.p5loading.update({
       id: actId,
       message: this.lang.text['Settings']['TryToFallbackFS'],
     });
@@ -1086,11 +1086,11 @@ export class GlobalActService {
       clearInterval(progress);
       this.p5loading.update({
         id: actId,
-        message: this.lang.text['GlobalAct']['CancelingUpload'],
+        message: `${this.lang.text['GlobalAct']['CancelingUpload']}: ${file.filename}`,
       });
       console.warn('cdn 파일 업로드 단계 실패:', e);
     }
-    if (!loadingId) this.p5loading.remove(actId);
+    this.p5loading.remove(actId);
     return Catched ? CatchedAddress : undefined;
   }
 
