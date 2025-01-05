@@ -478,7 +478,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     await this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
     this.p5loading.update({
       id: 'ionicviewer',
-      forceEnd: this.global.ArcadeWithFullScreen ? 350 : 120,
+      forceEnd: 350,
     });
     this.ContentChanging = false;
     this.CanInputValue = false;
