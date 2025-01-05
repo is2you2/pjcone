@@ -904,7 +904,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           buttons: [{
             text: this.lang.text['ChatRoom']['Send'],
             handler: () => {
-              const actId = 'chatroom';
+              const actId = `chatroom_fileInput_${Date.now()}`;
               this.p5loading.update({
                 id: actId,
                 message: this.lang.text['ChatRoom']['MultipleSend'],
@@ -1528,7 +1528,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 한번에 여러파일 보내기 */
   async DropSendAct(Drops: any) {
-    const actId = 'chatroom';
+    const actId = `chatroom_fileDrop_${Date.now()}`;
     await this.p5loading.update({
       id: actId,
       progress: 0,
