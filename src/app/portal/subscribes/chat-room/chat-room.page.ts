@@ -1905,11 +1905,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let path = msg.content.path;
           let blob = await this.indexed.loadBlobFromUserPath(path, msg.content.type);
           text = blob;
-          await this.global.WriteValueToClipboard(text.type, text, msg.content.filename);
+          await this.global.WriteValueToClipboard(text.type, text, msg.content.filename, 'chatroom');
           return;
         }
       }
-      await this.global.WriteValueToClipboard('text/plain', text);
+      await this.global.WriteValueToClipboard('text/plain', text, undefined, 'chatroom');
     } catch (e) {
       console.log('클립보드 복사 실패: ', e);
     }
