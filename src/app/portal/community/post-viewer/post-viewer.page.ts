@@ -9,6 +9,7 @@ import { P5ToastService } from 'src/app/p5-toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonModal } from '@ionic/angular/common';
 import * as marked from "marked";
+import { P5LoadingService } from 'src/app/p5-loading.service';
 
 @Component({
   selector: 'app-post-viewer',
@@ -27,6 +28,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
     private p5toast: P5ToastService,
     private route: ActivatedRoute,
     private router: Router,
+    private p5loading: P5LoadingService,
   ) { }
 
   PostInfo: any = {};
@@ -247,17 +249,29 @@ export class PostViewerPage implements OnInit, OnDestroy {
   /** 터치 상호작용 보완용 */
   ContentChanging = false;
   /** 게시물 전환 */
-  ChangeToAnother(direction: number) {
+  async ChangeToAnother(direction: number) {
     if (this.ContentChanging) return;
     this.ContentChanging = true;
     let tmp_calced = this.CurrentIndex + direction;
     if (tmp_calced <= 0 || tmp_calced > this.nakama.posts.length) {
       this.ContentChanging = false;
+      await this.p5loading.update({
+        id: 'postviewer',
+        message: `${this.lang.text['ContentViewer']['EndOfList']}: ${this.CurrentIndex} / ${this.nakama.posts.length}`,
+        progress: 1,
+        forceEnd: 350,
+      });
       return;
     }
     this.ScrollDiv.scrollTo({ top: 0 });
     if (this.p5canvas) this.p5canvas.remove();
     this.CurrentIndex = tmp_calced;
+    await this.p5loading.update({
+      id: 'postviewer',
+      message: `${this.lang.text['ContentViewer']['ChangingContent']}: ${this.nakama.posts[this.CurrentIndex - 1]?.title} (${this.CurrentIndex} / ${this.nakama.posts.length})`,
+      progress: null,
+      forceEnd: null,
+    });
     this.PostInfo = this.nakama.posts[this.CurrentIndex - 1];
     this.CanInputValue = false;
     this.initialize();
@@ -367,6 +381,12 @@ export class PostViewerPage implements OnInit, OnDestroy {
               is_attach = content[i].indexOf('<p>{') == 0 && content[i].indexOf('}</p>') == (content_len - 4) && !isNaN(index);
             } catch (e) { }
             if (is_attach) {
+              this.p5loading.update({
+                id: 'postviewer',
+                message: `${this.lang.text['ContentViewer']['ChangingContent']}: ${this.PostInfo['attachments'][index]['filename']}`,
+                progress: null,
+                forceEnd: null,
+              });
               if (!Number.isNaN(index) && !RelevanceIndexes.includes(index))
                 RelevanceIndexes.push(index);
               // 첨부파일 불러오기
@@ -727,6 +747,11 @@ export class PostViewerPage implements OnInit, OnDestroy {
             blenderfile.windowResized();
         }
         this.ContentChanging = false;
+        this.p5loading.update({
+          id: 'postviewer',
+          message: `${this.lang.text['ContentViewer']['ChangingContent']}: ${this.lang.text['TodoDetail']['TodoComplete']}`,
+          forceEnd: 350,
+        });
       }
       /** 클릭하여 파일 뷰어에 진입할 수 있도록 구조 구성해주기 */
       let CreateClickPanel = (target: p5.Element, index: number) => {
@@ -795,6 +820,10 @@ export class PostViewerPage implements OnInit, OnDestroy {
   }
 
   ionViewWillLeave() {
+    this.p5loading.update({
+      id: 'postviewer',
+      forceEnd: 0,
+    }, true);
     this.WaitingLoaded = false;
     delete this.global.p5KeyShortCut['Escape'];
     this.global.RestoreShortCutAct('post-viewer');
