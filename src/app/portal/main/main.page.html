@@ -32,8 +32,11 @@
         {{lang.text['TodoDetail'][TargetFilterDisplayName]}}
       </button>
       <button *ngFor="let kind of AllCategories[TargetFilterName]; let i = index" class="FilterSwitchButton"
-        [style]="'background-color: ' + (kind.color || '#8888')" (click)="ChangeFilterValue(kind.value)">
-        <div *ngIf="global.ShowHint" class="shortcut_hint shortcut_todo_categories">{{i + 1}}</div>
+        [id]="'filterSel_' + i"
+        [style]="'background-color: ' + (kind.color || '#8888') + '; ' + (CurrentFilterValue == kind.value ? 'border: 4px solid var(--ion-color-secondary); margin: -4px 4px 4px -4px;' : '')"
+        (click)="ChangeFilterValue(kind.value)">
+        <div *ngIf="global.ShowHint" class="shortcut_hint shortcut_todo_categories">{{i + 1}}
+        </div>
         {{lang.text['TodoDetail'][kind.name]}}
       </button>
     </div>
