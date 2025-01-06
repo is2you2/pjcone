@@ -1884,6 +1884,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
     this.p5loading.update({
       id: actId,
       message: `${this.lang.text['TodoDetail']['ApplyingTodo']}: ${this.userInput.title}`,
+      progress: 1,
       forceEnd: 1000,
     });
   }
