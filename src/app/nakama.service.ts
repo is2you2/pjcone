@@ -309,37 +309,38 @@ export class NakamaService {
     let targetTime = json.startFrom || json.limit;
     if (targetTime > Date.now()) this.NeedLocalPush.push(json);
     if (!this.p5todotimer && this.NeedLocalPush.length) {
-      this.p5todotimer = new p5((p: p5) => {
-        p.setup = () => {
-          p.noCanvas();
-          p.frameRate(.5);
-        }
-        p.draw = async () => {
-          const GETnow = Date.now();
-          for (let i = this.NeedLocalPush.length - 1; i >= 0; i--) {
-            let targetTime = this.NeedLocalPush[i]['startFrom'] || this.NeedLocalPush[i]['limit'];
-            if (targetTime < GETnow) {
+      let scheduledNoti = [];
+      this.global.windowOnFocusAct['todo-timer'] = () => {
+        scheduledNoti.forEach(noti => clearTimeout(noti));
+        scheduledNoti.length = 0;
+        delete this.global.WindowOnBlurAct['todo-timer'];
+        delete this.global.windowOnFocusAct['todo-timer'];
+      }
+      this.global.WindowOnBlurAct['todo-timer'] = () => {
+        for (let i = this.NeedLocalPush.length - 1; i >= 0; i--) {
+          let noti_info = this.NeedLocalPush[i];
+          let ScheduleAt = new Date(targetTime).getTime() - new Date().getTime();
+          if (ScheduleAt > 0 && ScheduleAt < 2147483647) { // settimeout 최댓값에 한하여 검토
+            let schedule = setTimeout(async () => {
               let catch_image_attach: string;
-              for (let attach of this.NeedLocalPush[i]['attach']) {
-                if (attach['viewer'] == 'image') {
-                  if (attach['url']) {
-                    catch_image_attach = attach['url'];
-                  } else {
-                    let blob = await this.indexed.loadBlobFromUserPath(attach['path'], attach['type']);
-                    catch_image_attach = URL.createObjectURL(blob);
-                  }
-                  break;
+              try {
+                let thumbnail_path: string;
+                try {
+                  thumbnail_path = `todo/${noti_info.id}_${noti_info.remote.isOfficial}_${noti_info.remote.target}/thumbnail.png`;
+                } catch (e) {
+                  thumbnail_path = `todo/${noti_info.id}/thumbnail.png`;
                 }
-              }
-              let stringified = JSON.stringify(this.NeedLocalPush[i]);
+                let blob = await this.indexed.loadBlobFromUserPath(thumbnail_path, 'image/png');
+                catch_image_attach = URL.createObjectURL(blob);
+              } catch (e) { }
               await this.noti.PushLocal({
-                id: this.NeedLocalPush[i].noti_id,
-                title: this.NeedLocalPush[i].title,
-                body: this.NeedLocalPush[i].description,
+                id: noti_info.noti_id,
+                title: noti_info.title,
+                body: noti_info.description,
                 image: catch_image_attach,
                 smallIcon_ln: 'todo',
               }, undefined, (_ev: any) => {
-                this.open_add_todo_page(stringified, 'add-todo-menu');
+                this.open_add_todo_page(JSON.stringify(noti_info), 'add-todo-menu');
               });
               setTimeout(() => {
                 try {
@@ -347,6 +348,51 @@ export class NakamaService {
                 } catch (e) { }
               }, 1000);
               this.NeedLocalPush.splice(i, 1);
+            }, ScheduleAt);
+            scheduledNoti.push(schedule);
+          }
+        }
+      }
+      this.p5todotimer = new p5((p: p5) => {
+        p.setup = () => {
+          p.noCanvas();
+          p.frameRate(.5);
+        }
+        p.draw = () => {
+          const GETnow = Date.now();
+          for (let i = this.NeedLocalPush.length - 1; i >= 0; i--) {
+            let targetTime = this.NeedLocalPush[i]['startFrom'] || this.NeedLocalPush[i]['limit'];
+            if (targetTime < GETnow) {
+              let alertNowAct = async () => {
+                let catch_image_attach: string;
+                try {
+                  let thumbnail_path: string;
+                  try {
+                    thumbnail_path = `todo/${this.NeedLocalPush[i].id}_${this.NeedLocalPush[i].remote.isOfficial}_${this.NeedLocalPush[i].remote.target}/thumbnail.png`;
+                  } catch (e) {
+                    thumbnail_path = `todo/${this.NeedLocalPush[i].id}/thumbnail.png`;
+                  }
+                  let blob = await this.indexed.loadBlobFromUserPath(thumbnail_path, 'image/png');
+                  catch_image_attach = URL.createObjectURL(blob);
+                } catch (e) { }
+                let stringified = JSON.stringify(this.NeedLocalPush[i]);
+                await this.noti.PushLocal({
+                  id: this.NeedLocalPush[i].noti_id,
+                  title: this.NeedLocalPush[i].title,
+                  body: this.NeedLocalPush[i].description,
+                  image: catch_image_attach,
+                  smallIcon_ln: 'todo',
+                }, undefined, (_ev: any) => {
+                  this.open_add_todo_page(stringified, 'add-todo-menu');
+                });
+                setTimeout(() => {
+                  try {
+                    URL.revokeObjectURL(catch_image_attach);
+                  } catch (e) { }
+                }, 1000);
+                this.NeedLocalPush.splice(i, 1);
+              }
+              alertNowAct();
             }
           }
           if (!this.NeedLocalPush.length) {

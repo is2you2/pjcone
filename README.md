@@ -28,6 +28,9 @@ Project: Cone 은 웹에서 쉽게 설치/삭제할 수 있는 내부망 특화 
 p5.filter 항목의 옵션 파라미터가 아직 타입에 반영되지 않아 직접 구조를 수정해야합니다.
 p5.filter(필터 이름, 정도, [WebGL 사용여부: boolean]);
 
+## p5js 런타임
+앱이 백그라운드에 있게 되면 p5js.draw()는 행동하지 않음
+
 그러고나면 빌드가 오류없이 진행됩니다.
 
 ## Angular Offline PWA 구성
