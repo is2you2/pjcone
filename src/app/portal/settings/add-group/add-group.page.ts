@@ -238,8 +238,7 @@ export class AddGroupPage implements OnInit, OnDestroy {
       this.userInput.creator_id = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target].session.user_id;
       this.nakama.save_group_info(this.userInput, this.servers[this.index].isOfficial, this.servers[this.index].target);
       try {
-        await this.nakama.join_chat_with_modulation(v.id, 3, this.servers[this.index].isOfficial, this.servers[this.index].target);
-        this.nakama.rearrange_channels();
+        await this.nakama.join_chat_with_modulation(v.id, 3, this.servers[this.index].isOfficial, this.servers[this.index].target, true);
         this.p5toast.show({
           text: this.lang.text['AddGroup']['group_created'],
         });

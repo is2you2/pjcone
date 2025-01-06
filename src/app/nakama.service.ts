@@ -1717,13 +1717,16 @@ export class NakamaService {
   };
 
   /** 채널 추가, 채널 추가에 사용하려는 경우 join_chat_with_modulation() 를 대신 사용하세요 */
-  async add_channel(channel_info: Channel, _is_official: string, _target: string) {
+  async add_channel(channel_info: Channel, _is_official: string, _target: string, isNewChannel = false) {
     if (!this.channels_orig[_is_official][_target][channel_info.id]) {
       this.channels_orig[_is_official][_target][channel_info.id] = {};
       try {
-        this.servers[_is_official][_target].socket.sendMatchState(this.self_match[_is_official][_target].match_id, MatchOpCode.ADD_CHANNEL,
-          encodeURIComponent(''));
-      } catch (e) { }
+        if (isNewChannel)
+          await this.servers[_is_official][_target].socket.sendMatchState(this.self_match[_is_official][_target].match_id, MatchOpCode.ADD_CHANNEL,
+            encodeURIComponent(channel_info['redirect'].id));
+      } catch (e) {
+        console.log('새 채널 생성됨 셀프 전파 실패: ', e);
+      }
     }
     let keys = Object.keys(channel_info);
     keys.forEach(key => this.channels_orig[_is_official][_target][channel_info.id][key] = channel_info[key]);
@@ -2063,7 +2066,7 @@ export class NakamaService {
               }
               this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
               await servers[i].socket.sendMatchState(this.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.ADD_CHANNEL,
-                encodeURIComponent(''));
+                encodeURIComponent(v.groups[k].id));
               if (pending_group.open) { // 열린 그룹이라면 즉시 채널에 참가
                 let c = await this.join_chat_with_modulation(pending_group.id, 3, servers[i].info.isOfficial, servers[i].info.target);
                 if (!this.opened_page_info['channel']
@@ -2839,7 +2842,7 @@ export class NakamaService {
             }
               break;
             case MatchOpCode.ADD_CHANNEL: {
-              this.get_group_list_from_server(_is_official, _target);
+              this.get_group_list_from_server(_is_official, _target, m['data_str']);
             }
               break;
             case MatchOpCode.NAME_OVERRIDED: {
@@ -3023,7 +3026,7 @@ export class NakamaService {
           console.error('예상하지 못한 채널 정보: ', type);
           break;
       }
-      await this.add_channel(c, _is_official, _target);
+      await this.add_channel(c, _is_official, _target, isNewChannel);
       if (isNewChannel) this.rearrange_channels();
       if (!this.opened_page_info['channel']
         || this.opened_page_info['channel']['isOfficial'] != _is_official
