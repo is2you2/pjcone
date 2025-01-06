@@ -2277,49 +2277,58 @@ export class NakamaService {
    * 새로 생기는 채널이 있을 때 사용  
    * 그룹 채팅 채널 접속 및 그룹 사용자 검토도 이곳에서 시도함
    */
-  get_group_list_from_server(_is_official: string, _target: string, gid?: string) {
-    this.servers[_is_official][_target].client.listUserGroups(
+  async get_group_list_from_server(_is_official: string, _target: string, gid?: string) {
+    const actId = 'get_group_list_from_server';
+    await this.p5loading.update({
+      id: actId,
+      message: `${this.lang.text['Nakama']['SyncingChannel']}: ${this.servers[_is_official][_target].info.name}`,
+    });
+    let targetGroup = await this.servers[_is_official][_target].client.listUserGroups(
       this.servers[_is_official][_target].session,
-      this.servers[_is_official][_target].session.user_id)
-      .then(async targetGroup => {
-        for (let i = 0, j = targetGroup.user_groups.length; i < j; i++) {
-          // 업데이트할 그룹이 특정되어있다면 해당 그룹만 업데이트
-          if (gid === undefined || gid == targetGroup.user_groups[i].group.id) {
-            if (!this.groups[_is_official][_target][targetGroup.user_groups[i].group.id])
-              this.groups[_is_official][_target][targetGroup.user_groups[i].group.id] = {};
-            // 로컬에 없던 그룹은 이미지 확인
-            try {
-              let gimg = await this.servers[_is_official][_target].client.readStorageObjects(
-                this.servers[_is_official][_target].session, {
-                object_ids: [{
-                  collection: 'group_public',
-                  key: `group_${targetGroup.user_groups[i].group.id}`,
-                  user_id: targetGroup.user_groups[i].group.creator_id,
-                }],
-              });
-              if (gimg.objects.length) {
-                this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['img'] = gimg.objects[0].value['img'];
-                this.indexed.saveTextFileToUserPath(gimg.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${targetGroup.user_groups[i].group.id}.img`);
-              } else {
-                delete this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['img'];
-                this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${targetGroup.user_groups[i].group.id}.img`);
-              }
-            } catch (e) {
-              console.error('그룹 이미지 가져오기 오류: ', e);
+      this.servers[_is_official][_target].session.user_id);
+    try {
+      for (let i = 0, j = targetGroup.user_groups.length; i < j; i++) {
+        // 업데이트할 그룹이 특정되어있다면 해당 그룹만 업데이트
+        if (gid === undefined || gid == targetGroup.user_groups[i].group.id) {
+          if (!this.groups[_is_official][_target][targetGroup.user_groups[i].group.id])
+            this.groups[_is_official][_target][targetGroup.user_groups[i].group.id] = {};
+          // 로컬에 없던 그룹은 이미지 확인
+          try {
+            let gimg = await this.servers[_is_official][_target].client.readStorageObjects(
+              this.servers[_is_official][_target].session, {
+              object_ids: [{
+                collection: 'group_public',
+                key: `group_${targetGroup.user_groups[i].group.id}`,
+                user_id: targetGroup.user_groups[i].group.creator_id,
+              }],
+            });
+            if (gimg.objects.length) {
+              this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['img'] = gimg.objects[0].value['img'];
+              this.indexed.saveTextFileToUserPath(gimg.objects[0].value['img'], `servers/${_is_official}/${_target}/groups/${targetGroup.user_groups[i].group.id}.img`);
+            } else {
+              delete this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['img'];
+              this.indexed.removeFileFromUserPath(`servers/${_is_official}/${_target}/groups/${targetGroup.user_groups[i].group.id}.img`);
             }
-            this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]
-              = { ...this.groups[_is_official][_target][targetGroup.user_groups[i].group.id], ...targetGroup.user_groups[i].group };
-            // 나갔다가 다시 진입하는 경우를 대비해 그룹 상태 초기화
-            if (gid && this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] == 'missing')
-              this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] = 'online';
-            await this.load_groups(_is_official, _target, targetGroup.user_groups[i].group.id, true);
-            await this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target);
+          } catch (e) {
+            console.error('그룹 이미지 가져오기 오류: ', e);
           }
+          this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]
+            = { ...this.groups[_is_official][_target][targetGroup.user_groups[i].group.id], ...targetGroup.user_groups[i].group };
+          // 나갔다가 다시 진입하는 경우를 대비해 그룹 상태 초기화
+          if (gid && this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] == 'missing')
+            this.groups[_is_official][_target][targetGroup.user_groups[i].group.id]['status'] = 'online';
+          await this.load_groups(_is_official, _target, targetGroup.user_groups[i].group.id, true);
+          await this.join_chat_with_modulation(targetGroup.user_groups[i].group.id, 3, _is_official, _target);
         }
-        this.rearrange_channels();
-      }).catch(e => {
-        console.error('사용자 그룹 가져오기 오류: ', e);
-      });
+      }
+      this.rearrange_channels();
+    } catch (e) {
+      console.error('사용자 그룹 가져오기 오류: ', e);
+    }
+    this.p5loading.update({
+      id: actId,
+      forceEnd: 350,
+    });
   }
 
   /** 모든 그룹 리스트를 배열로 돌려주기  
