@@ -243,6 +243,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     share: false,
   };
   ionViewWillEnter() {
+    this.p5canvas?.loop();
     this.useP5Navigator = true;
     this.global.portalHint = false;
     this.global.BlockMainShortcut = true;
@@ -2695,6 +2696,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
    */
   PageWillDestroy = false;
   async ionViewWillLeave() {
+    this.p5canvas?.noLoop();
     this.p5loading.update({
       id: 'ionicviewer',
       forceEnd: 0,
