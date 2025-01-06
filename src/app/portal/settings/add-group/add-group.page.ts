@@ -213,10 +213,6 @@ export class AddGroupPage implements OnInit, OnDestroy {
       this.SaveLocalAct();
       return;
     }
-    if (this.userInput.id) {
-      await this.JoinWithSpecificId();
-      return;
-    }
     if (this.statusBar.groupServer[this.servers[this.index].isOfficial][this.servers[this.index].target] != 'online') {
       this.p5toast.show({
         text: this.lang.text['AddGroup']['cannot_use_selected_server'],
@@ -323,40 +319,6 @@ export class AddGroupPage implements OnInit, OnDestroy {
     if (!this.nakama.channels_orig['local']['target'][result])
       return result;
     else return this.CreateRandomLocalId();
-  }
-
-  /** ID로 채널 진입하기 */
-  async JoinWithSpecificId() {
-    let SuccJoinedChat = false;
-    let target_server = this.nakama.servers[this.servers[this.index].isOfficial][this.servers[this.index].target];
-    try { // 그룹 채널로 시도
-      await target_server.client.joinGroup(target_server.session, this.userInput.id);
-      this.nakama.get_group_list_from_server(this.servers[this.index].isOfficial, this.servers[this.index].target, this.userInput.id);
-      SuccJoinedChat = true;
-    } catch (e) {
-      try { // 1:1 채널로 재시도
-        await this.nakama.join_chat_with_modulation(this.userInput.id, 2, this.servers[this.index].isOfficial, this.servers[this.index].target);
-        this.nakama.rearrange_channels();
-        SuccJoinedChat = true;
-      } catch (e) {
-        this.p5toast.show({
-          text: this.lang.text['AddGroup']['check_group_id'],
-        });
-        this.isSaveClicked = false;
-        setTimeout(() => {
-          this.userInput.id = '';
-        }, 1000);
-      }
-    }
-    if (SuccJoinedChat) {
-      this.p5toast.show({
-        text: this.lang.text['AddGroup']['join_group_succ'],
-      });
-      setTimeout(() => {
-        this.nakama.rearrange_channels();
-        this.navCtrl.pop();
-      }, 500);
-    }
   }
 
   ionViewWillLeave() {
