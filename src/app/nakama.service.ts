@@ -2178,7 +2178,7 @@ export class NakamaService {
         try {
           let target_address = `${info.server.useSSL ? 'https' : 'http'}://${info.server.address}`;
           let _info = this.servers[_is_official][_target].info;
-          this.global.remove_files_from_storage_with_key(target_address, info['id'], { cdn_port: _info.cdn_port, apache_port: _info.apache_port });
+          await this.global.remove_files_from_storage_with_key(target_address, info['id'], { cdn_port: _info.cdn_port, apache_port: _info.apache_port });
         } catch (e) { }
         let v = await this.servers[_is_official][_target].client.deleteGroup(
           this.servers[_is_official][_target].session, info['id']);
@@ -2210,13 +2210,13 @@ export class NakamaService {
         let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
         // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
         if (address[0])
-          this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`, {});
+          await this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`, {});
       } catch (e) { }
       try { // cdn 파일 중 내 파일들 삭제
         let target_address = `${info.server.useSSL ? 'https' : 'http'}://${info.server.address}`;
         if (info.server.address) {
           let _info = this.servers[_is_official][_target].info;
-          this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`
+          await this.global.remove_files_from_storage_with_key(target_address, `${info['id']}_${this.servers[_is_official][_target].session.user_id}`
             , { cdn_port: _info.cdn_port, apache_port: _info.apache_port });
         }
       } catch (e) { }
@@ -2244,10 +2244,13 @@ export class NakamaService {
    */
   async remove_channel_files(_is_official: string, _target: string, channel_id: string, is_creator?: boolean, loadingId?: string) {
     const actId = loadingId || 'remove_channel_files';
+    // 1:1 채널이라면 사용자 이름표시
+    const channel_name = this.channels_orig[_is_official][_target][channel_id]?.title
+      || (channel_id.charAt(0) == '4' ? this.users[_is_official][_target][channel_id.split('.').find(id => id in this.users[_is_official][_target])]?.['display_name'] : undefined);
     try {
       await this.p5loading.update({
         id: actId,
-        message: `${this.lang.text['GroupDetail']['BreakupGroup']}: `,
+        message: `${this.lang.text['GroupDetail']['BreakupGroup']}: ${channel_name}`,
         forceEnd: null,
       });
       await this.servers[_is_official][_target].client.rpc(
@@ -2434,7 +2437,7 @@ export class NakamaService {
       let target_address = `${server_info.useSSL ? 'https' : 'http'}://${server_info.address}`;
       try { // cdn 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
         if (only_remove) throw '클라이언트에서 리스트만 삭제';
-        this.global.remove_files_from_storage_with_key(target_address, my_uid, { cdn_port: server_info.cdn_port, apache_port: server_info.apache_port });
+        await this.global.remove_files_from_storage_with_key(target_address, my_uid, { cdn_port: server_info.cdn_port, apache_port: server_info.apache_port });
       } catch (e) { }
       try { // FFS 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
         if (only_remove) throw '클라이언트에서 리스트만 삭제';
@@ -2448,7 +2451,7 @@ export class NakamaService {
         } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
         let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
         // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
-        this.global.remove_files_from_storage_with_key(target_address, my_uid, {});
+        await this.global.remove_files_from_storage_with_key(target_address, my_uid, {});
       } catch (e) { }
       await this.servers[_is_official][_target].client.rpc(
         this.servers[_is_official][_target].session,

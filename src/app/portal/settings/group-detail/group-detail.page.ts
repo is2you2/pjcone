@@ -475,8 +475,8 @@ export class GroupDetailPage implements OnInit, OnDestroy {
   }
 
   /** 서버에 업로드한 파일 삭제하기 */
-  RemoveGroupFilesFromServer(target_key: string) {
-    this.nakama.remove_channel_files(this.isOfficial, this.target, this.info['channel_id']);
+  async RemoveGroupFilesFromServer(target_key: string) {
+    await this.nakama.remove_channel_files(this.isOfficial, this.target, this.info['channel_id']);
     let server_info = this.nakama.servers[this.isOfficial][this.target].info;
     try { // FFS 파일 중 내 계정으로 올린 파일들 일괄 삭제 요청
       let fallback = localStorage.getItem('fallback_fs');
@@ -489,11 +489,11 @@ export class GroupDetailPage implements OnInit, OnDestroy {
       } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
       let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
       // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
-      this.global.remove_files_from_storage_with_key(target_address, target_key, {});
+      await this.global.remove_files_from_storage_with_key(target_address, target_key, {});
     } catch (e) { }
     try { // cdn 파일들 일괄 삭제처리
       let target_address = `${server_info.useSSL ? 'https' : 'http'}://${server_info.address}`;
-      this.global.remove_files_from_storage_with_key(target_address, target_key, { cdn_port: server_info.cdn_port, apache_port: server_info.apache_port });
+      await this.global.remove_files_from_storage_with_key(target_address, target_key, { cdn_port: server_info.cdn_port, apache_port: server_info.apache_port });
     } catch (e) { }
   }
 
