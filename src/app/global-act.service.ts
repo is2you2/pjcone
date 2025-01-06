@@ -1051,19 +1051,10 @@ export class GlobalActService {
    */
   async upload_file_to_storage(file: FileInfo, info: ServerInfoShort, protocol: string, address: string, useCustomServer: boolean, loadingId?: string, override_try_msg?: string): Promise<string> {
     const actId = loadingId || `upload_file_to_storage_${Date.now()}`;
-    await this.p5loading.update({
-      id: actId,
-      message: this.lang.text['Settings']['TryToFallbackFS'],
-      forceEnd: null,
-    });
     let Catched = false;
     let CatchedAddress: string;
     if (useCustomServer)
       CatchedAddress = await this.try_upload_to_user_custom_fs(file, info?.user_id, actId, override_try_msg);
-    this.p5loading.update({
-      id: actId,
-      message: override_try_msg ?? `${this.lang.text['GlobalAct']['CheckCdnServer']}: ${file.filename}`,
-    });
     let progress: any;
     try { // 사설 연계 서버에 업로드 시도
       if (CatchedAddress) {

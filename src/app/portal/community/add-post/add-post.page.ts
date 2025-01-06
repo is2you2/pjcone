@@ -1335,10 +1335,6 @@ export class AddPostPage implements OnInit, OnDestroy {
           let address = this.nakama.servers[this.isOfficial][this.target].info.address;
           let user_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
           let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
-          this.p5loading.update({
-            id: actId,
-            message: `${this.lang.text['AddPost']['SyncPostInfo']}`,
-          });
           let outlink = await this.global.upload_file_to_storage(file,
             { user_id: user_id, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
             protocol, address, this.userInput.CDN == 1, actId, this.userInput.title);
@@ -1348,10 +1344,6 @@ export class AddPostPage implements OnInit, OnDestroy {
         } catch (e) { // 지정된 서버 주소로 업로드를 실패했다면 FFS 등록 주소를 따라 업로드 시도
           try { // FFS에 업로드 시도
             let user_id = this.nakama.users.self['display_name'];
-            this.p5loading.update({
-              id: actId,
-              message: `${this.lang.text['AddPost']['SyncPostInfo']}`,
-            });
             let outlink = await this.global.try_upload_to_user_custom_fs(file, user_id, actId, this.userInput.title);
             if (outlink) {
               this.userInput.OutSource = outlink;
