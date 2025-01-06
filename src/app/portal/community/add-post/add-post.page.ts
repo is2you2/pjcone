@@ -1421,6 +1421,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     await this.p5loading.update({
       id: actId,
       message: `${this.lang.text['AddPost']['WIP']}: ${this.userInput.title}`,
+      progress: 1,
       forceEnd: 1000,
     });
   }
