@@ -1047,13 +1047,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.WillLeave = false;
     for (let func of this.QueuedAct) func();
     // PWA: 윈도우 창을 다시 보게 될 때 알림 삭제
-    if (!window.onfocus)
-      window.onfocus = () => {
-        if (this.info['cnoti_id']) {
-          this.noti.ClearNoti(this.info['cnoti_id']);
-          this.SelfSyncNotiInfo();
-        }
+    this.global.windowOnFocusAct['chatroom'] = () => {
+      if (this.info['cnoti_id']) {
+        this.noti.ClearNoti(this.info['cnoti_id']);
+        this.SelfSyncNotiInfo();
       }
+    }
     this.QueuedAct.length = 0;
     this.ChatContDiv = document.getElementById('chatroom_content_div');
     try {
@@ -3095,7 +3094,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.noti.Current = '';
     this.removeShortCutKey();
     this.global.RestoreShortCutAct('chat-room');
-    window.onfocus = null;
+    delete this.global.windowOnFocusAct['chatroom'];
     this.userInputTextArea.onpaste = null;
     this.userInputTextArea.onblur = null;
     this.userInputTextArea.onfocus = null;

@@ -184,7 +184,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
         }
       }
     });
-    window.onfocus = () => {
+    this.global.windowOnFocusAct['minimalchat'] = () => {
       if (this.lnId) this.noti.ClearNoti(this.lnId);
       this.noti.Current = this.Header;
     }
@@ -973,7 +973,7 @@ export class MinimalChatPage implements OnInit, OnDestroy {
     }, true);
     this.global.RestoreShortCutAct('minimal-chat-init');
     this.route.queryParams['unsubscribe']();
-    window.onfocus = null;
+    delete this.global.windowOnFocusAct['minimalchat'];
     this.minimal_chat_log.onscroll = null;
     this.DomMinimalChatInput.onpaste = null;
     if (this.p5canvas) this.p5canvas.remove();

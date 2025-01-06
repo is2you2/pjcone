@@ -166,7 +166,20 @@ export class GlobalActService {
       isDarkMode = event.matches ? true : false;
     });
     this.useLocalAddress = localStorage.getItem('useQRCodeBasic') == 'true';
+    window.onfocus = () => {
+      let keys = Object.keys(this.windowOnFocusAct);
+      for (let key of keys) this.windowOnFocusAct[key]();
+    }
+    window.onblur = () => {
+      let keys = Object.keys(this.WindowOnBlurAct);
+      for (let key of keys) this.WindowOnBlurAct[key]();
+    }
   }
+
+  /** 앱으로 돌아왔을 경우 행동 */
+  windowOnFocusAct: { [id: string]: Function } = {};
+  /** 다른 앱으로 전환했을 때 행동하는 목록 구성 */
+  WindowOnBlurAct: { [id: string]: Function } = {};
 
   /** 해야할 일 캔버스 */
   p5todo: p5;
@@ -197,10 +210,6 @@ export class GlobalActService {
     let load_env = localStorage.getItem('ShowHint');
     if (load_env !== null) this.ShowHint = load_env == '1';
     if (this.ShowHint === undefined) this.ShowHint = isPlatform == 'DesktopPWA';
-    window.onblur = () => {
-      let keys = Object.keys(this.WindowOnBlurAct);
-      for (let key of keys) this.WindowOnBlurAct[key]();
-    }
     if (!this.p5toast.HTMLEncode)
       this.p5toast.HTMLEncode = this.HTMLEncode;
     this.p5key = new p5((p: p5) => {
@@ -2016,10 +2025,6 @@ export class GlobalActService {
     }
   }
 
-  /** 화면에 집중하지 않을 때 행동하는 목록 구성  
-   * WindowOnBlurAct[key] = Function
-   */
-  WindowOnBlurAct = {};
   /** 클립보드에 내용 복사하기
    * @param type 종류
    * @param value 복사하려는 값 (Blob / String): 기본으로 이걸 쓰세요 text/plain
