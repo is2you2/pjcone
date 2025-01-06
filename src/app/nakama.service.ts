@@ -988,53 +988,50 @@ export class NakamaService {
     this.LoadOverrideName(_is_official, _target);
     this.load_server_arcade_list(_is_official, _target);
     // 통신 소켓 연결하기
-    this.connect_to(_is_official, _target, (socket: Socket) => {
-      this.servers[_is_official][_target].client.readStorageObjects(
-        this.servers[_is_official][_target].session, {
-        object_ids: [{
+    let socket = await this.connect_to(_is_official, _target);
+    const prv_match = await this.servers[_is_official][_target].client.readStorageObjects(
+      this.servers[_is_official][_target].session, {
+      object_ids: [{
+        collection: 'self_share',
+        key: 'private_match',
+        user_id: this.servers[_is_official][_target].session.user_id,
+      }]
+    });
+    try {
+      this.self_match[_is_official][_target] = await socket.joinMatch(prv_match.objects[0].value['match_id']);
+    } catch (e) {
+      let self_match = await socket.createMatch();
+      this.self_match[_is_official][_target] = self_match;
+      this.servers[_is_official][_target].client.writeStorageObjects(
+        this.servers[_is_official][_target].session, [{
           collection: 'self_share',
           key: 'private_match',
-          user_id: this.servers[_is_official][_target].session.user_id,
-        }]
-      }).then(async prv_match => {
-        try {
-          this.self_match[_is_official][_target] = await socket.joinMatch(prv_match.objects[0].value['match_id']);
-        } catch (e) {
-          let self_match = await socket.createMatch();
-          this.self_match[_is_official][_target] = self_match;
-          this.servers[_is_official][_target].client.writeStorageObjects(
-            this.servers[_is_official][_target].session, [{
-              collection: 'self_share',
-              key: 'private_match',
-              permission_read: 2,
-              permission_write: 1,
-              value: { match_id: self_match.match_id },
-            }],
-          );
-        }
-        for (let i = 0, j = this.AfterLoginAct.length; i < j; i++)
-          try {
-            await this.AfterLoginAct[i]();
-          } catch (e) {
-            console.error('진입 동작 오류: ', e);
-          }
-        this.AfterLoginAct.length = 0;
-        this.AfterLoginActDone = true;
+          permission_read: 2,
+          permission_write: 1,
+          value: { match_id: self_match.match_id },
+        }],
+      );
+    }
+    for (let i = 0, j = this.AfterLoginAct.length; i < j; i++)
+      try {
+        await this.AfterLoginAct[i]();
+      } catch (e) {
+        console.error('진입 동작 오류: ', e);
+      }
+    this.AfterLoginAct.length = 0;
+    this.AfterLoginActDone = true;
+    // 알고 있는 사용자 정보를 토대로 온라인 여부 검토
+    let keys = Object.keys(this.users[_is_official][_target] || {});
+    if (keys) this.servers[_is_official][_target].client.getUsers(
+      this.servers[_is_official][_target].session, keys)
+      .then(v => {
+        for (let i = 0, j = v.users.length; i < j; i++)
+          this.save_other_user(v.users[i], _is_official, _target)
+      }).catch(e => {
+        console.log('사용자 정보 업데이트 실패: ', e);
       });
-      // 알고 있는 사용자 정보를 토대로 온라인 여부 검토
-      let keys = Object.keys(this.users[_is_official][_target] || {});
-      if (keys) this.servers[_is_official][_target].client.getUsers(
-        this.servers[_is_official][_target].session, keys)
-        .then(v => {
-          for (let i = 0, j = v.users.length; i < j; i++)
-            this.save_other_user(v.users[i], _is_official, _target)
-        }).catch(e => {
-          console.log('사용자 정보 업데이트 실패: ', e);
-        });
-      this.redirect_channel(_is_official, _target).then(() => {
-        this.get_group_list_from_server(_is_official, _target);
-      });
-    });
+    await this.redirect_channel(_is_official, _target);
+    await this.get_group_list_from_server(_is_official, _target);
     await this.SyncTodoCounter(_is_official, _target);
     this.load_server_todo(_is_official, _target);
     this.RemoteTodoSelfCheck(_is_official, _target);
@@ -2285,6 +2282,7 @@ export class NakamaService {
     await this.p5loading.update({
       id: actId,
       message: `${this.lang.text['Nakama']['SyncingChannel']}: ${this.servers[_is_official][_target].info.name}`,
+      forceEnd: null,
     });
     let targetGroup = await this.servers[_is_official][_target].client.listUserGroups(
       this.servers[_is_official][_target].session,
@@ -2599,113 +2597,126 @@ export class NakamaService {
   /** 수신된 통화에 즉각 반응하기 위한 함수 링크 */
   WebRTCService: any;
   /** 소켓 서버에 연결 */
-  connect_to(_is_official: 'official' | 'unofficial' = 'official', _target = 'default', callback: Function) {
-    this.servers[_is_official][_target].socket.connect(
-      this.servers[_is_official][_target].session, true).then(_v => {
-        let socket = this.servers[_is_official][_target].socket;
-        let keys = Object.keys(this.on_socket_connected);
-        keys.forEach(key => this.on_socket_connected[key]());
-        // 실시간으로 알림을 받은 경우
-        socket.onnotification = (v) => {
-          this.act_on_notification(v, _is_official, _target);
-          this.rearrange_notifications();
-        }
-        socket.onmatchpresence = (m) => {
-          if (m.joins !== undefined) { // 참여 검토
-            m.joins.forEach(_info => {
-              // if (this.servers[_is_official][_target].session.user_id == info.user_id) // self-match
-            });
-          } else if (m.leaves !== undefined) { // 떠남 검토
-            m.leaves.forEach(info => {
-              if (this.servers[_is_official][_target].session.user_id == info.user_id) // self-match
-                if (this.WebRTCService && this.WebRTCService.TypeIn == 'data')
-                  this.WebRTCService.close_webrtc(true);
-            });
+  async connect_to(_is_official: 'official' | 'unofficial' = 'official', _target = 'default') {
+    await this.servers[_is_official][_target].socket.connect(
+      this.servers[_is_official][_target].session, true);
+    let socket = this.servers[_is_official][_target].socket;
+    let keys = Object.keys(this.on_socket_connected);
+    keys.forEach(key => this.on_socket_connected[key]());
+    // 실시간으로 알림을 받은 경우
+    socket.onnotification = (v) => {
+      this.act_on_notification(v, _is_official, _target);
+      this.rearrange_notifications();
+    }
+    socket.onmatchpresence = (m) => {
+      if (m.joins !== undefined) { // 참여 검토
+        m.joins.forEach(_info => {
+          // if (this.servers[_is_official][_target].session.user_id == info.user_id) // self-match
+        });
+      } else if (m.leaves !== undefined) { // 떠남 검토
+        m.leaves.forEach(info => {
+          if (this.servers[_is_official][_target].session.user_id == info.user_id) // self-match
+            if (this.WebRTCService && this.WebRTCService.TypeIn == 'data')
+              this.WebRTCService.close_webrtc(true);
+        });
+      }
+    }
+    /** 다른 기기에서 접근시 접속자 수 재측정 방지용 */
+    let BlockSelfCount = [];
+    socket.onchannelpresence = (p) => {
+      if (p.joins !== undefined) { // 참여 검토
+        p.joins.forEach(info => {
+          if (this.servers[_is_official][_target].session.user_id != info.user_id)
+            this.load_other_user(info.user_id, _is_official, _target)['online'] = true;
+        });
+        /** 자기 자신의 다른 기기 접속인지 검토 */
+        let check_self = true;
+        for (let user of p.joins)
+          if (user.user_id != this.servers[_is_official][_target].session.user_id) {
+            check_self = false;
+            break;
           }
+        if (!BlockSelfCount.includes(p.channel_id) || !check_self) {
+          BlockSelfCount.push(p.channel_id);
+          this.count_channel_online_member(p, _is_official, _target);
         }
-        /** 다른 기기에서 접근시 접속자 수 재측정 방지용 */
-        let BlockSelfCount = [];
-        socket.onchannelpresence = (p) => {
-          if (p.joins !== undefined) { // 참여 검토
-            p.joins.forEach(info => {
-              if (this.servers[_is_official][_target].session.user_id != info.user_id)
-                this.load_other_user(info.user_id, _is_official, _target)['online'] = true;
-            });
-            /** 자기 자신의 다른 기기 접속인지 검토 */
-            let check_self = true;
-            for (let user of p.joins)
-              if (user.user_id != this.servers[_is_official][_target].session.user_id) {
-                check_self = false;
-                break;
-              }
-            if (!BlockSelfCount.includes(p.channel_id) || !check_self) {
-              BlockSelfCount.push(p.channel_id);
-              this.count_channel_online_member(p, _is_official, _target);
-            }
-          } else if (p.leaves !== undefined) { // 떠남 검토
-            let others = [];
-            p.leaves.forEach(info => {
-              if (this.servers[_is_official][_target].session.user_id != info.user_id) {
-                this.servers[_is_official][_target].client.getUsers(
-                  this.servers[_is_official][_target].session, [info.user_id])
-                  .then(user => {
-                    let keys = Object.keys(user.users[0]);
-                    delete this.load_other_user(info.user_id, _is_official, _target)['online'];
-                    keys.forEach(key => {
-                      this.users[_is_official][_target][info.user_id][key] = user.users[0][key];
-                    });
-                    others.push(info.user_id);
-                    others.forEach(_userId => this.load_other_user(_userId, _is_official, _target));
-                    this.count_channel_online_member(p, _is_official, _target);
-                  });
-              }
-            });
+      } else if (p.leaves !== undefined) { // 떠남 검토
+        let others = [];
+        p.leaves.forEach(info => {
+          if (this.servers[_is_official][_target].session.user_id != info.user_id) {
+            this.servers[_is_official][_target].client.getUsers(
+              this.servers[_is_official][_target].session, [info.user_id])
+              .then(user => {
+                let keys = Object.keys(user.users[0]);
+                delete this.load_other_user(info.user_id, _is_official, _target)['online'];
+                keys.forEach(key => {
+                  this.users[_is_official][_target][info.user_id][key] = user.users[0][key];
+                });
+                others.push(info.user_id);
+                others.forEach(_userId => this.load_other_user(_userId, _is_official, _target));
+                this.count_channel_online_member(p, _is_official, _target);
+              });
           }
-          if (this.socket_reactive['others-online'])
-            this.socket_reactive['others-online']();
-        }
-        socket.onmatchdata = async (m) => {
-          m['data_str'] = decodeURIComponent(new TextDecoder().decode(m.data));
-          let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
-          switch (m.op_code) {
-            case MatchOpCode.MANAGE_TODO: {
-              let sep = m['data_str'].split(',');
-              switch (sep[0]) {
-                case 'add': // 추가 또는 수정
-                  this.servers[_is_official][_target].client.readStorageObjects(
-                    this.servers[_is_official][_target].session, {
-                    object_ids: [{
-                      collection: sep[1],
-                      key: sep[2],
-                      user_id: this.servers[_is_official][_target].session.user_id,
-                    }],
-                  }).then(async v => {
-                    if (v.objects.length) {
-                      try { // 수정인 경우 기존 알림을 삭제
-                        let json = v.objects[0].value as any;
-                        let data: string;
-                        try {
-                          data = await this.indexed.loadTextFromUserPath(`todo/${json.id}_${_is_official}_${_target}/info.todo`);
-                          if (!data) throw 'empty';
-                        } catch (e) {
-                          data = await this.indexed.loadTextFromUserPath(`todo/${json.id}/info.todo`);
-                        }
-                        let get_json = JSON.parse(data);
-                        this.removeRegisteredId(get_json.noti_id);
-                        this.noti.ClearNoti(get_json.noti_id);
-                      } catch (e) { }
-                      await this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
-                      let json = v.objects[0].value as any;
-                      this.noti.ClearNoti(json.noti_id);
-                      this.set_todo_notification(json);
-                      this.p5toast.show({
-                        text: `${this.lang.text['Main']['Title']}: ${json.title}`,
-                      });
+        });
+      }
+      if (this.socket_reactive['others-online'])
+        this.socket_reactive['others-online']();
+    }
+    socket.onmatchdata = async (m) => {
+      m['data_str'] = decodeURIComponent(new TextDecoder().decode(m.data));
+      let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
+      switch (m.op_code) {
+        case MatchOpCode.MANAGE_TODO: {
+          let sep = m['data_str'].split(',');
+          switch (sep[0]) {
+            case 'add': // 추가 또는 수정
+              this.servers[_is_official][_target].client.readStorageObjects(
+                this.servers[_is_official][_target].session, {
+                object_ids: [{
+                  collection: sep[1],
+                  key: sep[2],
+                  user_id: this.servers[_is_official][_target].session.user_id,
+                }],
+              }).then(async v => {
+                if (v.objects.length) {
+                  try { // 수정인 경우 기존 알림을 삭제
+                    let json = v.objects[0].value as any;
+                    let data: string;
+                    try {
+                      data = await this.indexed.loadTextFromUserPath(`todo/${json.id}_${_is_official}_${_target}/info.todo`);
+                      if (!data) throw 'empty';
+                    } catch (e) {
+                      data = await this.indexed.loadTextFromUserPath(`todo/${json.id}/info.todo`);
                     }
+                    let get_json = JSON.parse(data);
+                    this.removeRegisteredId(get_json.noti_id);
+                    this.noti.ClearNoti(get_json.noti_id);
+                  } catch (e) { }
+                  await this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
+                  let json = v.objects[0].value as any;
+                  this.noti.ClearNoti(json.noti_id);
+                  this.set_todo_notification(json);
+                  this.p5toast.show({
+                    text: `${this.lang.text['Main']['Title']}: ${json.title}`,
                   });
-                  break;
-                case 'done': // 완료
-                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, async (e, v) => {
+                }
+              });
+              break;
+            case 'done': // 완료
+              this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, async (e, v) => {
+                if (e && v) {
+                  let todo_info = JSON.parse(v);
+                  todo_info.done = true;
+                  await this.modify_remote_info_as_local(todo_info, _is_official, _target);
+                  this.indexed.GetFileListFromDB(`todo/${todo_info.id}`).then(v => {
+                    v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+                    this.RemoveLocalPushSchedule(todo_info);
+                    this.removeRegisteredId(todo_info.noti_id);
+                    this.noti.ClearNoti(todo_info.noti_id);
+                    this.SyncTodoCounter(_is_official, _target);
+                  });
+                } else {
+                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, async (e, v) => {
                     if (e && v) {
                       let todo_info = JSON.parse(v);
                       todo_info.done = true;
@@ -2717,26 +2728,26 @@ export class NakamaService {
                         this.noti.ClearNoti(todo_info.noti_id);
                         this.SyncTodoCounter(_is_official, _target);
                       });
-                    } else {
-                      this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, async (e, v) => {
-                        if (e && v) {
-                          let todo_info = JSON.parse(v);
-                          todo_info.done = true;
-                          await this.modify_remote_info_as_local(todo_info, _is_official, _target);
-                          this.indexed.GetFileListFromDB(`todo/${todo_info.id}`).then(v => {
-                            v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
-                            this.RemoveLocalPushSchedule(todo_info);
-                            this.removeRegisteredId(todo_info.noti_id);
-                            this.noti.ClearNoti(todo_info.noti_id);
-                            this.SyncTodoCounter(_is_official, _target);
-                          });
-                        }
-                      });
                     }
                   });
-                  break;
-                case 'delete': // 삭제
-                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, (e, v) => {
+                }
+              });
+              break;
+            case 'delete': // 삭제
+              this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, (e, v) => {
+                if (e && v) {
+                  let todo_info = JSON.parse(v);
+                  this.indexed.GetFileListFromDB(`todo/${todo_info.id}`).then(v => {
+                    v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+                    this.RemoveLocalPushSchedule(todo_info);
+                    this.removeRegisteredId(todo_info.noti_id);
+                    this.noti.ClearNoti(todo_info.noti_id);
+                    if (this.global.p5removeTodo)
+                      this.global.p5removeTodo(JSON.stringify(todo_info));
+                  });
+                  this.SyncTodoCounter(_is_official, _target);
+                } else {
+                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
                     if (e && v) {
                       let todo_info = JSON.parse(v);
                       this.indexed.GetFileListFromDB(`todo/${todo_info.id}`).then(v => {
@@ -2748,34 +2759,33 @@ export class NakamaService {
                           this.global.p5removeTodo(JSON.stringify(todo_info));
                       });
                       this.SyncTodoCounter(_is_official, _target);
-                    } else {
-                      this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
-                        if (e && v) {
-                          let todo_info = JSON.parse(v);
-                          this.indexed.GetFileListFromDB(`todo/${todo_info.id}`).then(v => {
-                            v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
-                            this.RemoveLocalPushSchedule(todo_info);
-                            this.removeRegisteredId(todo_info.noti_id);
-                            this.noti.ClearNoti(todo_info.noti_id);
-                            if (this.global.p5removeTodo)
-                              this.global.p5removeTodo(JSON.stringify(todo_info));
-                          });
-                          this.SyncTodoCounter(_is_official, _target);
-                        }
-                      });
                     }
                   });
-                  break;
-                case 'worker': // 매니저 입장에서, 작업자 완료
-                  let isDelete = sep[3] == 'true';
-                  if (this.AddTodoManageUpdateAct)
-                    this.AddTodoManageUpdateAct(sep[1], sep[2], isDelete, Number(sep[4]));
-                  let userAct = isDelete ? this.lang.text['Main']['WorkerAbandon'] : this.lang.text['Main']['WorkerDone'];
-                  this.p5toast.show({
-                    text: `${userAct}: ${this.GetOverrideName(sep[2], _is_official, _target) || this.users[_is_official][_target][sep[2]]['display_name']}`,
-                  });
-                  // 로컬 자료를 변경해야함
-                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, async (e, v) => {
+                }
+              });
+              break;
+            case 'worker': // 매니저 입장에서, 작업자 완료
+              let isDelete = sep[3] == 'true';
+              if (this.AddTodoManageUpdateAct)
+                this.AddTodoManageUpdateAct(sep[1], sep[2], isDelete, Number(sep[4]));
+              let userAct = isDelete ? this.lang.text['Main']['WorkerAbandon'] : this.lang.text['Main']['WorkerDone'];
+              this.p5toast.show({
+                text: `${userAct}: ${this.GetOverrideName(sep[2], _is_official, _target) || this.users[_is_official][_target][sep[2]]['display_name']}`,
+              });
+              // 로컬 자료를 변경해야함
+              this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, async (e, v) => {
+                if (e && v) {
+                  let todo_info = JSON.parse(v);
+                  for (let i = 0, j = todo_info.workers.length; i < j; i++)
+                    if ((todo_info.workers[i].user_id || todo_info.workers[i].id) == sep[2]) {
+                      todo_info.workers[i]['isDelete'] = sep[3] == 'true';
+                      todo_info.workers[i]['timestamp'] = Number(sep[4]);
+                      break;
+                    }
+                  await this.modify_remote_info_as_local(todo_info, _is_official, _target);
+                  this.SyncTodoCounter(_is_official, _target);
+                } else {
+                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, async (e, v) => {
                     if (e && v) {
                       let todo_info = JSON.parse(v);
                       for (let i = 0, j = todo_info.workers.length; i < j; i++)
@@ -2786,108 +2796,95 @@ export class NakamaService {
                         }
                       await this.modify_remote_info_as_local(todo_info, _is_official, _target);
                       this.SyncTodoCounter(_is_official, _target);
-                    } else {
-                      this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, async (e, v) => {
-                        if (e && v) {
-                          let todo_info = JSON.parse(v);
-                          for (let i = 0, j = todo_info.workers.length; i < j; i++)
-                            if ((todo_info.workers[i].user_id || todo_info.workers[i].id) == sep[2]) {
-                              todo_info.workers[i]['isDelete'] = sep[3] == 'true';
-                              todo_info.workers[i]['timestamp'] = Number(sep[4]);
-                              break;
-                            }
-                          await this.modify_remote_info_as_local(todo_info, _is_official, _target);
-                          this.SyncTodoCounter(_is_official, _target);
-                        }
-                      });
                     }
                   });
-                  break;
-                default:
-                  console.log('등록되지 않은 할 일 행동: ', m);
-                  break;
-              }
-              this.SyncTodoCounter(_is_official, _target);
-            }
-              break;
-            case MatchOpCode.EDIT_PROFILE: {
-              switch (m['data_str']) {
-                case 'info':
-                  this.servers[_is_official][_target].client.getAccount(
-                    this.servers[_is_official][_target].session).then(v => {
-                      let keys = Object.keys(v.user);
-                      keys.forEach(key => this.users.self[key] = v.user[key]);
-                      this.save_self_profile();
-                    });
-                  break;
-                case 'image':
-                  this.servers[_is_official][_target].client.readStorageObjects(
-                    this.servers[_is_official][_target].session, {
-                    object_ids: [{
-                      collection: 'user_public',
-                      key: 'profile_image',
-                      user_id: this.servers[_is_official][_target].session.user_id,
-                    }],
-                  }).then(v => {
-                    if (v.objects.length) {
-                      this.indexed.saveTextFileToUserPath(JSON.stringify(v.objects[0].value['img']), 'servers/self/profile.img');
-                      this.users.self['img'] = v.objects[0].value['img'].replace(/"|=|\\/g, '');
-                    } else this.indexed.removeFileFromUserPath('servers/self/profile.img');
-                  });
-                  break;
-                default:
-                  console.log('예상하지 못한 프로필 동기화 정보: ', m);
-                  break;
-              }
-            }
-              break;
-            case MatchOpCode.ADD_CHANNEL: {
-              this.get_group_list_from_server(_is_official, _target, m['data_str']);
-            }
-              break;
-            case MatchOpCode.NAME_OVERRIDED: {
-              if (is_me) this.LoadOverrideName(_is_official, _target);
-            }
-              break;
-            case MatchOpCode.CHATROOM_CHECKED: {
-              // 채널 점등 제거
-              delete this.channels_orig[_is_official][_target][m['data_str']]['is_new'];
-              // 로컬 알림 제거
-              this.noti.ClearNoti(this.channels_orig[_is_official][_target][m['data_str']]['cnoti_id']);
-              this.rearrange_channels();
-              { // 하단 탭 알림등 검토
-                let keys = Object.keys(this.channels_orig[_is_official][_target]);
-                let hasNew = false;
-                for (let channel_id of keys)
-                  if (this.channels_orig[_is_official][_target][channel_id]['is_new']) {
-                    hasNew = true;
-                    break;
-                  }
-                if (!hasNew) this.has_new_channel_msg = false;
-              }
-            }
+                }
+              });
               break;
             default:
-              console.log('예상하지 못한 동기화 정보: ', m);
+              console.log('등록되지 않은 할 일 행동: ', m);
+              break;
+          }
+          this.SyncTodoCounter(_is_official, _target);
+        }
+          break;
+        case MatchOpCode.EDIT_PROFILE: {
+          switch (m['data_str']) {
+            case 'info':
+              this.servers[_is_official][_target].client.getAccount(
+                this.servers[_is_official][_target].session).then(v => {
+                  let keys = Object.keys(v.user);
+                  keys.forEach(key => this.users.self[key] = v.user[key]);
+                  this.save_self_profile();
+                });
+              break;
+            case 'image':
+              this.servers[_is_official][_target].client.readStorageObjects(
+                this.servers[_is_official][_target].session, {
+                object_ids: [{
+                  collection: 'user_public',
+                  key: 'profile_image',
+                  user_id: this.servers[_is_official][_target].session.user_id,
+                }],
+              }).then(v => {
+                if (v.objects.length) {
+                  this.indexed.saveTextFileToUserPath(JSON.stringify(v.objects[0].value['img']), 'servers/self/profile.img');
+                  this.users.self['img'] = v.objects[0].value['img'].replace(/"|=|\\/g, '');
+                } else this.indexed.removeFileFromUserPath('servers/self/profile.img');
+              });
+              break;
+            default:
+              console.log('예상하지 못한 프로필 동기화 정보: ', m);
               break;
           }
         }
-        socket.onchannelmessage = (c) => {
-          if (!this.channels_orig[_is_official][_target][c.channel_id]) { // 재참가 + 놓친 메시지인 경우 검토
-            if (c.user_id_one) // 1:1 채팅
-              this.join_chat_with_modulation(c.sender_id, 2, _is_official, _target);
-            else if (c.group_id)  // 그룹 채팅
-              this.join_chat_with_modulation(c.group_id, 3, _is_official, _target);
-          } else { // 평상시에
-            this.update_from_channel_msg(c, _is_official, _target);
-            this.rearrange_channels();
+          break;
+        case MatchOpCode.ADD_CHANNEL: {
+          this.get_group_list_from_server(_is_official, _target, m['data_str']);
+        }
+          break;
+        case MatchOpCode.NAME_OVERRIDED: {
+          if (is_me) this.LoadOverrideName(_is_official, _target);
+        }
+          break;
+        case MatchOpCode.CHATROOM_CHECKED: {
+          // 채널 점등 제거
+          delete this.channels_orig[_is_official][_target][m['data_str']]['is_new'];
+          // 로컬 알림 제거
+          this.noti.ClearNoti(this.channels_orig[_is_official][_target][m['data_str']]['cnoti_id']);
+          this.rearrange_channels();
+          { // 하단 탭 알림등 검토
+            let keys = Object.keys(this.channels_orig[_is_official][_target]);
+            let hasNew = false;
+            for (let channel_id of keys)
+              if (this.channels_orig[_is_official][_target][channel_id]['is_new']) {
+                hasNew = true;
+                break;
+              }
+            if (!hasNew) this.has_new_channel_msg = false;
           }
         }
-        socket.ondisconnect = (_e) => {
-          this.OnSocketDisconnect(_is_official, _target);
-        }
-        callback(socket);
-      });
+          break;
+        default:
+          console.log('예상하지 못한 동기화 정보: ', m);
+          break;
+      }
+    }
+    socket.onchannelmessage = (c) => {
+      if (!this.channels_orig[_is_official][_target][c.channel_id]) { // 재참가 + 놓친 메시지인 경우 검토
+        if (c.user_id_one) // 1:1 채팅
+          this.join_chat_with_modulation(c.sender_id, 2, _is_official, _target);
+        else if (c.group_id)  // 그룹 채팅
+          this.join_chat_with_modulation(c.group_id, 3, _is_official, _target);
+      } else { // 평상시에
+        this.update_from_channel_msg(c, _is_official, _target);
+        this.rearrange_channels();
+      }
+    }
+    socket.ondisconnect = (_e) => {
+      this.OnSocketDisconnect(_is_official, _target);
+    }
+    return socket;
   }
 
   /** 소켓 닫힐 때 행동 */
