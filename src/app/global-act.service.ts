@@ -1983,7 +1983,7 @@ export class GlobalActService {
           let value = await item.getType(type);
           if (type == 'image/png') {
             result.type = type;
-            let file = new File([value], 'image.png');
+            let file = new File([value], 'image.png', { type: type });
             result.value = file;
             const FileURL = URL.createObjectURL(file);
             this.p5loading.update({
