@@ -4,8 +4,8 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="portal/community"></ion-back-button>
     </ion-buttons>
-    <ion-icon class="relevance_change" style="padding-right: 16px;" slot="end" name="menu-outline"
-      (click)="showQuickMenu()"></ion-icon>
+    <ion-icon *ngIf="isOwner && CurrentIndex >= 0" class="relevance_change" style="padding-right: 16px;" slot="end"
+      name="menu-outline" (click)="showQuickMenu()"></ion-icon>
     <div *ngIf="global.ShowHint && HavePosts" style="position: relative;" slot="end">
       <div class="shortcut_hint shortcut_change_viewer" style="right: -4px">A</div>
     </div>
