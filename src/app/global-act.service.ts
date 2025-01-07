@@ -2072,7 +2072,10 @@ export class GlobalActService {
       this.p5toast.show({
         text: `${this.lang.text['GlobalAct']['ClipboardFailed']}: ${e}`
       });
-      this.p5loading.remove(actId);
+      this.p5loading.update({
+        id: actId,
+        forceEnd: 350
+      });
       throw e;
     }
   }
