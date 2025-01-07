@@ -1067,7 +1067,7 @@ export class GlobalActService {
       const path = `${info?.user_id}/${upload_time}`;
       CatchedAddress = `${protocol}//${address}:${info?.apache_port || 9002}/cdn/`;
       progress = setInterval(async () => {
-        let res = await fetch(`${protocol}//${address}:${info?.cdn_port || 9001}/filesize/${filename}`, { method: "POST" });
+        let res = await fetch(`${protocol}//${address}:${info?.cdn_port || 9001}/filesize/${path}/${only_filename}.${file.file_ext}`, { method: "POST" });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
         this.p5loading.update({
@@ -1172,7 +1172,7 @@ export class GlobalActService {
           message: `${override_try_msg ? override_try_msg + ': ' : ''}${file.filename}: ${progressPercent || 0}%`,
         });
       }, 700);
-      let up_res = await fetch(`${protocol}//${address[0]}:9001/cdn/${filename}`, { method: "POST", body: formData });
+      let up_res = await fetch(`${protocol}//${address[0]}:9001/cdn/${path}/${only_filename}.${file.file_ext}`, { method: "POST", body: formData });
       const received = await up_res.text();
       CatchedAddress += received;
       if (!up_res.ok) throw '업로드 단계에서 실패';
