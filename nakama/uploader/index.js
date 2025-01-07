@@ -108,33 +108,76 @@ app.use('/filesize/', (req, res) => {
     res.end(`${stat.size}`);
 });
 
+/** 이 경로를 지웠을 때 폴더가 비게 된다면 부모 폴더를 삭제하기, 그것을 반복하기 */
+function RecursiveOutDirRemove(_path) {
+    let sep = _path.split('/');
+    sep.pop();
+    const parentDir = sep.join('/');
+    try {
+        fs.rmdirSync(parentDir);
+        if (parentDir) RecursiveOutDirRemove(parentDir);
+    } catch (e) {
+        // 보통 cdn 폴더에서 오류가 뜨니 이 오류는 무시합니다
+    }
+}
+
 /** 파일 삭제 요청 */
 app.use('/remove/', (req, res) => {
     const path = decodeURIComponent(req.url);
-    logger.info(`Remove file: ./cdn${path}`);
-    fs.unlink(`./cdn${path}`, e => {
+    const fullPath = `./cdn${path}`;
+    logger.info(`Remove file: ${fullPath}`);
+    fs.unlink(fullPath, e => {
         logger.info(`Result: Remove file ${path}: ${e}`);
-        /** 이 파일을 지웠을 때 폴더가 비게 된다면 부모 폴더를 삭제하기, 그것을 반복하기 */
-        const RecursiveOutDirRemove = (_path) => {
-            let sep = _path.split('/');
-            sep.pop();
-            const parentDir = sep.join('/');
-            try {
-                fs.rmdirSync(`./cdn${parentDir}`);
-                if (parentDir) RecursiveOutDirRemove(parentDir);
-            } catch (e) {
-                // 보통 cdn 폴더에서 오류가 뜨니 이 오류는 무시합니다
-            }
-        }
-        RecursiveOutDirRemove(path);
+        RecursiveOutDirRemove(fullPath);
     });
     res.end();
 });
 
+/** 대상 경로 내 모든 파일 및 폴더 리스트 */
+function getFilesInDirectory(dir) {
+    try {
+        let results = [];
+        // 디렉토리 내 파일 및 폴더 목록을 읽음
+        const list = fs.readdirSync(dir);
+        list.forEach((file) => {
+            const filePath = path.join(dir, file);
+            // 파일 또는 폴더에 대한 정보를 얻음
+            const stats = fs.statSync(filePath);
+            // 디렉토리인 경우 재귀적으로 내부 파일 탐색
+            if (stats.isDirectory()) {
+                results.push(filePath);
+                results = results.concat(getFilesInDirectory(filePath)); // 재귀 호출
+            } else results.push(filePath); // 파일이면 경로 추가
+        });
+        return results;
+    } catch (e) {
+        logger.error('없는 경로에 대한 요청: ', dir, ' / err: ', e);
+    }
+}
+
 /** 키워드가 포함된 모든 파일 삭제 */
 app.use('/remove_key/', (req, res) => {
     const target_key = `${decodeURIComponent(req.url).substring(1)}`;
-    const listAll = getFilesInDirectory();
+    const keys = target_key.split('_');
+    let target_path = '';
+    keys.forEach(key => target_path = target_path ? `${target_path}/${key}` : key);
+    let listAll = getFilesInDirectory('./cdn/' + target_path);
+    while (listAll?.length) {
+        const path = listAll.pop();
+        console.log('이게 사라지나: ', listAll?.length);
+        const stats = fs.statSync(path);
+        // 디렉토리인 경우 재귀적으로 내부 파일 탐색
+        if (stats.isDirectory()) {
+            try {
+                fs.rmdirSync(path);
+            } catch (e) { }
+        } else fs.unlinkSync(path);
+        if (!listAll?.length) {
+            console.log('마지막 경로 뭐야: ', `.${path}`);
+            RecursiveOutDirRemove(`./${path}`);
+        }
+    }
+    // 아래, 구버전 호환 코드
     fs.readdir('./cdn', (err, files) => {
         logger.info(`Remove file with key: ${decodeURIComponent(req.url)}`);
         files.forEach(path => {
@@ -321,32 +364,6 @@ function CreateUUIDv4() {
     if (keys.includes(clientId))
         return CreateUUIDv4();
     return clientId;
-}
-
-/** 대상 경로 내 모든 파일 및 폴더 리스트 */
-function getFilesInDirectory(dir = './cdn', sub_path) {
-    try {
-        let results = [];
-        if (sub_path) {
-            dir += `/${sub_path}`;
-            results.push(`cdn/${sub_path}`);
-        }
-        // 디렉토리 내 파일 및 폴더 목록을 읽음
-        const list = fs.readdirSync(dir);
-        list.forEach((file) => {
-            const filePath = path.join(dir, file);
-            // 파일 또는 폴더에 대한 정보를 얻음
-            const stats = fs.statSync(filePath);
-            // 디렉토리인 경우 재귀적으로 내부 파일 탐색
-            if (stats.isDirectory()) {
-                results.push(filePath);
-                results = results.concat(getFilesInDirectory(filePath)); // 재귀 호출
-            } else results.push(filePath); // 파일이면 경로 추가
-        });
-        return results;
-    } catch (e) {
-        logger.error('없는 경로에 대한 요청: ', dir, ' / err: ', e);
-    }
 }
 
 // 웹 소켓 서버 구성
