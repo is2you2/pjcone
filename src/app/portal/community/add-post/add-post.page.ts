@@ -1225,7 +1225,7 @@ export class AddPostPage implements OnInit, OnDestroy {
               message: `${this.lang.text['AddPost']['SyncMainImage']}: ${this.userInput.mainImage.filename}`,
             });
             let CatchedAddress: string;
-            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.mainImage, this.nakama.users.self['display_name'], actId, this.userInput.title);
+            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.mainImage, `${this.nakama.users.self['display_name']}/${this.userInput.id}`, actId, this.userInput.title);
             if (CatchedAddress) {
               delete this.userInput.mainImage['path'];
               delete this.userInput.mainImage['partsize'];
@@ -1240,7 +1240,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             let address = this.nakama.servers[this.isOfficial][this.target].info.address;
             let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
             let savedAddress = await this.global.upload_file_to_storage(this.userInput.mainImage,
-              { user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
+              { user_id: `${this.nakama.servers[this.isOfficial][this.target].session.user_id}/${this.userInput.id}`, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
               protocol, address, this.userInput.CDN == 1, actId, this.userInput.title);
             let isURL = Boolean(savedAddress);
             if (!isURL) throw '링크 만들기 실패';
@@ -1267,7 +1267,7 @@ export class AddPostPage implements OnInit, OnDestroy {
                 message: `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`,
               });
               let CatchedAddress: string;
-              CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], this.nakama.users.self['display_name'], actId, this.userInput.title);
+              CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], `${this.nakama.users.self['display_name']}/${this.userInput.id}`, actId, this.userInput.title);
               if (CatchedAddress) {
                 delete this.userInput.attachments[i]['path'];
                 delete this.userInput.attachments[i]['partsize'];
@@ -1292,7 +1292,7 @@ export class AddPostPage implements OnInit, OnDestroy {
               let address = this.nakama.servers[this.isOfficial][this.target].info.address;
               let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
               let savedAddress = await this.global.upload_file_to_storage(this.userInput.attachments[i],
-                { user_id: this.nakama.servers[this.isOfficial][this.target].session.user_id, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
+                { user_id: `${this.nakama.servers[this.isOfficial][this.target].session.user_id}/${this.userInput.id}`, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
                 protocol, address, this.userInput.CDN == 1, actId, this.userInput.title);
               let isURL = Boolean(savedAddress);
               if (!isURL) throw '링크 만들기 실패';
@@ -1336,7 +1336,7 @@ export class AddPostPage implements OnInit, OnDestroy {
           let user_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
           let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
           let outlink = await this.global.upload_file_to_storage(file,
-            { user_id: user_id, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
+            { user_id: `${user_id}/${this.userInput.id}`, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
             protocol, address, this.userInput.CDN == 1, actId, this.userInput.title);
           if (outlink) {
             this.userInput.OutSource = outlink;
@@ -1344,7 +1344,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         } catch (e) { // 지정된 서버 주소로 업로드를 실패했다면 FFS 등록 주소를 따라 업로드 시도
           try { // FFS에 업로드 시도
             let user_id = this.nakama.users.self['display_name'];
-            let outlink = await this.global.try_upload_to_user_custom_fs(file, user_id, actId, this.userInput.title);
+            let outlink = await this.global.try_upload_to_user_custom_fs(file, `${user_id}/${this.userInput.id}`, actId, this.userInput.title);
             if (outlink) {
               this.userInput.OutSource = outlink;
             } else throw '업로드 실패';
