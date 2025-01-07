@@ -1063,7 +1063,7 @@ export class GlobalActService {
       };
       let upload_time = new Date().getTime();
       let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
-      let filename = file.override_name || `${info?.user_id}_${upload_time}_${only_filename}.${file.file_ext}`;
+      let filename = file.override_name || `${info?.user_id.replace(/\//g, '_')}_${upload_time}_${only_filename}.${file.file_ext}`;
       const path = `${info?.user_id}/${upload_time}`;
       CatchedAddress = `${protocol}//${address}:${info?.apache_port || 9002}/cdn/`;
       progress = setInterval(async () => {
@@ -1144,7 +1144,7 @@ export class GlobalActService {
     });
     let upload_time = new Date().getTime();
     let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
-    let filename = file.override_name || `${user_id}_${upload_time}_${only_filename}.${file.file_ext}`;
+    let filename = file.override_name || `${user_id.replace(/\//g, '_')}_${upload_time}_${only_filename}.${file.file_ext}`;
     const path = `${user_id}/${upload_time}`;
     let formData = new FormData();
     let _file = new File([file.blob], filename);

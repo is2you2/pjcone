@@ -441,7 +441,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
                   let targetname = `${this.info['group_id'] ||
                     (this.info['user_id_one'] == this.nakama.servers[this.isOfficial][this.target].session.user_id ? this.info['user_id_two'] : this.info['user_id_one'])
-                    }_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`;
+                    }/${this.nakama.servers[this.isOfficial][this.target].session.user_id}`;
                   let server_info = this.nakama.servers[this.isOfficial][this.target].info;
                   let savedAddress = await this.global.upload_file_to_storage(FileInfo,
                     { user_id: targetname, apache_port: server_info.apache_port, cdn_port: server_info.cdn_port }, protocol, address, this.useFirstCustomCDN == 1, actId,
@@ -2404,7 +2404,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
           let targetname = `${this.info['group_id'] ||
             (this.info['user_id_one'] == this.nakama.servers[this.isOfficial][this.target].session.user_id ? this.info['user_id_two'] : this.info['user_id_one'])
-            }_${this.nakama.servers[this.isOfficial][this.target].session.user_id}`;
+            }/${this.nakama.servers[this.isOfficial][this.target].session.user_id}`;
           let server_info = this.nakama.servers[this.isOfficial][this.target].info;
           let savedAddress = await this.global.upload_file_to_storage(CurrentMessage.file,
             { user_id: targetname, apache_port: server_info.apache_port, cdn_port: server_info.cdn_port }, protocol, address, this.useFirstCustomCDN == 1, CurrentMessage['actId'], this.info.title);

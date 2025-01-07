@@ -1764,9 +1764,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               this.userInput.attach[i].blob = await (await fetch(this.userInput.attach[i].url, { signal: this.cont.signal })).blob();
             let address = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].info.address;
             let protocol = this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].info.useSSL ? 'https:' : 'http:';
-            let targetname = `${this.userInput.id}_${this.nakama.users.self['display_name']}`;
+            let targetname = `${this.nakama.users.self['display_name']}/${this.userInput.id}`;
             try { // 원격인 경우를 위해 재구성 시도
-              targetname = `${this.userInput.id}_${this.userInput.remote.creator_id}`;
+              targetname = `${this.userInput.remote.creator_id}/${this.userInput.id}`;
             } catch (e) { }
             let savedAddress = await this.global.upload_file_to_storage(this.userInput.attach[i],
               { user_id: targetname, apache_port: server_info['apache_port'], cdn_port: server_info['cdn_port'] }, protocol, address, this.userInput.CDN == 1, actId, this.userInput.title);
