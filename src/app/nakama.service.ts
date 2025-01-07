@@ -483,7 +483,7 @@ export class NakamaService {
 
   /** 모든 pending 세션 켜기 */
   async init_all_sessions() {
-    const actId = 'nakama_toggle_session';
+    const actId = 'nakama_login';
     let Targets = Object.keys(this.servers['official']);
     for (let i = 0, j = Targets.length; i < j; i++) {
       await this.p5loading.update({
@@ -527,7 +527,7 @@ export class NakamaService {
   /** 모든 세션을 토글 */
   async toggle_all_session() {
     if (this.TogglingSession) return;
-    const actId = 'nakama_toggle_session';
+    const actId = 'nakama_login';
     this.TogglingSession = true;
     if (this.statusBar.settings.groupServer == 'online') {
       this.logout_all_server();
@@ -2278,7 +2278,7 @@ export class NakamaService {
    * 그룹 채팅 채널 접속 및 그룹 사용자 검토도 이곳에서 시도함
    */
   async get_group_list_from_server(_is_official: string, _target: string, gid?: string) {
-    const actId = 'get_group_list_from_server';
+    const actId = 'nakama_login';
     await this.p5loading.update({
       id: actId,
       message: `${this.lang.text['Nakama']['SyncingChannel']}: ${this.servers[_is_official][_target].info.name}`,
