@@ -1643,7 +1643,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       }
       this.p5loading.update({
         id: actId,
-        image: header_image,
+        image: header_image || null,
       });
       if (header_image) { // 대표 이미지가 있다면
         await new Promise((done: any) => {
@@ -1674,10 +1674,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
                 p.remove();
               }, e => {
                 console.error('Todo-등록된 이미지 불러오기 실패: ', e);
-                this.p5loading.update({
-                  id: actId,
-                  image: null,
-                });
                 done();
                 URL.revokeObjectURL(header_image);
                 p.remove();
@@ -1923,7 +1919,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
   async ionViewWillLeave() {
     this.p5loading.update({
       id: 'add_todo',
-      forceEnd: 0,
+      forceEnd: 350,
     }, true);
     this.global.RestoreShortCutAct('add-todo');
     this.WillLeavePage = true;
