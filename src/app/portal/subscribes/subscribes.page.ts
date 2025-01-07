@@ -143,6 +143,14 @@ export class SubscribesPage implements OnInit {
                 await this.nakama.remove_group_list(this.nakama.groups[isOfficial][target][channel['group_id']], isOfficial, target, true);
                 delete this.nakama.channels_orig[isOfficial][target][channel.id];
                 await this.nakama.remove_channel_files(isOfficial, target, channel.id, undefined, actId);
+                // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
+                let target_key = `${channel.id}_${this.nakama.users.self['display_name']}`;
+                try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
+                  target_key = `${channel['info'].id}_${info.session.user_id}`;
+                } catch (e) { }
+                // 만약 1:1 채널이라면 타겟 조정함
+                if (channel.id?.indexOf('4.') == 0)
+                  target_key = `${channel['user_id_one'] != this.nakama.servers[isOfficial][target].session.user_id ? channel['user_id_one'] : channel['user_id_two']}_${this.nakama.servers[isOfficial][target].session.user_id}`;
                 // 해당 채널과 관련된 파일 일괄 삭제 (cdn / ffs)
                 try { // FFS 요청 우선
                   let fallback = localStorage.getItem('fallback_fs');
@@ -154,20 +162,15 @@ export class SubscribesPage implements OnInit {
                     protocol += ':';
                   } else protocol = this.global.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
                   let target_address = `${protocol}//${address[0]}:${address[1] || 9002}/`;
-                  // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
-                  let target_key = `${channel.id}_${this.nakama.users.self['display_name']}`;
-                  try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
-                    target_key = `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`
-                  } catch (e) { }
                   if (address)
                     await this.global.remove_files_from_storage_with_key(target_address, target_key, {});
                 } catch (e) { }
                 try { // cdn 삭제 요청, 로컬 채널은 주소 만들다가 알아서 튕김
-                  let protocol = channel['info'].server.useSSL ? 'https:' : 'http:';
-                  let address = channel['info'].server.address;
+                  let protocol = info.useSSL ? 'https:' : 'http:';
+                  let address = info.address;
                   let target_address = `${[protocol]}//${address}:${info.apache_port || 9002}/`;
                   if (address) {
-                    await this.global.remove_files_from_storage_with_key(target_address, `${channel['info'].id}_${this.nakama.servers[isOfficial][target].session.user_id}`,
+                    await this.global.remove_files_from_storage_with_key(target_address, target_key,
                       { apache_port: info.apache_port, cdn_port: info.cdn_port });
                   }
                 } catch (e) { }
