@@ -1064,7 +1064,8 @@ export class GlobalActService {
       let upload_time = new Date().getTime();
       let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
       let filename = file.override_name || `${info?.user_id}_${upload_time}_${only_filename}.${file.file_ext}`;
-      CatchedAddress = `${protocol}//${address}:${info?.apache_port || 9002}/cdn/${filename}`;
+      const path = `${info?.user_id}/${upload_time}`;
+      CatchedAddress = `${protocol}//${address}:${info?.apache_port || 9002}/cdn/`;
       progress = setInterval(async () => {
         let res = await fetch(`${protocol}//${address}:${info?.cdn_port || 9001}/filesize/${filename}`, { method: "POST" });
         let currentSize = Number(await res.text());
@@ -1077,7 +1078,11 @@ export class GlobalActService {
       let formData = new FormData();
       let _file = new File([file.blob], filename);
       formData.append("files", _file);
+      formData.append("path", path);
+      formData.append("filename", `${only_filename}.${file.file_ext}`);
       let up_res = await fetch(`${protocol}//${address}:${info?.cdn_port || 9001}/cdn/${filename}`, { method: "POST", body: formData });
+      const received = await up_res.text();
+      CatchedAddress += received;
       if (!up_res.ok) throw '업로드 단계에서 실패';
       this.p5loading.update({
         id: actId,
@@ -1085,6 +1090,7 @@ export class GlobalActService {
       });
       clearInterval(progress);
       let res = await fetch(CatchedAddress);
+      console.log(res);
       if (res.ok) Catched = true;
       else throw '요청 실패';
     } catch (e) {
@@ -1140,10 +1146,12 @@ export class GlobalActService {
     let upload_time = new Date().getTime();
     let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
     let filename = file.override_name || `${user_id}_${upload_time}_${only_filename}.${file.file_ext}`;
+    const path = `${user_id}/${upload_time}`;
     let formData = new FormData();
     let _file = new File([file.blob], filename);
     formData.append("files", _file);
-    let CatchedAddress: string;
+    formData.append("path", path);
+    formData.append("filename", `${only_filename}.${file.file_ext}`);
     if (!override_ffs_str)
       override_ffs_str = localStorage.getItem('fallback_fs');
     let progress: any;
@@ -1155,7 +1163,7 @@ export class GlobalActService {
       if (protocol) {
         protocol += ':';
       } else protocol = this.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
-      CatchedAddress = `${protocol}//${address[0]}:${address[1] || 9002}/cdn/${filename}`;
+      let CatchedAddress = `${protocol}//${address[0]}:${address[1] || 9002}/cdn/`;
       progress = setInterval(async () => {
         let res = await fetch(`${protocol}//${address[0]}:9001/filesize/${filename}`, { method: "POST" });
         let currentSize = Number(await res.text());
@@ -1166,6 +1174,8 @@ export class GlobalActService {
         });
       }, 700);
       let up_res = await fetch(`${protocol}//${address[0]}:9001/cdn/${filename}`, { method: "POST", body: formData });
+      const received = await up_res.text();
+      CatchedAddress += received;
       if (!up_res.ok) throw '업로드 단계에서 실패';
       this.p5loading.update({
         id: actId,

@@ -72,10 +72,10 @@ app.use((req, res, next) => {
 
 // Multer 설정
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
+    destination: (req, file, cb) => {
         cb(null, './cdn/');
     },
-    filename: function (req, file, cb) {
+    filename: (req, file, cb) => {
         cb(null, decodeURI(req.url.substring(1)));
     }
 });
@@ -83,11 +83,25 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // 파일 업로드를 처리할 라우트 설정
-app.use('/cdn/', upload.single('files'), function (req, res) {
+app.use('/cdn/', upload.single('files'), (req, res) => {
     // req.file은 업로드된 파일의 정보를 가지고 있음
-    logger.info('파일 업로드 요청받음: ', req.file);
+    const uploaded_filename = req.url.substring(1);
+    const folderPath = `./cdn/${req.body['path']}`;
+    try {
+        fs.mkdirSync(folderPath, { recursive: true });
+    } catch (e) {
+        logger.info('폴더 재귀 생성 오류: ', e);
+    }
+    try {
+        fs.rename(`./cdn/${uploaded_filename}`, `${folderPath}/${req.body['filename']}`, (ev) => {
+            logger.info('파일 재배치: ', ev);
+        });
+    } catch (e) {
+        logger.info('파일 옮기기 오류: ', e);
+    }
+    const result = `${req.body['path']}/${req.body['filename']}`;
     // 여기에서 필요한 작업을 수행하고 응답을 보낼 수 있음
-    res.send('file_server');
+    res.send(result);
 });
 
 /** 파일 크기 요청 */
