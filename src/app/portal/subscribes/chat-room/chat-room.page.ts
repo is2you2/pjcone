@@ -2459,6 +2459,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               body: `${CurrentMessage.file.filename}: ${e}`,
               smallIcon_ln: 'diychat',
             }, this.noti.Current);
+            this.p5loading.update({
+              id: CurrentMessage['actId'],
+              message: `${this.lang.text['Nakama']['FailedUpload']}: ${CurrentMessage.file.filename}`,
+              progress: 0,
+              forceEnd: 1000,
+            });
             await this.indexed.saveBlobToUserPath(CurrentMessage.file.blob, path);
           }
         }
