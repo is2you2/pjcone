@@ -111,17 +111,22 @@ app.use('/filesize/', (req, res) => {
 /** 파일 삭제 요청 */
 app.use('/remove/', (req, res) => {
     const path = decodeURIComponent(req.url);
-    let sep = path.split('/');
-    sep.pop();
-    const only_path = sep.join('/');
     logger.info(`Remove file: ./cdn${path}`);
     fs.unlink(`./cdn${path}`, e => {
         logger.info(`Result: Remove file ${path}: ${e}`);
-        try {
-            fs.rmdirSync(`./cdn${only_path}`);
-        } catch (e) {
-            logger.error('시간 폴더 삭제 오류: ', e);
+        /** 이 파일을 지웠을 때 폴더가 비게 된다면 부모 폴더를 삭제하기, 그것을 반복하기 */
+        const RecursiveOutDirRemove = (_path) => {
+            let sep = _path.split('/');
+            sep.pop();
+            const parentDir = sep.join('/');
+            try {
+                fs.rmdirSync(`./cdn${parentDir}`);
+                if (parentDir) RecursiveOutDirRemove(parentDir);
+            } catch (e) {
+                // 보통 cdn 폴더에서 오류가 뜨니 이 오류는 무시합니다
+            }
         }
+        RecursiveOutDirRemove(path);
     });
     res.end();
 });
