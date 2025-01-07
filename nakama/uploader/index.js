@@ -93,9 +93,7 @@ app.use('/cdn/', upload.single('files'), (req, res) => {
         logger.info('폴더 재귀 생성 오류: ', e);
     }
     try {
-        fs.rename(`./cdn/${uploaded_filename}`, `${folderPath}/${req.body['filename']}`, (ev) => {
-            logger.info('파일 재배치: ', ev);
-        });
+        fs.renameSync(`./cdn/${uploaded_filename}`, `${folderPath}/${req.body['filename']}`);
     } catch (e) {
         logger.info('파일 옮기기 오류: ', e);
     }
@@ -112,10 +110,17 @@ app.use('/filesize/', (req, res) => {
 
 /** 파일 삭제 요청 */
 app.use('/remove/', (req, res) => {
-    logger.info(`Remove file: ./cdn${decodeURIComponent(req.url)}`);
-    fs.unlink(`./cdn${decodeURIComponent(req.url)}`, e => {
-        logger.error(`Result: Remove file ${decodeURIComponent(req.url)}: ${e}`);
+    const path = decodeURIComponent(req.url);
+    let sep = path.split('/');
+    sep.pop();
+    const only_path = sep.join('/');
+    logger.info(`Remove file: ./cdn${path}`);
+    fs.unlink(`./cdn${path}`, e => {
+        logger.error(`Result: Remove file ${path}: ${e}`);
     });
+    try {
+        fs.rmdirSync(`./cdn${only_path}`);
+    } catch (e) { }
     res.end();
 });
 
