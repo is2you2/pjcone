@@ -1090,7 +1090,6 @@ export class GlobalActService {
       });
       clearInterval(progress);
       let res = await fetch(CatchedAddress);
-      console.log(res);
       if (res.ok) Catched = true;
       else throw '요청 실패';
     } catch (e) {

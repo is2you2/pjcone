@@ -104,7 +104,7 @@ app.use('/cdn/', upload.single('files'), (req, res) => {
 
 /** 파일 크기 요청 */
 app.use('/filesize/', (req, res) => {
-    let stat = fs.statSync(`./cdn${decodeURIComponent(req.url)}`);
+    const stat = fs.statSync(`./cdn${decodeURIComponent(req.url)}`);
     res.end(`${stat.size}`);
 });
 
@@ -126,7 +126,8 @@ app.use('/remove/', (req, res) => {
 
 /** 키워드가 포함된 모든 파일 삭제 */
 app.use('/remove_key/', (req, res) => {
-    let target_key = `${decodeURIComponent(req.url).substring(1)}`;
+    const target_key = `${decodeURIComponent(req.url).substring(1)}`;
+    const listAll = getFilesInDirectory();
     fs.readdir('./cdn', (err, files) => {
         logger.info(`Remove file with key: ${decodeURIComponent(req.url)}`);
         files.forEach(path => {

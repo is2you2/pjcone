@@ -905,7 +905,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             handler: () => {
               for (let i = 0, j = ev.target.files.length; i < j; i++) {
                 this.selected_blobFile_callback_act(ev.target.files[i]);
-                this.send(undefined);
+                this.send();
               }
               this.noti.ClearNoti(7);
             }
@@ -1516,7 +1516,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   async DropSendAct(Drops: any) {
     for (let i = 0, j = Drops.length; i < j; i++) {
       this.selected_blobFile_callback_act(Drops[i].file);
-      this.send(undefined);
+      this.send();
     }
     setTimeout(() => {
       this.scroll_down_logs();
@@ -2336,6 +2336,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.isSendingQueue = true;
     while (this.SendQueue.length) {
       const CurrentMessage = this.SendQueue.shift();
+      this.p5loading.update({
+        id: CurrentMessage['actId'],
+        progress: null,
+        forceEnd: null,
+      });
       // 메시지 편집모드인 경우 이번 발송은 편집처럼 진행
       try {
         if (CurrentMessage.text.length > 600) // 메시지가 충분히 깁니다
@@ -2545,7 +2550,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.isSendingQueue = false;
   }
 
-  send(with_key = false, actId: string = 'chatroom') {
+  send(with_key = false) {
     // 모바일 엔터키 동작 별도 행동처리, 줄 바꿈으로 행동함
     if (with_key && (isPlatform == 'Android' || isPlatform == 'iOS')) return;
     // 발송 버튼에 포커스 되므로 즉시 입력칸에 포커싱
@@ -2559,6 +2564,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }, 0);
         return;
       }
+    let actId = 'chatroom';
     if (this.userInput.file) actId = 'chatroom_withfile';
     // 큐에 넣기
     this.SendQueue.push({
