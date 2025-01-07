@@ -130,6 +130,10 @@ app.use('/remove/', (req, res) => {
         logger.info(`Result: Remove file ${path}: ${e}`);
         RecursiveOutDirRemove(fullPath);
     });
+    // 아래, 구 버전 호환 삭제
+    fs.unlink(`./cdn${decodeURIComponent(req.url)}`, e => {
+        logger.error(`Result: Remove file ${decodeURIComponent(req.url)}: ${e}`);
+    });
     res.end();
 });
 
