@@ -85,19 +85,19 @@ const upload = multer({ storage: storage });
 // 파일 업로드를 처리할 라우트 설정
 app.use('/cdn/', upload.single('files'), (req, res) => {
     // req.file은 업로드된 파일의 정보를 가지고 있음
-    const uploaded_filename = req.url.substring(1);
+    const uploaded_filename = decodeURI(req.url.substring(1));
     const folderPath = `./cdn/${req.body['path']}`;
     try {
         fs.mkdirSync(folderPath, { recursive: true });
     } catch (e) {
-        logger.info('폴더 재귀 생성 오류: ', e);
+        logger.error('폴더 재귀 생성 오류: ', e);
     }
     try {
         fs.renameSync(`./cdn/${uploaded_filename}`, `${folderPath}/${req.body['filename']}`);
     } catch (e) {
-        logger.info('파일 옮기기 오류: ', e);
+        logger.error('파일 옮기기 오류: ', e);
     }
-    const result = `${req.body['path']}/${req.body['filename']}`;
+    const result = decodeURIComponent(`${req.body['path']}/${req.body['filename']}`);
     // 여기에서 필요한 작업을 수행하고 응답을 보낼 수 있음
     res.send(result);
 });
@@ -116,11 +116,13 @@ app.use('/remove/', (req, res) => {
     const only_path = sep.join('/');
     logger.info(`Remove file: ./cdn${path}`);
     fs.unlink(`./cdn${path}`, e => {
-        logger.error(`Result: Remove file ${path}: ${e}`);
+        logger.info(`Result: Remove file ${path}: ${e}`);
+        try {
+            fs.rmdirSync(`./cdn${only_path}`);
+        } catch (e) {
+            logger.error('시간 폴더 삭제 오류: ', e);
+        }
     });
-    try {
-        fs.rmdirSync(`./cdn${only_path}`);
-    } catch (e) { }
     res.end();
 });
 
@@ -338,7 +340,7 @@ function getFilesInDirectory(dir = './cdn', sub_path) {
         });
         return results;
     } catch (e) {
-        console.log('없는 경로에 대한 요청: ', dir, ' / err: ', e);
+        logger.error('없는 경로에 대한 요청: ', dir, ' / err: ', e);
     }
 }
 
@@ -522,5 +524,5 @@ try {
         logger.info(`서버가 http://localhost:${SitePort}에서 실행 중입니다.`);
     });
 } catch (e) {
-    logger.info('사설 사이트 켜기 오류: ', e);
+    logger.warn('사설 사이트 켜기 오류: ', e);
 }
