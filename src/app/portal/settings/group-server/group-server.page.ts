@@ -535,6 +535,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
         isProfileChanged = true;
         break;
       }
+    isProfileChanged = isProfileChanged && this.original_profile['display_name'] !== undefined;
     this.nakama.users.self['img'] = this.tmp_img || this.nakama.users.self['img'];
     if (isProfileChanged) {
       let servers = this.nakama.get_all_online_server();
