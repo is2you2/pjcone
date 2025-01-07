@@ -296,6 +296,32 @@ function CreateUUIDv4() {
     return clientId;
 }
 
+/** 대상 경로 내 모든 파일 및 폴더 리스트 */
+function getFilesInDirectory(dir = './cdn', sub_path) {
+    try {
+        let results = [];
+        if (sub_path) {
+            dir += `/${sub_path}`;
+            results.push(`cdn/${sub_path}`);
+        }
+        // 디렉토리 내 파일 및 폴더 목록을 읽음
+        const list = fs.readdirSync(dir);
+        list.forEach((file) => {
+            const filePath = path.join(dir, file);
+            // 파일 또는 폴더에 대한 정보를 얻음
+            const stats = fs.statSync(filePath);
+            // 디렉토리인 경우 재귀적으로 내부 파일 탐색
+            if (stats.isDirectory()) {
+                results.push(filePath);
+                results = results.concat(getFilesInDirectory(filePath)); // 재귀 호출
+            } else results.push(filePath); // 파일이면 경로 추가
+        });
+        return results;
+    } catch (e) {
+        console.log('없는 경로에 대한 요청: ', dir, ' / err: ', e);
+    }
+}
+
 // 웹 소켓 서버 구성
 wss.on('connection', (ws, req) => {
     let clientId = CreateUUIDv4();
