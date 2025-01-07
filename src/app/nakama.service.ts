@@ -1240,19 +1240,23 @@ export class NakamaService {
         }
         // 로컬에서 내용이 변경된 경우 서버에 로컬 내용을 올림
         delete json.modified;
+        this.global.p5todoAddtodo(JSON.stringify(json));
         await this.indexed.saveTextFileToUserPath(JSON.stringify(json), `todo/${json['id']}_${_is_official}_${_target}/info.todo`);
-        await this.servers[json.remote.isOfficial][json.remote.target].client.writeStorageObjects(
-          this.servers[json.remote.isOfficial][json.remote.target].session, [{
-            collection: 'server_todo',
-            key: json.id,
-            permission_read: 2,
-            permission_write: 1,
-            value: json,
-          }]).then(v => {
-            this.servers[json.remote.isOfficial][json.remote.target]
-              .socket.sendMatchState(this.self_match[json.remote.isOfficial][json.remote.target].match_id, MatchOpCode.MANAGE_TODO,
-                encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
-          });
+        try {
+          const v = await this.servers[json.remote.isOfficial][json.remote.target].client.writeStorageObjects(
+            this.servers[json.remote.isOfficial][json.remote.target].session, [{
+              collection: 'server_todo',
+              key: json.id,
+              permission_read: 2,
+              permission_write: 1,
+              value: json,
+            }]);
+          this.servers[json.remote.isOfficial][json.remote.target]
+            .socket.sendMatchState(this.self_match[json.remote.isOfficial][json.remote.target].match_id, MatchOpCode.MANAGE_TODO,
+              encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
+        } catch (e) {
+          console.log('할 일 수정 전파 오류: ', e);
+        }
       } else this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}_${_is_official}_${_target}/info.todo`);
     } else this.indexed.saveTextFileToUserPath(JSON.stringify(todo_info), `todo/${todo_info['id']}_${_is_official}_${_target}/info.todo`);
   }
