@@ -11,7 +11,6 @@ import { LanguageSettingService } from 'src/app/language-setting.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ContentCreatorInfo, FILE_BINARY_LIMIT, FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { WebrtcService } from 'src/app/webrtc.service';
 import { P5ToastService } from 'src/app/p5-toast.service';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
@@ -72,7 +71,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     public lang: LanguageSettingService,
     private sanitizer: DomSanitizer,
     public global: GlobalActService,
-    private webrtc: WebrtcService,
     private p5toast: P5ToastService,
     private alertCtrl: AlertController,
     private floatButton: FloatButtonService,
@@ -1818,7 +1816,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   /** 확장버튼 설정 초기화 */
-  async SetExtensionButtons() {
+  SetExtensionButtons() {
     this.extended_buttons.forEach(button => {
       button.isHide = false;
       button.index = undefined;
@@ -1838,7 +1836,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         break;
       case 3: // 그룹 대화라면
         if (this.info['status'] != 'missing')
-          await this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
+          this.nakama.load_groups(this.isOfficial, this.target, this.info['group_id']);
         this.extended_buttons[1].isHide = true;
         this.extended_buttons[10].isHide = true;
         delete this.extended_buttons[0].isHide;
