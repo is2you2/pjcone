@@ -4015,11 +4015,11 @@ export class NakamaService {
    * @param msg 메시지 정보
    * @param path indexedDB 파일 경로
    */
-  async WriteStorage_From_channel(msg: any, path: string, _is_official: string, _target: string, startFrom = 0) {
+  async WriteStorage_From_channel(msg: any, path: string, _is_official: string, _target: string, startFrom = 0, loadingId?: string) {
     let _msg = JSON.parse(JSON.stringify(msg));
     let file_info = await await this.indexed.GetFileInfoFromDB(path);
     let partsize = Math.ceil(file_info.contents.length / FILE_BINARY_LIMIT);
-    const actId = `ForceSQL_write_${Date.now()}`;
+    const actId = loadingId || `ForceSQL_write_${Date.now()}`;
     this.p5loading.update({
       id: actId,
       message: `${this.lang.text['ChatRoom']['forceSQL']}: ${this.lang.text['ChatRoom']['SendFile']}: ${_msg.content.filename}`,

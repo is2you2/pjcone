@@ -1926,9 +1926,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 내가 보낸 메시지 한정, 자동으로 썸네일을 생성 (또는 생성 함수를 만들기) */
   auto_open_thumbnail(msg: any) {
     try {
-      this.temporary_open_thumbnail[msg.message_id]();
+      this.temporary_open_thumbnail[msg.message_id](msg['actId']);
     } catch (e) {
-      this.temporary_open_thumbnail[msg.message_id] = () => {
+      this.temporary_open_thumbnail[msg.message_id] = (actId: string) => {
         if (msg.content.url) {
           this.global.modulate_thumbnail(msg.content, '', this.cont);
         } else {
@@ -1942,7 +1942,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                   this.scroll_down_logs();
                 }, 100);
               // 서버에 파일을 업로드
-              this.nakama.WriteStorage_From_channel(msg, msg.content['path'], this.isOfficial, this.target);
+              this.nakama.WriteStorage_From_channel(msg, msg.content['path'], this.isOfficial, this.target, undefined, actId);
             });
           delete this.temporary_open_thumbnail[msg.message_id];
         }
@@ -2502,6 +2502,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             this.auto_open_thumbnail({
               content: result,
               message_id: v.message_id,
+              actId: CurrentMessage['actId'],
             });
           } else {
             // 로컬에 파일을 저장
@@ -2510,6 +2511,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.auto_open_thumbnail({
                 content: result,
                 message_id: v.message_id,
+                actId: CurrentMessage['actId'],
               });
             });
           }
