@@ -452,7 +452,10 @@ export class ArcadePage implements OnInit {
       this.global.RestoreShortCutAct('qrcode-scanner');
     });
     await this.InAppQRScanner.present();
-    this.p5loading.remove(actId);
+    this.p5loading.update({
+      id: actId,
+      forceEnd: 350,
+    });
     let iframe = document.getElementById('qr_scan_frame') as HTMLIFrameElement;
     iframe.src = MainURL;
     let contentWindow = iframe.contentWindow || iframe.contentDocument;
