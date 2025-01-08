@@ -73,12 +73,17 @@ export class CommunityPage implements OnInit {
 
   ContentScroll: HTMLDivElement;
   ContentDiv: HTMLDivElement;
+  /** 다중 로딩 방지용 */
+  loadBlock = false;
   /** 스크롤이 생성되지 않았다면 계속해서 게시물 업데이트  
    * 또는 스크롤이 최하단인 경우 업데이트
    */
   async load_post_cycles() {
+    if (this.loadBlock) return;
+    this.loadBlock = true;
     if (!this.forceBlockLoadable && this.is_loadable)
       await this.load_posts();
+    this.loadBlock = false;
     setTimeout(() => {
       try {
         if (!this.ContentDiv) this.ContentDiv = document.getElementById('CommunityMainContent') as HTMLDivElement;
