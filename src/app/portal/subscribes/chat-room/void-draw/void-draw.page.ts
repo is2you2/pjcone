@@ -504,8 +504,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             BakedPosition.x = -CropPosition.x;
             BakedPosition.y = -CropPosition.y;
             DrawBeforeBaked = v;
-            DrawBeforeCanvas.image(DrawBeforeBaked, 0, 0);
-            DrawBeforeCanvas.redraw();
           });
           this.isCropMode = false;
           change_checkmark();
