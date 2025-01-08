@@ -233,7 +233,7 @@ export class ArcadePage implements OnInit {
             delete this.global.PageDismissAct['arcade-clipboard'];
           }
           let fileInfo: FileInfo = {};
-          fileInfo.filename = clipboard.value.split('_').pop();
+          fileInfo.filename = clipboard.value.split('/').pop();
           fileInfo.file_ext = fileInfo.filename.split('.').pop();
           fileInfo.url = clipboard.value;
           fileInfo.path = `tmp_files/arcade/${fileInfo.filename}`;

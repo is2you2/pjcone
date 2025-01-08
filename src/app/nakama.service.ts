@@ -4671,7 +4671,7 @@ export class NakamaService {
           this.global.ActLikeModal(page_header + 'ionic-viewer', {
             info: {
               content: {
-                filename: json[i]['url'].split('_').pop(),
+                filename: json[i]['url'].split('/').pop(),
                 file_ext: json[i]['url'].split('.').pop(),
                 url: json[i]['url'],
                 viewer: json[i]['viewer'],
@@ -4679,7 +4679,7 @@ export class NakamaService {
             },
             relevance: [{
               content: {
-                filename: json[i]['url'].split('_').pop(),
+                filename: json[i]['url'].split('/').pop(),
                 file_ext: json[i]['url'].split('.').pop(),
                 url: json[i]['url'],
                 viewer: json[i]['viewer'],
