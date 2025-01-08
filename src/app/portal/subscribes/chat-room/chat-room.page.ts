@@ -2458,19 +2458,28 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             }, this.noti.Current);
           } catch (e) { // 사설 서버 업로드 실패시 직접 저장
             let path = `servers/${this.isOfficial}/${this.target}/channels/${this.info.id}/files/msg_${local_msg_id}.${CurrentMessage.file.file_ext}`;
-            this.noti.PushLocal({
-              id: 7,
-              title: this.lang.text['Nakama']['FailedUpload'],
-              body: `${CurrentMessage.file.filename}: ${e}`,
-              smallIcon_ln: 'diychat',
-            }, this.noti.Current);
-            this.p5loading.update({
+            if (this.isOfficial != 'local') {
+              this.noti.PushLocal({
+                id: 7,
+                title: this.lang.text['Nakama']['FailedUpload'],
+                body: `${CurrentMessage.file.filename}: ${e}`,
+                smallIcon_ln: 'diychat',
+              }, this.noti.Current);
+              this.p5loading.update({
+                id: CurrentMessage['actId'],
+                message: `${this.lang.text['Nakama']['FailedUpload']}: ${CurrentMessage.file.filename}`,
+                progress: 0,
+              });
+            } else this.p5loading.update({
               id: CurrentMessage['actId'],
-              message: `${this.lang.text['Nakama']['FailedUpload']}: ${CurrentMessage.file.filename}`,
-              progress: 0,
-              forceEnd: 1000,
+              message: `${this.lang.text['ChatRoom']['SavingFile']}: ${CurrentMessage.file.filename}`,
+              progress: null,
             });
             await this.indexed.saveBlobToUserPath(CurrentMessage.file.blob, path);
+            this.p5loading.update({
+              id: CurrentMessage['actId'],
+              forceEnd: 350,
+            });
           }
         }
         let getNow = new Date().toISOString();
