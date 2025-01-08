@@ -160,9 +160,6 @@ export class SettingsPage implements OnInit, OnDestroy {
     if (StartNumber > 10) return;
     this.ShortcutHint.license = (StartNumber) % 10;
     StartNumber++;
-    if (StartNumber > 10) return;
-    this.ShortcutHint.sponsor = (StartNumber) % 10;
-    StartNumber++;
   }
   /** 보조도구 메뉴의 순서를 적으면 됨 */
   spliceStartFrom = 5;
@@ -230,7 +227,6 @@ export class SettingsPage implements OnInit, OnDestroy {
     this.LinkButton.push(() => this.LangClicked());
     this.LinkButton.push(() => this.OpenQuickQRModal());
     this.LinkButton.push(() => this.go_to_page('licenses'));
-    this.LinkButton.push(() => this.open_patreon());
     // 환경에 맞춰 단축키 구성
     this.global.p5KeyShortCut['Digit'] = (index: number) => {
       // 설정 메뉴 정렬처리
@@ -311,11 +307,6 @@ export class SettingsPage implements OnInit, OnDestroy {
     if (this.lang.lang == 'ko')
       window.open('https://is2you2.github.io/posts/how-to-use-pjcone/', '_blank');
     else window.open('https://is2you2.github.io/posts/how-to-use-pjcone-en/', '_blank');
-  }
-
-  /** 페이팔 페이지 열기 */
-  open_patreon() {
-    window.open('https://www.patreon.com/is2you2', '_blank');
   }
 
   go_to_webrtc_manager() {

@@ -142,15 +142,6 @@
       <ion-label>{{lang.text['Settings']['LicenseNotice']}}</ion-label>
     </ion-item>
   </div>
-  <ion-item-divider>
-    <ion-label>{{lang.text['Settings']['Sponsorship']}}</ion-label>
-  </ion-item-divider>
-  <div>
-    <div *ngIf="global.ShowHint" class="shortcut_hint">{{ShortcutHint['sponsor']}}</div>
-    <img src="assets/data/asset-preview.png"
-      style="cursor: pointer; padding: 16px; border-radius: 32px; max-height: 300px;" alt="patreon_link"
-      (click)="open_patreon()" />
-  </div>
   <ion-modal #QuickJoinMain class="transparent-modal">
     <ng-template>
       <div id="quickjoin_mainpage" class="OutterModal" (click)="CheckIfDismissAct($event)">

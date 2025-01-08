@@ -9,7 +9,7 @@
 
 <ion-content>
   <div class="profile_img_form" style="cursor: pointer;" (click)="global.open_link('https://is2you2.github.io/')">
-    <img class="profile_img" src="assets/data/creator_img.jpg" alt="CreatorImg"/>
+    <img class="profile_img" src="assets/data/creator_img.jpg" alt="CreatorImg" />
     <div class="fore-gradient"></div>
     <div class="username">{{info.name}}</div>
   </div>
@@ -44,5 +44,36 @@
       <ion-icon *ngIf="!user.avatar" name="person-circle-outline"></ion-icon>
       <ion-label>{{user[lang.lang]}}</ion-label>
     </ion-chip>
+  </div>
+  <ion-item-divider>
+    <ion-label>{{lang.text['Settings']['Sponsorship']}}</ion-label>
+  </ion-item-divider>
+  <div class="infobox content_size thanks_bg">
+    <div *ngIf="patreons.length">
+      <ion-chip *ngFor="let user of patreons; let i = index" (click)="global.open_link(user.url)"
+        [style]="user.mvp ? 'filter: drop-shadow(0px 0px 12px var(--ion-color-dark))' : ''">
+        <ion-avatar *ngIf="user.avatar">
+          <img [src]="user.avatar" />
+        </ion-avatar>
+        <ion-icon *ngIf="!user.avatar" name="person-circle-outline"></ion-icon>
+        <ion-label>{{user[lang.lang]}}</ion-label>
+      </ion-chip>
+    </div>
+    <div *ngIf="!patreons.length" style="position: relative;">
+      <div style="text-align: center; position: absolute; width: 100%;">
+        <ion-icon style="width: 48px; height: 48px;" color="medium" name="happy-outline"></ion-icon>
+        <div>
+          <ion-label color="medium">{{lang.text['CreatorInfo']['EmptyPatreons']}}</ion-label>
+        </div>
+        <div>
+          <ion-label color="medium">{{lang.text['CreatorInfo']['HowAboutPatreons']}}</ion-label>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <img src="assets/data/asset-preview.png"
+      style="cursor: pointer; padding: 16px; border-radius: 32px; max-height: 300px;" alt="patreon_link"
+      (click)="open_patreon()" />
   </div>
 </ion-content>

@@ -434,6 +434,8 @@ TranslatorSpeaking,번역가의 한마디,A word from the translator
 creatorComment,제작자의 한마디,A word from the maker
 contributors,프로젝트 기여자,Contributors
 thanks_to,도움주신 분들,Thanks to
+EmptyPatreons,아직 누구도 후원하지 않았습니다,No one has supported yet
+HowAboutPatreons,첫 후원자가 되어보시는건 어떨까요? :),How about becoming the first supporter? :)
 ## GlobalAct,,
 CancelText,취소,Cancel
 PCClipboard,복사됨,Copied

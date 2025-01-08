@@ -23,6 +23,7 @@ export class CreatorPage implements OnInit {
   };
   contributors = [];
   special_thanks_to = [];
+  patreons = [];
 
   ngOnInit() {
     new p5((p: p5) => {
@@ -61,6 +62,23 @@ export class CreatorPage implements OnInit {
         });
       }
     });
+    new p5((p: p5) => {
+      p.setup = () => {
+        p.noCanvas();
+        p.loadJSON(`assets/data/infos/patreons.json`, v => {
+          this.patreons = v;
+          p.remove();
+        }, e => {
+          console.error('후원자 정보 불러오기 실패: ', e);
+          p.remove();
+        });
+      }
+    });
+  }
+
+  /** 페이팔 페이지 열기 */
+  open_patreon() {
+    window.open('https://www.patreon.com/is2you2', '_blank');
   }
 
   ionViewDidEnter() {
