@@ -1,1 +1,0 @@
-nativefier http://localhost:8100/ --name "Project Cone" --icon /root/pjcone/godot/server/icon.png --width 432 --height 768 --arch x64 --platform linux --portable --insecure --disable-context-menu --disable-dev-tools --single-instance --honest true
