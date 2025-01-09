@@ -74,31 +74,33 @@ export class PortalPage implements OnInit {
   }
 
   /** 포털 화면 단축키 구성 */
-  try_add_shortcut() {
-    if (this.global.p5key && this.global.p5KeyShortCut)
-      this.global.p5KeyShortCut['BottomTab'] = (char: string) => {
-        switch (char) {
-          case 'Q':
-            this.bottom_tab_selected();
-            this.ionTabs.select('main');
-            break;
-          case 'W':
-            this.subscribe_button();
-            this.ionTabs.select('subscribes');
-            break;
-          case 'E': // 상황에 따라, 커뮤니티 또는 설정
-            this.arcade_tab_selected();
-            this.ionTabs.select('arcade');
-            break;
-          case 'R':
-            this.community_tab_selected();
-            this.ionTabs.select('community');
-            break;
-          case 'T':
-            this.setting_button();
-            break;
-        }
+  async try_add_shortcut() {
+    while (!(this.global.p5key && this.global.p5KeyShortCut)) {
+      await new Promise(res => setTimeout(res, 0));
+    }
+    this.global.p5KeyShortCut['BottomTab'] = (char: string) => {
+      switch (char) {
+        case 'Q':
+          this.bottom_tab_selected();
+          this.ionTabs.select('main');
+          break;
+        case 'W':
+          this.subscribe_button();
+          this.ionTabs.select('subscribes');
+          break;
+        case 'E': // 상황에 따라, 커뮤니티 또는 설정
+          this.arcade_tab_selected();
+          this.ionTabs.select('arcade');
+          break;
+        case 'R':
+          this.community_tab_selected();
+          this.ionTabs.select('community');
+          break;
+        case 'T':
+          this.setting_button();
+          break;
       }
+    }
   }
 
   /** 하단 탭을 눌러 알림 확인함 처리 */
