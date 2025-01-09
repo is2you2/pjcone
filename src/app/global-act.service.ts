@@ -1068,7 +1068,7 @@ export class GlobalActService {
       let upload_time = new Date().getTime();
       let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
       let filename = file.override_name || `${info?.user_id.replace(/\//g, '_')}_${upload_time}_${only_filename}.${file.file_ext}`;
-      const path = `${info?.user_id}/${upload_time}`;
+      const path = file.override_path ?? `${info?.user_id}/${upload_time}`;
       CatchedAddress = `${protocol}//${address}:${info?.apache_port || 9002}/cdn/`;
       progress = setInterval(async () => {
         let res = await fetch(`${protocol}//${address}:${info?.cdn_port || 9001}/filesize/${path}/${only_filename}.${file.file_ext}`, { method: "POST" });
@@ -1083,7 +1083,7 @@ export class GlobalActService {
       let _file = new File([file.blob], filename);
       formData.append("files", _file);
       formData.append("path", path);
-      formData.append("filename", `${only_filename}.${file.file_ext}`);
+      formData.append("filename", file.override_filename || `${only_filename}.${file.file_ext}`);
       let up_res = await fetch(`${protocol}//${address}:${info?.cdn_port || 9001}/cdn/${filename}`, { method: "POST", body: formData });
       const received = await up_res.text();
       CatchedAddress += received;
@@ -1149,11 +1149,11 @@ export class GlobalActService {
     const upload_time = new Date().getTime();
     const only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
     const filename = file.override_name || `${user_id.replace(/\//g, '_')}_${upload_time}_${only_filename}.${file.file_ext}`;
-    const path = `${user_id}/${upload_time}`;
+    const path = file.override_path ?? `${user_id}/${upload_time}`;
     let formData = new FormData();
     let _file = new File([file.blob], filename);
     formData.append("files", _file);
-    formData.append("path", file.override_path ?? path);
+    formData.append("path", path);
     formData.append("filename", file.override_filename || `${only_filename}.${file.file_ext}`);
     if (!override_ffs_str)
       override_ffs_str = localStorage.getItem('fallback_fs');

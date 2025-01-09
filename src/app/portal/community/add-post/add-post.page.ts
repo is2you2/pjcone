@@ -1110,7 +1110,10 @@ export class AddPostPage implements OnInit, OnDestroy {
         } catch (e) { }
         delete this.userInput.mainImage.thumbnail;
         delete this.userInput.mainImage.alt_path;
-        this.userInput.mainImage.override_name = this.userInput.mainImage.url.split('/').pop();
+        let sep = this.userInput.mainImage.url.split('/');
+        while (sep.shift() != 'cdn') { }
+        this.userInput.mainImage.override_name = sep.pop();
+        this.userInput.mainImage.override_path = sep.join('/');
         delete this.userInput.mainImage.url;
       }
       // 첨부파일 기억하기
@@ -1118,12 +1121,15 @@ export class AddPostPage implements OnInit, OnDestroy {
         if (!this.userInput.attachments[i].blob) {
           if (this.userInput.attachments[i]['url']) {
             try {
-              let res = await fetch(this.userInput.attachments[i]['url']);
-              let blob = await res.blob();
+              const res = await fetch(this.userInput.attachments[i]['url']);
+              const blob = await res.blob();
               this.userInput.attachments[i].blob = blob;
               delete this.userInput.attachments[i].thumbnail;
               delete this.userInput.attachments[i].alt_path;
-              this.userInput.attachments[i].override_name = this.userInput.attachments[i].url.split('/').pop();
+              let sep = this.userInput.attachments[i].url.split('/');
+              while (sep.shift() != 'cdn') { }
+              this.userInput.attachments[i].override_name = sep.pop();
+              this.userInput.attachments[i].override_path = sep.join('/');
               delete this.userInput.attachments[i].url;
             } catch (e) {
               continue;
