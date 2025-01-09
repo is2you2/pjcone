@@ -29,7 +29,7 @@
       "icon": "icon.png"
     },
     "linux": {
-      "target": ["AppImage", "deb", "rpm"],
+      "target": "AppImage",
       "icon": "icon.png",
       "category": "Utility"
     }
