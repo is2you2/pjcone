@@ -1,0 +1,37 @@
+{
+  "name": "electron",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^33.3.1",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "org.pjcone.portal",
+    "productName": "Project: Cone",
+    "files": [
+      "**/*"
+    ],
+    "mac": {
+      "icon": "/root/pjcone/godot/server/icon.png",
+      "category": "public.app-category.utilities"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "/root/pjcone/godot/server/icon.png"
+    },
+    "linux": {
+      "target": ["AppImage", "deb", "rpm"],
+      "icon": "/root/pjcone/godot/server/icon.png",
+      "category": "Utility"
+    }
+  }
+}
