@@ -21,16 +21,16 @@
       "**/*"
     ],
     "mac": {
-      "icon": "/root/pjcone/godot/server/icon.png",
+      "icon": "icon.png",
       "category": "public.app-category.utilities"
     },
     "win": {
       "target": "nsis",
-      "icon": "/root/pjcone/godot/server/icon.png"
+      "icon": "icon.png"
     },
     "linux": {
       "target": ["AppImage", "deb", "rpm"],
-      "icon": "/root/pjcone/godot/server/icon.png",
+      "icon": "icon.png",
       "category": "Utility"
     }
   }
