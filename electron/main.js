@@ -4,8 +4,10 @@ let mainWindow;
 
 function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 544,
-        height: 977,
+        width: 450,
+        height: 720,
+        minWidth: 300, // 최소 너비
+        minHeight: 300, // 최소 높이
         webPreferences: {
             nodeIntegration: true
         }
