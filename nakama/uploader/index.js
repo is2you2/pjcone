@@ -176,7 +176,6 @@ app.use('/remove_key/', (req, res) => {
     let listAll = getFilesInDirectory('./cdn/' + target_path);
     while (listAll?.length) {
         const path = listAll.pop();
-        console.log('이게 사라지나: ', listAll?.length);
         const stats = fs.statSync(path);
         // 디렉토리인 경우 재귀적으로 내부 파일 탐색
         if (stats.isDirectory()) {
@@ -184,10 +183,7 @@ app.use('/remove_key/', (req, res) => {
                 fs.rmdirSync(path);
             } catch (e) { }
         } else fs.unlinkSync(path);
-        if (!listAll?.length) {
-            console.log('마지막 경로 뭐야: ', `.${path}`);
-            RecursiveOutDirRemove(`./${path}`);
-        }
+        if (!listAll?.length) RecursiveOutDirRemove(`./${path}`);
     }
     // 아래, 구버전 호환 코드
     fs.readdir('./cdn', (err, files) => {

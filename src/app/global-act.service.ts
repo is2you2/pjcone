@@ -51,6 +51,10 @@ export interface FileInfo {
   filename?: string;
   /** 재등록을 위한 이름 덮어쓰기 */
   override_name?: string;
+  /** 재등록을 위한 경로 덮어쓰기 */
+  override_path?: string;
+  /** 서버에 등록되는 파일 이름 덮어쓰기 */
+  override_filename?: string;
   /** blob 파일 형식 (blob.type) */
   type?: string;
   file_ext?: string;
@@ -1142,15 +1146,15 @@ export class GlobalActService {
       id: actId,
       message: `${this.lang.text['Settings']['TryToFallbackFS']}: ${file.filename}`,
     });
-    let upload_time = new Date().getTime();
-    let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
-    let filename = file.override_name || `${user_id.replace(/\//g, '_')}_${upload_time}_${only_filename}.${file.file_ext}`;
+    const upload_time = new Date().getTime();
+    const only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
+    const filename = file.override_name || `${user_id.replace(/\//g, '_')}_${upload_time}_${only_filename}.${file.file_ext}`;
     const path = `${user_id}/${upload_time}`;
     let formData = new FormData();
     let _file = new File([file.blob], filename);
     formData.append("files", _file);
-    formData.append("path", path);
-    formData.append("filename", `${only_filename}.${file.file_ext}`);
+    formData.append("path", file.override_path ?? path);
+    formData.append("filename", file.override_filename || `${only_filename}.${file.file_ext}`);
     if (!override_ffs_str)
       override_ffs_str = localStorage.getItem('fallback_fs');
     let progress: any;
@@ -1172,7 +1176,7 @@ export class GlobalActService {
           message: `${override_try_msg ? override_try_msg + ': ' : ''}${file.filename}: ${progressPercent || 0}%`,
         });
       }, 700);
-      let up_res = await fetch(`${protocol}//${address[0]}:9001/cdn/${path}/${only_filename}.${file.file_ext}`, { method: "POST", body: formData });
+      let up_res = await fetch(`${protocol}//${address[0]}:9001/cdn/${filename}`, { method: "POST", body: formData });
       const received = await up_res.text();
       CatchedAddress += received;
       if (!up_res.ok) throw '업로드 단계에서 실패';
