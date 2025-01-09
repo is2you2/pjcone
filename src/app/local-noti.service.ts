@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { IndexedDBService } from './indexed-db.service';
+import { isNativefier } from './app.component';
 
 /** 웹에서도, 앱에서도 동작하는 요소로 구성된 알림폼 재구성  
  * 실험을 거쳐 차례로 병합해가기
@@ -154,17 +155,27 @@ export class LocalNotiService {
         } catch (e) { }
         delete this.WebNoties[opt.id];
       }
-      await window['swReg'].showNotification(opt.title, { ...input });
-      let getNoties = await window['swReg'].getNotifications();
-      for (let i = 0, j = getNoties.length; i < j; i++)
-        if (getNoties[i].tag == `${opt.id}`) {
-          this.WebNoties[opt.id] = getNoties[i];
-          break;
+      if (isNativefier) {
+        delete input.actions;
+        this.WebNoties[opt.id] = new Notification(opt.title, { ...input });
+        this.WebNoties[opt.id].onclick = () => {
+          _action_wm();
+          window.focus();
+          this.WebNoties[opt.id].close();
+        };
+      } else {
+        await window['swReg'].showNotification(opt.title, { ...input });
+        let getNoties = await window['swReg'].getNotifications();
+        for (let i = 0, j = getNoties.length; i < j; i++)
+          if (getNoties[i].tag == `${opt.id}`) {
+            this.WebNoties[opt.id] = getNoties[i];
+            break;
+          }
+        window['swRegListenerCallback'][opt.id] = () => {
+          _action_wm();
+          window.focus();
+          this.WebNoties[opt.id].close();
         }
-      window['swRegListenerCallback'][opt.id] = () => {
-        _action_wm();
-        window.focus();
-        this.WebNoties[opt.id].close();
       }
     } catch (e) {
       console.log('알림 생성 오류: ', e);
