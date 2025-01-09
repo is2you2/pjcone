@@ -986,16 +986,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     try {
       this.ChatLogs = document.getElementById('chatroom_div');
       this.ChatLogs.onscroll = (_ev: any) => {
-        let CheckScroll = this.NeedScrollDown();
-        if (CheckScroll) {
-          // 스크롤을 제일 하단으로 내리면 사라짐
-          if (!this.ShowGoToBottom)
-            if (!this.ShowRecentMsg)
-              this.init_last_message_viewer();
-          if (this.ShowRecentMsg && !this.BlockAutoScrollDown)
-            this.pull_msg_history(false);
-        }
-        this.ShowGoToBottom = !CheckScroll || this.ShowRecentMsg;
+        this.ListOnScrollAct();
       }
     } catch (e) {
       console.log('채팅 로그 개체 행동 오류: ', e);
@@ -1035,6 +1026,20 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.nakama.StatusBarChangedCallback = () => {
       this.SetExtensionButtons();
     }
+  }
+
+  /** 채널 기록 스크롤에 변경사항이 생길 때 행동 */
+  ListOnScrollAct() {
+    let CheckScroll = this.NeedScrollDown();
+    if (CheckScroll) {
+      // 스크롤을 제일 하단으로 내리면 사라짐
+      if (!this.ShowGoToBottom)
+        if (!this.ShowRecentMsg)
+          this.init_last_message_viewer();
+      if (this.ShowRecentMsg && !this.BlockAutoScrollDown)
+        this.pull_msg_history(false);
+    }
+    this.ShowGoToBottom = !CheckScroll || this.ShowRecentMsg;
   }
 
   /** 다른 페이지에 넘어간 등, 백그라운드 마무리 작업을 모아두었다가 복귀했을 때 행동 */
@@ -1467,6 +1472,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           if (targetChatBg) targetChatBg.style.backgroundColor = null;
           delete this.BackgroundAct[id];
         }
+        this.ListOnScrollAct();
       }, 3500);
     }
     await new Promise((done) => setTimeout(done, 1000));
