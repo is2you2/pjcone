@@ -35,9 +35,13 @@ export class GroupServerPage implements OnInit, OnDestroy {
 
   /** 서버 정보가 있는 경우 uid 받기 */
   session_uid = '';
+  /** 이 페이지에 진입할 때 연결된 서버가 있었는지 */
+  OnPageWithOnline = false;
 
   gsCanvasDiv: HTMLElement;
   ngOnInit() {
+    const servers = this.nakama.get_all_online_server();
+    this.OnPageWithOnline = Boolean(servers.length);
     this.global.StoreShortCutAct('group-server');
     this.servers = this.nakama.get_all_server_info(true);
 
@@ -535,7 +539,7 @@ export class GroupServerPage implements OnInit, OnDestroy {
         isProfileChanged = true;
         break;
       }
-    isProfileChanged = isProfileChanged && this.original_profile['display_name'] !== undefined;
+    isProfileChanged = isProfileChanged && (this.original_profile['display_name'] !== undefined || this.OnPageWithOnline);
     this.nakama.users.self['img'] = this.tmp_img || this.nakama.users.self['img'];
     if (isProfileChanged) {
       let servers = this.nakama.get_all_online_server();
