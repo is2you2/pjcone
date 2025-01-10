@@ -10,7 +10,6 @@
 
 .sender_form {
     background-color: var(--chatroom-background-transparent);
-    border-radius: 16px;
     padding: 0px 8px;
     width: fit-content;
 }
@@ -40,7 +39,6 @@
 
 .dateText {
     background-color: var(--chatroom-background-transparent);
-    border-radius: 16px;
     color: var(--default-text-color-direction);
     padding: 0px 16px;
 }
@@ -49,7 +47,6 @@
 .msg_balloon {
     width: fit-content;
     border: 16px;
-    border-radius: 16px;
     padding: 5px 12px 8px 12px;
 }
 
@@ -112,7 +109,6 @@
 }
 
 .quickShare_form {
-    border-radius: 16px;
     max-width: 156px;
     width: fit-content;
     height: fit-content;
@@ -145,12 +141,10 @@
 .msg_bg_col {
     width: 100%;
     height: 100%;
-    border-radius: 16px;
 }
 
 .qoute_background {
     background-color: rgba(var(--ion-color-primary-rgb), .5);
-    border-radius: 16px;
 }
 
 .qouteImage {
@@ -263,7 +257,6 @@
     transform: translateY(-100%);
     background: var(--chatroom-last-msg-viewer-bg);
     padding: 8px;
-    border-radius: 16px;
     margin: 0px 8px;
     bottom: 4px;
 }
@@ -290,7 +283,6 @@
 }
 
 .read_last_here {
-    border-radius: 16px;
     padding: 4px 8px;
     width: fit-content;
     text-align: center;
@@ -327,6 +319,10 @@
 
 .borderRadiusDefault {
     border-radius: 8px;
+}
+
+.borderRadiusBig {
+    border-radius: 16px;
 }
 
 ion-button {

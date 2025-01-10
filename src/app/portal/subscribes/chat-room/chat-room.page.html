@@ -43,13 +43,13 @@
               (contextmenu)="ChatBalloonContextMenu(msg)" (mousedown)="ChatBalloonMouseDown($event, msg)"
               (touchstart)="ChatBalloonOnTouchStart($event, msg)" class="msg_parent">
               <div class="msg_bg_form">
-                <div [id]="msg.message_id + '_bg'" class="msg_bg_col"></div>
+                <div [id]="msg.message_id + '_bg'" class="msg_bg_col borderRadiusBig"></div>
               </div>
               <!-- 상대방이 보낸 메시지 -->
               <div *ngIf="!msg['is_me'] && !msg.content['noti']">
                 <!-- 날짜 표시 -->
                 <div *ngIf="msg['showInfo'] && msg['showInfo']['date']" class="dateLine" (click)="SetOtherAct()">
-                  <span class="dateText"> {{msg['displayDate']}} </span>
+                  <span class="dateText borderRadiusBig"> {{msg['displayDate']}} </span>
                 </div>
                 <table>
                   <tr>
@@ -65,7 +65,7 @@
                     <td>
                       <!-- 이름 표시 -->
                       <div class="message_form" *ngIf="msg['showInfo'] && msg['showInfo']['sender']">
-                        <div class="sender_form">
+                        <div class="sender_form borderRadiusBig">
                           <span (click)="user_detail(msg)" class="cursor_pointer">
                             <b>
                               <span
@@ -78,7 +78,8 @@
                           <span class="time_form message_span_form" (click)="SetOtherAct()">{{msg['msgTime']}}</span>
                         </div>
                       </div>
-                      <div *ngIf="msg.content['qoute']" class="cursor_pointer qoute_text qoute_background imageForm"
+                      <div *ngIf="msg.content['qoute']"
+                        class="cursor_pointer qoute_text qoute_background borderRadiusBig imageForm"
                         (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
                         <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg'] + ': ' +
                           (msg.content['qoute']['username'] || msg.content['qoute']['display_name'])}}</div>
@@ -114,7 +115,7 @@
                           {{msg.content['transfer_index']['index']}}</div>
                       </div>
                       <div *ngIf="msg.content['msg']" class="message_content_form">
-                        <div class="msg_balloon qouteOnChatBalloon"
+                        <div class="msg_balloon borderRadiusBig qouteOnChatBalloon"
                           [style]="(msg.content['msg'][0] && msg.content['msg'][0][0].size) ? 'padding: 0; margin: 0' : ('background-color: ' + (msg.color_bg || (msg.color + 'bb')))">
                           <div *ngFor="let line of msg.content['msg']; let i = index" class="msg_inside_balloon">
                             <span>
@@ -136,7 +137,7 @@
                 </table>
                 <!-- 하이퍼링크 정보 일부 발췌하여 보여주기 -->
                 <div *ngIf="msg.content['hasLink']" class="file_message_form href_thumbnail">
-                  <div class="quickShare_form qouteDiv cursor_pointer qouteOnChatBalloon"
+                  <div class="quickShare_form borderRadiusBig qouteDiv cursor_pointer qouteOnChatBalloon"
                     (click)="open_url_link(msg.content['hasLink'].url)">
                     {{msg.content['hasLink'].title}}
                     <img *ngIf="msg.content['hasLink'].imageUrl" [src]="msg.content['hasLink'].imageUrl"
@@ -146,7 +147,7 @@
                   </div>
                 </div>
                 <div style="width: 100%; text-align: -webkit-center;">
-                  <div *ngIf="msg['isLastRead']" class="read_last_here">
+                  <div *ngIf="msg['isLastRead']" class="read_last_here borderRadiusBig">
                     {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
                 </div>
               </div>
@@ -154,7 +155,7 @@
               <div *ngIf="msg['is_me'] && !msg.content['noti']" class="my_message_right">
                 <!-- 날짜 표시 -->
                 <div *ngIf="msg['showInfo'] && msg['showInfo']['date']" class="dateLine" (click)="SetOtherAct()">
-                  <span class="dateText"> {{msg['displayDate']}} </span>
+                  <span class="dateText borderRadiusBig"> {{msg['displayDate']}} </span>
                 </div>
                 <table style="display: inline-flex;">
                   <tr>
@@ -162,7 +163,7 @@
                       <!-- 이름 표시 -->
                       <div class="message_form my_file_message_form"
                         *ngIf="msg['showInfo'] && msg['showInfo']['sender']">
-                        <div class="sender_form">
+                        <div class="sender_form borderRadiusBig">
                           <!-- 시간 표시 -->
                           <span class="time_form message_span_form_me" (click)="SetOtherAct()">{{msg['msgTime']}}</span>
                           <span (click)="user_detail(msg)" class="cursor_pointer">
@@ -176,7 +177,8 @@
                       </div>
                       <input hidden type="file" [id]="voidDrawContextId" accept="image/*"
                         (change)="SelectVoidDrawBackgroundImage($event)">
-                      <div *ngIf="msg.content['qoute']" class="cursor_pointer qoute_text qoute_background imageForm"
+                      <div *ngIf="msg.content['qoute']"
+                        class="cursor_pointer qoute_text qoute_background borderRadiusBig imageForm"
                         (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
                         <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg'] + ': ' +
                           (msg.content['qoute']['username'] || msg.content['qoute']['display_name'])}}</div>
@@ -214,7 +216,7 @@
                       <div *ngIf="msg.content['msg']" class="message_content_form my_file_message_form">
                         <div *ngIf="msg.content['edited']" class="edited_form">
                           {{'(' + lang.text['ChatRoom']['MsgEdited'] + ')'}}</div>
-                        <div class="msg_balloon qouteOnChatBalloon"
+                        <div class="msg_balloon borderRadiusBig qouteOnChatBalloon"
                           [style]="(msg.content['msg'][0] && msg.content['msg'][0][0].size) ? 'padding: 0; margin: 0' : ('background-color: ' + (msg.color_bg || (msg.color + 'bb')))">
                           <div *ngFor="let line of msg.content['msg']" class="msg_inside_balloon">
                             <span>
@@ -242,7 +244,7 @@
                 </table>
                 <!-- 하이퍼링크 정보 일부 발췌하여 보여주기 -->
                 <div *ngIf="msg.content['hasLink']" class="my_file_message_form href_thumbnail_self">
-                  <div class="quickShare_form qouteDiv cursor_pointer qouteOnChatBalloon"
+                  <div class="quickShare_form borderRadiusBig qouteDiv cursor_pointer qouteOnChatBalloon"
                     (click)="open_url_link(msg.content['hasLink'].url)">
                     {{msg.content['hasLink'].title}}
                     <img *ngIf="msg.content['hasLink'].imageUrl" [src]="msg.content['hasLink'].imageUrl"
@@ -252,7 +254,7 @@
                   </div>
                 </div>
                 <div style="width: 100%; text-align: -webkit-center;">
-                  <div *ngIf="msg['isLastRead']" class="read_last_here" (click)="SetOtherAct()">
+                  <div *ngIf="msg['isLastRead']" class="read_last_here borderRadiusBig" (click)="SetOtherAct()">
                     {{lang.text['ChatRoom']['YouReadHereLast']}}</div>
                 </div>
               </div>
@@ -261,7 +263,8 @@
               </div>
             </div>
             <div *ngFor="let msg of sending_msg" class="my_message_right href_thumbnail_self my_sending_msg">
-              <div *ngIf="msg.content['qoute']" class="cursor_pointer qoute_text qoute_background imageForm"
+              <div *ngIf="msg.content['qoute']"
+                class="cursor_pointer qoute_text qoute_background borderRadiusBig imageForm"
                 (click)="FindQoute(msg.content['qoute'].id, msg.content['qoute'].timestamp)">
                 <div class="qouteDiv qouteOnChatBalloon">{{lang.text['ChatRoom']['qouteMsg'] + ': ' +
                   (msg.content['qoute']['username'] || msg.content['qoute']['display_name'])}}</div>
@@ -286,7 +289,7 @@
                 </div>
               </div>
               <div *ngIf="msg.content['msg']" class="message_content_form my_file_message_form">
-                <div class="msg_balloon qouteOnChatBalloon"
+                <div class="msg_balloon borderRadiusBig qouteOnChatBalloon"
                   [style]="(msg.content['msg'][0] && msg.content['msg'][0][0].size) ? 'padding: 0; margin: 0' : 'background-color: #888b'">
                   <div *ngFor="let line of msg.content['msg']" class="msg_inside_balloon">
                     <span>
@@ -304,7 +307,7 @@
             </div>
           </div>
         </div>
-        <table class="thumbnails imageForm cursor_pointer">
+        <table class="thumbnails borderRadiusBig imageForm cursor_pointer">
           <tr *ngIf="userInput['qoute']" class="cursor_pointer qoute_text" (click)="RemoveQoute()">
             <div class="qouteDiv">{{lang.text['ChatRoom']['qouteMsg'] + ': ' + (userInput['qoute']['username'] ||
               userInput['qoute']['display_name'])}}
