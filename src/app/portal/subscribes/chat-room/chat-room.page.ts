@@ -1846,6 +1846,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.extended_buttons[10].isHide = true;
         delete this.extended_buttons[0].isHide;
         this.extended_buttons[9].isHide = true;
+        this.extended_buttons[11].isHide = true;
         this.extended_buttons[12].isHide = true;
         break;
       case 0: // 로컬 채널형 기록
