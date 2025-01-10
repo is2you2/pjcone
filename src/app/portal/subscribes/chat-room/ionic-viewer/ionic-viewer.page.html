@@ -105,12 +105,12 @@
                       <ion-label>{{lang.text['ContentViewer']['FindMessage']}}</ion-label>
                     </ion-item>
                   </div>
-                  <div *ngIf="CurrentFileSize && (FileInfo['url'] || !NeedDownloadFile)">
+                  <div *ngIf="IsLocalFileLoaded && (FileInfo['url'] || !NeedDownloadFile)">
                     <ion-item button (click)="RemoveFile()">
                       <ion-label>{{lang.text['ContentViewer']['RemoveFile']}}</ion-label>
                     </ion-item>
                   </div>
-                  <div *ngIf="!CurrentFileSize && !NeedDownloadFile && FileInfo['path'] && !isQuickLaunchViewer">
+                  <div *ngIf="!IsLocalFileLoaded && !NeedDownloadFile && FileInfo['path'] && !isQuickLaunchViewer">
                     <ion-item button (click)="DownloadFileFromURL()">
                       <ion-label>{{lang.text['ContentViewer']['DownloadToLocal']}}</ion-label>
                     </ion-item>

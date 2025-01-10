@@ -113,6 +113,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   FileHeader: HTMLElement;
   FromUserFsDir: boolean;
   CurrentFileSize: string;
+  IsLocalFileLoaded = false;
 
   content_creator: ContentCreatorInfo;
   content_related_creator: ContentCreatorInfo[];
@@ -394,6 +395,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   async reinit_content_data(msg: any) {
     this.CacheMediaObject = null;
     this.CurrentFileSize = null;
+    this.IsLocalFileLoaded = false;
     this.NewTextFileName = '';
     this.NeedDownloadFile = false;
     this.ContentOnLoad = false;
@@ -623,7 +625,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** URL 링크인 경우 파일을 로컬에 다운받기 */
   async DownloadFileFromURL(force = false) {
-    if (!force && !(!this.CurrentFileSize && !this.NeedDownloadFile && this.FileInfo['path'] && !this.isQuickLaunchViewer)) return;
+    if (!force && !(!this.IsLocalFileLoaded && !this.NeedDownloadFile && this.FileInfo['path'] && !this.isQuickLaunchViewer)) return;
     const actId = 'ionicviewer';
     await this.p5loading.update({
       id: actId,
@@ -634,9 +636,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     try {
       let res = await fetch(this.FileInfo.url, { signal: this.cont.signal });
       if (res.ok) {
+        this.CurrentFileSize = this.formatBytes(this.FileInfo['size'] || this.FileInfo['filesize'] || this.blob?.size);
         let blob = await res.blob();
         await this.indexed.saveBlobToUserPath(blob, this.FileInfo.alt_path || this.FileInfo.path);
-        this.CurrentFileSize = this.formatBytes(this.FileInfo['size'] || this.FileInfo['filesize'] || blob.size);
+        this.IsLocalFileLoaded = true;
       } else throw res.statusText;
       this.p5loading.update({
         id: actId,
@@ -669,9 +672,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       this.FilenameElement.onfocus = null;
     }
     try { // 로컬에서 파일 찾기 우선 작업
+      this.CurrentFileSize = this.formatBytes(this.FileInfo.size || this.FileInfo['filesize'] || this.blob?.size);
       this.blob = await this.indexed.loadBlobFromUserPath(this.FileInfo.alt_path || this.FileInfo.path, this.FileInfo['type']);
       this.FileURL = URL.createObjectURL(this.blob);
-      this.CurrentFileSize = this.formatBytes(this.FileInfo.size || this.FileInfo['filesize'] || this.blob?.size);
+      this.IsLocalFileLoaded = true;
     } catch (e) {
       try { // 로컬에 파일이 없다면 URL 주소 정보를 검토하여 작업
         if (this.FileInfo.url) {
@@ -1698,9 +1702,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         if (!this.NeedDownloadFile)
           FileMenu.push(() => this.ToggleFocusMode());
         FileMenu.push(() => this.open_bottom_modal());
-        if (this.CurrentFileSize && this.FileInfo['url'])
+        if (this.IsLocalFileLoaded && this.FileInfo['url'])
           FileMenu.push(() => this.RemoveFile());
-        if (!this.CurrentFileSize && this.FileInfo.path && !this.isQuickLaunchViewer)
+        if (!this.IsLocalFileLoaded && this.FileInfo.path && !this.isQuickLaunchViewer)
           FileMenu.push(() => this.DownloadFileFromURL());
         if (this.FileInfo.url && !this.isQuickLaunchViewer)
           FileMenu.push(() => this.CopyQuickViewer());
@@ -2667,7 +2671,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   }
 
   RemoveFile() {
-    if (!(this.CurrentFileSize && (this.FileInfo['url'] || !this.NeedDownloadFile))) return;
+    if (!(this.IsLocalFileLoaded && (this.FileInfo['url'] || !this.NeedDownloadFile))) return;
     this.RemoveFileAct();
     this.p5toast.show({
       text: `${this.lang.text['ContentViewer']['RemoveFile']}: ${this.FileInfo.alt_path || this.FileInfo.path}`,
