@@ -1083,6 +1083,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         delete this.BackgroundAct[id];
       }
     }
+    this.SetExtensionButtons();
     // 붙여넣기시 행동 등록
     if (!this.userInputTextArea.onpaste)
       this.userInputTextArea.onpaste = (ev: any) => {
