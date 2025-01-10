@@ -131,13 +131,14 @@
 
 .msg_parent {
     position: relative;
+    padding-bottom: 4px;
 }
 
 .msg_bg_form {
     position: absolute;
     width: 100%;
     height: 100%;
-    padding: 2px 0px;
+    padding-top: 2px;
     pointer-events: none;
 }
 
