@@ -277,16 +277,6 @@ export class NakamaService {
     });
   }
 
-  /** 그룹 상세 정보 페이지 열기 */
-  open_group_detail(_state: any) {
-    this.global.RemoveAllModals(() => {
-      this.navCtrl.navigateForward('group-detail', {
-        animation: mdTransitionAnimation,
-        state: _state,
-      });
-    });
-  }
-
   /** 다른 사람의 프로필 정보 열기 */
   open_others_profile(_state: any) {
     this.global.RemoveAllModals(() => {
@@ -3970,7 +3960,10 @@ export class NakamaService {
           smallIcon_ln: 'diychat',
         }, undefined, (_ev: any) => {
           if (this.socket_reactive['group_detail'].info.id == v.content['group_id']) return;
-          this.open_group_detail({ info: this.groups[_is_official][_target][v.content['group_id']] });
+          this.global.ActLikeModal('group-detail', {
+            info: this.groups[_is_official][_target][v.content['group_id']],
+            server: { isOfficial: _is_official, target: _target },
+          });
         });
         break;
       case -6: // 친구가 다른 게임에 참여

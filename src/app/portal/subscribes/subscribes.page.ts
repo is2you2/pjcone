@@ -114,7 +114,7 @@ export class SubscribesPage implements OnInit {
     switch (channel['redirect'].type) {
       case 3: // 그룹 채널
         if (channel['status'] == 'online' || channel['status'] == 'pending') {
-          this.nakama.open_group_detail({
+          this.global.ActLikeModal('group-detail', {
             info: this.nakama.groups[isOfficial][target][channel['group_id']],
             server: { isOfficial: isOfficial, target: target },
           });

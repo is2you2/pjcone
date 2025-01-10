@@ -102,7 +102,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.extended_buttons[0].isHide = true;
         } else {
           try {
-            this.nakama.open_group_detail({
+            this.global.PageDismissAct['group_detail'] = (_v: any) => {
+              this.SetExtensionButtons();
+              delete this.global.PageDismissAct['group_detail'];
+            }
+            this.global.ActLikeModal('group-detail', {
               info: this.nakama.groups[this.isOfficial][this.target][this.info['group_id']],
               server: { isOfficial: this.isOfficial, target: this.target },
             });
@@ -1083,7 +1087,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         delete this.BackgroundAct[id];
       }
     }
-    this.SetExtensionButtons();
     // 붙여넣기시 행동 등록
     if (!this.userInputTextArea.onpaste)
       this.userInputTextArea.onpaste = (ev: any) => {

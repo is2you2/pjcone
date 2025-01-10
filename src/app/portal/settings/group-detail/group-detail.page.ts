@@ -37,6 +37,8 @@ export class GroupDetailPage implements OnInit, OnDestroy {
     if (this.p5canvas) this.p5canvas.remove();
     delete this.nakama.socket_reactive['group_detail'];
     this.route.queryParams['unsubscribe']();
+    if (this.global.PageDismissAct['group_detail'])
+      this.global.PageDismissAct['group_detail']();
   }
 
   QRCodeSRC: any;
