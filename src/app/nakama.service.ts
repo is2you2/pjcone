@@ -690,7 +690,7 @@ export class NakamaService {
     info.webrtc_port = info.webrtc_port;
     info.useSSL = info.useSSL || false;
     info.isOfficial = info.isOfficial || 'unofficial';
-    info.key = info.key || 'defaultkey';
+    info.key = info.key || '';
 
     let line = new Date().getTime().toString();
     line += `,${info.isOfficial}`;
@@ -4405,7 +4405,7 @@ export class NakamaService {
             apache_port: sep[3],
             square_port: sep[4],
             webrtc_port: sep[5],
-            key: sep[1] || 'defaultkey',
+            key: sep[1] || '',
             isOfficial: 'unofficial',
           },
         });

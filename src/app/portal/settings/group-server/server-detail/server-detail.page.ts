@@ -105,7 +105,7 @@ export class ServerDetailPage implements OnInit, OnDestroy {
     this.dedicated_info.webrtc_port = this.dedicated_info.webrtc_port;
     this.dedicated_info.useSSL = this.ServerDetailuseSSL.checked || false;
     this.dedicated_info.isOfficial = this.dedicated_info.isOfficial || 'unofficial';
-    this.dedicated_info.key = this.dedicated_info.key || 'defaultkey';
+    this.dedicated_info.key = this.dedicated_info.key || '';
 
     let line = new Date().getTime().toString();
     line += `,${this.dedicated_info.isOfficial}`;
