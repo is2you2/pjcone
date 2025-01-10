@@ -2,7 +2,6 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { AnimationController, NavController, iosTransitionAnimation } from '@ionic/angular';
 import { IonModal } from '@ionic/angular/common';
 import * as p5 from 'p5';
-import { isPlatform } from 'src/app/app.component';
 import { FileInfo, GlobalActService } from 'src/app/global-act.service';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -32,9 +31,7 @@ export class ArcadePage implements OnInit {
     private p5loading: P5LoadingService,
   ) { }
 
-  ngOnInit() {
-    this.NeedBackgroundMode = isPlatform != 'DesktopPWA';
-  }
+  ngOnInit() { }
 
   async ionViewWillEnter() {
     this.WillLeave = false;
@@ -303,39 +300,6 @@ export class ArcadePage implements OnInit {
   leaveAnimation = (baseEl: HTMLElement) => {
     return this.enterAnimation(baseEl).direction('reverse');
   };
-
-  /** 모바일 여부를 검토 */
-  NeedBackgroundMode = false;
-  /** 모바일인 경우, 빈 미디어를 반복재생하여 백그라운드 모드를 모방함 */
-  IsBackgroundMode = false;
-  /** 백그라운드 모드를 위한 오디오 관리 */
-  BGModeAudio: HTMLAudioElement;
-  /** 백그라운드 모드 토글 */
-  ToggleBackgroundMode() {
-    this.IsBackgroundMode = !this.IsBackgroundMode;
-    this.BGModeAudio?.pause();
-    this.BGModeAudio?.remove();
-    this.BGModeAudio = null;
-    if (this.IsBackgroundMode) {
-      const audioDiv = document.getElementById('BackgroundModeAudio');
-      this.BGModeAudio = new Audio('assets/empty.ogg');
-      this.BGModeAudio.hidden = true;
-      this.BGModeAudio.loop = true;
-      this.BGModeAudio.play();
-      audioDiv.appendChild(this.BGModeAudio);
-      this.p5loading.update({
-        id: 'toggle_bgmode',
-        progress: null,
-      });
-      this.p5loading.toast(this.lang.text['Arcade']['BGModeOn'], 'toggle_bgmode');
-    } else {
-      this.p5loading.update({
-        id: 'toggle_bgmode',
-        progress: 1,
-      });
-      this.p5loading.toast(this.lang.text['Arcade']['BGModeOff'], 'toggle_bgmode');
-    }
-  }
 
   /** 그림판 우클릭 행동, 첨부파일 우선 불러오기 행동하기 */
   QuickLinkContextmenu() {

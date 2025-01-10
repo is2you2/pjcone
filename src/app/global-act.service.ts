@@ -307,6 +307,12 @@ export class GlobalActService {
     });
   }
 
+  /** 언어가 준비된 후에 동작할 것들 */
+  afterLangInit() {
+    this.NeedBackgroundMode = isPlatform != 'DesktopPWA';
+    if (this.NeedBackgroundMode) this.ToggleBackgroundMode();
+  }
+
   /** 모달이 켜진 상태에서 페이지 전환은 오류가 생기므로 모든 모달 제거하기를 진행함 */
   async RemoveAllModals(Callback: Function = () => { }) {
     let topModal: any = 'init';
@@ -639,6 +645,43 @@ export class GlobalActService {
     loading.dismiss();
   }
 
+  /** 모바일 여부를 검토 */
+  NeedBackgroundMode = false;
+  /** 모바일인 경우, 빈 미디어를 반복재생하여 백그라운드 모드를 모방함 */
+  IsBackgroundMode = false;
+  private BackgroundAudioDiv: HTMLDivElement;
+  /** 백그라운드 모드를 위한 오디오 관리 */
+  private BGModeAudio: HTMLAudioElement;
+  /** 백그라운드 모드 토글 */
+  ToggleBackgroundMode() {
+    this.IsBackgroundMode = !this.IsBackgroundMode;
+    this.BackgroundAudioDiv?.remove();
+    this.BackgroundAudioDiv = null;
+    this.BGModeAudio?.pause();
+    this.BGModeAudio?.remove();
+    this.BGModeAudio = null;
+    if (this.IsBackgroundMode) {
+      this.BackgroundAudioDiv = document.createElement('div');
+      this.BGModeAudio = new Audio('assets/empty.ogg');
+      this.BGModeAudio.hidden = true;
+      this.BGModeAudio.loop = true;
+      this.BGModeAudio.play();
+      this.BackgroundAudioDiv.appendChild(this.BGModeAudio);
+      this.p5loading.update({
+        id: 'toggle_bgmode',
+        message: this.lang.text['Arcade']['BGModeOn'],
+        progress: null,
+        forceEnd: 1000,
+      });
+    } else {
+      this.p5loading.update({
+        id: 'toggle_bgmode',
+        message: this.lang.text['Arcade']['BGModeOff'],
+        progress: 1,
+        forceEnd: 1000,
+      });
+    }
+  }
 
   /** 아케이드용 웹소켓 클라이언트 */
   ArcadeWS: WebSocket;

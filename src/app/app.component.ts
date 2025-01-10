@@ -28,8 +28,6 @@ export class AppComponent {
   ) {
     if (platform.is('desktop'))
       isPlatform = 'DesktopPWA';
-    // else if (platform.is('mobileweb'))
-    //   isPlatform = 'MobilePWA';
     else if (platform.is('android'))
       isPlatform = 'Android';
     else if (platform.is('iphone'))
@@ -38,6 +36,7 @@ export class AppComponent {
     indexed.initialize(async () => {
       lang.Callback_nakama = () => {
         nakama.initialize();
+        global.afterLangInit();
         lang.Callback_nakama = null;
       }
       try {

@@ -4,6 +4,8 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="portal/main"></ion-back-button>
     </ion-buttons>
+    <ion-icon *ngIf="global.IsBackgroundMode" class="relevance_change" style="padding-right: 24px;" slot="end"
+      name="cafe-outline" (click)="global.ToggleBackgroundMode()"></ion-icon>
   </ion-toolbar>
 </ion-header>
 
