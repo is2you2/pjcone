@@ -2346,7 +2346,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         id: CurrentMessage['actId'],
         progress: null,
         forceEnd: null,
-      });
+      }, true);
       // 메시지 편집모드인 경우 이번 발송은 편집처럼 진행
       try {
         if (CurrentMessage.text.length > 600) // 메시지가 충분히 깁니다
