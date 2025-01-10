@@ -470,6 +470,7 @@ export class NakamaService {
 
   /** 게시글 읽기 */
   open_post(info: any, index: number, navTarget = '') {
+    info['router'] = navTarget;
     this.global.RemoveAllModals(() => {
       this.navCtrl.navigateForward(navTarget + 'post-viewer', {
         animation: mdTransitionAnimation,

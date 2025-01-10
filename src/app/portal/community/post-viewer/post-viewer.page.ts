@@ -150,7 +150,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
               _is_official = 'local';
             }
             this.IsFocusOnHere = false;
-            this.global.ActLikeModal('portal/community/post-viewer/ionic-viewer', {
+            this.global.ActLikeModal(`${this.PostInfo['router']}post-viewer/ionic-viewer`, {
               info: {
                 ...this.RearrangedRelevance[0],
                 sender_id: creator,
@@ -436,7 +436,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                     this.IsFocusOnHere = false;
                     let json = JSON.parse(JSON.stringify(this.PostInfo['attachments'][index]))
                     json['filename'] = `[${index}] ${json['filename']}`;
-                    this.global.ActLikeModal('portal/community/post-viewer/ionic-viewer', {
+                    this.global.ActLikeModal(`${this.PostInfo['router']}post-viewer/ionic-viewer`, {
                       info: {
                         content: json,
                         sender_id: creator,
@@ -523,7 +523,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                           this.IsFocusOnHere = false;
                           let json = JSON.parse(JSON.stringify(this.PostInfo['attachments'][index]))
                           json['filename'] = `[${index}] ${json['filename']}`;
-                          this.global.ActLikeModal('portal/community/post-viewer/ionic-viewer', {
+                          this.global.ActLikeModal(`${this.PostInfo['router']}post-viewer/ionic-viewer`, {
                             info: {
                               content: json,
                               sender_id: creator,
@@ -564,7 +564,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                               this.IsFocusOnHere = false;
                               let json = JSON.parse(JSON.stringify(this.PostInfo['attachments'][index]))
                               json['filename'] = `[${index}] ${json['filename']}`;
-                              this.global.ActLikeModal('portal/community/post-viewer/ionic-viewer', {
+                              this.global.ActLikeModal(`${this.PostInfo['router']}post-viewer/ionic-viewer`, {
                                 info: {
                                   content: json,
                                   sender_id: creator,
@@ -655,7 +655,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                     this.IsFocusOnHere = false;
                     let json = JSON.parse(JSON.stringify(this.PostInfo['attachments'][index]))
                     json['filename'] = `[${index}] ${json['filename']}`;
-                    this.global.ActLikeModal('portal/community/post-viewer/ionic-viewer', {
+                    this.global.ActLikeModal(`${this.PostInfo['router']}post-viewer/ionic-viewer`, {
                       info: {
                         content: json,
                         sender_id: creator,
