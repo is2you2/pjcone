@@ -140,9 +140,13 @@ export class SubscribesPage implements OnInit {
                   // 만약 실패한다면, 삭제된 서버여서 그럴 가능성이 높다
                   console.log('삭제된 서버의 채널 삭제: ', e);
                 }
-                await this.nakama.remove_group_list(this.nakama.groups[isOfficial][target][channel['group_id']], isOfficial, target, true);
+                try {
+                  await this.nakama.remove_group_list(this.nakama.groups[isOfficial][target][channel['group_id']], isOfficial, target, true);
+                } catch (e) { }
                 delete this.nakama.channels_orig[isOfficial][target][channel.id];
-                await this.nakama.remove_channel_files(isOfficial, target, channel.id, undefined, actId);
+                try {
+                  await this.nakama.remove_channel_files(isOfficial, target, channel.id, undefined, actId);
+                } catch (e) { }
                 // 로컬 채널이라고 가정하고 일단 타겟 키를 만듦
                 let target_key = `${channel.id}_${this.nakama.users.self['display_name']}`;
                 try { // 원격 채널일 경우를 대비해 타겟 키를 바꿔치기 시도
@@ -181,7 +185,9 @@ export class SubscribesPage implements OnInit {
                     message: `${this.lang.text['UserFsDir']['DeleteFile']}: ${targetHeader} (${list[i].split('/').pop()})`,
                     progress: i / j,
                   });
-                  await this.indexed.removeFileFromUserPath(list[i]);
+                  try {
+                    await this.indexed.removeFileFromUserPath(list[i]);
+                  } catch (e) { }
                 }
                 this.p5loading.remove(actId);
                 this.nakama.rearrange_channels();
