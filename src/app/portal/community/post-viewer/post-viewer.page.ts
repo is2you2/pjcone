@@ -242,7 +242,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
       this.isOwner = this.PostInfo['creator_id'] == 'me'
         || this.PostInfo['creator_id'] == this.nakama.servers[this.PostInfo['server']['isOfficial']][this.PostInfo['server']['target']].session.user_id;
       // 해당 서버가 연결된 상태인지 확인
-      this.isOwner = this.isOwner && this.statusBar.groupServer[this.PostInfo['server']['isOfficial']][this.PostInfo['server']['target']] == 'online';
+      if (this.PostInfo['creator_id'] != 'me')
+        this.isOwner = this.isOwner && this.statusBar.groupServer[this.PostInfo['server']['isOfficial']][this.PostInfo['server']['target']] == 'online';
     } catch (e) {
       this.isOwner = false;
     }
