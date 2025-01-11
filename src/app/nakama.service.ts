@@ -975,15 +975,16 @@ export class NakamaService {
     this.LoadOverrideName(_is_official, _target);
     this.load_server_arcade_list(_is_official, _target);
     // 통신 소켓 연결하기
-    let socket = await this.connect_to(_is_official, _target);
-    const prv_match = await this.servers[_is_official][_target].client.readStorageObjects(
-      this.servers[_is_official][_target].session, {
-      object_ids: [{
-        collection: 'self_share',
-        key: 'private_match',
-        user_id: this.servers[_is_official][_target].session.user_id,
-      }]
-    });
+    await this.connect_to(_is_official, _target);
+    await this.redirect_channel(_is_official, _target);
+    await this.get_group_list_from_server(_is_official, _target);
+    await this.SyncTodoCounter(_is_official, _target);
+    this.load_server_todo(_is_official, _target);
+    this.RemoteTodoSelfCheck(_is_official, _target);
+    this.rearrange_group_list();
+    this.load_posts_counter();
+    this.update_notifications(_is_official, _target);
+    this.set_group_statusBar('online', _is_official, _target);
     for (let i = 0, j = this.AfterLoginAct.length; i < j; i++)
       try {
         await this.AfterLoginAct[i]();
@@ -1002,15 +1003,6 @@ export class NakamaService {
       }).catch(e => {
         console.log('사용자 정보 업데이트 실패: ', e);
       });
-    await this.redirect_channel(_is_official, _target);
-    await this.get_group_list_from_server(_is_official, _target);
-    await this.SyncTodoCounter(_is_official, _target);
-    this.load_server_todo(_is_official, _target);
-    this.RemoteTodoSelfCheck(_is_official, _target);
-    this.rearrange_group_list();
-    this.load_posts_counter();
-    this.update_notifications(_is_official, _target);
-    this.set_group_statusBar('online', _is_official, _target);
   }
 
   /** 공식 서버가 제공하는 아케이드 정보 */
