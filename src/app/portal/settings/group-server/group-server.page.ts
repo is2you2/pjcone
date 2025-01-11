@@ -550,10 +550,23 @@ export class GroupServerPage implements OnInit, OnDestroy {
               display_name: this.nakama.users.self['display_name'],
             });
             try {
-              await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
-                encodeURIComponent('info'));
-            } catch (e) { }
-          } catch (e) { }
+              await this.nakama.servers[servers[i].info.isOfficial][servers[i].info.target].client.rpc(
+                this.nakama.servers[servers[i].info.isOfficial][servers[i].info.target].session,
+                'send_noti_fn', {
+                receiver_id: this.nakama.servers[servers[i].info.isOfficial][servers[i].info.target].session.user_id,
+                title: 'edit_profile',
+                content: {
+                  type: 'info',
+                },
+                code: MatchOpCode.EDIT_PROFILE,
+                persistent: false,
+              });
+            } catch (e) {
+              console.log('셀프 알림 실패: ', e);
+            }
+          } catch (e) {
+            console.log('프로필 업데이트 실패: ', e);
+          }
         // 해당 서버 연결된 채널에 고지
         if (this.isClickDisplayNameEdit && this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]) {
           let all_channels = Object.keys(this.nakama.channels_orig[servers[i].info.isOfficial][servers[i].info.target]);
@@ -606,8 +619,17 @@ export class GroupServerPage implements OnInit, OnDestroy {
             permission_read: 2,
             permission_write: 1,
           }]);
-          await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
-            encodeURIComponent('image'));
+          await this.nakama.servers[servers[i].info.isOfficial][servers[i].info.target].client.rpc(
+            this.nakama.servers[servers[i].info.isOfficial][servers[i].info.target].session,
+            'send_noti_fn', {
+            receiver_id: this.nakama.servers[servers[i].info.isOfficial][servers[i].info.target].session.user_id,
+            title: 'edit_profile',
+            content: {
+              type: 'image',
+            },
+            code: MatchOpCode.EDIT_PROFILE,
+            persistent: false,
+          });
         } catch (e) {
           console.log('inputImageSelected_err: ', e);
         }
@@ -619,8 +641,17 @@ export class GroupServerPage implements OnInit, OnDestroy {
               key: 'profile_image',
             }]
           });
-          await servers[i].socket.sendMatchState(this.nakama.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.EDIT_PROFILE,
-            encodeURIComponent('image'));
+          await this.nakama.servers[servers[i].info.isOfficial][servers[i].info.target].client.rpc(
+            this.nakama.servers[servers[i].info.isOfficial][servers[i].info.target].session,
+            'send_noti_fn', {
+            receiver_id: this.nakama.servers[servers[i].info.isOfficial][servers[i].info.target].session.user_id,
+            title: 'edit_profile',
+            content: {
+              type: 'image',
+            },
+            code: MatchOpCode.EDIT_PROFILE,
+            persistent: false,
+          });
         } catch (e) {
           console.error('inputImageSelected_err: ', e);
         }

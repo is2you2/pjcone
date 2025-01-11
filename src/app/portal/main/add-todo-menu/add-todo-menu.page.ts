@@ -1796,24 +1796,21 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             this.nakama.updateRemoteCounter(this.userInput.remote.isOfficial, this.userInput.remote.target);
           }
           for (let i = 0, j = this.userInput.workers.length; i < j; i++) {
-            try { // 바보같겠지만 서버에서는 매치에 참여할 수 없기 때문에 사용자가 진입해서 보내줘야 한다
-              let match = await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.readStorageObjects(
-                this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session, {
-                object_ids: [{
-                  collection: 'self_share',
-                  key: 'private_match',
-                  user_id: this.userInput.workers[i].id,
-                }],
+            try {
+              await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.rpc(
+                this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session,
+                'send_noti_fn', {
+                receiver_id: this.userInput.workers[i].id,
+                title: 'Manage_todo_add',
+                content: {
+                  type: 'add',
+                  collection: 'server_todo',
+                  key: this.userInput.id,
+                },
+                code: MatchOpCode.MANAGE_TODO,
+                persistent: false,
+                sender_id: this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id,
               });
-              if (match.objects.length) { // 가용 매치일 경우에 메시지 발송하기
-                await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-                  .socket.joinMatch(match.objects[0].value['match_id']);
-                await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-                  .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.MANAGE_TODO,
-                    encodeURIComponent(`add,server_todo,${this.userInput.id}`));
-                await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-                  .socket.leaveMatch(match.objects[0].value['match_id']);
-              }
             } catch (e) {
               console.log(e);
             }
@@ -1827,9 +1824,19 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               permission_write: 1,
               value: this.userInput,
             }]);
-          this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target]
-            .socket.sendMatchState(this.nakama.self_match[this.userInput.remote.isOfficial][this.userInput.remote.target].match_id, MatchOpCode.MANAGE_TODO,
-              encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
+          await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.rpc(
+            this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session,
+            'send_noti_fn', {
+            receiver_id: this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session.user_id,
+            title: 'Manage_todo_add',
+            content: {
+              type: 'add',
+              collection: v.acks[0].collection,
+              key: v.acks[0].key,
+            },
+            code: MatchOpCode.MANAGE_TODO,
+            persistent: false,
+          });
         }
         if (!this.isModify)
           await this.nakama.updateRemoteCounter(this.userInput.remote.isOfficial, this.userInput.remote.target);

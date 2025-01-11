@@ -1643,9 +1643,17 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   async SelfSyncNotiInfo() {
     if (this.info['is_new']) {
       try {
-        await this.nakama.servers[this.isOfficial][this.target]
-          .socket.sendMatchState(this.nakama.self_match[this.isOfficial][this.target].match_id, MatchOpCode.CHATROOM_CHECKED,
-            encodeURIComponent(`${this.info.id}`));
+        await this.nakama.servers[this.isOfficial][this.target].client.rpc(
+          this.nakama.servers[this.isOfficial][this.target].session,
+          'send_noti_fn', {
+          receiver_id: this.nakama.servers[this.isOfficial][this.target].session.user_id,
+          title: 'chatroom_read',
+          content: {
+            id: `${this.info.id}`,
+          },
+          code: MatchOpCode.CHATROOM_CHECKED,
+          persistent: false,
+        });
       } catch (e) { }
       this.info['is_new'] = false;
       this.nakama.has_new_channel_msg = false;

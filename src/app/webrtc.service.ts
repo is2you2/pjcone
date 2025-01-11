@@ -674,7 +674,6 @@ export class WebrtcService {
         channel: _target.channel,
         data_str: 'EOL',
       }));
-    // 스스로에게 통화 수신됨을 알림 (self_match)
     this.JoinInited = true;
   }
 

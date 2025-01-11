@@ -65,7 +65,9 @@ export interface ArcadeForm {
   hide?: boolean;
 }
 
-/** 주로 셀프 매칭에 동기화할 때 사용하나 다른 곳에도 사용하고 있는 중 */
+/** 주로 셀프 매칭에 동기화할 때 사용하나 다른 곳에도 사용하고 있는 중  
+ * 현재는 셀프 매칭이 사라져서 알림에 추가하여 사용하고 있음
+ */
 export enum MatchOpCode {
   /** 해야할 일 생성/수정/삭제/완료 */
   MANAGE_TODO = 10,
@@ -917,8 +919,6 @@ export class NakamaService {
       this.usernameOverride[isOfficial][target] = {};
     if (!this.OnTransfer[isOfficial]) this.OnTransfer[isOfficial] = {};
     if (!this.OnTransfer[isOfficial][target]) this.OnTransfer[isOfficial][target] = {};
-    if (!this.self_match[isOfficial]) this.self_match[isOfficial] = {};
-    if (!this.self_match[isOfficial][target]) this.self_match[isOfficial][target] = undefined;
     if (!this.noti_origin[isOfficial]) this.noti_origin[isOfficial] = {};
     if (!this.noti_origin[isOfficial][target]) this.noti_origin[isOfficial][target] = {};
     if (!this.RemoteTodoCounter[isOfficial]) this.RemoteTodoCounter[isOfficial] = {};
@@ -930,10 +930,6 @@ export class NakamaService {
   AfterLoginActDone = false;
   /** 첫 로그인 시도 이후 행동 (빠른 진입 1회 행동) */
   AfterLoginAct: Function[] = [];
-  /** 자기 자신과의 매칭 정보  
-   * self_match[isOfficial][target] = Match
-   */
-  self_match = {};
   /** 로그인 및 회원가입 직후 행동들 */
   async after_login(_is_official: any, _target: string, _useSSL: boolean) {
     // 그룹 서버 연결 상태 업데이트
@@ -988,21 +984,6 @@ export class NakamaService {
         user_id: this.servers[_is_official][_target].session.user_id,
       }]
     });
-    try {
-      this.self_match[_is_official][_target] = await socket.joinMatch(prv_match.objects[0].value['match_id']);
-    } catch (e) {
-      let self_match = await socket.createMatch();
-      this.self_match[_is_official][_target] = self_match;
-      this.servers[_is_official][_target].client.writeStorageObjects(
-        this.servers[_is_official][_target].session, [{
-          collection: 'self_share',
-          key: 'private_match',
-          permission_read: 2,
-          permission_write: 1,
-          value: { match_id: self_match.match_id },
-        }],
-      );
-    }
     for (let i = 0, j = this.AfterLoginAct.length; i < j; i++)
       try {
         await this.AfterLoginAct[i]();
@@ -1242,9 +1223,19 @@ export class NakamaService {
               permission_write: 1,
               value: json,
             }]);
-          this.servers[json.remote.isOfficial][json.remote.target]
-            .socket.sendMatchState(this.self_match[json.remote.isOfficial][json.remote.target].match_id, MatchOpCode.MANAGE_TODO,
-              encodeURIComponent(`add,${v.acks[0].collection},${v.acks[0].key}`));
+          await this.servers[json.remote.isOfficial][json.remote.target].client.rpc(
+            this.servers[json.remote.isOfficial][json.remote.target].session,
+            'send_noti_fn', {
+            receiver_id: this.servers[json.remote.isOfficial][json.remote.target].session.user_id,
+            title: 'manage_todo',
+            content: {
+              type: 'add',
+              collection: v.acks[0].collection,
+              key: v.acks[0].key,
+            },
+            code: MatchOpCode.MANAGE_TODO,
+            persistent: false,
+          });
         } catch (e) {
           console.log('할 일 수정 전파 오류: ', e);
         }
@@ -1264,10 +1255,18 @@ export class NakamaService {
           id: actId,
         });
       try {
-        if (this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target] && this.self_match[targetInfo.remote.isOfficial][targetInfo.remote.target])
-          await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
-            .socket.sendMatchState(this.self_match[targetInfo.remote.isOfficial][targetInfo.remote.target].match_id, MatchOpCode.MANAGE_TODO,
-              encodeURIComponent(`done,${targetInfo.id}`));
+        await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].client.rpc(
+          this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session,
+          'send_noti_fn', {
+          receiver_id: this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session.user_id,
+          title: 'manage_todo',
+          content: {
+            type: 'done',
+            id: targetInfo.id,
+          },
+          code: MatchOpCode.MANAGE_TODO,
+          persistent: false,
+        });
         if (!slient) this.p5loading.remove(actId);
       } catch (e) { // 원격 동기화 실패시 로컬에 별도 저장처리
         targetInfo.modified = true;
@@ -1326,9 +1325,18 @@ export class NakamaService {
                 }
               } else await this.sync_remove_file(targetInfo.attach[i].path, isOfficial, target, 'todo_attach');
           if (isDelete) {
-            await this.servers[isOfficial][target]
-              .socket.sendMatchState(this.self_match[isOfficial][target].match_id, MatchOpCode.MANAGE_TODO,
-                encodeURIComponent(`delete,${targetInfo.id}`));
+            await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].client.rpc(
+              this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session,
+              'send_noti_fn', {
+              receiver_id: this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session.user_id,
+              title: 'manage_todo',
+              content: {
+                type: 'delete',
+                id: targetInfo.id,
+              },
+              code: MatchOpCode.MANAGE_TODO,
+              persistent: false,
+            });
           }
         } catch (e) {
           console.error('해야할 일 삭제 요청이 서버에 전송되지 않음: ', e);
@@ -1348,23 +1356,21 @@ export class NakamaService {
               });
             } catch (e) { }
             try { // 변경되었음을 매니저에게 알림
-              let match = await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].client.readStorageObjects(
-                this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session, {
-                object_ids: [{
-                  collection: 'self_share',
-                  key: 'private_match',
-                  user_id: targetInfo.remote.creator_id,
-                }],
+              await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].client.rpc(
+                this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session,
+                'send_noti_fn', {
+                receiver_id: targetInfo.remote.creator_id,
+                title: 'Manage_todo_add',
+                content: {
+                  type: 'worker',
+                  id: targetInfo.id,
+                  isDelete: isDelete,
+                  timeAt: act_time,
+                },
+                code: MatchOpCode.MANAGE_TODO,
+                persistent: false,
+                sender_id: this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session.user_id
               });
-              if (match.objects.length) { // 가용 매치일 경우에 메시지 발송하기
-                await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
-                  .socket.joinMatch(match.objects[0].value['match_id']);
-                await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
-                  .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.MANAGE_TODO,
-                    encodeURIComponent(`worker,${targetInfo.id},${this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session.user_id},${isDelete},${act_time}`));
-                await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
-                  .socket.leaveMatch(match.objects[0].value['match_id']);
-              }
             } catch (e) { }
           }
         } catch (e) { }
@@ -1379,23 +1385,19 @@ export class NakamaService {
           } catch (e) { }
           for (let i = 0, j = targetInfo.workers.length; i < j; i++) {
             try {
-              let match = await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].client.readStorageObjects(
-                this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session, {
-                object_ids: [{
-                  collection: 'self_share',
-                  key: 'private_match',
-                  user_id: targetInfo.workers[i].id,
-                }],
+              await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].client.rpc(
+                this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session,
+                'send_noti_fn', {
+                receiver_id: targetInfo.workers[i].id,
+                title: 'Manage_todo_add',
+                content: {
+                  type: isDelete ? 'delete' : 'done',
+                  id: targetInfo.id,
+                },
+                code: MatchOpCode.MANAGE_TODO,
+                persistent: false,
+                sender_id: this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target].session.user_id
               });
-              if (match.objects.length) { // 가용 매치일 경우에 메시지 발송하기
-                await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
-                  .socket.joinMatch(match.objects[0].value['match_id']);
-                await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
-                  .socket.sendMatchState(match.objects[0].value['match_id'], MatchOpCode.MANAGE_TODO,
-                    encodeURIComponent(isDelete ? `delete,${targetInfo.id}` : `done,${targetInfo.id}`));
-                await this.servers[targetInfo.remote.isOfficial][targetInfo.remote.target]
-                  .socket.leaveMatch(match.objects[0].value['match_id']);
-              }
             } catch (e) { }
           }
         }
@@ -1714,8 +1716,18 @@ export class NakamaService {
       this.channels_orig[_is_official][_target][channel_info.id] = {};
       try {
         if (isNewChannel)
-          await this.servers[_is_official][_target].socket.sendMatchState(this.self_match[_is_official][_target].match_id, MatchOpCode.ADD_CHANNEL,
-            encodeURIComponent(channel_info['redirect'].id));
+          await this.servers[_is_official][_target].client.rpc(
+            this.servers[_is_official][_target].session,
+            'send_noti_fn', {
+            receiver_id: this.servers[_is_official][_target].session.user_id,
+            title: 'add_channel',
+            content: {
+              type: 'add',
+              id: channel_info['redirect'].id,
+            },
+            code: MatchOpCode.ADD_CHANNEL,
+            persistent: false,
+          });
       } catch (e) {
         console.log('새 채널 생성됨 셀프 전파 실패: ', e);
       }
@@ -2057,8 +2069,18 @@ export class NakamaService {
                 console.error('그룹 이미지 확인 오류: ', e);
               }
               this.save_group_info(pending_group, servers[i].info.isOfficial, servers[i].info.target);
-              await servers[i].socket.sendMatchState(this.self_match[servers[i].info.isOfficial][servers[i].info.target].match_id, MatchOpCode.ADD_CHANNEL,
-                encodeURIComponent(v.groups[k].id));
+              await this.servers[servers[i].info.isOfficial][servers[i].info.target].client.rpc(
+                this.servers[servers[i].info.isOfficial][servers[i].info.target].session,
+                'send_noti_fn', {
+                receiver_id: this.servers[servers[i].info.isOfficial][servers[i].info.target].session.user_id,
+                title: 'add_channel',
+                content: {
+                  type: 'add',
+                  id: v.groups[k].id,
+                },
+                code: MatchOpCode.ADD_CHANNEL,
+                persistent: false,
+              });
               if (pending_group.open) { // 열린 그룹이라면 즉시 채널에 참가
                 let c = await this.join_chat_with_modulation(pending_group.id, 3, servers[i].info.isOfficial, servers[i].info.target);
                 if (!this.opened_page_info['channel']
@@ -2603,19 +2625,6 @@ export class NakamaService {
       this.act_on_notification(v, _is_official, _target);
       this.rearrange_notifications();
     }
-    socket.onmatchpresence = (m) => {
-      if (m.joins !== undefined) { // 참여 검토
-        m.joins.forEach(_info => {
-          // if (this.servers[_is_official][_target].session.user_id == info.user_id) // self-match
-        });
-      } else if (m.leaves !== undefined) { // 떠남 검토
-        m.leaves.forEach(info => {
-          if (this.servers[_is_official][_target].session.user_id == info.user_id) // self-match
-            if (this.WebRTCService && this.WebRTCService.TypeIn == 'data')
-              this.WebRTCService.close_webrtc(true);
-        });
-      }
-    }
     /** 다른 기기에서 접근시 접속자 수 재측정 방지용 */
     let BlockSelfCount = [];
     socket.onchannelpresence = (p) => {
@@ -2656,214 +2665,6 @@ export class NakamaService {
       }
       if (this.socket_reactive['others-online'])
         this.socket_reactive['others-online']();
-    }
-    socket.onmatchdata = async (m) => {
-      m['data_str'] = decodeURIComponent(new TextDecoder().decode(m.data));
-      let is_me = this.servers[_is_official][_target].session.user_id == m.presence.user_id;
-      switch (m.op_code) {
-        case MatchOpCode.MANAGE_TODO: {
-          let sep = m['data_str'].split(',');
-          switch (sep[0]) {
-            case 'add': // 추가 또는 수정
-              this.servers[_is_official][_target].client.readStorageObjects(
-                this.servers[_is_official][_target].session, {
-                object_ids: [{
-                  collection: sep[1],
-                  key: sep[2],
-                  user_id: this.servers[_is_official][_target].session.user_id,
-                }],
-              }).then(async v => {
-                if (v.objects.length) {
-                  try { // 수정인 경우 기존 알림을 삭제
-                    let json = v.objects[0].value as any;
-                    let data: string;
-                    try {
-                      data = await this.indexed.loadTextFromUserPath(`todo/${json.id}_${_is_official}_${_target}/info.todo`);
-                      if (!data) throw 'empty';
-                    } catch (e) {
-                      data = await this.indexed.loadTextFromUserPath(`todo/${json.id}/info.todo`);
-                    }
-                    let get_json = JSON.parse(data);
-                    this.removeRegisteredId(get_json.noti_id);
-                    this.noti.ClearNoti(get_json.noti_id);
-                  } catch (e) { }
-                  await this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
-                  let json = v.objects[0].value as any;
-                  this.noti.ClearNoti(json.noti_id);
-                  this.set_todo_notification(json);
-                  this.p5toast.show({
-                    text: `${this.lang.text['Main']['Title']}: ${json.title}`,
-                  });
-                }
-              });
-              break;
-            case 'done': // 완료
-              this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, async (e, v) => {
-                if (e && v) {
-                  let todo_info = JSON.parse(v);
-                  todo_info.done = true;
-                  await this.modify_remote_info_as_local(todo_info, _is_official, _target);
-                  this.indexed.GetFileListFromDB(`todo/${todo_info.id}`).then(v => {
-                    v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
-                    this.RemoveLocalPushSchedule(todo_info);
-                    this.removeRegisteredId(todo_info.noti_id);
-                    this.noti.ClearNoti(todo_info.noti_id);
-                    this.SyncTodoCounter(_is_official, _target);
-                  });
-                } else {
-                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, async (e, v) => {
-                    if (e && v) {
-                      let todo_info = JSON.parse(v);
-                      todo_info.done = true;
-                      await this.modify_remote_info_as_local(todo_info, _is_official, _target);
-                      this.indexed.GetFileListFromDB(`todo/${todo_info.id}`).then(v => {
-                        v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
-                        this.RemoveLocalPushSchedule(todo_info);
-                        this.removeRegisteredId(todo_info.noti_id);
-                        this.noti.ClearNoti(todo_info.noti_id);
-                        this.SyncTodoCounter(_is_official, _target);
-                      });
-                    }
-                  });
-                }
-              });
-              break;
-            case 'delete': // 삭제
-              this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, (e, v) => {
-                if (e && v) {
-                  let todo_info = JSON.parse(v);
-                  this.indexed.GetFileListFromDB(`todo/${todo_info.id}`).then(v => {
-                    v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
-                    this.RemoveLocalPushSchedule(todo_info);
-                    this.removeRegisteredId(todo_info.noti_id);
-                    this.noti.ClearNoti(todo_info.noti_id);
-                    if (this.global.p5removeTodo)
-                      this.global.p5removeTodo(JSON.stringify(todo_info));
-                  });
-                  this.SyncTodoCounter(_is_official, _target);
-                } else {
-                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, (e, v) => {
-                    if (e && v) {
-                      let todo_info = JSON.parse(v);
-                      this.indexed.GetFileListFromDB(`todo/${todo_info.id}`).then(v => {
-                        v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
-                        this.RemoveLocalPushSchedule(todo_info);
-                        this.removeRegisteredId(todo_info.noti_id);
-                        this.noti.ClearNoti(todo_info.noti_id);
-                        if (this.global.p5removeTodo)
-                          this.global.p5removeTodo(JSON.stringify(todo_info));
-                      });
-                      this.SyncTodoCounter(_is_official, _target);
-                    }
-                  });
-                }
-              });
-              break;
-            case 'worker': // 매니저 입장에서, 작업자 완료
-              let isDelete = sep[3] == 'true';
-              if (this.AddTodoManageUpdateAct)
-                this.AddTodoManageUpdateAct(sep[1], sep[2], isDelete, Number(sep[4]));
-              let userAct = isDelete ? this.lang.text['Main']['WorkerAbandon'] : this.lang.text['Main']['WorkerDone'];
-              this.p5toast.show({
-                text: `${userAct}: ${this.GetOverrideName(sep[2], _is_official, _target) || this.users[_is_official][_target][sep[2]]['display_name']}`,
-              });
-              // 로컬 자료를 변경해야함
-              this.indexed.loadTextFromUserPath(`todo/${sep[1]}_${_is_official}_${_target}/info.todo`, async (e, v) => {
-                if (e && v) {
-                  let todo_info = JSON.parse(v);
-                  for (let i = 0, j = todo_info.workers.length; i < j; i++)
-                    if ((todo_info.workers[i].user_id || todo_info.workers[i].id) == sep[2]) {
-                      todo_info.workers[i]['isDelete'] = sep[3] == 'true';
-                      todo_info.workers[i]['timestamp'] = Number(sep[4]);
-                      break;
-                    }
-                  await this.modify_remote_info_as_local(todo_info, _is_official, _target);
-                  this.SyncTodoCounter(_is_official, _target);
-                } else {
-                  this.indexed.loadTextFromUserPath(`todo/${sep[1]}/info.todo`, async (e, v) => {
-                    if (e && v) {
-                      let todo_info = JSON.parse(v);
-                      for (let i = 0, j = todo_info.workers.length; i < j; i++)
-                        if ((todo_info.workers[i].user_id || todo_info.workers[i].id) == sep[2]) {
-                          todo_info.workers[i]['isDelete'] = sep[3] == 'true';
-                          todo_info.workers[i]['timestamp'] = Number(sep[4]);
-                          break;
-                        }
-                      await this.modify_remote_info_as_local(todo_info, _is_official, _target);
-                      this.SyncTodoCounter(_is_official, _target);
-                    }
-                  });
-                }
-              });
-              break;
-            default:
-              console.log('등록되지 않은 할 일 행동: ', m);
-              break;
-          }
-          this.SyncTodoCounter(_is_official, _target);
-        }
-          break;
-        case MatchOpCode.EDIT_PROFILE: {
-          switch (m['data_str']) {
-            case 'info':
-              this.servers[_is_official][_target].client.getAccount(
-                this.servers[_is_official][_target].session).then(v => {
-                  let keys = Object.keys(v.user);
-                  keys.forEach(key => this.users.self[key] = v.user[key]);
-                  this.save_self_profile();
-                });
-              break;
-            case 'image':
-              this.servers[_is_official][_target].client.readStorageObjects(
-                this.servers[_is_official][_target].session, {
-                object_ids: [{
-                  collection: 'user_public',
-                  key: 'profile_image',
-                  user_id: this.servers[_is_official][_target].session.user_id,
-                }],
-              }).then(v => {
-                if (v.objects.length) {
-                  this.indexed.saveTextFileToUserPath(JSON.stringify(v.objects[0].value['img']), 'servers/self/profile.img');
-                  this.users.self['img'] = v.objects[0].value['img'].replace(/"|=|\\/g, '');
-                } else this.indexed.removeFileFromUserPath('servers/self/profile.img');
-              });
-              break;
-            default:
-              console.log('예상하지 못한 프로필 동기화 정보: ', m);
-              break;
-          }
-        }
-          break;
-        case MatchOpCode.ADD_CHANNEL: {
-          this.get_group_list_from_server(_is_official, _target, m['data_str']);
-        }
-          break;
-        case MatchOpCode.NAME_OVERRIDED: {
-          if (is_me) this.LoadOverrideName(_is_official, _target);
-        }
-          break;
-        case MatchOpCode.CHATROOM_CHECKED: {
-          // 채널 점등 제거
-          delete this.channels_orig[_is_official][_target][m['data_str']]['is_new'];
-          // 로컬 알림 제거
-          this.noti.ClearNoti(this.channels_orig[_is_official][_target][m['data_str']]['cnoti_id']);
-          this.rearrange_channels();
-          { // 하단 탭 알림등 검토
-            let keys = Object.keys(this.channels_orig[_is_official][_target]);
-            let hasNew = false;
-            for (let channel_id of keys)
-              if (this.channels_orig[_is_official][_target][channel_id]['is_new']) {
-                hasNew = true;
-                break;
-              }
-            if (!hasNew) this.has_new_channel_msg = false;
-          }
-        }
-          break;
-        default:
-          console.log('예상하지 못한 동기화 정보: ', m);
-          break;
-      }
     }
     socket.onchannelmessage = (c) => {
       if (!this.channels_orig[_is_official][_target][c.channel_id]) { // 재참가 + 놓친 메시지인 경우 검토
@@ -3901,7 +3702,15 @@ export class NakamaService {
       case -4: // 상대방이 그룹 참가 수락
         if (this.socket_reactive['group_detail'] && this.socket_reactive['group_detail'].info.id == v.content['group_id'])
           this.socket_reactive['group_detail'].update_from_notification(v);
-        this.groups[_is_official][_target][v.content['group_id']]['status'] = 'online';
+        try {
+          this.groups[_is_official][_target][v.content['group_id']]['status'] = 'online';
+        } catch (e) {
+          try {
+            await this.servers[_is_official][_target].client.deleteNotifications(
+              this.servers[_is_official][_target].session, [v.id]);
+            this.update_notifications(_is_official, _target);
+          } catch (e) { }
+        }
         v['request'] = `${v.code}-${v.subject}`;
         try {
           let img = await this.servers[_is_official][_target].client.readStorageObjects(
@@ -3972,6 +3781,223 @@ export class NakamaService {
       case -7: // 서버에서 단일 세션 연결 허용시 끊어진 것에 대해
         v['request'] = `${this.servers[_is_official][_target].info.name}: ${this.lang.text['Nakama']['SessionLogout']}`;
         this.LoginAgain(v, _is_official, _target);
+        break;
+      case MatchOpCode.MANAGE_TODO: {
+        switch (v.content['type']) {
+          case 'add': // 추가 또는 수정
+            this.servers[_is_official][_target].client.readStorageObjects(
+              this.servers[_is_official][_target].session, {
+              object_ids: [{
+                collection: v.content['collection'],
+                key: v.content['key'],
+                user_id: v.content['sender_id'] || this.servers[_is_official][_target].session.user_id,
+              }],
+            }).then(async v => {
+              if (v.objects.length) {
+                try { // 수정인 경우 기존 알림을 삭제
+                  let json = v.objects[0].value as any;
+                  let data: string;
+                  try {
+                    data = await this.indexed.loadTextFromUserPath(`todo/${json.id}_${_is_official}_${_target}/info.todo`);
+                    if (!data) throw 'empty';
+                  } catch (e) {
+                    data = await this.indexed.loadTextFromUserPath(`todo/${json.id}/info.todo`);
+                  }
+                  let get_json = JSON.parse(data);
+                  this.removeRegisteredId(get_json.noti_id);
+                  this.noti.ClearNoti(get_json.noti_id);
+                } catch (e) { }
+                await this.modify_remote_info_as_local(v.objects[0].value, _is_official, _target);
+                let json = v.objects[0].value as any;
+                this.noti.ClearNoti(json.noti_id);
+                this.set_todo_notification(json);
+                this.p5toast.show({
+                  text: `${this.lang.text['Main']['Title']}: ${json.title}`,
+                });
+              }
+            });
+            break;
+          case 'done': // 완료
+            this.indexed.loadTextFromUserPath(`todo/${v.content['id']}_${_is_official}_${_target}/info.todo`, async (e, value) => {
+              if (e && value) {
+                let todo_info = JSON.parse(value);
+                todo_info.done = true;
+                await this.modify_remote_info_as_local(todo_info, _is_official, _target);
+                this.indexed.GetFileListFromDB(`todo/${todo_info.id}`).then(v => {
+                  v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+                  this.RemoveLocalPushSchedule(todo_info);
+                  this.removeRegisteredId(todo_info.noti_id);
+                  this.noti.ClearNoti(todo_info.noti_id);
+                  this.SyncTodoCounter(_is_official, _target);
+                });
+              } else {
+                this.indexed.loadTextFromUserPath(`todo/${v.content['id']}/info.todo`, async (e, value) => {
+                  if (e && value) {
+                    let todo_info = JSON.parse(value);
+                    todo_info.done = true;
+                    await this.modify_remote_info_as_local(todo_info, _is_official, _target);
+                    this.indexed.GetFileListFromDB(`todo/${todo_info.id}`).then(v => {
+                      v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+                      this.RemoveLocalPushSchedule(todo_info);
+                      this.removeRegisteredId(todo_info.noti_id);
+                      this.noti.ClearNoti(todo_info.noti_id);
+                      this.SyncTodoCounter(_is_official, _target);
+                    });
+                  }
+                });
+              }
+            });
+            break;
+          case 'delete': // 삭제
+            this.indexed.loadTextFromUserPath(`todo/${v.content['id']}_${_is_official}_${_target}/info.todo`, (e, value) => {
+              if (e && value) {
+                let todo_info = JSON.parse(value);
+                this.indexed.GetFileListFromDB(`todo/${todo_info.id}`).then(v => {
+                  v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+                  this.RemoveLocalPushSchedule(todo_info);
+                  this.removeRegisteredId(todo_info.noti_id);
+                  this.noti.ClearNoti(todo_info.noti_id);
+                  if (this.global.p5removeTodo)
+                    this.global.p5removeTodo(JSON.stringify(todo_info));
+                });
+                this.SyncTodoCounter(_is_official, _target);
+              } else {
+                this.indexed.loadTextFromUserPath(`todo/${v.content['id']}/info.todo`, (e, value) => {
+                  if (e && value) {
+                    let todo_info = JSON.parse(value);
+                    this.indexed.GetFileListFromDB(`todo/${todo_info.id}`).then(v => {
+                      v.forEach(_path => this.indexed.removeFileFromUserPath(_path));
+                      this.RemoveLocalPushSchedule(todo_info);
+                      this.removeRegisteredId(todo_info.noti_id);
+                      this.noti.ClearNoti(todo_info.noti_id);
+                      if (this.global.p5removeTodo)
+                        this.global.p5removeTodo(JSON.stringify(todo_info));
+                    });
+                    this.SyncTodoCounter(_is_official, _target);
+                  }
+                });
+              }
+            });
+            break;
+          case 'worker': // 매니저 입장에서, 작업자 완료
+            let isDelete = v.content['isDelete'];
+            if (this.AddTodoManageUpdateAct)
+              this.AddTodoManageUpdateAct(v.content['id'], v.sender_id, isDelete, v.content['timeAt']);
+            let userAct = isDelete ? this.lang.text['Main']['WorkerAbandon'] : this.lang.text['Main']['WorkerDone'];
+            this.p5toast.show({
+              text: `${userAct}: ${this.GetOverrideName(v.sender_id, _is_official, _target) || this.users[_is_official][_target][v.sender_id]['display_name']}`,
+            });
+            // 로컬 자료를 변경해야함
+            this.indexed.loadTextFromUserPath(`todo/${v.content['id']}_${_is_official}_${_target}/info.todo`, async (e, value) => {
+              if (e && value) {
+                let todo_info = JSON.parse(value);
+                for (let i = 0, j = todo_info.workers.length; i < j; i++)
+                  if ((todo_info.workers[i].user_id || todo_info.workers[i].id) == v.sender_id) {
+                    todo_info.workers[i]['isDelete'] = isDelete;
+                    todo_info.workers[i]['timestamp'] = v.content['timeAt'];
+                    break;
+                  }
+                await this.modify_remote_info_as_local(todo_info, _is_official, _target);
+                this.SyncTodoCounter(_is_official, _target);
+              } else {
+                this.indexed.loadTextFromUserPath(`todo/${v.content['id']}/info.todo`, async (e, value) => {
+                  if (e && value) {
+                    let todo_info = JSON.parse(value);
+                    for (let i = 0, j = todo_info.workers.length; i < j; i++)
+                      if ((todo_info.workers[i].user_id || todo_info.workers[i].id) == v.sender_id) {
+                        todo_info.workers[i]['isDelete'] = isDelete;
+                        todo_info.workers[i]['timestamp'] = v.content['timeAt'];
+                        break;
+                      }
+                    await this.modify_remote_info_as_local(todo_info, _is_official, _target);
+                    this.SyncTodoCounter(_is_official, _target);
+                  }
+                });
+              }
+            });
+            break;
+        }
+        this.SyncTodoCounter(_is_official, _target);
+        try {
+          await this.servers[_is_official][_target].client.deleteNotifications(
+            this.servers[_is_official][_target].session, [v.id]);
+          this.update_notifications(_is_official, _target);
+        } catch (e) { }
+      }
+        break;
+      case MatchOpCode.EDIT_PROFILE: {
+        switch (v.content['type']) {
+          case 'info':
+            this.servers[_is_official][_target].client.getAccount(
+              this.servers[_is_official][_target].session).then(v => {
+                let keys = Object.keys(v.user);
+                keys.forEach(key => this.users.self[key] = v.user[key]);
+                this.save_self_profile();
+              });
+            break;
+          case 'image':
+            this.servers[_is_official][_target].client.readStorageObjects(
+              this.servers[_is_official][_target].session, {
+              object_ids: [{
+                collection: 'user_public',
+                key: 'profile_image',
+                user_id: this.servers[_is_official][_target].session.user_id,
+              }],
+            }).then(v => {
+              if (v.objects.length) {
+                this.indexed.saveTextFileToUserPath(JSON.stringify(v.objects[0].value['img']), 'servers/self/profile.img');
+                this.users.self['img'] = v.objects[0].value['img'].replace(/"|=|\\/g, '');
+              } else this.indexed.removeFileFromUserPath('servers/self/profile.img');
+            });
+            break;
+        }
+        try {
+          await this.servers[_is_official][_target].client.deleteNotifications(
+            this.servers[_is_official][_target].session, [v.id]);
+          this.update_notifications(_is_official, _target);
+        } catch (e) { }
+      }
+        break;
+      case MatchOpCode.ADD_CHANNEL: {
+        this.get_group_list_from_server(_is_official, _target, v.content['id']);
+        try {
+          await this.servers[_is_official][_target].client.deleteNotifications(
+            this.servers[_is_official][_target].session, [v.id]);
+          this.update_notifications(_is_official, _target);
+        } catch (e) { }
+      }
+        break;
+      case MatchOpCode.NAME_OVERRIDED: {
+        this.LoadOverrideName(_is_official, _target);
+        try {
+          await this.servers[_is_official][_target].client.deleteNotifications(
+            this.servers[_is_official][_target].session, [v.id]);
+          this.update_notifications(_is_official, _target);
+        } catch (e) { }
+      }
+        break;
+      case MatchOpCode.CHATROOM_CHECKED: {
+        // 채널 점등 제거
+        delete this.channels_orig[_is_official][_target][v.content['id']]['is_new'];
+        // 로컬 알림 제거
+        this.noti.ClearNoti(this.channels_orig[_is_official][_target][v.content['id']]['cnoti_id']);
+        this.rearrange_channels();
+        { // 하단 탭 알림등 검토
+          let keys = Object.keys(this.channels_orig[_is_official][_target]);
+          let hasNew = false;
+          for (let channel_id of keys)
+            if (this.channels_orig[_is_official][_target][channel_id]['is_new']) {
+              hasNew = true;
+              break;
+            }
+          if (!hasNew) this.has_new_channel_msg = false;
+        }
+        try {
+          await this.servers[_is_official][_target].client.deleteNotifications(
+            this.servers[_is_official][_target].session, [v.id]);
+          this.update_notifications(_is_official, _target);
+        } catch (e) { }
+      }
         break;
       default:
         console.log('확인되지 않은 실시간 알림_nakama_noti: ', v);
@@ -4792,8 +4818,15 @@ export class NakamaService {
     };
     await this.sync_save_file(TmpFileInfo, _is_official, _target, 'usernameOverride', 'override');
     try {
-      this.servers[_is_official][_target].socket.sendMatchState(this.self_match[_is_official][_target].match_id, MatchOpCode.NAME_OVERRIDED,
-        encodeURIComponent(''));
+      await this.servers[_is_official][_target].client.rpc(
+        this.servers[_is_official][_target].session,
+        'send_noti_fn', {
+        receiver_id: this.servers[_is_official][_target].session.user_id,
+        title: 'name_overrided',
+        content: {},
+        code: MatchOpCode.NAME_OVERRIDED,
+        persistent: false,
+      });
     } catch (e) { }
   }
   /** 서버에서 이름 재지정 불러오기 */
@@ -4806,6 +4839,7 @@ export class NakamaService {
       let asText = await res.value.text();
       let json = JSON.parse(asText);
       let keys = Object.keys(json);
+      this.usernameOverride[_is_official][_target] = {};
       for (let key of keys) this.usernameOverride[_is_official][_target][key] = json[key];
     }
   }
