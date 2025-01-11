@@ -1125,11 +1125,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (!this.userInput.text) this.userInputTextArea.blur();
     }
     this.global.p5KeyShortCut['Backquote'] = () => {
-      if (document.activeElement != document.getElementById(this.ChannelUserInputId)) {
-        this.ChatLogs.scrollTo({ top: 0, behavior: 'smooth' });
-        if (!(this.next_cursor === undefined && !this.ViewMsgIndex || !this.pullable))
-          this.pull_msg_history();
+      let backQouteAct = async () => {
+        if (document.activeElement != document.getElementById(this.ChannelUserInputId)) {
+          this.BlockAutoScrollDown = true;
+          this.ChatLogs.scrollTo({ top: 0, behavior: 'smooth' });
+          if (!(this.next_cursor === undefined && !this.ViewMsgIndex || !this.pullable))
+            await this.pull_msg_history();
+          this.BlockAutoScrollDown = false;
+        }
       }
+      backQouteAct();
     }
     this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();

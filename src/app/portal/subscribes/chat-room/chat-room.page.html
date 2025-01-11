@@ -46,7 +46,7 @@
                 <div [id]="msg.message_id + '_bg'" class="msg_bg_col borderRadiusBig"></div>
               </div>
               <!-- 상대방이 보낸 메시지 -->
-              <div *ngIf="!msg['is_me'] && !msg.content['noti']">
+              <div *ngIf="!msg['is_me'] && !msg.content['noti']" class="message_form">
                 <!-- 날짜 표시 -->
                 <div *ngIf="msg['showInfo'] && msg['showInfo']['date']" class="dateLine" (click)="SetOtherAct()">
                   <span class="dateText borderRadiusBig"> {{msg['displayDate']}} </span>
@@ -64,7 +64,7 @@
                     </td>
                     <td>
                       <!-- 이름 표시 -->
-                      <div class="message_form" *ngIf="msg['showInfo'] && msg['showInfo']['sender']">
+                      <div *ngIf="msg['showInfo'] && msg['showInfo']['sender']">
                         <div class="sender_form borderRadiusBig">
                           <span (click)="user_detail(msg)" class="cursor_pointer">
                             <b>
@@ -141,7 +141,7 @@
                     (click)="open_url_link(msg.content['hasLink'].url)">
                     {{msg.content['hasLink'].title}}
                     <img *ngIf="msg.content['hasLink'].imageUrl" [src]="msg.content['hasLink'].imageUrl"
-                      class="qouteImage qouteImageHeight href_image_margin message_form"
+                      class="qouteImage qouteImageHeight href_image_margin"
                       [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
                       [alt]="msg.content['hasLink'].imageAlt" />
                   </div>
@@ -161,8 +161,7 @@
                   <tr>
                     <td>
                       <!-- 이름 표시 -->
-                      <div class="message_form my_file_message_form"
-                        *ngIf="msg['showInfo'] && msg['showInfo']['sender']">
+                      <div class="my_file_message_form" *ngIf="msg['showInfo'] && msg['showInfo']['sender']">
                         <div class="sender_form borderRadiusBig">
                           <!-- 시간 표시 -->
                           <span class="time_form message_span_form_me" (click)="SetOtherAct()">{{msg['msgTime']}}</span>
@@ -248,7 +247,7 @@
                     (click)="open_url_link(msg.content['hasLink'].url)">
                     {{msg.content['hasLink'].title}}
                     <img *ngIf="msg.content['hasLink'].imageUrl" [src]="msg.content['hasLink'].imageUrl"
-                      class="qouteImage qouteImageHeight href_image_margin message_form"
+                      class="qouteImage qouteImageHeight href_image_margin"
                       [style]="info['HideAutoThumbnail'] ? 'filter: blur(6px);' : ''"
                       [alt]="msg.content['hasLink'].imageAlt" />
                   </div>
