@@ -1396,7 +1396,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               console.log('메시지 복사 실패: ', e);
             }
           }
-          this.TargetMessageBackground.style.backgroundColor = null;
           this.TargetMessageObject.style.paddingRight = null;
           this.TargetMessageObject.style.marginRight = null;
           this.TargetMessageObject.style.marginLeft = null;
@@ -1518,6 +1517,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 인용 정보를 삭제함 */
   RemoveQoute() {
+    if (this.TargetMessageBackground)
+      this.TargetMessageBackground.style.backgroundColor = null;
     delete this.userInput.qoute;
   }
 
@@ -2239,6 +2240,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 메시지를 누를 때 */
   ChatBalloonMouseDown(ev: any, msg: any) {
     if (ev.which == 2) { // 가운데 버튼이면 즉시 인용처리
+      if (this.TargetMessageBackground)
+        this.TargetMessageBackground.style.backgroundColor = null;
       this.IsQouteMyMessage = msg.is_me;
       this.MsgClickedStartPos = ev.clientX;
       this.TargetMessageObject = document.getElementById(msg.message_id);
@@ -2251,6 +2254,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 메시지를 터치할 때 */
   ChatBalloonOnTouchStart(ev: any, msg: any) {
     try {
+      if (this.TargetMessageBackground)
+        this.TargetMessageBackground.style.backgroundColor = null;
       this.IsQouteMyMessage = msg.is_me;
       this.MsgClickedStartPos = ev.touches[0].clientX;
       this.TargetMessageObject = document.getElementById(msg.message_id);
@@ -2583,6 +2588,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         }, 0);
         return;
       }
+    if (this.TargetMessageBackground)
+      this.TargetMessageBackground.style.backgroundColor = null;
     let actId = 'chatroom';
     if (this.userInput.file) actId = 'chatroom_withfile';
     // 큐에 넣기
