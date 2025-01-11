@@ -1470,7 +1470,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.BackgroundAct[id] = Date.now();
       setTimeout(() => {
         if (this.WillLeave) return;
-        if (targetChatBg) targetChatBg.style.backgroundColor = 'rgba(var(--ion-color-primary-rgb), .5)';
+        if (targetChatBg) targetChatBg.style.backgroundColor = 'rgba(var(--ion-color-secondary-rgb), .5)';
       }, 100);
       setTimeout(() => {
         this.BlockAutoScrollDown = false;
