@@ -109,6 +109,8 @@ export class CommunityPage implements OnInit {
       // 내가 작성한 게시물이라면 삭제 허용
       CheckManagable = this.nakama.posts[index]['server']['local'] ||
         this.nakama.posts[index]['creator_id'] == this.nakama.servers[this.nakama.posts[index]['server']['isOfficial']][this.nakama.posts[index]['server']['target']].session.user_id;
+      // 해당 서버가 연결된 상태인지 확인
+      CheckManagable = CheckManagable && this.statusBar.groupServer[this.nakama.posts[index]['server']['isOfficial']][this.nakama.posts[index]['server']['target']] == 'online';
     } catch (e) {
       // 삭제된 서버의 내 게시물이라면 삭제 허용
       CheckManagable = this.nakama.posts[index].server.isOfficial == 'deleted' && this.nakama.posts[index].is_me;

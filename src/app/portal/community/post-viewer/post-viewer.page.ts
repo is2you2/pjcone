@@ -10,6 +10,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IonModal } from '@ionic/angular/common';
 import * as marked from "marked";
 import { P5LoadingService } from 'src/app/p5-loading.service';
+import { StatusManageService } from 'src/app/status-manage.service';
 
 @Component({
   selector: 'app-post-viewer',
@@ -29,6 +30,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private p5loading: P5LoadingService,
+    private statusBar: StatusManageService,
   ) { }
 
   PostInfo: any = {};
@@ -239,6 +241,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
     try {
       this.isOwner = this.PostInfo['creator_id'] == 'me'
         || this.PostInfo['creator_id'] == this.nakama.servers[this.PostInfo['server']['isOfficial']][this.PostInfo['server']['target']].session.user_id;
+      // 해당 서버가 연결된 상태인지 확인
+      this.isOwner = this.isOwner && this.statusBar.groupServer[this.PostInfo['server']['isOfficial']][this.PostInfo['server']['target']] == 'online';
     } catch (e) {
       this.isOwner = false;
     }
@@ -816,8 +820,10 @@ export class PostViewerPage implements OnInit, OnDestroy {
   }
 
   EditPost() {
-    this.navCtrl.pop();
-    this.nakama.EditPost(this.PostInfo);
+    if (this.isOwner && this.CurrentIndex >= 0) {
+      this.navCtrl.pop();
+      this.nakama.EditPost(this.PostInfo);
+    }
   }
 
   ionViewWillLeave() {
@@ -832,21 +838,22 @@ export class PostViewerPage implements OnInit, OnDestroy {
   }
 
   RemovePost() {
-    this.alertCtrl.create({
-      header: this.lang.text['PostViewer']['RemovePost'],
-      message: this.lang.text['ChatRoom']['CannotUndone'],
-      buttons: [{
-        text: this.lang.text['ChatRoom']['Delete'],
-        cssClass: 'redfont',
-        handler: () => {
-          const removePost = async () => {
-            await this.nakama.RemovePost(this.PostInfo);
-            this.navCtrl.pop();
+    if (this.isOwner && this.CurrentIndex >= 0)
+      this.alertCtrl.create({
+        header: this.lang.text['PostViewer']['RemovePost'],
+        message: this.lang.text['ChatRoom']['CannotUndone'],
+        buttons: [{
+          text: this.lang.text['ChatRoom']['Delete'],
+          cssClass: 'redfont',
+          handler: () => {
+            const removePost = async () => {
+              await this.nakama.RemovePost(this.PostInfo);
+              this.navCtrl.pop();
+            }
+            removePost();
           }
-          removePost();
-        }
-      }],
-    }).then(v => v.present());
+        }],
+      }).then(v => v.present());
   }
 
   ngOnDestroy() {
