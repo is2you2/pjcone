@@ -159,7 +159,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     }, 100);
     this.nakama.StatusBarChangedCallback = () => {
       this.LoadListServer();
-      this.index = 0;
+      this.select_server(0);
     };
   }
 
