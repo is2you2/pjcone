@@ -1125,7 +1125,7 @@ export class NakamaService {
   }
 
   /** 서버로부터 카운터를 받아 동기화하기 */
-  async SyncTodoCounter(_is_official: string, _target: string) {
+  private async SyncTodoCounter(_is_official: string, _target: string) {
     try {
       let data = await this.servers[_is_official][_target].client.readStorageObjects(
         this.servers[_is_official][_target].session, {

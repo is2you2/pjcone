@@ -1824,6 +1824,8 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
               permission_write: 1,
               value: this.userInput,
             }]);
+          if (!this.isModify)
+            await this.nakama.updateRemoteCounter(this.userInput.remote.isOfficial, this.userInput.remote.target);
           await this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].client.rpc(
             this.nakama.servers[this.userInput.remote.isOfficial][this.userInput.remote.target].session,
             'send_noti_fn', {
@@ -1838,8 +1840,6 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             persistent: false,
           });
         }
-        if (!this.isModify)
-          await this.nakama.updateRemoteCounter(this.userInput.remote.isOfficial, this.userInput.remote.target);
       } catch (e) {
         console.error('해야할 일이 서버에 전송되지 않음: ', e);
         // 기존 할 일을 수정하다가 오류가 났다면 로컬에 변경사항을 저장
