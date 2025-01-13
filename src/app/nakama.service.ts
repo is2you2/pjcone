@@ -746,9 +746,11 @@ export class NakamaService {
         break;
       }
     }
-    if (!isExist) savedWebRTCData.push(info);
+    if (!isExist) {
+      savedWebRTCData.push(info);
+      this.p5loading.toast(this.lang.text['Nakama']['SaveWebRTCServer']);
+    }
     await this.indexed.saveTextFileToUserPath(JSON.stringify(savedWebRTCData), 'servers/webrtc_server.json');
-    this.p5loading.toast(this.lang.text['Nakama']['SaveWebRTCServer']);
     return isExist;
   }
 
