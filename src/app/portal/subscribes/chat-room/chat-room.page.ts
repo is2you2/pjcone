@@ -1116,6 +1116,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
   }
 
+  /** 확장 메뉴 숫자 키보드 단축키 구성 */
+  ExtTarget = [];
   /** 페이지가 스크롤을 가지는지 여부 검토 */
   CheckIfHasScroll = false;
   AddShortCut() {
@@ -1156,14 +1158,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             break;
         }
     }
-    let ExtTarget = [];
-    for (let i = 0, j = this.extended_buttons.length; i < j; i++) {
-      if (!this.extended_buttons[i].isHide)
-        ExtTarget.push(this.extended_buttons[i]);
-    }
     this.global.p5KeyShortCut['Digit'] = (index: number) => {
-      if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && ExtTarget.length > index)
-        ExtTarget[index]['context'] ? ExtTarget[index]['context'](true) : ExtTarget[index]['act']();
+      if (!this.isHidden && document.activeElement != document.getElementById(this.ChannelUserInputId) && this.ExtTarget.length > index)
+        this.ExtTarget[index]['context'] ? this.ExtTarget[index]['context'](true) : this.ExtTarget[index]['act']();
     }
     this.global.p5KeyShortCut['SKeyAct'] = () => {
       if (document.activeElement != document.getElementById(this.ChannelUserInputId)) {
@@ -1889,6 +1886,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         startFrom++;
       }
     });
+    this.ExtTarget.length = 0;
+    for (let i = 0, j = this.extended_buttons.length; i < j; i++)
+      if (!this.extended_buttons[i].isHide)
+        this.ExtTarget.push(this.extended_buttons[i]);
   }
 
   /** 선택한 메시지 복사 */
