@@ -2709,7 +2709,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       id: 'ionicviewer',
       forceEnd: 0,
     }, true);
-    this.global.ArcadeWithFullScreen = false;
+    this.global.ToggleFullScreen(false);
     this.useP5Navigator = false;
     this.global.portalHint = true;
     this.global.BlockMainShortcut = false;
