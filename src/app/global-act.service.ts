@@ -1113,8 +1113,9 @@ export class GlobalActService {
       let filename = file.override_name || `${info?.user_id.replace(/\//g, '_')}_${upload_time}_${only_filename}.${file.file_ext}`;
       const path = file.override_path ?? `${info?.user_id}/${upload_time}`;
       CatchedAddress = `${protocol}//${address}:${info?.apache_port || 9002}/cdn/`;
+      const startPath = filename.replace(/\//g, '_');
       progress = setInterval(async () => {
-        let res = await fetch(`${protocol}//${address}:${info?.cdn_port || 9001}/filesize/${path}/${only_filename}.${file.file_ext}`, { method: "POST" });
+        let res = await fetch(`${protocol}//${address}:${info?.cdn_port || 9001}/filesize/${startPath}`, { method: "POST" });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
         this.p5loading.update({
@@ -1210,8 +1211,9 @@ export class GlobalActService {
         protocol += ':';
       } else protocol = this.checkProtocolFromAddress(address[0]) ? 'https:' : 'http:';
       let CatchedAddress = `${protocol}//${address[0]}:${address[1] || 9002}/cdn/`;
+      const startPath = filename.replace(/\//g, '_');
       progress = setInterval(async () => {
-        let res = await fetch(`${protocol}//${address[0]}:9001/filesize/${filename}`, { method: "POST" });
+        let res = await fetch(`${protocol}//${address[0]}:9001/filesize/${startPath}`, { method: "POST" });
         let currentSize = Number(await res.text());
         let progressPercent = Math.floor(currentSize / file.size * 100);
         this.p5loading.update({
