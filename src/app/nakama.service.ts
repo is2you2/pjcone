@@ -3775,6 +3775,7 @@ export class NakamaService {
         this.LoginAgain(v, _is_official, _target);
         break;
       case MatchOpCode.MANAGE_TODO: {
+        const actId = 'add_todo';
         switch (v.content['type']) {
           case 'add': // 추가 또는 수정
             this.servers[_is_official][_target].client.readStorageObjects(
@@ -3803,8 +3804,11 @@ export class NakamaService {
                 let json = v.objects[0].value as any;
                 this.noti.ClearNoti(json.noti_id);
                 this.set_todo_notification(json);
-                this.p5toast.show({
-                  text: `${this.lang.text['Main']['Title']}: ${json.title}`,
+                await this.p5loading.update({
+                  id: actId,
+                  message: `${this.lang.text['Main']['Title']}: ${json.title}`,
+                  progress: 1,
+                  forceEnd: 350,
                 });
               }
             });
@@ -3876,8 +3880,11 @@ export class NakamaService {
             if (this.AddTodoManageUpdateAct)
               this.AddTodoManageUpdateAct(v.content['id'], v.sender_id, isDelete, v.content['timeAt']);
             let userAct = isDelete ? this.lang.text['Main']['WorkerAbandon'] : this.lang.text['Main']['WorkerDone'];
-            this.p5toast.show({
-              text: `${userAct}: ${this.GetOverrideName(v.sender_id, _is_official, _target) || this.users[_is_official][_target][v.sender_id]['display_name']}`,
+            await this.p5loading.update({
+              id: actId,
+              message: `${userAct}: ${this.GetOverrideName(v.sender_id, _is_official, _target) || this.users[_is_official][_target][v.sender_id]['display_name']}`,
+              progress: 1,
+              forceEnd: 350,
             });
             // 로컬 자료를 변경해야함
             this.indexed.loadTextFromUserPath(`todo/${v.content['id']}_${_is_official}_${_target}/info.todo`, async (e, value) => {
