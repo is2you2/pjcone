@@ -106,6 +106,10 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       } catch (e) { }
       this.p5canvas = null;
     }
+    if (this.global.godot) {
+      this.global.godot.remove();
+      this.global.godot = null;
+    }
   }
 
   FileURL: string;
@@ -2551,7 +2555,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   ToggleFocusMode() {
     if (this.NeedDownloadFile) return;
     this.FileMenu.dismiss();
-    this.global.ArcadeWithFullScreen = !this.global.ArcadeWithFullScreen;
+    this.global.ToggleFullScreen();
     this.p5canvas?.windowResized?.();
     if (this.p5SyntaxHighlightReader)
       this.p5SyntaxHighlightReader.style.height = 'fit-content';

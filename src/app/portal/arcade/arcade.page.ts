@@ -84,7 +84,7 @@ export class ArcadePage implements OnInit {
 
   ionViewWillLeave() {
     this.global.RestoreShortCutAct('arcade-fileviewer');
-    this.global.ArcadeWithFullScreen = false;
+    this.global.ToggleFullScreen(false);
     this.WillLeave = true;
   }
 
@@ -124,6 +124,8 @@ export class ArcadePage implements OnInit {
         case 'pck':
           this.global.CreateArcadeFrame({
             blob: targetFile,
+          }).then(() => {
+            this.global.ToggleFullScreen(true);
           });
           break;
         // html 파일을 iframe 에서 열기

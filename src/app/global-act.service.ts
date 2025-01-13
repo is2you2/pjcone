@@ -178,6 +178,13 @@ export class GlobalActService {
       let keys = Object.keys(this.WindowOnBlurAct);
       for (let key of keys) this.WindowOnBlurAct[key]();
     }
+    document.documentElement.onfullscreenchange = () => {
+      if (document.fullscreenElement) {
+        this.ArcadeWithFullScreen = true;
+      } else { // 전체화면 종료시
+        this.ArcadeWithFullScreen = false;
+      }
+    }
   }
 
   /** 앱으로 돌아왔을 경우 행동 */
@@ -516,6 +523,35 @@ export class GlobalActService {
       this.godot = _godot;
       await refresh_it_loading();
     });
+  }
+
+  /** 전체화면처리 */
+  ToggleFullScreen(force?: boolean) {
+    this.ArcadeWithFullScreen = force ?? !this.ArcadeWithFullScreen;
+    let target = this.godot ?? document.documentElement;
+    if (this.ArcadeWithFullScreen) {
+      // 전체화면 모드로 전환
+      if (target.requestFullscreen) {
+        target.requestFullscreen();
+      } else if (target['mozRequestFullScreen']) { // Firefox
+        target['mozRequestFullScreen']();
+      } else if (target['webkitRequestFullscreen']) { // Chrome, Safari, Opera
+        target['webkitRequestFullscreen']();
+      } else if (target['msRequestFullscreen']) { // IE/Edge
+        target['msRequestFullscreen']();
+      }
+    } else if (document.fullscreenElement) {
+      // 전체화면 모드 종료
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document['mozCancelFullScreen']) { // Firefox
+        document['mozCancelFullScreen']();
+      } else if (document['webkitExitFullscreen']) { // Chrome, Safari, Opera
+        document['webkitExitFullscreen']();
+      } else if (document['msExitFullscreen']) { // IE/Edge
+        document['msExitFullscreen']();
+      }
+    }
   }
 
   /** Arcade 페이지에서 게임이 불러와졌는지 여부 검토 */

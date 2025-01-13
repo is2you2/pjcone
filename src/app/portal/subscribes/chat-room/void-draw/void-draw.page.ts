@@ -1251,7 +1251,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   HeaderHeight = 56;
   /** 집중 모드 토글 행동 */
   ToggleFocusMode() {
-    this.global.ArcadeWithFullScreen = !this.global.ArcadeWithFullScreen;
+    this.global.ToggleFullScreen();
     if (this.global.ArcadeWithFullScreen) {
       this.HeaderHeight = 0;
     } else {
@@ -1734,7 +1734,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       id: 'voiddraw',
       forceEnd: 0,
     }, true);
-    this.global.ArcadeWithFullScreen = false;
+    this.global.ToggleFullScreen(false);
     this.global.portalHint = true;
     if (this.p5SetDrawable) this.p5SetDrawable(false);
     this.WillLeaveHere = true;
