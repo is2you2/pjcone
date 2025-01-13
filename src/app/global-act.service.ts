@@ -178,13 +178,17 @@ export class GlobalActService {
       let keys = Object.keys(this.WindowOnBlurAct);
       for (let key of keys) this.WindowOnBlurAct[key]();
     }
-    document.documentElement.onfullscreenchange = () => {
+    const togFullscrAct = () => {
       if (document.fullscreenElement) {
         this.ArcadeWithFullScreen = true;
       } else { // 전체화면 종료시
         this.ArcadeWithFullScreen = false;
       }
     }
+    document.onfullscreenchange = togFullscrAct;
+    document['onwebkitfullscreenchange'] = togFullscrAct;
+    document['onmozfullscreenchange'] = togFullscrAct;
+    document['onMSFullscreenChange'] = togFullscrAct;
   }
 
   /** 앱으로 돌아왔을 경우 행동 */
