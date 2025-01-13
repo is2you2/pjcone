@@ -1235,9 +1235,9 @@ export class IonicViewerPage implements OnInit, OnDestroy {
               switch (size) {
                 case 0: // 손을 전부 뗌
                   lastPos.sub(startPos);
-                  if (lastPos.x > SWIPE_SIZE)
+                  if (lastPos.x > SWIPE_SIZE * 2)
                     this.ChangeToAnother(-1);
-                  else if (lastPos.x < -SWIPE_SIZE)
+                  else if (lastPos.x < -SWIPE_SIZE * 2)
                     this.ChangeToAnother(1);
                   break;
               }
