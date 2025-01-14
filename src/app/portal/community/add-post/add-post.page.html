@@ -73,13 +73,25 @@
       </div>
     </div>
   </div>
-  <ion-item button *ngFor="let attach of userInput.attachments; let i = index" [disabled]="isSaveClicked"
-    (click)="open_viewer(attach, i)" (contextmenu)="PostAttachContextMenu(i)">
-    <ion-label>{{'{'+ i + '} ' + attach.filename}}</ion-label>
-    <div class="additional_form bg_img_form">
-      <img class="profile_img" [src]="attach.thumbnail" />
-    </div>
-  </ion-item>
+  <ion-accordion-group *ngIf="userInput.attachments.length" [disabled]="isSaveClicked" value="colors"
+    [value]="isAttachExpanded" #AttachGroup (click)="isAttachExpanded = true">
+    <ion-accordion value="colors">
+      <ion-item slot="header">
+        <ion-label style="display: contents">{{lang.text['ChatRoom']['attachments'] + ' (' + userInput.attachments.length
+          +
+          ')'}}</ion-label>
+      </ion-item>
+      <div slot="content">
+        <ion-item button *ngFor="let attach of userInput.attachments; let i = index" [disabled]="isSaveClicked"
+          (click)="open_viewer(attach, i)" (contextmenu)="PostAttachContextMenu(i)">
+          <ion-label>{{'{'+ i + '} ' + attach.filename}}</ion-label>
+          <div class="additional_form bg_img_form">
+            <img class="profile_img" [src]="attach.thumbnail" />
+          </div>
+        </ion-item>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
   <div>
     <div *ngIf="global.ShowHint" class="shortcut_hint">Ctrl + Enter</div>
     <ion-item button [disabled]="isSaveClicked" (click)="postData()">

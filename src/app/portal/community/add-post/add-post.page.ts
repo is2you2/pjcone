@@ -348,6 +348,8 @@ export class AddPostPage implements OnInit, OnDestroy {
 
   /** 서버 선택지 열림 여부 */
   isExpanded = false;
+  /** 첨부파일 리스트 열림 여부 */
+  isAttachExpanded = false;
   /** 저장버튼 눌림 여부 */
   isSaveClicked = false;
   /** 게시 서버 변경 여부, 이 경우 기존 서버에서 삭제 후 다시 등록해야함 */
