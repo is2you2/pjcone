@@ -250,7 +250,7 @@ export class P5LoadingService {
   remove(id: string) {
     this.update({
       id: id,
-      forceEnd: 1000,
+      forceEnd: 350,
     }, true);
   }
 }

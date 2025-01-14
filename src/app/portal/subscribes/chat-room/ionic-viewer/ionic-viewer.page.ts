@@ -484,10 +484,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     });
     this.FileInfo = { file_ext: '' };
     await this.reinit_content_data(this.Relevances[this.RelevanceIndex - 1]);
-    this.p5loading.update({
-      id: 'ionicviewer',
-      forceEnd: 350,
-    });
+    this.p5loading.remove('ionicviewer');
     this.ContentChanging = false;
     this.CanInputValue = false;
   }

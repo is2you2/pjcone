@@ -2505,10 +2505,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               progress: null,
             });
             await this.indexed.saveBlobToUserPath(CurrentMessage.file.blob, path);
-            this.p5loading.update({
-              id: CurrentMessage['actId'],
-              forceEnd: 350,
-            });
+            this.p5loading.remove(CurrentMessage['actId']);
           }
         }
         let getNow = new Date().toISOString();

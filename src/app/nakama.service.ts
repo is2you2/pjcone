@@ -2337,10 +2337,7 @@ export class NakamaService {
     } catch (e) {
       console.error('사용자 그룹 가져오기 오류: ', e);
     }
-    this.p5loading.update({
-      id: actId,
-      forceEnd: 350,
-    });
+    this.p5loading.remove(actId);
   }
 
   /** 모든 그룹 리스트를 배열로 돌려주기  
