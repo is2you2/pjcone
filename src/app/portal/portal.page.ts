@@ -166,6 +166,11 @@ export class PortalPage implements OnInit {
     if (this.global.ArcadeLoaded && this.ArcadeIcon == 'game-controller') {
       this.global.StoreShortCutAct('quit-arcade');
       this.QuitArcadeButtons = [{
+        text: this.lang.text['Arcade']['AlertFullscr'],
+        handler: () => {
+          this.global.ToggleFullScreen(true);
+        }
+      }, {
         text: this.lang.text['Arcade']['AlertOK'],
         handler: () => {
           this.global.ArcadeLoaded = false;
