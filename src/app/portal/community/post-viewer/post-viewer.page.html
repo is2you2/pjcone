@@ -1,11 +1,37 @@
-<ion-header class="ion-no-border">
+<ion-header *ngIf="!global.ArcadeWithFullScreen" class="ion-no-border">
   <ion-toolbar>
     <ion-title>{{lang.text['PostViewer']['Title']}}</ion-title>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="portal/community"></ion-back-button>
     </ion-buttons>
-    <ion-icon *ngIf="isOwner && CurrentIndex >= 0" class="relevance_change" style="padding-right: 16px;" slot="end"
-      name="menu-outline" (click)="showQuickMenu()"></ion-icon>
+    <ion-icon name="ellipsis-vertical" [id]="postMenuId" class="relevance_change" style="padding-right: 16px;"
+      slot="end" (click)="OpenFileMenu()"></ion-icon>
+    <ion-popover #PostViewMenu [trigger]="postMenuId" dismissOnSelect>
+      <ng-template>
+        <ion-content>
+          <ion-list>
+            <div>
+              <div *ngIf="global.ShowHint" class="shortcut_hint">Shift + W</div>
+              <ion-item button (click)="ToggleFocusMode()">
+                <ion-label>{{lang.text['ContentViewer']['FocusMode']}}</ion-label>
+              </ion-item>
+            </div>
+            <div *ngIf="isOwner && CurrentIndex >= 0">
+              <div *ngIf="global.ShowHint" class="shortcut_hint">Shift + E</div>
+              <ion-item button (click)="EditPost()">
+                <ion-label>{{lang.text['AddPost']['EditTitle']}}</ion-label>
+              </ion-item>
+            </div>
+            <div *ngIf="isOwner && CurrentIndex >= 0">
+              <div *ngIf="global.ShowHint" class="shortcut_hint">Shift + D</div>
+              <ion-item button (click)="RemovePost()">
+                <ion-label>{{lang.text['PostViewer']['RemovePost']}}</ion-label>
+              </ion-item>
+            </div>
+          </ion-list>
+        </ion-content>
+      </ng-template>
+    </ion-popover>
     <div *ngIf="global.ShowHint && HavePosts" style="position: relative;" slot="end">
       <div class="shortcut_hint shortcut_change_viewer" style="right: -4px">A</div>
     </div>

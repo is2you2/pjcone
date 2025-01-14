@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { AlertController, NavController } from '@ionic/angular';
+import { AlertController, IonPopover, NavController } from '@ionic/angular';
 import * as p5 from 'p5';
 import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
@@ -42,7 +42,33 @@ export class PostViewerPage implements OnInit, OnDestroy {
   /** 파일 읽기 멈추기 위한 컨트롤러 */
   cont: AbortController;
 
+  postMenuId = 'postMenuId';
+  /** 메뉴가 열렸을 때 숫자키 단축키 활성 */
+  DigitShortcutAct: Function[] = [];
+  @ViewChild('PostViewMenu') PostViewMenu: IonPopover;
+  /** 게시물 메뉴 열기 */
+  OpenFileMenu() {
+    this.PostViewMenu.onDidDismiss().then(() => {
+      this.DigitShortcutAct.length = 0;
+      this.global.RestoreShortCutAct('postview-menu');
+    });
+    this.global.StoreShortCutAct('postview-menu');
+    this.DigitShortcutAct.push(() => this.ToggleFocusMode());
+    if (this.isOwner && this.CurrentIndex >= 0) {
+      this.DigitShortcutAct.push(() => this.EditPost());
+      this.DigitShortcutAct.push(() => this.RemovePost());
+    }
+    this.PostViewMenu.present();
+  }
+
+  /** 집중 모드 켜기, 메뉴들이 전부 숨겨집니다 */
+  ToggleFocusMode() {
+    this.PostViewMenu.dismiss();
+    this.global.ToggleFullScreen();
+  }
+
   ngOnInit() {
+    this.postMenuId = `postMenuId_${Date.now()}`;
     this.ModalDismissId = `postviewer_modal_${Date.now()}`;
     this.cont = new AbortController();
     this.route.queryParams.subscribe(_p => {
@@ -55,22 +81,6 @@ export class PostViewerPage implements OnInit, OnDestroy {
       } catch (e) { }
     });
     this.RelevancesInputId = `post-viewer_RelevancesInputId_${Date.now}`;
-  }
-
-  /** 게시물이 길 경우를 대비해 우클릭하여 빠른 메뉴 동작 제시 */
-  showQuickMenu() {
-    this.alertCtrl.create({
-      header: this.PostInfo['title'],
-      message: this.global.truncateString(this.PostInfo['content'], 20),
-      buttons: [{
-        text: this.lang.text['ChatRoom']['EditChat'],
-        handler: () => this.EditPost(),
-      }, {
-        text: this.lang.text['Profile']['remove_content'],
-        cssClass: 'redfont',
-        handler: () => this.RemovePost(),
-      }],
-    }).then(v => v.present());
   }
 
   WaitingLoaded = false;
@@ -118,7 +128,9 @@ export class PostViewerPage implements OnInit, OnDestroy {
         if (!this.IsFocusOnHere) return;
         switch (ev['code']) {
           case 'KeyW': // 위로 스크롤
-            this.ScrollDiv.scrollTo({ top: this.ScrollDiv.scrollTop - this.ScrollDiv.clientHeight / 2, behavior: 'smooth' });
+            if (ev['shiftKey']) {
+              this.ToggleFocusMode();
+            } else this.ScrollDiv.scrollTo({ top: this.ScrollDiv.scrollTop - this.ScrollDiv.clientHeight / 2, behavior: 'smooth' });
             break;
           case 'KeyS': // 아래로 스크롤
             this.ScrollDiv.scrollTo({ top: this.ScrollDiv.scrollTop + this.ScrollDiv.clientHeight / 2, behavior: 'smooth' });
@@ -135,6 +147,9 @@ export class PostViewerPage implements OnInit, OnDestroy {
             if (ev['shiftKey']) this.RemovePost();
           case 'ArrowRight':
             if (!ev['shiftKey']) this.ChangeToAnother(1);
+            break;
+          case 'KeyF':
+            this.OpenFileMenu();
             break;
           case 'KeyQ': // 첫번째 첨부파일 열기
             if (!this.RearrangedRelevance.length) return;
@@ -164,6 +179,18 @@ export class PostViewerPage implements OnInit, OnDestroy {
               noEdit: true,
               dismiss: this.ModalDismissId,
             });
+            break;
+          case 'Digit1':
+          case 'Digit2':
+          case 'Digit3':
+          case 'Digit4':
+          case 'Digit5':
+          case 'Digit6':
+          case 'Digit7':
+          case 'Digit8':
+          case 'Digit9':
+            const exact_index = (Number(ev['code'].slice(-1)) - 1 + 10) % 10;
+            this.DigitShortcutAct[exact_index]?.();
             break;
         }
       }
@@ -822,6 +849,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
 
   EditPost() {
     if (this.isOwner && this.CurrentIndex >= 0) {
+      this.PostViewMenu.dismiss();
       this.navCtrl.pop();
       this.nakama.EditPost(this.PostInfo);
     }
@@ -839,7 +867,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
   }
 
   RemovePost() {
-    if (this.isOwner && this.CurrentIndex >= 0)
+    if (this.isOwner && this.CurrentIndex >= 0) {
+      this.PostViewMenu.dismiss();
       this.alertCtrl.create({
         header: this.lang.text['PostViewer']['RemovePost'],
         message: this.lang.text['ChatRoom']['CannotUndone'],
@@ -855,6 +884,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
           }
         }],
       }).then(v => v.present());
+    }
   }
 
   ngOnDestroy() {

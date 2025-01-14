@@ -222,7 +222,7 @@ export class GlobalActService {
   /** 단축키 동작 막기 */
   BlockMainShortcut = false;
   initialize() {
-    let load_env = localStorage.getItem('ShowHint');
+    const load_env = localStorage.getItem('ShowHint');
     if (load_env !== null) this.ShowHint = load_env == '1';
     if (this.ShowHint === undefined) this.ShowHint = isPlatform == 'DesktopPWA';
     if (!this.p5toast.HTMLEncode)
@@ -267,7 +267,7 @@ export class GlobalActService {
           case 'Numpad9':
           case 'Numpad0':
             if (this.p5KeyShortCut['Digit']) {
-              let exact_index = (Number(ev['code'].slice(-1)) - 1 + 10) % 10;
+              const exact_index = (Number(ev['code'].slice(-1)) - 1 + 10) % 10;
               this.p5KeyShortCut['Digit'](exact_index);
             }
             break;
