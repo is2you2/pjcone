@@ -619,36 +619,33 @@ export class AddPostPage implements OnInit, OnDestroy {
 
   /** 녹음중인 음성의 시간을 기록함 */
   AddVoiceTimeHistory() {
+    let result = `{"i":"n","t":"${this.extended_buttons[5].name}"}`;
     /** 마지막에 작성되어있던 텍스트 받아오기 */
     const LastText = this.ContentTextArea.value;
-    /** 마지막에 지정된 커서 직후에 텍스트 생성하기 */
+    /** 커서 위치에 첨부파일 앵커 텍스트 생성하기 */
     const CursorPosition = this.ContentTextArea.selectionStart;
-    /** 커서 이후의 텍스트 */
-    const TextAfterCursor = LastText.substring(CursorPosition);
-    /** 커서 이후에 엔터 텍스트가 있는지 검토 */
-    const FindEnterText = TextAfterCursor.indexOf('\n\n');
-    // 커서 뒤에 엔터가 없다면 엔터를 2번치고 게시물 번호 생성
-    if (FindEnterText < 0) {
-      let AttachIndexText = `{"i":"n","t":"${this.extended_buttons[5].name}"}\n\n`;
-      // 앞부분 엔터처리 구성
-      if (LastText) {
-        if (LastText.charAt(LastText.length - 1) != '\n') AttachIndexText = '\n' + AttachIndexText;
-        if (LastText.charAt(LastText.length - 2) != '\n') AttachIndexText = '\n' + AttachIndexText;
+    /** 커서 앞 텍스트들 */
+    const FrontText = LastText.substring(0, CursorPosition);
+    // 커서가 처음을 가르키는게 아니라면 머릿말 검토처리
+    if (CursorPosition != 0) {
+      /** 커서 전 텍스트 끝에서 첫번째 글자 */
+      const FrontLastOne = FrontText.charAt(FrontText.length - 1);
+      if (FrontLastOne != '\n') result = '\n' + result;
+      // 커서가 2번째 글짜 이후로, 엔터 검토가 한번 더 필요하다면
+      if (CursorPosition > 1) {
+        /** 커서 전 텍스트 끝에서 두번째 글자 */
+        const FrontLastTwo = FrontText.charAt(FrontText.length - 2);
+        if (FrontLastTwo != '\n') result = '\n' + result;
       }
-      this.userInput.content = `${LastText || ''}${AttachIndexText}`;
-    } else {
-      // 문서 가운데에 첨부파일 인덱스 추가
-      /** 커서 이전의 텍스트 */
-      const TextBeforeCursor = LastText.substring(0, CursorPosition);
-      /** 마지막 텍스트에서 편집 지점 구성 */
-      const ExactCursor = TextBeforeCursor.length + FindEnterText + 1;
-      const ExactTextBeforeCursor = LastText.substring(0, ExactCursor);
-      let ExactTextAfterCursor = LastText.substring(ExactCursor);
-      let AttachIndexText = `\n{"i":"n","t":"${this.extended_buttons[5].name}"}`;
-      if (ExactTextAfterCursor.indexOf('\n\n') != 0) AttachIndexText += '\n';
-      if (ExactTextAfterCursor.indexOf('\n\n\n') == 0) ExactTextAfterCursor = ExactTextAfterCursor.substring(1);
-      this.userInput.content = `${ExactTextBeforeCursor}${AttachIndexText}${ExactTextAfterCursor}`;
     }
+    /** 커서 이후의 텍스트들 */
+    const BackText = LastText.substring(CursorPosition);
+    const BackFirst = BackText.charAt(0);
+    if (BackFirst != '\n') result += '\n';
+    /** 커서 전 텍스트 끝에서 두번째 글자 */
+    const BackSecond = BackText.charAt(1);
+    if (BackSecond != '\n') result += '\n';
+    this.userInput.content = `${FrontText}${result}${BackText}`;
     this.ContentTextArea.focus();
   }
 
@@ -733,36 +730,33 @@ export class AddPostPage implements OnInit, OnDestroy {
 
   /** 게시물 내용에 첨부파일 링크를 추가함 */
   AddAttachTextForm() {
+    let result = `{${this.userInput.attachments.length}}`;
     /** 마지막에 작성되어있던 텍스트 받아오기 */
     const LastText = this.ContentTextArea.value;
-    /** 마지막에 지정된 커서 직후에 텍스트 생성하기 */
+    /** 커서 위치에 첨부파일 앵커 텍스트 생성하기 */
     const CursorPosition = this.ContentTextArea.selectionStart;
-    /** 커서 이후의 텍스트 */
-    const TextAfterCursor = LastText.substring(CursorPosition);
-    /** 커서 이후에 엔터 텍스트가 있는지 검토 */
-    const FindEnterText = TextAfterCursor.indexOf('\n\n');
-    // 커서 뒤에 엔터가 없다면 엔터를 2번치고 게시물 번호 생성
-    if (FindEnterText < 0) {
-      let AttachIndexText = `{${this.userInput.attachments.length}}\n\n`;
-      // 앞부분 엔터처리 구성
-      if (LastText) {
-        if (LastText.charAt(LastText.length - 1) != '\n') AttachIndexText = '\n' + AttachIndexText;
-        if (LastText.charAt(LastText.length - 2) != '\n') AttachIndexText = '\n' + AttachIndexText;
+    /** 커서 앞 텍스트들 */
+    const FrontText = LastText.substring(0, CursorPosition);
+    // 커서가 처음을 가르키는게 아니라면 머릿말 검토처리
+    if (CursorPosition != 0) {
+      /** 커서 전 텍스트 끝에서 첫번째 글자 */
+      const FrontLastOne = FrontText.charAt(FrontText.length - 1);
+      if (FrontLastOne != '\n') result = '\n' + result;
+      // 커서가 2번째 글짜 이후로, 엔터 검토가 한번 더 필요하다면
+      if (CursorPosition > 1) {
+        /** 커서 전 텍스트 끝에서 두번째 글자 */
+        const FrontLastTwo = FrontText.charAt(FrontText.length - 2);
+        if (FrontLastTwo != '\n') result = '\n' + result;
       }
-      this.userInput.content = `${LastText || ''}${AttachIndexText}`;
-    } else {
-      // 문서 가운데에 첨부파일 인덱스 추가
-      /** 커서 이전의 텍스트 */
-      const TextBeforeCursor = LastText.substring(0, CursorPosition);
-      /** 마지막 텍스트에서 편집 지점 구성 */
-      const ExactCursor = TextBeforeCursor.length + FindEnterText + 1;
-      const ExactTextBeforeCursor = LastText.substring(0, ExactCursor);
-      let ExactTextAfterCursor = LastText.substring(ExactCursor);
-      let AttachIndexText = `\n{${this.userInput.attachments.length}}`;
-      if (ExactTextAfterCursor.indexOf('\n\n') != 0) AttachIndexText += '\n';
-      if (ExactTextAfterCursor.indexOf('\n\n\n') == 0) ExactTextAfterCursor = ExactTextAfterCursor.substring(1);
-      this.userInput.content = `${ExactTextBeforeCursor}${AttachIndexText}${ExactTextAfterCursor}`;
     }
+    /** 커서 이후의 텍스트들 */
+    const BackText = LastText.substring(CursorPosition);
+    const BackFirst = BackText.charAt(0);
+    if (BackFirst != '\n') result += '\n';
+    /** 커서 전 텍스트 끝에서 두번째 글자 */
+    const BackSecond = BackText.charAt(1);
+    if (BackSecond != '\n') result += '\n';
+    this.userInput.content = `${FrontText}${result}${BackText}`;
     this.ContentTextArea.focus();
   }
 
