@@ -67,6 +67,8 @@ export class PostViewerPage implements OnInit, OnDestroy {
     this.global.ToggleFullScreen();
   }
 
+  LastPickedRouter = 'portal/community/';
+
   ngOnInit() {
     this.postMenuId = `postMenuId_${Date.now()}`;
     this.ModalDismissId = `postviewer_modal_${Date.now()}`;
@@ -75,6 +77,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;
         this.PostInfo = navParams.data;
+        this.LastPickedRouter = this.PostInfo['router'];
         this.ScrollPostId = `ScrollPostId_${Date.now()}`;
         this.PostContentId = `PostContentId_${Date.now()}`;
         this.CurrentIndex = navParams.index;
@@ -167,7 +170,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
               _is_official = 'local';
             }
             this.IsFocusOnHere = false;
-            this.global.ActLikeModal(`${this.PostInfo['router']}post-viewer/ionic-viewer`, {
+            this.global.ActLikeModal(`${this.LastPickedRouter}post-viewer/ionic-viewer`, {
               info: {
                 ...this.RearrangedRelevance[0],
                 sender_id: creator,
@@ -468,7 +471,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                     this.IsFocusOnHere = false;
                     let json = JSON.parse(JSON.stringify(this.PostInfo['attachments'][index]))
                     json['filename'] = `[${index}] ${json['filename']}`;
-                    this.global.ActLikeModal(`${this.PostInfo['router']}post-viewer/ionic-viewer`, {
+                    this.global.ActLikeModal(`${this.LastPickedRouter}post-viewer/ionic-viewer`, {
                       info: {
                         content: json,
                         sender_id: creator,
@@ -555,7 +558,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                           this.IsFocusOnHere = false;
                           let json = JSON.parse(JSON.stringify(this.PostInfo['attachments'][index]))
                           json['filename'] = `[${index}] ${json['filename']}`;
-                          this.global.ActLikeModal(`${this.PostInfo['router']}post-viewer/ionic-viewer`, {
+                          this.global.ActLikeModal(`${this.LastPickedRouter}post-viewer/ionic-viewer`, {
                             info: {
                               content: json,
                               sender_id: creator,
@@ -596,7 +599,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                               this.IsFocusOnHere = false;
                               let json = JSON.parse(JSON.stringify(this.PostInfo['attachments'][index]))
                               json['filename'] = `[${index}] ${json['filename']}`;
-                              this.global.ActLikeModal(`${this.PostInfo['router']}post-viewer/ionic-viewer`, {
+                              this.global.ActLikeModal(`${this.LastPickedRouter}post-viewer/ionic-viewer`, {
                                 info: {
                                   content: json,
                                   sender_id: creator,
@@ -687,7 +690,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
                     this.IsFocusOnHere = false;
                     let json = JSON.parse(JSON.stringify(this.PostInfo['attachments'][index]))
                     json['filename'] = `[${index}] ${json['filename']}`;
-                    this.global.ActLikeModal(`${this.PostInfo['router']}post-viewer/ionic-viewer`, {
+                    this.global.ActLikeModal(`${this.LastPickedRouter}post-viewer/ionic-viewer`, {
                       info: {
                         content: json,
                         sender_id: creator,
