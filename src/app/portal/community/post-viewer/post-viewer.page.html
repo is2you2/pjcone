@@ -4,8 +4,8 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="portal/community"></ion-back-button>
     </ion-buttons>
-    <ion-icon name="ellipsis-vertical" [id]="postMenuId" class="relevance_change" style="padding-right: 16px;"
-      slot="end" (click)="OpenFileMenu()"></ion-icon>
+    <ion-icon name="ellipsis-vertical" [id]="postMenuId" class="relevance_change"
+      style="padding-right: 16px; width: 21px; height: 21px;" slot="end" (click)="OpenFileMenu()"></ion-icon>
     <ion-popover #PostViewMenu [trigger]="postMenuId" dismissOnSelect>
       <ng-template>
         <ion-content>
