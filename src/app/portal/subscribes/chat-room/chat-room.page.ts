@@ -1065,7 +1065,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     try {
       this.CheckIfHasScroll = this.ChatLogs.scrollHeight > this.ChatLogs.clientHeight;
     } catch (e) { }
-    if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId);
+    if (!this.userInputTextArea) this.userInputTextArea = document.getElementById(this.ChannelUserInputId) as HTMLTextAreaElement;
     if (!this.userInputTextArea.onblur)
       this.userInputTextArea.onblur = () => {
         if (isPlatform != 'DesktopPWA')
@@ -1124,7 +1124,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     if (!this.global.p5KeyShortCut) return;
     this.global.p5KeyShortCut['Backspace'] = () => {
       if (document.activeElement == document.getElementById(this.ChannelUserInputId))
-        if (!this.userInput.text) this.userInputTextArea.blur();
+        if (!this.userInput.text || this.userInputTextArea.selectionEnd == 0) this.userInputTextArea.blur();
     }
     this.global.p5KeyShortCut['Backquote'] = () => {
       let backQouteAct = async () => {
@@ -2332,7 +2332,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 입력칸에 포커싱되어있는지 검토 */
   CheckIfFocusOnInput = false;
-  userInputTextArea: HTMLElement;
+  userInputTextArea: HTMLTextAreaElement;
   ChannelUserInputId = 'ChannelUserInputId';
   check_key(ev: any) {
     if (isPlatform == 'DesktopPWA') {
