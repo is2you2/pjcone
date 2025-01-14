@@ -260,7 +260,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
               this.SelectVoidDrawBackgroundImage({ target: { files: [file] } });
               break;
             default:
-              document.getElementById(this.voidDrawContextId).click();
+              this.extended_buttons[4].act();
               break;
           }
         }
