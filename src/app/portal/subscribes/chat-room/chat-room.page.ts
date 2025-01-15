@@ -729,7 +729,11 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   useVoiceRecording = false;
 
+  /** 다른 페이지에 넘어간 등, 백그라운드 마무리 작업을 모아두었다가 복귀했을 때 행동 */
+  QueuedAct: Function[] = [];
   ionViewDidEnter() {
+    for (let func of this.QueuedAct) func();
+    this.QueuedAct.length = 0;
     this.lock_modal_open = false;
     this.init_noties();
     this.AddShortCut();
@@ -1046,13 +1050,10 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.ShowGoToBottom = !CheckScroll || this.ShowRecentMsg;
   }
 
-  /** 다른 페이지에 넘어간 등, 백그라운드 마무리 작업을 모아두었다가 복귀했을 때 행동 */
-  QueuedAct: Function[] = [];
   ionViewWillEnter() {
     this.global.portalHint = false;
     this.global.StoreShortCutAct('chat-room');
     this.WillLeave = false;
-    for (let func of this.QueuedAct) func();
     // PWA: 윈도우 창을 다시 보게 될 때 알림 삭제
     this.global.windowOnFocusAct['chatroom'] = () => {
       if (this.info['cnoti_id']) {
@@ -1060,7 +1061,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.SelfSyncNotiInfo();
       }
     }
-    this.QueuedAct.length = 0;
     this.ChatContDiv = document.getElementById('chatroom_content_div');
     try {
       this.CheckIfHasScroll = this.ChatLogs.scrollHeight > this.ChatLogs.clientHeight;
@@ -1078,15 +1078,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.global.ArcadeWithFullScreen = true;
         this.CheckIfFocusOnInput = true;
       }
-    // 찾아진 메시지 배경색 삭제
-    const keys = Object.keys(this.BackgroundAct);
-    for (let id of keys) {
-      if ((Date.now() - this.BackgroundAct[id]) >= 3500) {
-        const targetChatBg = document.getElementById(id + '_bg');
-        if (targetChatBg) targetChatBg.style.backgroundColor = null;
-        delete this.BackgroundAct[id];
-      }
-    }
     // 붙여넣기시 행동 등록
     if (!this.userInputTextArea.onpaste)
       this.userInputTextArea.onpaste = (ev: any) => {
@@ -1412,18 +1403,16 @@ export class ChatRoomPage implements OnInit, OnDestroy {
 
   /** 인용 메시지를 찾을 때 자동으로 메시지 풀링되는 것을 막기 위해 존재함 */
   BlockAutoScrollDown = false;
-  /** 메시지 개체 배경색 조정용  
-   * BackgroundAct[msg.id] = Date.now();
-   */
-  BackgroundAct = {};
   /** 해당 메시지 찾기 */
   async FindQoute(id: string, timestamp: string) {
     let targetChat: HTMLElement;
     let targetChatBg: HTMLElement;
+    let targetChatId: string;
+    let targetChatBgId: string;
     for (let i = this.ViewableMessage.length - 1; i >= 0; i--)
       if (id == this.ViewableMessage[i].message_id) {
-        targetChat = document.getElementById(id);
-        targetChatBg = document.getElementById(id + '_bg');
+        targetChatId = id;
+        targetChatBgId = id + '_bg';
         break;
       }
     this.BlockAutoScrollDown = true;
@@ -1433,20 +1422,19 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       progress: null,
     });
     /** 메시지를 찾았는지 여부 검토 */
-    if (!targetChat) { // 메시지가 안보이면 이전 메시지에서 찾기
+    if (!targetChatId) { // 메시지가 안보이면 이전 메시지에서 찾기
       let whileBreaker = false;
-      while (!targetChat && this.pullable && !whileBreaker && this.next_cursor) {
+      while (!targetChatId && this.pullable && !whileBreaker && this.next_cursor) {
         if (!this.nakama.ChatroomLinkAct) return;
         await this.pull_msg_history();
-        await new Promise((done) => setTimeout(done, 200));
         for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
           if (new Date(this.ViewableMessage[i].create_time).getTime() < new Date(timestamp).getTime()) {
             whileBreaker = true;
             break; // 해당 시간대에 기록이 없으면 중단
           }
           if (id == this.ViewableMessage[i].message_id) {
-            targetChat = document.getElementById(id);
-            targetChatBg = document.getElementById(id + '_bg');
+            targetChatId = id;
+            targetChatBgId = id + '_bg';
             break;
           }
         }
@@ -1455,16 +1443,6 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     /** 찾기 행동 (가장 마지막에 스크롤 잡아주는 것) */
     let FindExactAct = () => {
       targetChat?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      try { // 이미 배경칠된 채팅을 초기화처리
-        let keys = Object.keys(this.BackgroundAct);
-        for (let key of keys) {
-          let colored_bg = document.getElementById(key + '_bg');
-          colored_bg.style.backgroundColor = null;
-        }
-      } catch (e) {
-        console.log('배경색 초기화 오류: ', e);
-      }
-      this.BackgroundAct[id] = Date.now();
       setTimeout(() => {
         if (this.WillLeave) return;
         if (targetChatBg) targetChatBg.style.backgroundColor = 'rgba(var(--ion-color-secondary-rgb), .5)';
@@ -1472,14 +1450,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       setTimeout(() => {
         this.BlockAutoScrollDown = false;
         if (this.WillLeave) return;
-        if ((Date.now() - this.BackgroundAct[id]) >= 3500) {
-          if (targetChatBg) targetChatBg.style.backgroundColor = null;
-          delete this.BackgroundAct[id];
-        }
         this.ListOnScrollAct();
       }, 3500);
     }
     await new Promise((done) => setTimeout(done, 1000));
+    targetChat = document.getElementById(targetChatId);
+    targetChatBg = document.getElementById(targetChatBgId);
     if (!this.nakama.ChatroomLinkAct) return;
     // 찾기를 진행하면서 다른 페이지로 넘어간 경우 찾기 행동을 보류함
     if (targetChat === null || this.WillLeave) {
@@ -1488,13 +1464,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         message: this.lang.text['ChatRoom']['MsgFound'],
         progress: 1,
       });
-      this.QueuedAct.push(async () => {
-        await this.pull_msg_history(false);
-        setTimeout(() => {
-          targetChat = document.getElementById(id);
-          targetChatBg = document.getElementById(id + '_bg');
-          FindExactAct();
-        }, 1000);
+      this.QueuedAct.push(() => {
+        targetChatId = id;
+        targetChatBgId = id + '_bg';
+        targetChat = document.getElementById(targetChatId);
+        targetChatBg = document.getElementById(targetChatBgId);
+        FindExactAct();
         this.p5loading.remove('FindQoute');
       });
       return;
