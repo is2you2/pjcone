@@ -567,11 +567,6 @@ export class GlobalActService {
   async CreateArcadeFrame(FileInfo: FileInfo) {
     this.ArcadeLoaded = true;
     // 데스크탑에서는 전체화면으로 진입
-    // 모바일에서는 앱에서 준비된 메뉴가 있는 경우, 개발자가 고도엔진 결과물에서 준비한 후 진입
-    if (isPlatform == 'DesktopPWA')
-      this.p5toast.show({
-        text: this.lang.text['Arcade']['ESCToExit'],
-      });
     const CachePath = 'tmp_files/duplicate/arcade.pck';
     await this.CreateGodotIFrameWithDuplicateAct(FileInfo, 'arcade_pck_loaded', {
       path: CachePath,
