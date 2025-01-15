@@ -1857,13 +1857,13 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
             path = `todo/${this.userInput.id}/info.todo`;
           }
           await this.indexed.saveTextFileToUserPath(JSON.stringify(this.userInput), path);
-          this.navCtrl.pop();
         } else {
           this.StoreAtSelChanged({ detail: { value: 'local' } });
           this.saveData(false);
           this.p5toast.show({
             text: this.lang.text['TodoDetail']['CanAddToServer'],
           });
+          return;
         }
         this.isButtonClicked = false;
         this.p5loading.update({
