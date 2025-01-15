@@ -124,10 +124,6 @@ export class ArcadePage implements OnInit {
         case 'pck':
           this.global.CreateArcadeFrame({
             blob: targetFile,
-          }).then(() => {
-            setTimeout(() => {
-              this.global.ToggleFullScreen(true);
-            }, 0);
           });
           break;
         // html 파일을 iframe 에서 열기
