@@ -589,9 +589,6 @@ export class GlobalActService {
         });
       }
     });
-    setTimeout(() => {
-      this.ToggleFullScreen(true);
-    }, 0);
   }
 
   /** 고도엔진 IFrame 생성하기 (IndexedDB 구현 오류를 )
