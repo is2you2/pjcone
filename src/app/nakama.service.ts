@@ -4881,7 +4881,7 @@ export class NakamaService {
       let text = await res.value.text();
       json = JSON.parse(text);
       // 내 게시물인지 여부를 로컬에 추가로 저장
-      json['is_me'] = is_me;
+      json['is_me'] = json['is_me'] || is_me;
       let blob = new Blob([JSON.stringify(json)], { type: 'application/json' });
       // 다른 사람의 외부 노출 포스트는 기록하지 않음
       if (!json.OutSource || json['is_me'])
