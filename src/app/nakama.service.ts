@@ -4878,6 +4878,7 @@ export class NakamaService {
         type: 'application/json',
       }
       let res = await this.sync_load_file(info, isOfficial, target, 'server_post', user_id, post_id, false);
+      if (res.error) return false;
       let text = await res.value.text();
       json = JSON.parse(text);
       // 내 게시물인지 여부를 로컬에 추가로 저장
