@@ -418,7 +418,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
             if (is_attach) {
               this.p5loading.update({
                 id: 'postviewer',
-                message: `${this.lang.text['PostViewer']['PreparingPost']}: ${this.PostInfo['attachments'][index]['filename']}`,
+                message: `${this.lang.text['PostViewer']['PreparingPost']}: ${this.PostInfo['attachments'][index]['filename']} (${this.CurrentIndex} / ${this.nakama.posts.length})`,
                 progress: index / this.PostInfo['attachments'].length,
                 forceEnd: null,
               });
@@ -784,7 +784,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
         this.ContentChanging = false;
         this.p5loading.update({
           id: 'postviewer',
-          message: `${this.lang.text['PostViewer']['ReadyToSee']}: ${this.PostInfo['title']}`,
+          message: `${this.lang.text['PostViewer']['ReadyToSee']}: ${this.PostInfo['title']} (${this.CurrentIndex} / ${this.nakama.posts.length})`,
           progress: 1,
           forceEnd: 350,
         });
