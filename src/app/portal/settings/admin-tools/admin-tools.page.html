@@ -49,9 +49,8 @@
   </ion-item>
   <ion-item-divider>
     <ion-label>{{lang.text['AdminTools']['UserList'] + ' (' + CurrentOnlineUser + '/' + AllUserCount + ')'}}</ion-label>
-    <ion-button style="margin-left: 8px;" (click)="refresh_all_user()">
-      {{lang.text['AdminTools']['Refresh']}}
-    </ion-button>
+    <ion-icon color="primary" name="refresh-circle-outline" class="refresh_icon"
+      (click)="refresh_all_user()"></ion-icon>
     <table slot="end" style="margin-right: 8px;">
       <tr>
         <td (click)="change_user_list_page(-1)">
@@ -116,9 +115,8 @@
   </ion-accordion-group>
   <ion-item-divider>
     <ion-label>{{lang.text['AdminTools']['GroupList'] + ' (' + AllGroupCount + ')'}}</ion-label>
-    <ion-button style="margin-left: 8px;" (click)="refresh_all_groups()">
-      {{lang.text['AdminTools']['Refresh']}}
-    </ion-button>
+    <ion-icon color="primary" name="refresh-circle-outline" class="refresh_icon"
+      (click)="refresh_all_groups()"></ion-icon>
     <table slot="end" style="margin-right: 8px;">
       <tr>
         <td (click)="change_group_list_page(-1)">
