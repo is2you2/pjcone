@@ -538,6 +538,8 @@ export class MainPage implements OnInit {
         ReinitStartFrom.CamScale = CamScale;
         if (!this.isPlayingCanvas.loop) p.loop();
       }
+      /** 가속도계 값에 변화주기 */
+      const AccelerationMultiply = 80;
       p.draw = () => {
         p.clear(255, 255, 255, 255);
         p.push();
@@ -556,8 +558,8 @@ export class MainPage implements OnInit {
         p.pop();
         // 실행중이라면 기기 가속도값을 반영
         if (this.isPlayingCanvas.loop) {
-          GravityCenter.x = -p.accelerationX * 40;
-          GravityCenter.y = p.accelerationY * 40;
+          GravityCenter.x = -p.accelerationX * AccelerationMultiply;
+          GravityCenter.y = p.accelerationY * AccelerationMultiply;
         }
         // 카메라 초기화 애니메이션 지정
         if (ReinitStartFrom.Act) {
