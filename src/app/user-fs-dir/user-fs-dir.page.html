@@ -28,15 +28,9 @@
       <ion-item button>
         <ion-icon slot="start" name="folder"></ion-icon>
         <ion-label>.</ion-label>
-        <ion-button class="folder_button" (click)="CreateNewFolder()">
-          {{lang.text['UserFsDir']['NewFolder']}}
-        </ion-button>
-        <ion-button class="folder_button" (click)="SelectFiles()">
-          {{lang.text['UserFsDir']['AddFile']}}
-        </ion-button>
-        <ion-button (click)="RemoveDirectoryRecursive()">
-          {{lang.text['UserFsDir']['RemoveCurrentDir']}}
-        </ion-button>
+        <ion-icon color="primary" slot="end" name="folder-open-outline" (click)="CreateNewFolder()"></ion-icon>
+        <ion-icon color="primary" slot="end" name="document-outline" (click)="SelectFiles()"></ion-icon>
+        <ion-icon color="danger" slot="end" name="close-circle-outline" (click)="RemoveDirectoryRecursive()"></ion-icon>
       </ion-item>
       <ion-item *ngIf="CurrentDir != ''" button (click)="MoveToUpDir()">
         <ion-icon slot="start" name="folder"></ion-icon>
