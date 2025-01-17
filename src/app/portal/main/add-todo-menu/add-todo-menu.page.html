@@ -150,9 +150,8 @@
               <div *ngFor="let attach of userInput.attach; index as i">
                 <ion-item>
                   <ion-label text-wrap>{{attach.filename}}</ion-label>
-                  <ion-button *ngIf="isModifiable" (click)="remove_attach(i)">
-                    {{lang.text['ChatRoom']['Delete']}}
-                  </ion-button>
+                  <ion-icon *ngIf="isModifiable" color="danger" slot="end" name="remove-circle-outline"
+                    class="remove_icon_size" (click)="remove_attach(i)"></ion-icon>
                 </ion-item>
                 <div *ngIf="attach['viewer']" (click)="open_content_viewer(i)">
                   <img *ngIf="attach['thumbnail']" (contextmenu)="AttachmentContextMenu(attach, i)"
