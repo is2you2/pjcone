@@ -397,6 +397,21 @@ export class PostViewerPage implements OnInit, OnDestroy {
           }
         });
         creator.parent(contentDiv);
+        // 게시물 상태를 표시해줌
+        if (this.PostInfo['offlineAct']) {
+          let infoText = '';
+          switch (this.PostInfo['offlineAct']) {
+            case 'edit':
+              infoText = this.lang.text['Community']['AfterOnline'];
+              break;
+            case 'remove':
+              infoText = this.lang.text['Community']['WillBeRemove'];
+              break;
+          }
+          const postInfo = p.createSpan(` (${infoText})`);
+          postInfo.style('color: #888; font-weight: normal;');
+          postInfo.parent(creator);
+        }
         // 첨부파일 검토용 index 구성
         let RelevanceIndexes = [];
         // 내용
