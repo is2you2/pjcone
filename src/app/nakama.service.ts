@@ -1272,12 +1272,10 @@ export class NakamaService {
         }
         await this.indexed.saveTextFileToUserPath(JSON.stringify(targetInfo), path);
         if (!slient) this.p5loading.remove(actId);
-        this.navCtrl.pop();
         return;
       }
     }
     await this.deleteTodoFromStorage(false, targetInfo, slient, actId);
-    this.navCtrl.pop();
   }
 
   /** 저장소로부터 데이터를 삭제하는 명령 모음  
