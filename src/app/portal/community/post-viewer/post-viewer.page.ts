@@ -277,6 +277,7 @@ export class PostViewerPage implements OnInit, OnDestroy {
     } catch (e) {
       this.isOwner = false;
     }
+    this.isOwner = this.isOwner || this.PostInfo['is_me'];
     this.HavePosts = this.nakama.posts.length > 1 && this.CurrentIndex >= 0;
     this.ChangeContentWithKeyInput();
   }

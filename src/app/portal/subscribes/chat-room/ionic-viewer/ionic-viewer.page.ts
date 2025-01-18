@@ -1857,9 +1857,13 @@ export class IonicViewerPage implements OnInit, OnDestroy {
       properties: properties,
     }
     if (this.FileInfo.file_ext == 'json') {
-      let json = JSON.parse(getText);
-      getText = JSON.stringify(json, undefined, 2);
-      this.p5TextArea.textContent = getText;
+      try {
+        let json = JSON.parse(getText);
+        getText = JSON.stringify(json, undefined, 2);
+        this.p5TextArea.textContent = getText;
+      } catch (e) {
+        console.log('json 파싱 실패: ', e);
+      }
     }
     try {
       if (!ValuePair[this.FileInfo.file_ext]) throw '등록되지 않은 언어';

@@ -1098,7 +1098,9 @@ export class AddPostPage implements OnInit, OnDestroy {
       server_info = {};
     }
     let isCDNChanged = this.OriginalInfo?.CDN != this.userInput.CDN;
-    if (this.isModify || isCDNChanged || this.isServerChanged) { // 편집된 게시물이라면 첨부파일을 전부다 지우고 다시 등록
+    delete this.userInput['router'];
+    // 편집된 게시물이라면 첨부파일을 전부다 지우고 다시 등록
+    if (this.isModify || isCDNChanged || this.isServerChanged) {
       if (this.userInput.mainImage && this.userInput.mainImage.url) {
         try {
           let res = await fetch(this.userInput.mainImage.url, { signal: this.cont.signal });
@@ -1106,6 +1108,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         } catch (e) { }
         delete this.userInput.mainImage.thumbnail;
         delete this.userInput.mainImage.alt_path;
+        delete this.userInput.mainImage['MainThumbnail'];
         let sep = this.userInput.mainImage.url.split('/');
         while (sep.shift() != 'cdn') { }
         this.userInput.mainImage.override_name = sep.pop();

@@ -4198,6 +4198,7 @@ export class NakamaService {
   /** 로컬 파일을 저장하며 원격에 분산하여 올리기 */
   async sync_save_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _key_force = '') {
     try {
+      if (this.statusBar.groupServer[_is_official][_target] != 'online') throw '서버 연결중 아님';
       if (info.blob?.size)
         await this.indexed.saveBlobToUserPath(info.blob, info.path);
       let file_info = await this.indexed.GetFileInfoFromDB(info.path);
@@ -4249,6 +4250,7 @@ export class NakamaService {
    */
   async sync_load_file(info: FileInfo, _is_official: string, _target: string, _collection: string, _userid = '', _key_force = '', show_noti = true) {
     try {
+      if (this.statusBar.groupServer[_is_official][_target] != 'online') throw '서버 연결중 아님';
       let file_info = await this.servers[_is_official][_target].client.readStorageObjects(
         this.servers[_is_official][_target].session, {
         object_ids: [{
@@ -4877,13 +4879,14 @@ export class NakamaService {
         path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/info.json`,
         type: 'application/json',
       }
-      let res = await this.sync_load_file(info, isOfficial, target, 'server_post', user_id, post_id, false);
+      const res = await this.sync_load_file(info, isOfficial, target, 'server_post', user_id, post_id, false);
       if (res.error) return false;
-      let text = await res.value.text();
+      const text = await res.value.text();
+      console.log(res);
       json = JSON.parse(text);
       // 내 게시물인지 여부를 로컬에 추가로 저장
       json['is_me'] = json['is_me'] || is_me;
-      let blob = new Blob([JSON.stringify(json)], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify(json)], { type: 'application/json' });
       // 다른 사람의 외부 노출 포스트는 기록하지 않음
       if (!json.OutSource || json['is_me'])
         this.indexed.saveBlobToUserPath(blob, info.path);
@@ -4906,10 +4909,9 @@ export class NakamaService {
             alt_path: `servers/${isOfficial}/${target}/posts/${user_id}/${post_id}/MainImage.png`,
             type: 'image/png',
           }
-          let synced = await this.sync_load_file(info, isOfficial, target, 'server_post', user_id, `${post_id}_mainImage`, false);
-          let blob = synced.value;
-          json['mainImage']['blob'] = blob;
-          const FileURL = URL.createObjectURL(blob);
+          const synced = await this.sync_load_file(info, isOfficial, target, 'server_post', user_id, `${post_id}_mainImage`, false);
+          json['mainImage']['blob'] = synced.value;
+          const FileURL = URL.createObjectURL(synced.value);
           json['mainImage']['thumbnail'] = FileURL;
           setTimeout(() => {
             URL.revokeObjectURL(FileURL);
