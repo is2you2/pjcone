@@ -1912,12 +1912,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   scroll_down_logs() {
     if (!this.ShowRecentMsg)
       this.init_last_message_viewer();
-    this.BlockAutoScrollDown = true;
     this.ChatLogs.scrollTo({ top: this.ChatLogs.scrollHeight, behavior: 'smooth' });
-    setTimeout(() => {
-      this.BlockAutoScrollDown = false;
-      this.ListOnScrollAct();
-    }, 1000);
   }
 
   /** 내가 보낸 메시지인지 검토하는 과정  
