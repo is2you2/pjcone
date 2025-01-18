@@ -71,7 +71,7 @@ export class CommunityPage implements OnInit {
   forceBlockLoadable = false;
   /** 게시물 열기 */
   open_post(post: any, index: number) {
-    if (post['originalInfo']) {
+    if (post['offlineAct']) {
       this.QueueOfflineAct(post);
     } else {
       this.forceBlockLoadable = true;
@@ -125,7 +125,7 @@ export class CommunityPage implements OnInit {
       CheckManagable = this.nakama.posts[index].server.isOfficial == 'deleted';
     }
     CheckManagable = CheckManagable || this.nakama.posts[index].is_me;
-    if (CheckManagable)
+    if (CheckManagable && this.nakama.posts[index]['offlineAct'] != 'remove')
       this.alertCtrl.create({
         header: this.nakama.posts[index]['title'],
         message: this.nakama.posts[index]['content'],
@@ -209,14 +209,15 @@ export class CommunityPage implements OnInit {
     this.isOfflineActing = true;
     while (this.QueuedOfflineAct.length) {
       let postInfo = this.QueuedOfflineAct.shift();
-      let editedPost = JSON.parse(JSON.stringify(postInfo));
       let OriginalInfo = postInfo['originalInfo'];
-      const isOfficial = OriginalInfo.server.isOfficial;
-      const target = OriginalInfo.server.target;
+      const isOfficial = OriginalInfo?.server.isOfficial || postInfo.server.isOfficial;
+      const target = OriginalInfo?.server.target || postInfo.server.target;
+      const actId = 'postOfflineAct';
       // 해당 서버에 연결되어있지 않으면 건너뛰기
       if (this.statusBar.groupServer[isOfficial][target] != 'online') continue;
       switch (postInfo['offlineAct']) {
         case 'edit':
+          const editedPost = JSON.parse(JSON.stringify(postInfo));
           // 원본 정보에서 마지막 편집본에 필요한 정보 이관 후 원본 정보 삭제하기 (url 유지 등)
           let duplicate_keys = ['id', 'UserColor', 'creator_id', 'server', 'OutSource'];
           duplicate_keys.forEach(key => postInfo[key] = OriginalInfo[key]);
@@ -232,7 +233,6 @@ export class CommunityPage implements OnInit {
               postInfo['attachments'][i]['blob'] = await this.indexed.loadBlobFromUserPath(postInfo['attachments'][i]['path'], postInfo['attachments'][i]['type']);
             delete postInfo['attachments'][i]['thumbnail'];
           }
-          const actId = 'postEdit';
           await this.p5loading.update({
             id: actId,
             message: `${this.lang.text['AddPost']['WIP']}: ${postInfo['title']}`,
@@ -255,6 +255,10 @@ export class CommunityPage implements OnInit {
             delete postInfo['attachments'][i]['blob'];
           break;
         case 'remove':
+          await this.nakama.RemovePost(OriginalInfo, undefined, actId);
+          await this.nakama.RemovePost(postInfo, undefined, actId);
+          this.p5loading.remove(actId);
+          this.nakama.rearrange_posts();
           break;
       }
     }

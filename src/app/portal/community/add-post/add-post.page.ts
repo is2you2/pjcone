@@ -1064,10 +1064,10 @@ export class AddPostPage implements OnInit, OnDestroy {
     // 오프라인에서 편집됨을 표시한 경우, 로컬에 편집된 내용을 저장하기 (오프라인 작업 최초 1회에 한하여)
     if (isOfflineEdit && !this.userInput.originalInfo) {
       const originalInfo = JSON.parse(JSON.stringify(this.OriginalInfo));
-      const offlineAct = 'edit';
       this.select_server(0, true);
       this.userInput.originalInfo = originalInfo;
-      this.userInput.offlineAct = offlineAct;
+      this.userInput.offlineAct = 'edit';
+      this.OriginalInfo.offlineAct = 'edit';
     }
     this.isApplyPostData = true;
     this.navCtrl.navigateBack('portal/community');

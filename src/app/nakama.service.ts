@@ -3089,7 +3089,12 @@ export class NakamaService {
             PostInfo.mainImage['url'] = CatchedAddress;
           } else throw '업로드 실패';
         } catch (e) {
-          await this.indexed.saveBlobToUserPath(PostInfo.mainImage.blob, PostInfo.mainImage.path);
+          try {
+            await this.indexed.saveBlobToUserPath(PostInfo.mainImage.blob, PostInfo.mainImage.path);
+          } catch (e) {
+            console.log('메인사진 파일 깨짐처리: ', e);
+            delete PostInfo.mainImage;
+          }
         }
       } else {
         try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
@@ -3264,9 +3269,11 @@ export class NakamaService {
    * @param [slient=false] 조용한 모드, 직접적인 게시물 편집이 아닌 경우에 true 처리. 파일 삭제 등을 하지 않음
    */
   async RemovePost(info: any, slient = false, loadingId?: string) {
-    let isOfficial = info['server']['isOfficial'];
-    let target = info['server']['target'];
+    const copied = JSON.parse(JSON.stringify(info));
+    const isOfficial = copied['server']['isOfficial'];
+    const target = copied['server']['target'];
     const actId = loadingId || `nakama_RemovePost_${Date.now()}`;
+    const onlineStatus = this.statusBar.groupServer[isOfficial]?.[target] == 'online';
     if (!slient)
       await this.p5loading.update({
         id: actId,
@@ -3361,6 +3368,31 @@ export class NakamaService {
     } catch (e) { }
     this.rearrange_posts();
     if (this.socket_reactive['try_load_post']) this.socket_reactive['try_load_post']();
+    // 온라인 게시물의 오프라인 상태 삭제 요청이면 삭제 예정임을 표시하여 저장 후 마무리
+    if (!onlineStatus && !copied['offlineAct'] && !info['server']['local']) {
+      let counter = Number(await this.indexed.loadTextFromUserPath('servers/local/target/posts/me/counter.txt')) || 0;
+      copied['id'] = `LocalPost_${counter}`;
+      try {
+        await this.indexed.saveTextFileToUserPath(`${counter + 1}`, 'servers/local/target/posts/me/counter.txt');
+      } catch (e) {
+        this.p5toast.show({
+          text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
+        });
+        console.log(e);
+      }
+      copied['offlineAct'] = 'remove';
+      copied['originalInfo'] = info;
+      copied['creator_id'] = 'me';
+      copied['server'] = {
+        name: this.lang.text['AddGroup']['UseLocalStorage'],
+        isOfficial: 'local',
+        target: 'target',
+        local: true,
+      };
+      await this.AddPost(copied, actId, Boolean(2), true, copied['mainImage']?.['thumbnail']);
+      this.rearrange_posts();
+      this.p5loading.remove(actId);
+    }
   }
 
   /** 메시지 내 하이퍼링크와 일반 메시지를 분리 */
