@@ -1424,7 +1424,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     /** 메시지를 찾았는지 여부 검토 */
     if (!targetChatId) { // 메시지가 안보이면 이전 메시지에서 찾기
       let whileBreaker = false;
-      while (!targetChatId && this.pullable && !whileBreaker && this.next_cursor) {
+      while (!targetChatId && this.pullable && !whileBreaker && this.next_cursor !== undefined) {
         if (!this.nakama.ChatroomLinkAct) return;
         await this.pull_msg_history();
         for (let i = this.ViewableMessage.length - 1; i >= 0; i--) {
@@ -2012,7 +2012,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           }
           this.modulate_chatmsg(0, this.ViewableMessage.length);
           this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
-          this.pullable = true;
+          this.pullable = this.next_cursor !== undefined;
           return;
         }
         let v = await this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
@@ -2084,7 +2084,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
         this.next_cursor = v.next_cursor;
         this.prev_cursor = v.prev_cursor;
-        this.pullable = true;
+        this.pullable = this.next_cursor !== undefined;
         this.nakama.saveListedMessage(this.messages, this.info, this.isOfficial, this.target, this.next_cursor === undefined);
       } catch (e) {
         await this.LoadLocalChatHistory();
@@ -2112,7 +2112,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.modulate_chatmsg(i, this.ViewableMessage.length);
         if (this.ViewableMessage[i].content.qoute) this.OpenQouteThumbnail(this.ViewableMessage[i]);
       }
-      this.pullable = true;
+      this.pullable = this.next_cursor !== undefined;
     }
   }
 
