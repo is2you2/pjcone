@@ -444,25 +444,30 @@ export class UserFsDirPage implements OnInit, OnDestroy {
       let open_file = await this.indexed.loadTextFromUserPath(`${info.path}/info.todo`);
       let json = JSON.parse(open_file);
       info.name = json['title'];
-    } catch (e) { }
+    } catch (e) {
+      console.log('SetDisplayTodoName error: ', e);
+    }
   }
 
   SetDisplayUserName(info: FileDir, sep: string[]) {
     try {
       info.name = this.nakama.users[sep[1]][sep[2]][sep[4]]['display_name'];
     } catch (e) { }
+    info.name = info.name || this.lang.text['Profile']['noname_user'];
   }
 
   SetDisplayChannelName(info: FileDir, sep: string[]) {
     try {
       info.name = this.nakama.channels_orig[sep[1]][sep[2]][info.name]['title'];
     } catch (e) { }
+    info.name = info.name || this.lang.text['ChatRoom']['noname_chatroom'];
   }
 
   SetDisplayGroupImageName(info: FileDir, sep: string[]) {
     try {
       info.name = `${this.nakama.groups[sep[1]][sep[2]][sep[4].split('.').shift()]['name']}.img`;
     } catch (e) { }
+    info.name = info.name || this.lang.text['ChatRoom']['noname_chatroom'];
   }
 
   SetDisplayPostWriterName(info: FileDir, sep: string[]) {
@@ -472,6 +477,7 @@ export class UserFsDirPage implements OnInit, OnDestroy {
       if (this.nakama.servers[sep[1]][sep[2]].session.user_id == info.name)
         info.name = this.nakama.users.self['display_name']
     }
+    info.name = info.name || this.lang.text['Profile']['noname_user'];
   }
 
   async SetDisplayPostName(info: FileDir, sep: string[]) {

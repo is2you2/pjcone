@@ -1186,7 +1186,7 @@ export class GlobalActService {
         id: actId,
         message: `${this.lang.text['GlobalAct']['CancelingUpload']}: ${file.filename}`,
       });
-      console.warn('cdn 파일 업로드 단계 실패:', e);
+      console.log('cdn 파일 업로드 단계 실패:', e);
     }
     if (!loadingId) this.p5loading.remove(actId);
     return Catched ? CatchedAddress : undefined;
