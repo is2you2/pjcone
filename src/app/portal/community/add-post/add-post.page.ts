@@ -86,6 +86,10 @@ export class AddPostPage implements OnInit, OnDestroy {
    * 2: SQL 강제
    */
     CDN: undefined as number,
+    /** 오프라인 행동을 시도한 경우 */
+    offlineAct: undefined as 'edit' | 'remove',
+    /** 오프라인 행동의 기존 서버 키워드 정보 */
+    originalInfo: undefined,
   }
   index = 0;
   isOfficial: string;
@@ -117,9 +121,9 @@ export class AddPostPage implements OnInit, OnDestroy {
       /** 편집하기로 들어왔다면 */
       if (navParams && navParams.data) {
         // 로컬이라면 첫번째 서버로 설정
-        let inputServerInfo = `${this.userInput.server.isOfficial}/${this.userInput.server.target}`;
+        const inputServerInfo = `${this.userInput.server.isOfficial}/${this.userInput.server.target}`;
         for (let i = 0, j = this.servers.length; i < j; i++) {
-          let ServerInfo = `${this.servers[i].isOfficial}/${this.servers[i].target}`;
+          const ServerInfo = `${this.servers[i].isOfficial}/${this.servers[i].target}`;
           if (ServerInfo == inputServerInfo) {
             this.index = i;
             break;
@@ -138,7 +142,7 @@ export class AddPostPage implements OnInit, OnDestroy {
             if (this.userInput.attachments[i].url)
               this.userInput.attachments[i].thumbnail = this.userInput.attachments[i].url;
             else {
-              let blob = await this.indexed.loadBlobFromUserPath(this.userInput.attachments[i].path, this.userInput.attachments[i].type);
+              const blob = await this.indexed.loadBlobFromUserPath(this.userInput.attachments[i].path, this.userInput.attachments[i].type);
               const FileURL = URL.createObjectURL(blob);
               this.userInput.attachments[i].thumbnail = FileURL;
               setTimeout(() => {
@@ -149,6 +153,11 @@ export class AddPostPage implements OnInit, OnDestroy {
         this.UseOutLink = Boolean(this.userInput.OutSource);
         this.toggle_open_link(this.UseOutLink);
         this.OriginalInfo = JSON.parse(JSON.stringify(this.userInput));
+      }
+      try {
+        this.OriginalServerInfo = `${this.userInput.server.isOfficial}/${this.userInput.server.target}`;
+      } catch (e) {
+        console.log('게시물에 기록된 서버 정보 받기 실패: ', e);
       }
       this.select_server(this.index);
     });
@@ -166,7 +175,7 @@ export class AddPostPage implements OnInit, OnDestroy {
   LoadListServer() {
     this.servers = this.nakama.get_all_server_info(true, true);
     /** 이 기기에 저장에 사용하는 정보 */
-    let local_info = {
+    const local_info = {
       name: this.lang.text['AddGroup']['UseLocalStorage'],
       isOfficial: 'local',
       target: 'target',
@@ -354,7 +363,9 @@ export class AddPostPage implements OnInit, OnDestroy {
   isSaveClicked = false;
   /** 게시 서버 변경 여부, 이 경우 기존 서버에서 삭제 후 다시 등록해야함 */
   isServerChanged = false;
-  /** 아코디언에서 서버 선택하기 */
+  /** 아코디언에서 서버 선택하기
+   * @param [changed=false] 사용자가 직접 수정했을 경우 기억
+   */
   select_server(i: number, changed = false) {
     this.index = i;
     this.userInput.server = this.servers[i];
@@ -363,7 +374,9 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.target = this.servers[i].target;
     if (changed) {
       this.isServerChanged = this.OriginalServerInfo != `${this.isOfficial}/${this.target}`;
-    } else this.OriginalServerInfo = `${this.isOfficial}/${this.target}`;
+      delete this.userInput.originalInfo;
+      delete this.userInput.offlineAct;
+    }
     this.userInput.creator_name = this.nakama.users.self['display_name'];
     try { // 변경된 서버 user_id 를 적용함
       this.userInput.creator_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
@@ -879,34 +892,6 @@ export class AddPostPage implements OnInit, OnDestroy {
     }
   }
 
-  /** 첨부파일 삭제하기 행동 */
-  RemoveCurrentAttach(i: number) {
-    this.p5loading.toast(`${this.lang.text['AddPost']['RemoveAttach']}: ${this.userInput.attachments[i].filename}`, 'add_post');
-    this.userInput.attachments.splice(i, 1);
-    // 첨부파일 링크 텍스트를 삭제하고, 재정렬시킴
-    let sep_as_line = this.userInput.content.split('\n');
-    for (let k = sep_as_line.length - 1; k >= 0; k--) {
-      // 첨부파일인지 체크
-      let is_attach = false;
-      let content_len = sep_as_line[k].length - 1;
-      let index = 0;
-      try {
-        index = Number(sep_as_line[k].substring(1, content_len));
-        is_attach = sep_as_line[k].charAt(0) == '{' && sep_as_line[k].charAt(content_len) == '}' && !isNaN(index);
-      } catch (e) { }
-      if (is_attach) {
-        if (i == index) { // 삭제된 파일에 해당하는 줄은 삭제
-          if (sep_as_line[k + 1] == '') try {
-            sep_as_line.splice(k + 1, 1);
-          } catch (e) { }
-          sep_as_line.splice(k, 1);
-        } else if (i < index) // 해당 파일보다 큰 순번은 숫자를 줄여 정렬처리
-          sep_as_line[k] = `{${index - 1}}`;
-      }
-    }
-    this.userInput.content = sep_as_line.join('\n');
-  }
-
   /** 첨부파일 우클릭하여 삭제 */
   PostAttachContextMenu(i: number) {
     this.alertCtrl.create({
@@ -915,7 +900,7 @@ export class AddPostPage implements OnInit, OnDestroy {
       buttons: [{
         text: this.lang.text['UserFsDir']['RemoveApply'],
         handler: () => {
-          this.RemoveCurrentAttach(i);
+          this.nakama.RemoveCurrentPostAttach(i, this.userInput);
         },
         cssClass: 'redfont',
       }]
@@ -1074,6 +1059,16 @@ export class AddPostPage implements OnInit, OnDestroy {
       this.TitleInput.focus();
       return;
     }
+    /** 온라인 게시물을 오프라인에서 편집한 것으로 추정되는 경우 */
+    const isOfflineEdit = this.isModify && !this.isServerChanged && this.OriginalServerInfo != `${this.isOfficial}/${this.target}`;
+    // 오프라인에서 편집됨을 표시한 경우, 로컬에 편집된 내용을 저장하기 (오프라인 작업 최초 1회에 한하여)
+    if (isOfflineEdit && !this.userInput.originalInfo) {
+      const originalInfo = JSON.parse(JSON.stringify(this.OriginalInfo));
+      const offlineAct = 'edit';
+      this.select_server(0, true);
+      this.userInput.originalInfo = originalInfo;
+      this.userInput.offlineAct = offlineAct;
+    }
     this.isApplyPostData = true;
     this.navCtrl.navigateBack('portal/community');
     const actId = `postData_${Date.now()}`;
@@ -1089,31 +1084,25 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.isSaveClicked = true;
     let isOfficial = this.userInput.server['isOfficial'];
     let target = this.userInput.server['target'];
-    let server_info = {};
-    try {
-      let info = this.nakama.servers[isOfficial][target].info;
-      server_info['cdn_port'] = info.cdn_port;
-      server_info['apache_port'] = info.apache_port;
-    } catch (e) {
-      server_info = {};
-    }
     let isCDNChanged = this.OriginalInfo?.CDN != this.userInput.CDN;
     delete this.userInput['router'];
     // 편집된 게시물이라면 첨부파일을 전부다 지우고 다시 등록
     if (this.isModify || isCDNChanged || this.isServerChanged) {
       if (this.userInput.mainImage && this.userInput.mainImage.url) {
         try {
-          let res = await fetch(this.userInput.mainImage.url, { signal: this.cont.signal });
+          let res = await fetch(this.userInput.mainImage.url);
           if (res.ok) this.userInput.mainImage.blob = await res.blob();
         } catch (e) { }
         delete this.userInput.mainImage.thumbnail;
         delete this.userInput.mainImage.alt_path;
         delete this.userInput.mainImage['MainThumbnail'];
-        let sep = this.userInput.mainImage.url.split('/');
-        while (sep.shift() != 'cdn') { }
-        this.userInput.mainImage.override_name = sep.pop();
-        this.userInput.mainImage.override_path = sep.join('/');
-        delete this.userInput.mainImage.url;
+        if (this.userInput.mainImage.url) {
+          let sep = this.userInput.mainImage.url.split('/');
+          while (sep.shift() != 'cdn') { }
+          this.userInput.mainImage.override_name = sep.pop();
+          this.userInput.mainImage.override_path = sep.join('/');
+          delete this.userInput.mainImage.url;
+        }
       }
       // 첨부파일 기억하기
       for (let i = 0, j = this.userInput.attachments.length; i < j; i++) {
@@ -1125,11 +1114,13 @@ export class AddPostPage implements OnInit, OnDestroy {
               this.userInput.attachments[i].blob = blob;
               delete this.userInput.attachments[i].thumbnail;
               delete this.userInput.attachments[i].alt_path;
-              let sep = this.userInput.attachments[i].url.split('/');
-              while (sep.shift() != 'cdn') { }
-              this.userInput.attachments[i].override_name = sep.pop();
-              this.userInput.attachments[i].override_path = sep.join('/');
-              delete this.userInput.attachments[i].url;
+              if (this.userInput.attachments[i].url) {
+                let sep = this.userInput.attachments[i].url.split('/');
+                while (sep.shift() != 'cdn') { }
+                this.userInput.attachments[i].override_name = sep.pop();
+                this.userInput.attachments[i].override_path = sep.join('/');
+                delete this.userInput.attachments[i].url;
+              }
             } catch (e) {
               continue;
             }
@@ -1200,203 +1191,7 @@ export class AddPostPage implements OnInit, OnDestroy {
         this.userInput.create_time = new Date().getTime();
         this.userInput.modify_time = this.userInput.create_time;
       }
-      // 썸네일 정보 삭제
-      for (let i = 0, j = this.userInput.attachments.length; i < j; i++)
-        delete this.userInput.attachments[i].thumbnail;
-      // 대표 이미지 저장
-      if (this.userInput.mainImage) {
-        this.p5loading.update({
-          id: actId,
-          message: this.lang.text['AddPost']['SyncMainImage'],
-        });
-        this.userInput.mainImage.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/MainImage.${this.userInput.mainImage.file_ext}`;
-        this.userInput.mainImage.thumbnail = this.MainPostImage;
-        if (!this.userInput.mainImage.blob) {
-          try {
-            let res = await fetch(this.MainPostImage);
-            let blob = await res.blob();
-            this.userInput.mainImage.blob = blob;
-          } catch (e) { }
-        }
-        this.p5loading.update({
-          id: actId,
-          image: this.MainPostImage,
-        });
-        if (is_local) {
-          try { // FFS 업로드 시도
-            if (this.userInput.CDN != 1) throw 'FFS 사용 순위에 없음';
-            this.p5loading.update({
-              id: actId,
-              message: `${this.lang.text['AddPost']['SyncMainImage']}: ${this.userInput.mainImage.filename}`,
-            });
-            let CatchedAddress: string;
-            CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.mainImage, `${this.nakama.users.self['display_name']}/${this.userInput.id}`, actId, this.userInput.title);
-            if (CatchedAddress) {
-              delete this.userInput.mainImage['path'];
-              delete this.userInput.mainImage['partsize'];
-              this.userInput.mainImage['url'] = CatchedAddress;
-            } else throw '업로드 실패';
-          } catch (e) {
-            await this.indexed.saveBlobToUserPath(this.userInput.mainImage.blob, this.userInput.mainImage.path);
-          }
-        } else {
-          try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
-            if (this.userInput.CDN == 2) throw 'SQL 강제';
-            let address = this.nakama.servers[this.isOfficial][this.target].info.address;
-            let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
-            let savedAddress = await this.global.upload_file_to_storage(this.userInput.mainImage,
-              { user_id: `${this.nakama.servers[this.isOfficial][this.target].session.user_id}/${this.userInput.id}`, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
-              protocol, address, this.userInput.CDN == 1, actId, this.userInput.title);
-            let isURL = Boolean(savedAddress);
-            if (!isURL) throw '링크 만들기 실패';
-            delete this.userInput.mainImage['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
-            this.userInput.mainImage['url'] = savedAddress;
-          } catch (e) {
-            await this.nakama.sync_save_file(this.userInput.mainImage, isOfficial, target, 'server_post', `${this.userInput.id}_mainImage`);
-          }
-        }
-      }
-      // 첨부파일들 전부 저장
-      let attach_len = this.userInput.attachments.length;
-      if (attach_len) {
-        this.p5loading.update({
-          id: actId,
-          message: this.lang.text['AddPost']['SyncAttaches'],
-        });
-        for (let i = attach_len - 1; i >= 0; i--) {
-          if (is_local) {
-            try { // FFS 업로드 시도
-              if (this.userInput.CDN != 1) throw 'FFS 사용 순위에 없음';
-              this.p5loading.update({
-                id: actId,
-                message: `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${this.userInput.attachments[i].filename}`,
-              });
-              let CatchedAddress: string;
-              CatchedAddress = await this.global.try_upload_to_user_custom_fs(this.userInput.attachments[i], `${this.nakama.users.self['display_name']}/${this.userInput.id}`, actId, this.userInput.title);
-              if (CatchedAddress) {
-                delete this.userInput.attachments[i]['path'];
-                delete this.userInput.attachments[i]['partsize'];
-                this.userInput.attachments[i]['url'] = CatchedAddress;
-              } else throw '업로드 실패';
-            } catch (e) {
-              try {
-                this.userInput.attachments[i].path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/[${i}]${this.userInput.attachments[i].filename}`;
-                await this.indexed.saveBlobToUserPath(this.userInput.attachments[i].blob, this.userInput.attachments[i].path);
-              } catch (e) {
-                // 컴퓨터에서 올린 첨부파일이 삭제된 경우
-                this.p5toast.show({
-                  text: `{${i}} ${this.lang.text['AddPost']['AttachError']}: ${e}`,
-                  lateable: true,
-                });
-                this.RemoveCurrentAttach(i);
-              }
-            }
-          } else {
-            try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
-              if (this.userInput.CDN == 2) throw 'SQL 강제';
-              let address = this.nakama.servers[this.isOfficial][this.target].info.address;
-              let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
-              let savedAddress = await this.global.upload_file_to_storage(this.userInput.attachments[i],
-                { user_id: `${this.nakama.servers[this.isOfficial][this.target].session.user_id}/${this.userInput.id}`, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
-                protocol, address, this.userInput.CDN == 1, actId, this.userInput.title);
-              let isURL = Boolean(savedAddress);
-              if (!isURL) throw '링크 만들기 실패';
-              delete this.userInput.attachments[i]['path'];
-              delete this.userInput.attachments[i]['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
-              this.userInput.attachments[i]['url'] = savedAddress;
-            } catch (e) {
-              try {
-                if (e == 'SQL 강제' && this.userInput.attachments[i].url && !this.userInput.attachments[i].blob)
-                  this.userInput.attachments[i].blob = await (await fetch(this.userInput.attachments[i].url, { signal: this.cont.signal })).blob();
-                await this.nakama.sync_save_file(this.userInput.attachments[i], isOfficial, target, 'server_post', `${this.userInput.id}_attach_${i}`);
-              } catch (e) {
-                // 컴퓨터에서 올린 첨부파일이 삭제된 경우
-                this.p5toast.show({
-                  text: `{${i}} ${this.lang.text['AddPost']['AttachError']}: ${e}`,
-                  lateable: true,
-                });
-                this.RemoveCurrentAttach(i);
-              }
-            }
-          }
-        }
-      }
-      /** 바깥 공유가 되어있다면 일단 삭제처리 */
-      if (this.userInput.OutSource) {
-        this.global.remove_file_from_storage(this.userInput.OutSource, server_info);
-        this.userInput.OutSource = undefined;
-      }
-      this.UseOutLink = this.UseOutLink && this.userInput.creator_id != 'me';
-      // 외부링크 사용시 게시물 정보 업로드
-      if (this.UseOutLink) {
-        let blob = new Blob([JSON.stringify(this.userInput)], { type: 'text/plain' });
-        let file: FileInfo = {
-          blob: blob,
-          filename: `${this.userInput.id}.json`,
-          file_ext: 'json',
-          size: blob.size,
-        }
-        try { // 대상 서버에 업로드 시도
-          let address = this.nakama.servers[this.isOfficial][this.target].info.address;
-          let user_id = this.nakama.servers[this.isOfficial][this.target].session.user_id;
-          let protocol = this.nakama.servers[this.isOfficial][this.target].info.useSSL ? 'https:' : 'http:';
-          let outlink = await this.global.upload_file_to_storage(file,
-            { user_id: `${user_id}/${this.userInput.id}`, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
-            protocol, address, this.userInput.CDN == 1, actId, this.userInput.title);
-          if (outlink) {
-            this.userInput.OutSource = outlink;
-          } else throw '업로드 실패';
-        } catch (e) { // 지정된 서버 주소로 업로드를 실패했다면 FFS 등록 주소를 따라 업로드 시도
-          try { // FFS에 업로드 시도
-            let user_id = this.nakama.users.self['display_name'];
-            let outlink = await this.global.try_upload_to_user_custom_fs(file, `${user_id}/${this.userInput.id}`, actId, this.userInput.title);
-            if (outlink) {
-              this.userInput.OutSource = outlink;
-            } else throw '업로드 실패';
-          } catch (e) { // 둘 다 실패했다면 실패한거임
-            this.userInput.OutSource = undefined;
-            this.UseOutLink = false;
-            this.p5toast.show({
-              text: `${this.lang.text['AddPost']['OutLinkFailed']}: ${e}`,
-            });
-          }
-        }
-      }
-      let make_copy_info = JSON.parse(JSON.stringify(this.userInput))
-      if (make_copy_info.mainImage) {
-        delete make_copy_info.mainImage.blob;
-        delete make_copy_info.mainImage.thumbnail;
-      }
-      for (let i = make_copy_info.attachments.length - 1; i >= 0; i--)
-        delete make_copy_info.attachments[i].blob;
-      delete make_copy_info.server;
-      try {
-        if (!this.nakama.posts_orig[isOfficial][target])
-          this.nakama.posts_orig[isOfficial][target] = {};
-        if (!this.nakama.posts_orig[isOfficial][target][this.userInput.creator_id])
-          this.nakama.posts_orig[isOfficial][target][this.userInput.creator_id] = {};
-        this.nakama.posts_orig[isOfficial][target][this.userInput.creator_id][this.userInput.id] = this.userInput;
-        // 게시물 정보 저장하기
-      } catch (e) {
-        this.p5toast.show({
-          text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
-        });
-        console.log(e);
-      }
-      let json_str = JSON.stringify(make_copy_info);
-      await this.indexed.saveTextFileToUserPath(json_str, `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/info.json`);
-      if (!is_local) { // 서버라면 추가로 서버에 정보 등록
-        let blob = new Blob([json_str], { type: 'application/json' });
-        let file: FileInfo = {};
-        file.filename = 'info.json';
-        file.blob = blob;
-        file.size = blob.size;
-        file.type = 'application/json';
-        file.file_ext = 'json';
-        file.typeheader = 'text';
-        file.path = `servers/${isOfficial}/${target}/posts/${this.userInput.creator_id}/${this.userInput.id}/info.json`;
-        await this.nakama.sync_save_file(file, isOfficial, target, 'server_post', this.userInput.id);
-      }
+      await this.nakama.AddPost(this.userInput, actId, this.UseOutLink, is_local, this.MainPostImage);
       this.nakama.rearrange_posts();
     } catch (e) {
       this.p5toast.show({

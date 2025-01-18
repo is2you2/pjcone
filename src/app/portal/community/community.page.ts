@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController, NavController } from '@ionic/angular';
 import { GlobalActService } from 'src/app/global-act.service';
+import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { NakamaService } from 'src/app/nakama.service';
+import { P5LoadingService } from 'src/app/p5-loading.service';
 import { StatusManageService } from 'src/app/status-manage.service';
 
 @Component({
@@ -19,6 +21,8 @@ export class CommunityPage implements OnInit {
     public global: GlobalActService,
     private navCtrl: NavController,
     private alertCtrl: AlertController,
+    private indexed: IndexedDBService,
+    private p5loading: P5LoadingService,
   ) { }
 
   ngOnInit() {
@@ -67,8 +71,12 @@ export class CommunityPage implements OnInit {
   forceBlockLoadable = false;
   /** 게시물 열기 */
   open_post(post: any, index: number) {
-    this.forceBlockLoadable = true;
-    this.nakama.open_post(post, index, 'portal/community/');
+    if (post['originalInfo']) {
+      this.QueueOfflineAct(post);
+    } else {
+      this.forceBlockLoadable = true;
+      this.nakama.open_post(post, index, 'portal/community/');
+    }
   }
 
   ContentScroll: HTMLDivElement;
@@ -177,8 +185,75 @@ export class CommunityPage implements OnInit {
     if (!loaded && user_id != 'me') try { // 로컬에서 불러오기를 실패했다면 서버에서 불러오기를 시도 (서버 게시물만) / deleted 포함됨
       loaded = await this.nakama.load_server_post_with_id(`ServerPost_${index}`, isOfficial, target, user_id, is_me);
     } catch (e) { }
+    if (loaded && user_id == 'me') {
+      const post = this.nakama.posts_orig[isOfficial][target][user_id][`LocalPost_${index}`];
+      // 오프라인 행동이 감지되었다면 추가 행동하기
+      if (post['offlineAct']) this.QueueOfflineAct(post);
+    }
     this.nakama.post_counter[isOfficial][target][user_id]--;
     if (!loaded) await this.load_post_step_by_step(this.nakama.post_counter[isOfficial][target][user_id], isOfficial, target, user_id, is_me);
+  }
+
+  /** 오프라인 행동이 필요한 대기열 */
+  QueuedOfflineAct = [];
+  /** 오프라인 행동을 추가하기 */
+  QueueOfflineAct(postInfo: any) {
+    this.QueuedOfflineAct.push(postInfo);
+    if (!this.isOfflineActing) this.ApplyOfflineAct();
+  }
+
+  /** 오프라인 행동중인지 여부 */
+  isOfflineActing = false;
+  /** 오프라인 행동을 서버에 적용시키기 */
+  async ApplyOfflineAct() {
+    this.isOfflineActing = true;
+    while (this.QueuedOfflineAct.length) {
+      let postInfo = this.QueuedOfflineAct.shift();
+      let editedPost = JSON.parse(JSON.stringify(postInfo));
+      let OriginalInfo = postInfo['originalInfo'];
+      const isOfficial = OriginalInfo.server.isOfficial;
+      const target = OriginalInfo.server.target;
+      // 해당 서버에 연결되어있지 않으면 건너뛰기
+      if (this.statusBar.groupServer[isOfficial][target] != 'online') continue;
+      switch (postInfo['offlineAct']) {
+        case 'edit':
+          // 원본 정보에서 마지막 편집본에 필요한 정보 이관 후 원본 정보 삭제하기 (url 유지 등)
+          let duplicate_keys = ['id', 'UserColor', 'creator_id', 'server', 'OutSource'];
+          duplicate_keys.forEach(key => postInfo[key] = OriginalInfo[key]);
+          delete postInfo['offlineAct'];
+          delete postInfo['originalInfo'];
+          // 첨부파일 blob 준비하기
+          // 보편적인 경우 mainImage 는 준비가 되어있으나 안되어있는 경우를 대비함
+          if (postInfo['mainImage']?.['path'] && !postInfo['mainImage']['blob'])
+            postInfo['mainImage']['blob'] = await this.indexed.loadBlobFromUserPath(postInfo['mainImage']['path'], postInfo['mainImage']['type']);
+          // 모든 첨부파일의 blob 준비, 썸네일 정보 삭제
+          for (let i = 0, j = postInfo?.['attachments'].length; i < j; i++) {
+            if (postInfo['attachments'][i]?.['path'] && !postInfo['attachments'][i]['blob'])
+              postInfo['attachments'][i]['blob'] = await this.indexed.loadBlobFromUserPath(postInfo['attachments'][i]['path'], postInfo['attachments'][i]['type']);
+            delete postInfo['attachments'][i]['thumbnail'];
+          }
+          const actId = 'postEdit';
+          await this.p5loading.update({
+            id: actId,
+            message: `${this.lang.text['AddPost']['WIP']}: ${postInfo['title']}`,
+            progress: null,
+            forceEnd: null,
+          });
+          // 원본 정보 삭제처리
+          await this.nakama.RemovePost(OriginalInfo, undefined, actId);
+          await this.nakama.AddPost(postInfo, actId, Boolean(2), false, postInfo['mainImage']?.['thumbnail']);
+          await this.nakama.RemovePost(editedPost, undefined, actId);
+          this.nakama.rearrange_posts();
+          this.p5loading.remove(actId);
+          // 처리가 완료되었으면 첨부파일 정보는 무시하기
+          for (let i = 0, j = postInfo?.['attachments'].length; i < j; i++)
+            delete postInfo['attachments'][i]['blob'];
+          break;
+        case 'remove':
+          break;
+      }
+    }
+    this.isOfflineActing = false;
   }
 
   /** 단축키 생성 */

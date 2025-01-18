@@ -34,9 +34,12 @@
                 : post['creator_name']
                 }}
               </span>
-              <span *ngIf="nakama.showServer" style="color: #888; font-weight: normal;">
+              <span *ngIf="nakama.showServer && !post['originalInfo']" style="color: #888; font-weight: normal;">
                 {{'(' + (post['server'] ? (post['server']['name'] || post['server']['target']) :
                 lang.text['AddGroup']['UseLocalStorage']) + ')'}}
+              </span>
+              <span *ngIf="post['originalInfo']" style="color: #888; font-weight: normal;">
+                {{'(' + lang.text['Community']['AfterOnline'] + ')'}}
               </span>
             </ion-card-subtitle>
             <ion-card-title class="cardTitle">

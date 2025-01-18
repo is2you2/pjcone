@@ -610,7 +610,6 @@ export class UserFsDirPage implements OnInit, OnDestroy {
 
   RemoveDirectoryRecursive(dir = this.CurrentDir) {
     const CheckIfSpecificFolder = dir.substring(dir.lastIndexOf('/') + 1);
-    console.log(CheckIfSpecificFolder);
     this.alertCtrl.create({
       header: CheckIfSpecificFolder || this.lang.text['UserFsDir']['ResetDB'],
       message: this.lang.text['UserFsDir']['RemoveThisFolder'],

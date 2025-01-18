@@ -3012,6 +3012,245 @@ export class NakamaService {
     });
   }
 
+  /** 해당 게시물에서 첨부파일 삭제하기 (공용으로 사용되어 나카마에서 관리) */
+  RemoveCurrentPostAttach(i: number, PostInfo: any) {
+    this.p5loading.toast(`${this.lang.text['AddPost']['RemoveAttach']}: ${PostInfo.attachments[i].filename}`, 'add_post');
+    PostInfo.attachments.splice(i, 1);
+    // 첨부파일 링크 텍스트를 삭제하고, 재정렬시킴
+    let sep_as_line = PostInfo.content.split('\n');
+    for (let k = sep_as_line.length - 1; k >= 0; k--) {
+      // 첨부파일인지 체크
+      let is_attach = false;
+      let content_len = sep_as_line[k].length - 1;
+      let index = 0;
+      try {
+        index = Number(sep_as_line[k].substring(1, content_len));
+        is_attach = sep_as_line[k].charAt(0) == '{' && sep_as_line[k].charAt(content_len) == '}' && !isNaN(index);
+      } catch (e) { }
+      if (is_attach) {
+        if (i == index) { // 삭제된 파일에 해당하는 줄은 삭제
+          if (sep_as_line[k + 1] == '') try {
+            sep_as_line.splice(k + 1, 1);
+          } catch (e) { }
+          sep_as_line.splice(k, 1);
+        } else if (i < index) // 해당 파일보다 큰 순번은 숫자를 줄여 정렬처리
+          sep_as_line[k] = `{${index - 1}}`;
+      }
+    }
+    PostInfo.content = sep_as_line.join('\n');
+  }
+
+  /** 게시물 등록하기 공통 행동 */
+  async AddPost(PostInfo: any, actId: string, UseOutLink: boolean, is_local = false, MainPostImage?: any) {
+    const isOfficial = PostInfo.server.isOfficial;
+    const target = PostInfo.server.target;
+    let server_info = {};
+    try {
+      let info = this.servers[isOfficial][target].info;
+      server_info['cdn_port'] = info.cdn_port;
+      server_info['apache_port'] = info.apache_port;
+    } catch (e) {
+      server_info = {};
+    }
+    // 썸네일 정보 삭제
+    for (let i = 0, j = PostInfo.attachments.length; i < j; i++)
+      delete PostInfo.attachments[i].thumbnail;
+    // 대표 이미지 저장
+    if (PostInfo.mainImage) {
+      this.p5loading.update({
+        id: actId,
+        message: this.lang.text['AddPost']['SyncMainImage'],
+      });
+      PostInfo.mainImage.path = `servers/${isOfficial}/${target}/posts/${PostInfo.creator_id}/${PostInfo.id}/MainImage.${PostInfo.mainImage.file_ext}`;
+      PostInfo.mainImage.thumbnail = MainPostImage;
+      if (!PostInfo.mainImage.blob) {
+        try {
+          let res = await fetch(MainPostImage);
+          let blob = await res.blob();
+          PostInfo.mainImage.blob = blob;
+        } catch (e) { }
+      }
+      this.p5loading.update({
+        id: actId,
+        image: MainPostImage,
+      });
+      if (is_local) {
+        try { // FFS 업로드 시도
+          if (PostInfo.CDN != 1) throw 'FFS 사용 순위에 없음';
+          this.p5loading.update({
+            id: actId,
+            message: `${this.lang.text['AddPost']['SyncMainImage']}: ${PostInfo.mainImage.filename}`,
+          });
+          let CatchedAddress: string;
+          CatchedAddress = await this.global.try_upload_to_user_custom_fs(PostInfo.mainImage, `${this.users.self['display_name']}/${PostInfo.id}`, actId, PostInfo.title);
+          if (CatchedAddress) {
+            delete PostInfo.mainImage['path'];
+            delete PostInfo.mainImage['partsize'];
+            PostInfo.mainImage['url'] = CatchedAddress;
+          } else throw '업로드 실패';
+        } catch (e) {
+          await this.indexed.saveBlobToUserPath(PostInfo.mainImage.blob, PostInfo.mainImage.path);
+        }
+      } else {
+        try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
+          if (PostInfo.CDN == 2) throw 'SQL 강제';
+          let address = this.servers[isOfficial][target].info.address;
+          let protocol = this.servers[isOfficial][target].info.useSSL ? 'https:' : 'http:';
+          let savedAddress = await this.global.upload_file_to_storage(PostInfo.mainImage,
+            { user_id: `${this.servers[isOfficial][target].session.user_id}/${PostInfo.id}`, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
+            protocol, address, PostInfo.CDN == 1, actId, PostInfo.title);
+          let isURL = Boolean(savedAddress);
+          if (!isURL) throw '링크 만들기 실패';
+          delete PostInfo.mainImage['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
+          PostInfo.mainImage['url'] = savedAddress;
+        } catch (e) {
+          await this.sync_save_file(PostInfo.mainImage, isOfficial, target, 'server_post', `${PostInfo.id}_mainImage`);
+        }
+      }
+    }
+    // 첨부파일들 전부 저장
+    let attach_len = PostInfo.attachments.length;
+    if (attach_len) {
+      this.p5loading.update({
+        id: actId,
+        message: this.lang.text['AddPost']['SyncAttaches'],
+      });
+      for (let i = attach_len - 1; i >= 0; i--) {
+        if (is_local) {
+          try { // FFS 업로드 시도
+            if (PostInfo.CDN != 1) throw 'FFS 사용 순위에 없음';
+            this.p5loading.update({
+              id: actId,
+              message: `${this.lang.text['AddPost']['SyncAttaches']}: [${i}]${PostInfo.attachments[i].filename}`,
+            });
+            let CatchedAddress: string;
+            CatchedAddress = await this.global.try_upload_to_user_custom_fs(PostInfo.attachments[i], `${this.users.self['display_name']}/${PostInfo.id}`, actId, PostInfo.title);
+            if (CatchedAddress) {
+              delete PostInfo.attachments[i]['path'];
+              delete PostInfo.attachments[i]['partsize'];
+              PostInfo.attachments[i]['url'] = CatchedAddress;
+            } else throw '업로드 실패';
+          } catch (e) {
+            try {
+              PostInfo.attachments[i].path = `servers/${isOfficial}/${target}/posts/${PostInfo.creator_id}/${PostInfo.id}/[${i}]${PostInfo.attachments[i].filename}`;
+              await this.indexed.saveBlobToUserPath(PostInfo.attachments[i].blob, PostInfo.attachments[i].path);
+            } catch (e) {
+              // 컴퓨터에서 올린 첨부파일이 삭제된 경우
+              this.p5toast.show({
+                text: `{${i}} ${this.lang.text['AddPost']['AttachError']}: ${e}`,
+                lateable: true,
+              });
+              this.RemoveCurrentPostAttach(i, PostInfo);
+            }
+          }
+        } else {
+          try { // 서버에 연결된 경우 cdn 서버 업데이트 시도
+            if (PostInfo.CDN == 2) throw 'SQL 강제';
+            let address = this.servers[isOfficial][target].info.address;
+            let protocol = this.servers[isOfficial][target].info.useSSL ? 'https:' : 'http:';
+            let savedAddress = await this.global.upload_file_to_storage(PostInfo.attachments[i],
+              { user_id: `${this.servers[isOfficial][target].session.user_id}/${PostInfo.id}`, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
+              protocol, address, PostInfo.CDN == 1, actId, PostInfo.title);
+            let isURL = Boolean(savedAddress);
+            if (!isURL) throw '링크 만들기 실패';
+            delete PostInfo.attachments[i]['path'];
+            delete PostInfo.attachments[i]['partsize']; // 메시지 삭제 등의 업무 효율을 위해 정보 삭제
+            PostInfo.attachments[i]['url'] = savedAddress;
+          } catch (e) {
+            try {
+              if (e == 'SQL 강제' && PostInfo.attachments[i].url && !PostInfo.attachments[i].blob)
+                PostInfo.attachments[i].blob = await (await fetch(PostInfo.attachments[i].url)).blob();
+              await this.sync_save_file(PostInfo.attachments[i], isOfficial, target, 'server_post', `${PostInfo.id}_attach_${i}`);
+            } catch (e) {
+              // 컴퓨터에서 올린 첨부파일이 삭제된 경우
+              this.p5toast.show({
+                text: `{${i}} ${this.lang.text['AddPost']['AttachError']}: ${e}`,
+                lateable: true,
+              });
+              this.RemoveCurrentPostAttach(i, PostInfo);
+            }
+          }
+        }
+      }
+    }
+    /** 바깥 공유가 되어있다면 일단 삭제처리 */
+    if (PostInfo.OutSource) {
+      await this.global.remove_file_from_storage(PostInfo.OutSource, server_info);
+      PostInfo.OutSource = undefined;
+    }
+    UseOutLink = UseOutLink && PostInfo.creator_id != 'me';
+    // 외부링크 사용시 게시물 정보 업로드
+    if (UseOutLink) {
+      let blob = new Blob([JSON.stringify(PostInfo)], { type: 'text/plain' });
+      let file: FileInfo = {
+        blob: blob,
+        filename: `${PostInfo.id}.json`,
+        file_ext: 'json',
+        size: blob.size,
+      }
+      try { // 대상 서버에 업로드 시도
+        let address = this.servers[isOfficial][target].info.address;
+        let user_id = this.servers[isOfficial][target].session.user_id;
+        let protocol = this.servers[isOfficial][target].info.useSSL ? 'https:' : 'http:';
+        let outlink = await this.global.upload_file_to_storage(file,
+          { user_id: `${user_id}/${PostInfo.id}`, cdn_port: server_info['cdn_port'], apache_port: server_info['apache_port'] },
+          protocol, address, PostInfo.CDN == 1, actId, PostInfo.title);
+        if (outlink) {
+          PostInfo.OutSource = outlink;
+        } else throw '업로드 실패';
+      } catch (e) { // 지정된 서버 주소로 업로드를 실패했다면 FFS 등록 주소를 따라 업로드 시도
+        try { // FFS에 업로드 시도
+          let user_id = this.users.self['display_name'];
+          let outlink = await this.global.try_upload_to_user_custom_fs(file, `${user_id}/${PostInfo.id}`, actId, PostInfo.title);
+          if (outlink) {
+            PostInfo.OutSource = outlink;
+          } else throw '업로드 실패';
+        } catch (e) { // 둘 다 실패했다면 실패한거임
+          PostInfo.OutSource = undefined;
+          UseOutLink = false;
+          this.p5toast.show({
+            text: `${this.lang.text['AddPost']['OutLinkFailed']}: ${e}`,
+          });
+        }
+      }
+    }
+    let make_copy_info = JSON.parse(JSON.stringify(PostInfo))
+    if (make_copy_info.mainImage) {
+      delete make_copy_info.mainImage.blob;
+      delete make_copy_info.mainImage.thumbnail;
+    }
+    for (let i = make_copy_info.attachments.length - 1; i >= 0; i--)
+      delete make_copy_info.attachments[i].blob;
+    delete make_copy_info.server;
+    try {
+      if (!this.posts_orig[isOfficial][target])
+        this.posts_orig[isOfficial][target] = {};
+      if (!this.posts_orig[isOfficial][target][PostInfo.creator_id])
+        this.posts_orig[isOfficial][target][PostInfo.creator_id] = {};
+      this.posts_orig[isOfficial][target][PostInfo.creator_id][PostInfo.id] = PostInfo;
+      // 게시물 정보 저장하기
+    } catch (e) {
+      this.p5toast.show({
+        text: `${this.lang.text['AddPost']['SyncErr']}: ${e}`,
+      });
+      console.log(e);
+    }
+    let json_str = JSON.stringify(make_copy_info);
+    await this.indexed.saveTextFileToUserPath(json_str, `servers/${isOfficial}/${target}/posts/${PostInfo.creator_id}/${PostInfo.id}/info.json`);
+    if (!is_local) { // 서버라면 추가로 서버에 정보 등록
+      let blob = new Blob([json_str], { type: 'application/json' });
+      let file: FileInfo = {};
+      file.filename = 'info.json';
+      file.blob = blob;
+      file.size = blob.size;
+      file.type = 'application/json';
+      file.file_ext = 'json';
+      file.typeheader = 'text';
+      file.path = `servers/${isOfficial}/${target}/posts/${PostInfo.creator_id}/${PostInfo.id}/info.json`;
+      await this.sync_save_file(file, isOfficial, target, 'server_post', PostInfo.id);
+    }
+  }
+
   /** 커뮤니티 탭에서 게시물 편집 열기 */
   CommunityGoToEditPost: Function;
   /** 게시물 편집 */
@@ -4273,7 +4512,7 @@ export class NakamaService {
           });
           this.global.save_file_part(info.alt_path || info.path, i, part.objects[0].value['data']);
         } catch (e) {
-          console.log('ReadStorage_From_channel: ', e);
+          console.log('sync_load_file failed: ', e);
           isSuccessful = false;
           if (show_noti)
             this.p5toast.show({
@@ -4349,6 +4588,7 @@ export class NakamaService {
       await this.indexed.removeFileFromUserPath(path);
     } catch (e) { }
     try {
+      if (this.statusBar.groupServer[_is_official][_target] != 'online') throw '서버 연결중 아님';
       let file_info = await this.servers[_is_official][_target].client.readStorageObjects(
         this.servers[_is_official][_target].session, {
         object_ids: [{
@@ -4882,7 +5122,6 @@ export class NakamaService {
       const res = await this.sync_load_file(info, isOfficial, target, 'server_post', user_id, post_id, false);
       if (res.error) return false;
       const text = await res.value.text();
-      console.log(res);
       json = JSON.parse(text);
       // 내 게시물인지 여부를 로컬에 추가로 저장
       json['is_me'] = json['is_me'] || is_me;
