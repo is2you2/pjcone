@@ -244,7 +244,12 @@ export class CommunityPage implements OnInit {
           await this.nakama.AddPost(postInfo, actId, Boolean(2), false, postInfo['mainImage']?.['thumbnail']);
           await this.nakama.RemovePost(editedPost, undefined, actId);
           this.nakama.rearrange_posts();
-          this.p5loading.remove(actId);
+          await this.p5loading.update({
+            id: actId,
+            message: `${this.lang.text['AddPost']['WIP']}: ${postInfo['title']}`,
+            progress: 1,
+            forceEnd: 350,
+          });
           // 처리가 완료되었으면 첨부파일 정보는 무시하기
           for (let i = 0, j = postInfo?.['attachments'].length; i < j; i++)
             delete postInfo['attachments'][i]['blob'];
