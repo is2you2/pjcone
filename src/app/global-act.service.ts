@@ -1141,23 +1141,29 @@ export class GlobalActService {
         Catched = true;
         throw '사용자 지정서버에서 이미 성공함'
       };
-      let upload_time = new Date().getTime();
-      let only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
-      let filename = file.override_name || `${info?.user_id.replace(/\//g, '_')}_${upload_time}_${only_filename}.${file.file_ext}`;
-      const path = file.override_path ?? `${info?.user_id}/${upload_time}`;
+      const upload_time = new Date().getTime();
+      const only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
+      const filename = file.override_name || `${info?.user_id.replace(/\//g, '_')}_${upload_time}_${only_filename}.${file.file_ext}`;
+      const path = file.override_path ?? `${info?.user_id}/${upload_time}`.replace(/_/g, '/');
       CatchedAddress = `${protocol}//${address}:${info?.apache_port || 9002}/cdn/`;
       const startPath = filename.replace(/\//g, '_');
       progress = setInterval(async () => {
-        let res = await fetch(`${protocol}//${address}:${info?.cdn_port || 9001}/filesize/${startPath}`, { method: "POST" });
-        let currentSize = Number(await res.text());
-        let progressPercent = Math.floor(currentSize / file.size * 100);
-        this.p5loading.update({
-          id: actId,
-          message: `${override_try_msg ? override_try_msg + ': ' : ''}${file.filename}: ${progressPercent || 0}%`,
-        });
+        try {
+          const res = await fetch(`${protocol}//${address}:${info?.cdn_port || 9001}/filesize/${startPath}`, { method: "POST" });
+          const currentSize = Number(await res.text());
+          const progress = currentSize / file.size;
+          const progressPercent = Math.floor(progress * 100);
+          this.p5loading.update({
+            id: actId,
+            message: `${override_try_msg ? override_try_msg + ': ' : ''}${file.filename}: ${progressPercent || 0}%`,
+            progress: progress,
+          });
+        } catch (e) {
+          console.log('파일 크기 측정 오류: ', e);
+        }
       }, 700);
       let formData = new FormData();
-      let _file = new File([file.blob], filename);
+      const _file = new File([file.blob], filename);
       formData.append("files", _file);
       formData.append("path", path);
       formData.append("filename", file.override_filename || `${only_filename}.${file.file_ext}`);
@@ -1168,9 +1174,10 @@ export class GlobalActService {
       this.p5loading.update({
         id: actId,
         message: `${override_try_msg ? override_try_msg + ': ' : ''}${file.filename}: 100%`,
+        progress: 1,
       });
       clearInterval(progress);
-      let res = await fetch(CatchedAddress);
+      const res = await fetch(CatchedAddress);
       if (res.ok) Catched = true;
       else throw '요청 실패';
     } catch (e) {
@@ -1219,16 +1226,17 @@ export class GlobalActService {
   /** 사용자 지정 서버에 업로드 시도 */
   async try_upload_to_user_custom_fs(file: FileInfo, user_id: string, loadingId?: string, override_try_msg?: string, override_ffs_str?: string) {
     const actId = loadingId || `try_upload_to_user_custom_fs_${Date.now()}`;
-    this.p5loading.update({
+    await this.p5loading.update({
       id: actId,
       message: `${this.lang.text['Settings']['TryToFallbackFS']}: ${file.filename}`,
+      progress: null,
     });
     const upload_time = new Date().getTime();
     const only_filename = file.filename.substring(0, file.filename.lastIndexOf('.'));
     const filename = file.override_name || `${user_id.replace(/\//g, '_')}_${upload_time}_${only_filename}.${file.file_ext}`;
-    const path = file.override_path ?? `${user_id}/${upload_time}`;
+    const path = file.override_path ?? `${user_id}/${upload_time}`.replace(/_/g, '/');
     let formData = new FormData();
-    let _file = new File([file.blob], filename);
+    const _file = new File([file.blob], filename);
     formData.append("files", _file);
     formData.append("path", path);
     formData.append("filename", file.override_filename || `${only_filename}.${file.file_ext}`);
@@ -1237,8 +1245,8 @@ export class GlobalActService {
     let progress: any;
     try { // 사용자 지정 서버 업로드 시도 우선
       if (!override_ffs_str) throw '사용자 지정 서버 없음';
-      let split_fullAddress = override_ffs_str.split('://');
-      let address = split_fullAddress.pop().split(':');
+      const split_fullAddress = override_ffs_str.split('://');
+      const address = split_fullAddress.pop().split(':');
       let protocol = split_fullAddress.pop();
       if (protocol) {
         protocol += ':';
@@ -1246,24 +1254,31 @@ export class GlobalActService {
       let CatchedAddress = `${protocol}//${address[0]}:${address[1] || 9002}/cdn/`;
       const startPath = filename.replace(/\//g, '_');
       progress = setInterval(async () => {
-        let res = await fetch(`${protocol}//${address[0]}:9001/filesize/${startPath}`, { method: "POST" });
-        let currentSize = Number(await res.text());
-        let progressPercent = Math.floor(currentSize / file.size * 100);
-        this.p5loading.update({
-          id: actId,
-          message: `${override_try_msg ? override_try_msg + ': ' : ''}${file.filename}: ${progressPercent || 0}%`,
-        });
+        try {
+          const res = await fetch(`${protocol}//${address[0]}:9001/filesize/${startPath}`, { method: "POST" });
+          const currentSize = Number(await res.text());
+          const progress = currentSize / file.size;
+          const progressPercent = Math.floor(progress * 100);
+          this.p5loading.update({
+            id: actId,
+            message: `${override_try_msg ? override_try_msg + ': ' : ''}${file.filename}: ${progressPercent || 0}%`,
+            progress: progress,
+          });
+        } catch (e) {
+          console.log('FFS 파일 크기 측정 오류: ', e);
+        }
       }, 700);
-      let up_res = await fetch(`${protocol}//${address[0]}:9001/cdn/${filename}`, { method: "POST", body: formData });
+      const up_res = await fetch(`${protocol}//${address[0]}:9001/cdn/${filename}`, { method: "POST", body: formData });
       const received = await up_res.text();
       CatchedAddress += received;
       if (!up_res.ok) throw '업로드 단계에서 실패';
       this.p5loading.update({
         id: actId,
         message: `${override_try_msg ? override_try_msg + ': ' : ''}${file.filename}: 100%`,
+        progress: 1,
       });
       clearInterval(progress);
-      let res = await fetch(CatchedAddress);
+      const res = await fetch(CatchedAddress);
       if (!loadingId) this.p5loading.remove(actId);
       if (res.ok) return CatchedAddress;
       else throw '요청 실패';

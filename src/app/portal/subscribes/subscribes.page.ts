@@ -219,10 +219,10 @@ export class SubscribesPage implements OnInit {
                 this.nakama.save_groups_with_less_info();
                 // 해당 채널과 관련된 파일 일괄 삭제 (cdn)
                 try { // FFS 요청 우선
-                  let fallback = localStorage.getItem('fallback_fs');
+                  const fallback = localStorage.getItem('fallback_fs');
                   if (!fallback) throw '사용자 지정 서버 없음';
-                  let split_fullAddress = fallback.split('://');
-                  let address = split_fullAddress.pop().split(':');
+                  const split_fullAddress = fallback.split('://');
+                  const address = split_fullAddress.pop().split(':');
                   let protocol = split_fullAddress.pop();
                   if (protocol) {
                     protocol += ':';

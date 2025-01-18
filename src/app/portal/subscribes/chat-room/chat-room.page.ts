@@ -631,7 +631,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   async StopAndSaveVoiceRecording() {
     this.floatButton.RemoveFloatButton('chatroom-record');
     const actId = 'chatroom';
-    this.p5loading.update({
+    await this.p5loading.update({
       id: actId,
       message: this.lang.text['AddPost']['SavingRecord'],
     });
@@ -934,7 +934,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         alert.present();
       } else {
         const actId = 'chatroom';
-        this.p5loading.update({
+        await this.p5loading.update({
           id: actId,
           forceEnd: 1000,
         });
@@ -1242,7 +1242,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             if (this.WillLeave) return;
             if (!isMultipleSend) {
               const actId = 'chatroom';
-              this.p5loading.update({
+              await this.p5loading.update({
                 id: actId,
                 forceEnd: 1000,
               });
@@ -2507,6 +2507,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           is_me: true,
         };
         this.SendLocalMessage(msg);
+        this.p5loading.remove(CurrentMessage['actId']);
         continue;
       } // 아래, 온라인 행동
       this.sending_msg.push(tmp);
@@ -2586,7 +2587,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     if (this.TargetMessageBackground)
       this.TargetMessageBackground.style.backgroundColor = null;
     let actId = 'chatroom';
-    if (this.userInput.file) actId = 'chatroom_withfile';
+    if (this.userInput.file) actId = `chatroom_withfile_${this.info['id']}`;
     // 큐에 넣기
     this.SendQueue.push({
       ...this.userInput,
