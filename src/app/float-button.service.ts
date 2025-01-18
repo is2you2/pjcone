@@ -104,15 +104,13 @@ export class FloatButtonService {
     if (!this.p5canvas)
       this.CreateFloatButton();
     // 기존 버튼들의 위치 재조정
-    for (let btn of this.ArrayKeys) {
-      let right = Number(this.Buttons[btn].style('right').split('px').shift());
+    for (let i = this.ArrayKeys.length - 1; i >= 0; i--)
       this.AddAnimateActFunc({
         type: 'add',
-        button: this.Buttons[btn],
-        start: right,
-        end: right + 80,
+        button: this.Buttons[this.ArrayKeys[i]],
+        start: (i + 1),
+        end: (i + 1) + 80,
       });
-    }
     // 새 버튼 생성
     let float_button = this.p5canvas.createDiv(`<ion-icon style="width: 36px; height: 36px" name="${icon}"></ion-icon>`);
     float_button.style("position: absolute; right: 0; bottom: 56px; z-index: 1");
@@ -142,15 +140,13 @@ export class FloatButtonService {
     // 남아있는 버튼 개체들 재조정
     let RemovedIndex = -1;
     for (let i = this.ArrayKeys.length - 1; i >= 0; i--) {
-      if (RemovedIndex >= 0) {
-        let right = Number(this.Buttons[this.ArrayKeys[i]].style('right').split('px').shift());
+      if (RemovedIndex >= 0)
         this.AddAnimateActFunc({
           type: 'remove',
           button: this.Buttons[this.ArrayKeys[i]],
-          start: right,
-          end: right - 80,
+          start: (i + 1) * 80,
+          end: (i + 1) * 80 - 80,
         });
-      }
       // 해당 키 정보 삭제하기
       if (this.ArrayKeys[i] == key) {
         this.RemoveButtonQueue();
