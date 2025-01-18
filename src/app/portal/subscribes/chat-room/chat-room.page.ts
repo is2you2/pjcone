@@ -912,7 +912,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
             text: this.lang.text['ChatRoom']['Send'],
             handler: () => {
               for (let i = 0, j = ev.target.files.length; i < j; i++) {
-                this.selected_blobFile_callback_act(ev.target.files[i]);
+                this.selected_blobFile_callback_act(ev.target.files[i], undefined, undefined, undefined, false);
                 this.send();
               }
               this.noti.ClearNoti(7);
@@ -1506,7 +1506,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 한번에 여러파일 보내기 */
   async DropSendAct(Drops: any) {
     for (let i = 0, j = Drops.length; i < j; i++) {
-      this.selected_blobFile_callback_act(Drops[i].file);
+      this.selected_blobFile_callback_act(Drops[i].file, undefined, undefined, undefined, false);
       this.send();
     }
     setTimeout(() => {
@@ -1517,7 +1517,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   /** 파일 선택시 행동
    * @param path 다른 채널에서 공유시 원본이 저장된 경로
    */
-  selected_blobFile_callback_act(blob: any, contentRelated: ContentCreatorInfo[] = [], various = 'loaded', path?: string) {
+  selected_blobFile_callback_act(blob: any, contentRelated: ContentCreatorInfo[] = [], various = 'loaded', path?: string, show_toast = true) {
     this.userInput['file'] = {};
     this.userInput.file['filename'] = blob.name;
     this.userInput.file['file_ext'] = blob.name.split('.').pop() || blob.type || this.lang.text['ChatRoom']['unknown_ext'];
@@ -1545,7 +1545,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       };
     } catch (e) { }
     this.userInput.file.blob = blob;
-    this.create_selected_thumbnail();
+    this.create_selected_thumbnail(show_toast);
     this.inputPlaceholder = `(${this.lang.text['ChatRoom']['attachments']}: ${this.userInput.file.filename})`;
   }
 
@@ -1561,7 +1561,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
 
   /** 선택한 파일의 썸네일 만들기 */
-  async create_selected_thumbnail() {
+  async create_selected_thumbnail(show_toast = true) {
     this.global.set_viewer_category_from_ext(this.userInput.file);
     if (this.userInput.file.url) {
       try {
@@ -1572,18 +1572,20 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       return;
     }
     const FileURL = URL.createObjectURL(this.userInput.file.blob);
-    await this.p5loading.update({
-      id: 'chatroom',
-      message: `${this.lang.text['ContentViewer']['OnLoadContent']}: ${this.userInput.file.blob.name}`,
-      image: null,
-      forceEnd: null,
-    });
-    if (this.userInput.file?.viewer == 'image')
+    if (show_toast)
+      await this.p5loading.update({
+        id: 'chatroom',
+        message: `${this.lang.text['ContentViewer']['OnLoadContent']}: ${this.userInput.file.blob.name}`,
+        image: null,
+        forceEnd: null,
+      });
+    if (show_toast && this.userInput.file?.viewer == 'image')
       this.p5loading.update({
         id: 'chatroom',
         image: FileURL,
       });
-    this.p5loading.remove('chatroom');
+    if (show_toast)
+      this.p5loading.remove('chatroom');
     this.userInput.file['typeheader'] = this.userInput.file.blob.type.split('/')[0] || this.userInput.file.viewer;
     setTimeout(() => {
       URL.revokeObjectURL(FileURL);
