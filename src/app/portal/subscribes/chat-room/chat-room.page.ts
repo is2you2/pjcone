@@ -1987,7 +1987,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
    * @param isHistory 옛날 정보 불러오기 유무, false면 최신정보 불러오기 진행
    */
   async pull_msg_history(isHistory = true) {
-    if ((!this.pullable || this.next_cursor === undefined && this.ViewMsgIndex == 0) && isHistory) return;
+    if (!this.pullable && isHistory) return
+    if (this.next_cursor === undefined && this.ViewMsgIndex == 0 && isHistory) return;
     this.pullable = false;
     if (isHistory) {
       try {
