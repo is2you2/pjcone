@@ -1122,8 +1122,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         if (document.activeElement != document.getElementById(this.ChannelUserInputId)) {
           this.BlockAutoScrollDown = true;
           this.ChatLogs.scrollTo({ top: 0, behavior: 'smooth' });
-          if (!(this.next_cursor === undefined && !this.ViewMsgIndex || !this.pullable))
-            await this.pull_msg_history();
+          await this.pull_msg_history();
           this.BlockAutoScrollDown = false;
         }
       }
@@ -1988,7 +1987,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
    * @param isHistory 옛날 정보 불러오기 유무, false면 최신정보 불러오기 진행
    */
   async pull_msg_history(isHistory = true) {
-    if (!this.pullable && isHistory) return;
+    if ((!this.pullable || this.next_cursor === undefined && this.ViewMsgIndex == 0) && isHistory) return;
     this.pullable = false;
     if (isHistory) {
       try {
@@ -2091,9 +2090,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
       setTimeout(() => { // 스크롤이 생기지 않았다면 메시지 더 가져오기
         if (this.WillLeave) return;
-        if (this.next_cursor !== undefined)
-          if (this.ChatContDiv && this.ChatContDiv.clientHeight < this.ChatLogs.clientHeight)
-            this.pull_msg_history();
+        if (this.ChatContDiv && this.ChatContDiv.clientHeight < this.ChatLogs.clientHeight)
+          this.pull_msg_history();
       }, 0);
     } else { // 최근 메시지를 보려고 함
       let subtract = this.messages.length - this.ViewMsgIndex - this.ViewCount;
