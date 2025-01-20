@@ -315,7 +315,7 @@ export class GroupDetailPage implements OnInit, OnDestroy {
       this.announce_update_group_image(this.info.img);
     });
     let input = document.getElementById(this.file_sel_id) as HTMLInputElement;
-    input.value = '';
+    if (input) input.value = '';
   }
 
   announce_update_group_image(uri: string) {
