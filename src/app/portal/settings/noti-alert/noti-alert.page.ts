@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import { GlobalActService } from 'src/app/global-act.service';
+import { IndexedDBService } from 'src/app/indexed-db.service';
 import { LanguageSettingService } from 'src/app/language-setting.service';
 import { LocalNotiService } from 'src/app/local-noti.service';
 
@@ -16,6 +17,7 @@ export class NotiAlertPage implements OnInit {
     public lang: LanguageSettingService,
     public global: GlobalActService,
     private navCtrl: NavController,
+    private indexed: IndexedDBService,
   ) { }
 
   ngOnInit() { }
@@ -24,19 +26,32 @@ export class NotiAlertPage implements OnInit {
     this.global.p5KeyShortCut['Escape'] = () => {
       this.navCtrl.pop();
     }
-    let target = [
+    const target = [
       'icon_mono',
       'diychat',
       'todo',
       'simplechat',
     ];
     this.global.p5KeyShortCut['Digit'] = (index: number) => {
-      this.toggle_silent_set(target[index]);
+      if (target.length > index)
+        this.toggle_silent_set(target[index]);
+      else {
+        switch (index) {
+          case 4:
+            this.toggle_simplify();
+            break;
+        }
+      }
     }
   }
 
   toggle_silent_set(key: string) {
     this.noti.change_silent_settings(key);
+  }
+
+  toggle_simplify() {
+    this.noti.settings.simplify = !this.noti.settings.simplify;
+    this.indexed.saveTextFileToUserPath(JSON.stringify(this.noti.settings), 'notification_settings.json');
   }
 
   ionViewWillLeave() {

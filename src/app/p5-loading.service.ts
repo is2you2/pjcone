@@ -26,6 +26,8 @@ interface LoadingForm {
   fade?: number;
   /** 진행도와 무관하게 강제로 종료하기 (millis 후에) */
   forceEnd?: number;
+  /** 알림을 클릭할 수 있는지 여부, 설정이 안되어있으면 기본적으로 클릭 불가 */
+  clickable?: Function;
 }
 
 @Injectable({
@@ -80,6 +82,17 @@ export class P5LoadingService {
               thisLoading.style("padding: 8px");
               thisLoading.style("color: white");
               thisLoading.parent(this.parentDiv);
+              // 알림을 클릭할 수 있는지 여부 변경
+              if (info.clickable) {
+                thisLoading.style("cursor: pointer");
+                thisLoading.style("pointer-events: fill");
+                thisLoading.mouseClicked(() => {
+                  info.clickable?.();
+                });
+              } else {
+                thisLoading.style("cursor: auto");
+                thisLoading.style("pointer-events: none");
+              }
               // 레이아웃용 flex-div
               const flex_outlook = p.createDiv();
               flex_outlook.style('display: flex; flex-direction: row;');
@@ -113,16 +126,18 @@ export class P5LoadingService {
               info.messageElement = message;
               message.parent(contentForm);
               // 진행도 표시
-              const progress = p.createDiv();
-              progress.style('width: 24px; height: 24px;');
-              progress.style('flex-shrink: 0');
-              progress.style('border-radius: 50%');
-              if (info.progress === null) info.progress = undefined;
-              const floatAsPercent = Math.floor(info.progress * 100) || 0;
-              progress.style(`background: conic-gradient(var(--loading-done-color) 0% ${floatAsPercent}%, var(--loading-waiting-color) ${floatAsPercent}% 100%)`);
-              info.progressElement = progress;
-              info.nullProgress = 0;
-              progress.parent(contentForm);
+              if (!info.clickable) {
+                const progress = p.createDiv();
+                progress.style('width: 24px; height: 24px;');
+                progress.style('flex-shrink: 0');
+                progress.style('border-radius: 50%');
+                if (info.progress === null) info.progress = undefined;
+                const floatAsPercent = Math.floor(info.progress * 100) || 0;
+                progress.style(`background: conic-gradient(var(--loading-done-color) 0% ${floatAsPercent}%, var(--loading-waiting-color) ${floatAsPercent}% 100%)`);
+                info.progressElement = progress;
+                info.nullProgress = 0;
+                progress.parent(contentForm);
+              }
               info.fade = 0;
               if (info.forceEnd === null) delete info.forceEnd;
             }
@@ -141,7 +156,7 @@ export class P5LoadingService {
               if (this.loadingStack[key].progress === undefined) {
                 this.loadingStack[key].nullProgress = (this.loadingStack[key].nullProgress + 2) % 120;
                 const floatAsPercent = this.loadingStack[key].nullProgress;
-                this.loadingStack[key].progressElement.style(`background: conic-gradient(var(--loading-waiting-color) 0% ${floatAsPercent - 20}%, var(--loading-done-color) ${floatAsPercent - 20}% ${floatAsPercent}%, var(--loading-waiting-color) ${floatAsPercent}% 100%)`);
+                this.loadingStack[key].progressElement?.style(`background: conic-gradient(var(--loading-waiting-color) 0% ${floatAsPercent - 20}%, var(--loading-done-color) ${floatAsPercent - 20}% ${floatAsPercent}%, var(--loading-waiting-color) ${floatAsPercent}% 100%)`);
               }
               // 강제 종료가 예정되어있다면 초를 세고 종료시키기
               if (this.loadingStack[key].forceEnd !== undefined && this.loadingStack[key].forceEnd > 0)
@@ -193,6 +208,18 @@ export class P5LoadingService {
    */
   async update(info: LoadingForm, only_update = false) {
     if (this.stackKeys.includes(info.id)) {
+      // 이 알림은 클릭 가능합니다
+      if (info.clickable) {
+        this.loadingStack[info.id].element.style("cursor: pointer");
+        this.loadingStack[info.id].element.style("pointer-events: fill");
+        this.loadingStack[info.id].element.mouseClicked(() => {
+          info.clickable?.();
+        });
+      } else {
+        this.loadingStack[info.id].element.style("cursor: auto");
+        this.loadingStack[info.id].element.style("pointer-events: none");
+      }
+      // 이 알림은 곧 종료됩니다
       if (info.forceEnd !== undefined) {
         if (info.forceEnd === null) {
           this.loadingStack[info.id].forceEnd = undefined;
@@ -200,10 +227,11 @@ export class P5LoadingService {
           this.loadingStack[info.id].forceEnd = info.forceEnd;
           if (this.loadingStack[info.id].progress) {
             this.loadingStack[info.id].progress = 1;
-            this.loadingStack[info.id].progressElement.style('background: conic-gradient(var(--loading-done-color) 0% 100%');
+            this.loadingStack[info.id].progressElement?.style('background: conic-gradient(var(--loading-done-color) 0% 100%');
           }
         }
       }
+      // 알림의 내용을 변경합니다
       if (info.message !== undefined) {
         if (info.message === null) {
           delete this.loadingStack[info.id];
@@ -213,15 +241,17 @@ export class P5LoadingService {
           this.loadingStack[info.id].messageElement.html(info.message);
         }
       }
+      // 알림의 진행도를 변경합니다
       if (info.progress !== undefined) {
         if (info.progress === null) {
           delete this.loadingStack[info.id].progress;
         } else {
           this.loadingStack[info.id].progress = info.progress;
           const floatAsPercent = Math.floor(info.progress * 100);
-          this.loadingStack[info.id].progressElement.style(`background: conic-gradient(var(--loading-done-color) 0% ${floatAsPercent}%, var(--loading-waiting-color) ${floatAsPercent}% 100%)`);
+          this.loadingStack[info.id].progressElement?.style(`background: conic-gradient(var(--loading-done-color) 0% ${floatAsPercent}%, var(--loading-waiting-color) ${floatAsPercent}% 100%)`);
         }
       }
+      // 알림에 표시되는 이미지를 변경합니다
       if (info.image !== undefined) {
         if (info.image === null) {
           delete this.loadingStack[info.id].image;

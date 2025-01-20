@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { IndexedDBService } from './indexed-db.service';
 import { isNativefier } from './app.component';
+import { P5LoadingService } from './p5-loading.service';
 
 /** 웹에서도, 앱에서도 동작하는 요소로 구성된 알림폼 재구성  
  * 실험을 거쳐 차례로 병합해가기
@@ -42,6 +43,7 @@ export class LocalNotiService {
 
   constructor(
     private indexed: IndexedDBService,
+    private p5loading: P5LoadingService,
   ) { }
 
   /** settings에 해당하는 값을 변경한 후 저장함 */
@@ -78,6 +80,7 @@ export class LocalNotiService {
       todo: true,
       engineppt: true,
     },
+    simplify: false,
     /** 알림 진동 사용 여부 */
     vibrate: false,
   }
@@ -136,6 +139,18 @@ export class LocalNotiService {
     // 창을 바라보는 중이라면 무시됨, 바라보는 중이면서 같은 화면이면 무시됨
     if (document.hasFocus() && this.Current === header) return;
     if (!this.settings.silent[opt.smallIcon_ln || header || 'icon_mono']) return;
+    // 알림 간소화인 경우 로컬 푸쉬를 사용하지 않음
+    if (this.settings.simplify) {
+      this.p5loading.update({
+        id: `${opt.id || header}`,
+        message: `${opt.title}: ${opt.body}`,
+        clickable: _action_wm,
+        image: opt.image,
+        progress: 1,
+        forceEnd: 3500,
+      });
+      return;
+    }
     /** 기본 알림 옵션 (교체될 수 있음) */
     const input: any = {
       badge: opt.icon || `assets/badge/${opt.smallIcon_ln || header || 'favicon'}.png`,
@@ -184,6 +199,8 @@ export class LocalNotiService {
 
   /** 알림 제거하기 */
   ClearNoti(id: any) {
+    // 알림 간소화인 경우 로컬 푸쉬를 사용하지 않음
+    this.p5loading.remove(`${id}`);
     if (this.WebNoties[id]) this.WebNoties[id].close();
   }
 }
