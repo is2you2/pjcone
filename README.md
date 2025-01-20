@@ -74,7 +74,7 @@ angular.json 파일의 40번째 줄에 BaseHref 인자를 추가하기 ("/pjcone
 ## Blender 4.1.1 불러오기 제한사항
 - Triangluate 처리가 되어있어야 면처리의 정확도가 높아집니다
 - 리소스가 포함된 파일이어야 텍스처 등이 표현됩니다.
-- jsBlend 리포지토리를 받은 후 .git 폴더를 삭제해야 캐시가 올바르게 작동합니다.
+- [jsBlend](https://github.com/acweathersby/js.blend) 프로젝트에서 약간의 변형이 가해졌습니다. (MIT, 라이선스 표시됨)
 
 ## Nakama 서버에서 알림
 - 1: 사용자 전체에게 알림 메시지 발송
