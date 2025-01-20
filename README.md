@@ -16,7 +16,7 @@ Project: Cone 은 웹에서 쉽게 설치/삭제할 수 있는 내부망 특화 
 - 사용자측에서 파일 서버만 별도로 운영하여 파일을 관리할 수도 있습니다.
 
 ## 이 프로젝트에 기여
-이 프로젝트는 [ionic framework](https://ionicframework.com/)로 제작되었습니다.
+이 프로젝트는 [ionic framework](https://ionicframework.com/), [p5js](https://p5js.org/), [Godot engine](https://godotengine.org/)로 제작되었습니다.
 
 프로젝트에 직접 참여하는 경우, contributors.json 파일에 기여자 정보를 입력해주세요.  
 앱 내 설정 > 제작자 페이지에서 확인하실 수 있습니다.
