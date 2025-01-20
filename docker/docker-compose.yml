@@ -4,7 +4,7 @@ services:
     container_name: code-server
     volumes:
       - ./pjcone:/root/pjcone
-      - ./myblog:/root/myblog
+      # - ./myblog:/root/myblog
     environment:
       USER: root
       DISPLAY: :1
