@@ -1452,7 +1452,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         this.ListOnScrollAct();
       }, 3500);
     }
-    await new Promise((done) => setTimeout(done, 1000));
+    await new Promise((done) => setTimeout(done, 500));
     if (this.TargetMessageBackground)
       this.TargetMessageBackground.style.backgroundColor = null;
     targetChat = document.getElementById(targetChatId);
