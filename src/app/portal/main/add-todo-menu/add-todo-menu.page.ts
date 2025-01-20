@@ -1406,6 +1406,7 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
 
   doneTodo() {
     this.isButtonClicked = true;
+    this.navCtrl.pop();
     this.nakama.doneTodo(this.userInput);
   }
 
@@ -1900,12 +1901,9 @@ export class AddTodoMenuPage implements OnInit, OnDestroy {
       buttons: [{
         text: this.lang.text['TodoDetail']['remove'],
         handler: () => {
-          const deleteAct = async () => {
-            this.isButtonClicked = true;
-            await this.nakama.deleteTodoFromStorage(true, this.userInput);
-            this.navCtrl.pop();
-          }
-          deleteAct();
+          this.isButtonClicked = true;
+          this.navCtrl.pop();
+          this.nakama.deleteTodoFromStorage(true, this.userInput);
         },
         cssClass: 'redfont',
       }]
