@@ -1178,6 +1178,7 @@ export class GlobalActService {
       });
       clearInterval(progress);
       const res = await fetch(CatchedAddress);
+      if (!loadingId) this.p5loading.remove(actId);
       if (res.ok) Catched = true;
       else throw '요청 실패';
     } catch (e) {
@@ -1185,10 +1186,10 @@ export class GlobalActService {
       this.p5loading.update({
         id: actId,
         message: `${this.lang.text['GlobalAct']['CancelingUpload']}: ${file.filename}`,
+        forceEnd: 350,
       });
       console.log('cdn 파일 업로드 단계 실패:', e);
     }
-    if (!loadingId) this.p5loading.remove(actId);
     return Catched ? CatchedAddress : undefined;
   }
 
@@ -1284,7 +1285,7 @@ export class GlobalActService {
       else throw '요청 실패';
     } catch (e) {
       clearInterval(progress);
-      if (!loadingId) this.p5loading.remove(actId);
+      this.p5loading.remove(actId);
       return undefined;
     }
   }
