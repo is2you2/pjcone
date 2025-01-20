@@ -240,6 +240,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     }
   }
 
+  saveContextmenu() {
+    this.p5save_image(true, true);
+    return false;
+  }
   QRCode: any;
   isCropMode = false;
   @ViewChild('RemoteDraw') RemoteDraw: IonSelect;
@@ -528,9 +532,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         /** 상하단 메뉴 생성 */
         TopMenu = p.createElement('table');
         TopMenu.style('position: absolute; top: 0px;');
-        TopMenu.style(`width: 100%; height: ${BUTTON_HEIGHT}px;`);
+        TopMenu.style(`width: 100%; height: ${this.BUTTON_HEIGHT}px;`);
         TopMenu.style('background-color: var(--voidDraw-menu-background);')
         TopMenu.parent(targetDiv);
+        this.p5MenuTable.push(TopMenu);
         let top_row = TopMenu.elt.insertRow(0); // 상단 메뉴
         let AddTextCell = top_row.insertCell(0); // 추가
         if (this.global.ShowHint)
@@ -569,9 +574,10 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         }
         BottomMenu = p.createElement('table');
         BottomMenu.style('position: absolute; bottom: 0px;');
-        BottomMenu.style(`width: 100%; height: ${BUTTON_HEIGHT}px;`);
+        BottomMenu.style(`width: 100%; height: ${this.BUTTON_HEIGHT}px;`);
         BottomMenu.style('background-color: var(--voidDraw-menu-background);')
         BottomMenu.parent(targetDiv);
+        this.p5MenuTable.push(BottomMenu);
         let bottom_row = BottomMenu.elt.insertRow(0); // 하단 메뉴
         let UndoCell = bottom_row.insertCell(0); // Undo
         if (this.global.ShowHint)
@@ -755,7 +761,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           ScaleCenter.y = p.lerp(StartScaleCenter.y, p.height / 2, asSineGraph(ReinitLerp));
           CamPosition.x = p.lerp(StartCamPos.x, 0, asSineGraph(ReinitLerp));
           CamPosition.y = p.lerp(StartCamPos.y, 0, asSineGraph(ReinitLerp));
-          let HeightExceptMenu = targetDiv.clientHeight - 112;
+          let HeightExceptMenu = targetDiv.clientHeight - this.BUTTON_HEIGHT * 2;
           let windowRatio = targetDiv.clientWidth / HeightExceptMenu;
           let canvasRatio = ActualCanvas.width / ActualCanvas.height;
           if (windowRatio < canvasRatio)
@@ -900,7 +906,6 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         RemoteDraw = null;
         p.redraw();
       }
-      const BUTTON_HEIGHT = 56;
       /** 모든 터치 또는 마우스 포인터의 현재 지점 */
       let MouseAct: p5.Vector;
       /** 이동 연산용 시작점 */
@@ -1258,6 +1263,18 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       this.HeaderHeight = 56;
     }
     this.p5voidDraw?.windowResized();
+  }
+
+  /** 상단 및 하단 메뉴 */
+  p5MenuTable = [];
+  BUTTON_HEIGHT = 56;
+  ToggleFocusContextMenu() {
+    this.BUTTON_HEIGHT = 0;
+    this.ToggleFocusMode();
+    for (let table of this.p5MenuTable)
+      table.remove();
+    this.p5MenuTable.length = 0;
+    return false;
   }
 
   /** 중계서버 사용 가능한 서버 */
