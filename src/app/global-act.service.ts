@@ -1177,7 +1177,7 @@ export class GlobalActService {
         progress: 1,
       });
       clearInterval(progress);
-      const res = await fetch(CatchedAddress);
+      const res = await fetch(CatchedAddress, { method: 'HEAD' });
       if (!loadingId) this.p5loading.remove(actId);
       if (res.ok) Catched = true;
       else throw '요청 실패';
@@ -1279,7 +1279,7 @@ export class GlobalActService {
         progress: 1,
       });
       clearInterval(progress);
-      const res = await fetch(CatchedAddress);
+      const res = await fetch(CatchedAddress, { method: 'HEAD' });
       if (!loadingId) this.p5loading.remove(actId);
       if (res.ok) return CatchedAddress;
       else throw '요청 실패';
