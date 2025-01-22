@@ -2345,7 +2345,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.isSendingQueue = true;
     while (this.SendQueue.length) {
       const CurrentMessage = this.SendQueue.shift();
-      this.p5loading.update({
+      if (!CurrentMessage) continue;
+      await this.p5loading.update({
         id: CurrentMessage['actId'],
         progress: null,
         forceEnd: null,
@@ -2354,6 +2355,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       try {
         if (CurrentMessage.text.length > 600) // 메시지가 충분히 깁니다
           throw '메시지가 충분히 깁니다';
+        // 메시지를 편집하는 경우
         if (CurrentMessage.IsMsgEditMode !== undefined) {
           let edit_well = false;
           CurrentMessage.IsMsgEditMode.content['msg'] = CurrentMessage.text;
@@ -2400,7 +2402,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         result['file_ext'] = CurrentMessage.file.file_ext;
         result['type'] = CurrentMessage.file.type;
         try {
-          result['filesize'] = CurrentMessage.file.size || CurrentMessage.file.blob.size;
+          result['filesize'] = CurrentMessage.file.size || CurrentMessage.file.blob?.size;
           result['partsize'] = Math.ceil(result['filesize'] / FILE_BINARY_LIMIT);
         } catch (e) {
           result['url'] = CurrentMessage.file.url;
