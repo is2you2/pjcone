@@ -1848,7 +1848,7 @@ export class GlobalActService {
         cont.abort('주소 검토 시간 초과');
         cont = null;
       }, 250);
-      let res = await fetch(address, { signal: cont.signal });
+      let res = await fetch(address, { method: 'HEAD', signal: cont.signal });
       clearTimeout(id);
       if (res.ok) header_address = address;
       else throw '주소 없음';

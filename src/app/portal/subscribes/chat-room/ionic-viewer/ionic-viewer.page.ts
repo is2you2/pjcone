@@ -680,7 +680,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     } catch (e) {
       try { // 로컬에 파일이 없다면 URL 주소 정보를 검토하여 작업
         if (this.FileInfo.url) {
-          let res = await fetch(this.FileInfo.url, { signal: this.cont.signal });
+          let res = await fetch(this.FileInfo.url, { method: 'HEAD', signal: this.cont.signal });
           if (!res.ok) throw 'URL 링크 깨짐';
           this.FileURL = this.FileInfo.url;
         } else throw 'URL 없음'

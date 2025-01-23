@@ -778,7 +778,7 @@ export class AddPostPage implements OnInit, OnDestroy {
     this.global.set_viewer_category_from_ext(file);
     if (file.url) {
       try {
-        let res = await fetch(file.url, { signal: this.cont.signal });
+        let res = await fetch(file.url, { method: 'HEAD', signal: this.cont.signal });
         if (res.ok) file.thumbnail = file.url;
       } catch (e) { }
       file.typeheader = file.viewer;

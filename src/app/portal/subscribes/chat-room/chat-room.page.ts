@@ -1569,7 +1569,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.global.set_viewer_category_from_ext(this.userInput.file);
     if (this.userInput.file.url) {
       try {
-        let res = await fetch(this.userInput.file.url, { signal: this.cont.signal });
+        let res = await fetch(this.userInput.file.url, { method: 'HEAD', signal: this.cont.signal });
         if (res.ok) this.userInput.file.thumbnail = this.userInput.file.url;
       } catch (e) { }
       this.userInput.file.typeheader = this.userInput.file.viewer;
