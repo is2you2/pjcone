@@ -2691,7 +2691,8 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.PageWillDestroy = true;
     switch (this.FileInfo.viewer) {
       case 'image':
-        if ((this.FileInfo.size || this.FileInfo['filesize']) > 1000000) {
+        // 5MB 이상의 이미지는 썸네일로 관리하기
+        if ((this.FileInfo.size || this.FileInfo['filesize']) > 5000000) {
           let width = 0;
           let height = 0;
           const FixedSize = 192;
