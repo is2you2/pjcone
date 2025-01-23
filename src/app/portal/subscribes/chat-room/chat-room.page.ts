@@ -418,7 +418,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
                     content_creator: msg.content.content_creator,
                     content_related_creator: msg.content.content_related_creator,
                     file_ext: msg.content.file_ext,
-                    size: msg.content.filesize,
+                    size: msg.content.size,
                     partsize: msg.content.partsize,
                     type: msg.content.type,
                     viewer: msg.content.viewer,
@@ -2402,8 +2402,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         result['file_ext'] = CurrentMessage.file.file_ext;
         result['type'] = CurrentMessage.file.type;
         try {
-          result['filesize'] = CurrentMessage.file.size || CurrentMessage.file.blob?.size;
-          result['partsize'] = Math.ceil(result['filesize'] / FILE_BINARY_LIMIT);
+          result['size'] = CurrentMessage.file.size || CurrentMessage.file.blob?.size;
+          result['partsize'] = Math.ceil(result['size'] / FILE_BINARY_LIMIT);
         } catch (e) {
           result['url'] = CurrentMessage.file.url;
           isURL = true;

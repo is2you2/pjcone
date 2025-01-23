@@ -2690,6 +2690,52 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.WaitingLoaded.block = false;
     this.PageWillDestroy = true;
     switch (this.FileInfo.viewer) {
+      case 'image':
+        if ((this.FileInfo.size || this.FileInfo['filesize']) > 1000000) {
+          let width = 0;
+          let height = 0;
+          const FixedSize = 192;
+          if (this.image_info['width'] > this.image_info['height']) {
+            width = FixedSize;
+            height = this.image_info['height'] / this.image_info['width'] * FixedSize;
+          } else {
+            height = FixedSize;
+            width = this.image_info['width'] / this.image_info['height'] * FixedSize;
+          }
+          let canvas = this.p5canvas.createCanvas(width, height);
+          this.p5canvas.pixelDensity(1);
+          this.p5canvas.imageMode(this.p5canvas.CORNER);
+          this.p5canvas.loadImage(this.FileURL, async v => {
+            this.p5canvas.image(v, 0, 0, width, height);
+            this.p5canvas.fill(255, 128);
+            this.p5canvas.rect(0, 0, width, height);
+            this.p5canvas.textWrap(this.p5canvas.CHAR);
+            this.p5canvas.textSize(16);
+            let margin_ratio = height / 16;
+            this.p5canvas.push()
+            this.p5canvas.translate(margin_ratio / 6, margin_ratio / 6);
+            this.p5canvas.fill(0)
+            this.p5canvas.text((this.FileInfo['filename'] || this.FileInfo['name']),
+              margin_ratio, margin_ratio,
+              width - margin_ratio * 2, height - margin_ratio * 2);
+            this.p5canvas.filter(this.p5canvas.BLUR, 3, false);
+            this.p5canvas.pop();
+            this.p5canvas.fill(255);
+            this.p5canvas.text((this.FileInfo['filename'] || this.FileInfo['name']),
+              margin_ratio, margin_ratio,
+              width - margin_ratio * 2, height - margin_ratio * 2);
+            let base64 = canvas['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
+            try {
+              if (!this.FileInfo.alt_path && !this.FileInfo.path) throw '경로 없는 파일';
+              await this.indexed.saveBase64ToUserPath(base64, `${this.FileInfo.alt_path || this.FileInfo.path}_thumbnail.png`);
+              this.FileInfo.thumbnail = base64;
+              this.global.modulate_thumbnail(this.FileInfo, '', this.cont);
+            } catch (e) {
+              console.log('이미지 썸네일 저장 오류: ', e);
+            }
+          });
+        }
+        break;
       case 'video':
         try {
           const size = this.CacheMediaObject.size();
@@ -2729,7 +2775,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
             this.FileInfo.thumbnail = base64;
             this.global.modulate_thumbnail(this.FileInfo, '', this.cont);
           } catch (e) {
-            console.log('썸네일 저장 오류: ', e);
+            console.log('비디오 썸네일 저장 오류: ', e);
           }
         } catch (e) {
           setTimeout(() => {
