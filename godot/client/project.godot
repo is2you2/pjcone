@@ -27,9 +27,10 @@ Root="*res://Root.gd"
 window/size/viewport_width=360
 window/size/viewport_height=360
 window/energy_saving/keep_screen_on=false
-window/stretch/mode="canvas_items"
+window/stretch/mode="viewport"
 window/stretch/aspect="expand"
 window/handheld/orientation=1
+window/vsync/vsync_mode=0
 
 [editor_plugins]
 
