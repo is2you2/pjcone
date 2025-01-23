@@ -938,7 +938,7 @@ export class GlobalActService {
         try {
           if (msg_content['size'] > 5000000) return;
           if (!msg_content['url']) throw 'No URL';
-          let res = await fetch(msg_content['url'], { signal: cont?.signal });
+          let res = await fetch(msg_content['url'], { method: 'HEAD', signal: cont?.signal });
           if (res.ok) msg_content['thumbnail'] = msg_content['url'];
           else throw 'Not ok';
         } catch (e) {
