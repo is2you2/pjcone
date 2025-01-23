@@ -1044,7 +1044,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       if (!this.ShowGoToBottom)
         if (!this.ShowRecentMsg)
           this.init_last_message_viewer();
-      if (this.ShowRecentMsg && !this.BlockAutoScrollDown)
+      if (this.ShowRecentMsg && !this.BlockAutoScrollDown && !this.OnFinding)
         this.pull_msg_history(false);
     }
     this.ShowGoToBottom = !CheckScroll || this.ShowRecentMsg;
@@ -1121,7 +1121,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       let backQouteAct = async () => {
         if (document.activeElement != document.getElementById(this.ChannelUserInputId)) {
           this.BlockAutoScrollDown = true;
-          this.ChatLogs.scrollTo({ top: 0, behavior: 'smooth' });
+          this.ChatLogs.scrollTo({ top: 0, behavior: 'instant' });
           await this.pull_msg_history();
           this.BlockAutoScrollDown = false;
         }
@@ -1400,6 +1400,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     });
   }
 
+  /** 메시지를 찾는 중인지 여부 */
+  OnFinding = false;
   /** 인용 메시지를 찾을 때 자동으로 메시지 풀링되는 것을 막기 위해 존재함 */
   BlockAutoScrollDown = false;
   /** 해당 메시지 찾기 */
@@ -1414,6 +1416,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         targetChatBgId = id + '_bg';
         break;
       }
+    this.OnFinding = true;
     this.BlockAutoScrollDown = true;
     this.p5loading.update({
       id: 'FindQoute',
@@ -1448,6 +1451,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }, 100);
       setTimeout(() => {
         this.BlockAutoScrollDown = false;
+        this.OnFinding = false;
         if (this.WillLeave) return;
         this.ListOnScrollAct();
       }, 3500);
@@ -1491,6 +1495,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         progress: 0,
       });
       this.BlockAutoScrollDown = false;
+      this.OnFinding = false;
     }
     this.p5loading.remove('FindQoute');
   }
@@ -1663,6 +1668,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.prev_cursor = '';
       this.next_cursor = '';
       this.pullable = true;
+      this.is_pulling = false;
+      this.OnFinding = false;
       this.init_last_message_viewer();
       this.file_sel_id = `chatroom_${this.info.id}_${new Date().getTime()}`;
       this.ChannelUserInputId = `chatroom_input_${this.info.id}_${new Date().getTime()}`;
@@ -1969,6 +1976,9 @@ export class ChatRoomPage implements OnInit, OnDestroy {
   }
   inputPlaceholder = this.lang.text['ChatRoom']['input_placeholder'];
 
+  /** 메시지를 불러오는 중인지 여부 */
+  is_pulling = false;
+  /** 예전 메시지 받기가 가능한지 여부, 버튼과 연동됨 */
   pullable = true;
   ViewableMessage = [];
   ViewMsgIndex = 0;
@@ -1982,8 +1992,12 @@ export class ChatRoomPage implements OnInit, OnDestroy {
    * @param isHistory 옛날 정보 불러오기 유무, false면 최신정보 불러오기 진행
    */
   async pull_msg_history(isHistory = true) {
-    if (!this.pullable && isHistory) return
-    if (this.next_cursor === undefined && this.ViewMsgIndex == 0 && isHistory) return;
+    if (isHistory && (!this.pullable
+      || this.next_cursor === undefined && this.ViewMsgIndex == 0))
+      return;
+    if (!isHistory && this.BlockAutoScrollDown) return;
+    if (this.is_pulling) return;
+    this.is_pulling = true;
     this.pullable = false;
     if (isHistory) {
       try {
@@ -2008,6 +2022,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
           this.modulate_chatmsg(0, this.ViewableMessage.length);
           this.ShowRecentMsg = this.messages.length > this.ViewMsgIndex + this.ViewCount;
           this.pullable = this.next_cursor !== undefined;
+          this.is_pulling = false;
           return;
         }
         let v = await this.nakama.servers[this.isOfficial][this.target].client.listChannelMessages(
@@ -2108,6 +2123,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       }
       this.pullable = this.next_cursor !== undefined;
     }
+    this.is_pulling = false;
   }
 
   useSpeaker = false;
