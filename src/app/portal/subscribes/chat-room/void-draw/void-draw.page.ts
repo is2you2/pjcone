@@ -241,7 +241,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   }
 
   saveContextmenu() {
-    this.p5save_image(true, true);
+    this.p5save_image(true);
     return false;
   }
   QRCode: any;
