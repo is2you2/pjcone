@@ -653,7 +653,8 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     const FileURL = URL.createObjectURL(blob);
     new p5((p: p5) => {
       p.setup = () => {
-        document.getElementById(this.voidDrawContextId)['value'] = '';
+        const inputElement = document.getElementById(this.voidDrawContextId);
+        if (inputElement) inputElement['value'] = '';
         p.noCanvas();
         p.loadImage(FileURL, v => {
           this.global.PageDismissAct['chatroom-voiddraw-quick'] = (v: any) => {
