@@ -1392,12 +1392,12 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           channel: channel_id,
         }));
         await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
+        this.RemoteLoadingCtrl = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['WaitingConnection'] });
+        this.RemoteLoadingCtrl.present();
         this.IceWebRTCWsClient.send(JSON.stringify({
           type: 'size_req',
           channel: channel_id,
         }));
-        this.RemoteLoadingCtrl = await this.loadingCtrl.create({ message: this.lang.text['voidDraw']['WaitingConnection'] });
-        this.RemoteLoadingCtrl.present();
       } else // 새 채널 생성하기
         this.IceWebRTCWsClient.send(JSON.stringify({
           type: 'init',
@@ -1564,6 +1564,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             break;
         }
       } catch (e) {
+        console.log('원격 그림판 WebRTC 구성시 오류: ', e);
         this.IceWebRTCWsClient.close(1000, 'onmessage_error');
       }
     }
