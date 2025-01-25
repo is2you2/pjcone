@@ -46,6 +46,9 @@ export class InstantCallPage implements OnInit, OnDestroy {
   /** 웹소켓 서버 채널 ID */
   ChannelId: string;
   @ViewChild('InstantCallServer') InstantCallServer: IonSelect;
+
+  webrtcActId = 'instcall';
+
   ngOnInit() {
     this.ServerList = this.nakama.get_all_online_server();
     setTimeout(() => {
@@ -136,13 +139,13 @@ export class InstantCallPage implements OnInit, OnDestroy {
         await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
         this.webrtc.StatusText = this.lang.text['InstantCall']['Connecting'];
         this.global.PeerConnected = true;
-        this.webrtc.initialize('audio')
+        this.webrtc.initialize('audio', this.webrtcActId)
           .then(() => {
-            this.webrtc.HangUpCallBack = () => {
+            this.webrtc.Peers[this.webrtcActId].HangUpCallBack = () => {
               if (this.global.InstantCallWSClient) this.global.InstantCallWSClient.close(1000, 'hangup_webrtc');
             }
             this.ShowWaiting();
-            this.webrtc.CreateOffer();
+            this.webrtc.CreateOffer(this.webrtcActId);
             this.webrtc.StatusText = this.lang.text['InstantCall']['Connecting'];
             this.global.PeerConnected = true;
             this.global.InstantCallSend(JSON.stringify({
@@ -187,13 +190,13 @@ export class InstantCallPage implements OnInit, OnDestroy {
         case 'init_req':
           this.webrtc.StatusText = this.lang.text['InstantCall']['Connecting'];
           this.global.PeerConnected = true;
-          this.webrtc.initialize('audio')
+          this.webrtc.initialize('audio', this.webrtcActId)
             .then(async () => {
-              this.webrtc.HangUpCallBack = () => {
+              this.webrtc.Peers[this.webrtcActId].HangUpCallBack = () => {
                 if (this.global.InstantCallWSClient) this.global.InstantCallWSClient.close(1000, 'hangup_callback');
               }
               this.ShowWaiting();
-              this.webrtc.CreateOffer();
+              this.webrtc.CreateOffer(this.webrtcActId);
               await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
               this.global.InstantCallSend(JSON.stringify({
                 type: 'socket_react',
@@ -208,24 +211,24 @@ export class InstantCallPage implements OnInit, OnDestroy {
               this.webrtc.WEBRTC_REPLY_INIT_SIGNAL(json['data_str'], {
                 client: this.global.InstantCallWSClient,
                 channel: this.ChannelId,
-              });
+              }, this.webrtcActId);
               if (json['data_str'] == 'EOL')
                 this.webrtc.CreateAnswer({
                   client: this.global.InstantCallWSClient,
                   channel: this.ChannelId,
-                });
+                }, this.webrtcActId);
               break;
             case 'WEBRTC_REPLY_INIT_SIGNAL_PART':
               this.webrtc.WEBRTC_REPLY_INIT_SIGNAL_PART({
                 client: this.global.InstantCallWSClient,
                 channel: this.ChannelId,
-              });
+              }, this.webrtcActId);
               break;
             case 'WEBRTC_ICE_CANDIDATES':
               this.webrtc.WEBRTC_ICE_CANDIDATES(json['data_str'], {
                 client: this.global.InstantCallWSClient,
                 channel: this.ChannelId,
-              });
+              }, this.webrtcActId);
               this.global.InstantCallSend(JSON.stringify({
                 type: 'init_end',
                 channel: this.ChannelId,
@@ -237,13 +240,13 @@ export class InstantCallPage implements OnInit, OnDestroy {
               this.webrtc.WEBRTC_INIT_REQ_SIGNAL({
                 client: this.global.InstantCallWSClient,
                 channel: this.ChannelId,
-              })
+              }, this.webrtcActId);
               break;
             case 'WEBRTC_RECEIVE_ANSWER':
               this.webrtc.WEBRTC_RECEIVE_ANSWER(json['data_str'], {
                 client: this.global.InstantCallWSClient,
                 channel: this.ChannelId,
-              });
+              }, this.webrtcActId);
               break;
           }
           break;
@@ -270,7 +273,7 @@ export class InstantCallPage implements OnInit, OnDestroy {
       this.global.InstantCallWSClient.onmessage = null;
       this.global.InstantCallWSClient.onerror = null;
       this.global.InstantCallWSClient = null;
-      this.webrtc.close_webrtc();
+      this.webrtc.close_webrtc(this.webrtcActId);
       this.CallClosed = true;
       if (!this.PageOut) this.navCtrl.pop();
     }

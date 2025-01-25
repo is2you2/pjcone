@@ -56,10 +56,13 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     this.ChangeResolution.dismiss();
   }
 
+  PageId = 'voiddraw';
+
   /** 페이지 진입 후 페이지가 준비되었을 때 행동시키기 */
   QueueAfterLoad: Function;
   navParams: any;
   ngOnInit() {
+    this.PageId = `voiddraw_${Date.now()}`;
     this.route.queryParams.subscribe(async _p => {
       try {
         const navParams = this.router.getCurrentNavigation().extras.state;
@@ -103,12 +106,12 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     this.global.StoreShortCutAct('void-draw')
     this.AddShortCut();
     await this.p5loading.update({
-      id: 'voiddraw',
+      id: this.PageId,
       message: this.lang.text['voidDraw']['UseThisImage'],
       forceEnd: null,
     }, true);
     // 다른 페이지에서 진입하는 경우가 있으므로 remove가 분리되어있어야함
-    this.p5loading.remove('voiddraw');
+    this.p5loading.remove(this.PageId);
   }
 
   AddShortCut() {
@@ -159,7 +162,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       if (this.RemoteLoadingCtrl) this.RemoteLoadingCtrl.dismiss();
       this.isDrawServerCreated = false;
       this.p5SetDrawable(true);
-      this.webrtc.close_webrtc();
+      this.webrtc.close_webrtc(this.PageId);
       this.dismiss_draw(true);
     }
   }
@@ -357,7 +360,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
               let showToast = async () => {
                 const FileURL = URL.createObjectURL(blob);
                 await this.p5loading.update({
-                  id: 'voiddraw',
+                  id: this.PageId,
                   image: FileURL,
                   forceEnd: 1000,
                 });
@@ -368,7 +371,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
               showToast();
               // 결과물을 클립보드에 저장하기
               if (for_clipboard) {
-                this.global.WriteValueToClipboard('image/png', blob, 'image.png', 'voiddraw')
+                this.global.WriteValueToClipboard('image/png', blob, 'image.png', this.PageId)
                   .catch(_e => {
                     // 아케이드에서 원격 연결 후 벗어날 때 오류발생, 무시 가능함
                   });
@@ -381,13 +384,13 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                     data: {
                       name: tmp_filename,
                       img: base64,
-                      loadingCtrl: 'voiddraw',
+                      loadingCtrl: this.PageId,
                     }
                   });
                 this.navCtrl.pop();
               } else {
                 // 그냥 지금 그림 저장하기
-                this.p5loading.toast(`${this.lang.text['ContentViewer']['DownloadThisFile']}: ${tmp_filename}`, 'voiddraw');
+                this.p5loading.toast(`${this.lang.text['ContentViewer']['DownloadThisFile']}: ${tmp_filename}`, this.PageId);
                 let link = sp.createA(base64, null);
                 link.elt.download = tmp_filename;
                 link.hide();
@@ -421,7 +424,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
               break;
           }
           if (!fromRemote && this.ReadyToShareAct)
-            this.webrtc.dataChannel.send(JSON.stringify({
+            this.webrtc.Peers[this.PageId].dataChannel.send(JSON.stringify({
               type: 'same',
               act: 'history_act',
               data: direction,
@@ -466,7 +469,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             this.p5SetCanvasViewportInit();
           } else localStorage.removeItem('voiddraw_autoRes');
           if (this.ReadyToShareAct && own)
-            this.webrtc.dataChannel.send(JSON.stringify({
+            this.webrtc.Peers[this.PageId].dataChannel.send(JSON.stringify({
               type: 'res_tog',
               data: this.ToggleAutoResolution,
             }));
@@ -477,7 +480,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           this.resolutionEffectedWidth = p.floor(ActualCanvas.width * (Number(this.resolutionRatio) || 1) / 100);
           this.resolutionEffectedHeight = p.floor(ActualCanvas.height * (Number(this.resolutionRatio) || 1) / 100);
           if (this.ReadyToShareAct && own)
-            this.webrtc.dataChannel.send(JSON.stringify({
+            this.webrtc.Peers[this.PageId].dataChannel.send(JSON.stringify({
               type: 'res_slider',
               data: this.resolutionRatio,
             }));
@@ -518,7 +521,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           if (is_host && this.ReadyToShareAct) {
             let crop_pos = this.p5getCropPos();
             let crop_size = this.p5getCropSize();
-            this.webrtc.dataChannel.send(JSON.stringify({
+            this.webrtc.Peers[this.PageId].dataChannel.send(JSON.stringify({
               type: 'draw',
               act: 'crop',
               cropPX: crop_pos.x,
@@ -975,7 +978,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         CurrentDraw['pos']?.push(_pos);
         CurrentDraw['pos']?.push(_pos);
         if (this.ReadyToShareAct)
-          this.webrtc.dataChannel.send(JSON.stringify({
+          this.webrtc.Peers[this.PageId].dataChannel.send(JSON.stringify({
             type: 'draw',
             act: 'start',
             data: CurrentDraw,
@@ -1000,7 +1003,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
               if (CurrentDraw && CurrentDraw['pos'])
                 CurrentDraw['pos'].push(_pos);
               if (this.ReadyToShareAct)
-                this.webrtc.dataChannel.send(JSON.stringify({
+                this.webrtc.Peers[this.PageId].dataChannel.send(JSON.stringify({
                   type: 'draw',
                   act: 'moved',
                   data: _pos,
@@ -1044,7 +1047,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                   CurrentDraw['pos']?.push(_pos);
                   CurrentDraw['pos']?.push(_pos);
                   if (this.ReadyToShareAct)
-                    this.webrtc.dataChannel.send(JSON.stringify({
+                    this.webrtc.Peers[this.PageId].dataChannel.send(JSON.stringify({
                       type: 'draw',
                       act: 'end',
                       data: _pos,
@@ -1103,7 +1106,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             ScaleStartRatio = CamScale;
             CurrentDraw = null;
             if (this.ReadyToShareAct)
-              this.webrtc.dataChannel.send(JSON.stringify({
+              this.webrtc.Peers[this.PageId].dataChannel.send(JSON.stringify({
                 type: 'draw',
                 act: 'cancel',
               }));
@@ -1133,7 +1136,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
               if (CurrentDraw && CurrentDraw['pos'])
                 CurrentDraw['pos'].push(_pos);
               if (this.ReadyToShareAct)
-                this.webrtc.dataChannel.send(JSON.stringify({
+                this.webrtc.Peers[this.PageId].dataChannel.send(JSON.stringify({
                   type: 'draw',
                   act: 'moved',
                   data: _pos,
@@ -1172,7 +1175,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                 CurrentDraw['pos']?.push(_pos);
                 CurrentDraw['pos']?.push(_pos);
                 if (this.ReadyToShareAct)
-                  this.webrtc.dataChannel.send(JSON.stringify({
+                  this.webrtc.Peers[this.PageId].dataChannel.send(JSON.stringify({
                     type: 'draw',
                     act: 'end',
                     data: _pos,
@@ -1453,14 +1456,14 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             break;
           case 'init_req':
             this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Init'];
-            this.webrtc.initialize('data')
+            this.webrtc.initialize('data', this.PageId)
               .then(async () => {
-                this.webrtc.HangUpCallBack = () => {
+                this.webrtc.Peers[this.PageId].HangUpCallBack = () => {
                   this.IceWebRTCWsClient.close(1000, 'hangup_webrtc');
                 }
                 this.CreateOnMessageLink();
                 this.CreateOnOpenAct();
-                this.webrtc.CreateOffer();
+                this.webrtc.CreateOffer(this.PageId);
                 await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
                 this.IceWebRTCWsClient.send(JSON.stringify({
                   type: 'socket_react',
@@ -1490,13 +1493,13 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                 this.webrtc.WEBRTC_REPLY_INIT_SIGNAL(json['data_str'], {
                   client: this.IceWebRTCWsClient,
                   channel: channel_id,
-                });
+                }, this.PageId);
                 if (json['data_str'] == 'EOL') {
                   this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Offer'];
                   this.webrtc.CreateAnswer({
                     client: this.IceWebRTCWsClient,
                     channel: channel_id,
-                  });
+                  }, this.PageId);
                 }
                 this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Ice'];
                 break;
@@ -1504,13 +1507,13 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                 this.webrtc.WEBRTC_REPLY_INIT_SIGNAL_PART({
                   client: this.IceWebRTCWsClient,
                   channel: channel_id,
-                });
+                }, this.PageId);
                 break;
               case 'WEBRTC_ICE_CANDIDATES':
                 this.webrtc.WEBRTC_ICE_CANDIDATES(json['data_str'], {
                   client: this.IceWebRTCWsClient,
                   channel: channel_id,
-                });
+                }, this.PageId);
                 this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_datachannel'];
                 this.IceWebRTCWsClient.send(JSON.stringify({
                   type: 'init_end',
@@ -1521,13 +1524,13 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                 this.webrtc.WEBRTC_INIT_REQ_SIGNAL({
                   client: this.IceWebRTCWsClient,
                   channel: channel_id,
-                });
+                }, this.PageId);
                 break;
               case 'WEBRTC_RECEIVE_ANSWER':
                 this.webrtc.WEBRTC_RECEIVE_ANSWER(json['data_str'], {
                   client: this.IceWebRTCWsClient,
                   channel: channel_id,
-                });
+                }, this.PageId);
                 break;
             }
             break;
@@ -1541,16 +1544,16 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             this.p5voidDraw['redraw']();
             this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Init'];
             // 그림판이 준비되었다면 WebRTC 구성을 시도
-            this.webrtc.initialize('data')
+            this.webrtc.initialize('data', this.PageId)
               .then(() => {
-                this.webrtc.HangUpCallBack = () => {
+                this.webrtc.Peers[this.PageId].HangUpCallBack = () => {
                   if (this.IceWebRTCWsClient)
                     this.IceWebRTCWsClient.close(1000, 'hangup_callback');
                 }
                 this.CreateOnOpenAct();
                 this.CreateOnMessageLink();
                 this.RemoteLoadingCtrl.message = this.lang.text['voidDraw']['WebRTC_Offer'];
-                this.webrtc.CreateOffer();
+                this.webrtc.CreateOffer(this.PageId);
                 this.IceWebRTCWsClient.send(JSON.stringify({
                   type: 'init_req',
                 }));
@@ -1578,7 +1581,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       this.AddrQRShare.dismiss();
       this.isDrawServerCreated = false;
       this.p5SetDrawable(true);
-      this.webrtc.close_webrtc();
+      this.webrtc.close_webrtc(this.PageId);
       this.IceWebRTCWsClient.onopen = null;
       this.IceWebRTCWsClient.onclose = null;
       this.IceWebRTCWsClient.onmessage = null;
@@ -1589,7 +1592,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
 
   /** WEBRTC 시작시 행동 등록 */
   CreateOnOpenAct(AlternativeAct = async () => { }) {
-    this.webrtc.dataChannelOpenAct = async () => {
+    this.webrtc.Peers[this.PageId].dataChannelOpenAct = async () => {
       this.ReadyToShareAct = true;
       this.p5ClearCurrentDraw();
       if (AlternativeAct) await AlternativeAct();
@@ -1612,9 +1615,9 @@ export class VoidDrawPage implements OnInit, OnDestroy {
             filename: `voidDrawRemoveImage.${file_ext}`,
           }, {
             user_id: `tmp_${this.QRNavParams.channel}_${this.QRNavParams.user_id}`,
-          }, protocol, address, false, 'voiddraw', this.lang.text['ChatRoom']['voidDraw']);
-          this.p5loading.remove('voiddraw');
-          this.webrtc.dataChannel.send(JSON.stringify({
+          }, protocol, address, false, this.PageId, this.lang.text['ChatRoom']['voidDraw']);
+          this.p5loading.remove(this.PageId);
+          this.webrtc.Peers[this.PageId].dataChannel.send(JSON.stringify({
             type: 'background',
             data: uploaded_address,
           }));
@@ -1631,7 +1634,12 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   }
   /** WebRTC 데이터 수신 행동 만들기 */
   CreateOnMessageLink() {
-    this.webrtc.dataChannelOnMsgAct = (msg: any) => {
+    // 메시지 받기 구성이 우선되므로 구성을 여기서 직접 새로 만들기
+    if (!this.webrtc.Peers[this.PageId]) {
+      this.webrtc.Peers[this.PageId] = {};
+      this.webrtc.Peers[this.PageId].TypeIn = 'data';
+    }
+    this.webrtc.Peers[this.PageId].dataChannelOnMsgAct = (msg: any) => {
       let json = JSON.parse(msg);
       switch (json.type) {
         case 'drawline': // 그림판에 있던 선 동기화
@@ -1691,7 +1699,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           break;
       }
     }
-    this.webrtc.dataChannelOnCloseAct = () => {
+    this.webrtc.Peers[this.PageId].dataChannelOnCloseAct = () => {
       this.CancelRemoteAct();
     }
   }
@@ -1722,7 +1730,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         return;
       }
       this.p5loading.update({
-        id: 'voiddraw',
+        id: this.PageId,
       });
       this.p5save_image();
     }
@@ -1748,7 +1756,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   WillLeaveHere = false;
   ionViewWillLeave() {
     this.p5loading.update({
-      id: 'voiddraw',
+      id: this.PageId,
       forceEnd: 0,
     }, true);
     this.global.ToggleFullScreen(false);

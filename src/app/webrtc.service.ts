@@ -13,6 +13,29 @@ import { IndexedDBService } from './indexed-db.service';
 import { VoiceRecorder } from "@langx/capacitor-voice-recorder";
 import { GlobalActService, isDarkMode } from './global-act.service';
 
+/** 각 피어의 구성요소 양식 */
+interface PeerForm {
+  TypeIn?: 'video' | 'audio' | 'data';
+  PeerConnection?: RTCPeerConnection;
+  /** 통화중 여부, 통화중일 땐 통화요청 할 수 없고, 통화 끊기를 할 수 있음 */
+  isConnected?: boolean;
+  /** 응답에 반응하여 진입 후 통화 연결되기 전 */
+  JoinInited?: boolean;
+  LocalOffer?: any;
+  /** LocalOffer 결과물 분할처리된 것을 관리 */
+  LocalOfferPartArray?: string[];
+  LocalAnswer?: any;
+  ReceivedOfferPart?: string;
+  ReceivedAnswerPart?: string;
+  IceCandidates?: any[];
+  /** 전화끊기시 추가 행동 등록 */
+  HangUpCallBack?: Function;
+  dataChannel?: RTCDataChannel;
+  dataChannelOpenAct?: Function;
+  dataChannelOnMsgAct?: Function;
+  dataChannelOnCloseAct?: Function;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -36,63 +59,47 @@ export class WebrtcService {
 
   private localMedia: any;
   private localStream: MediaStream;
-  private PeerConnection: RTCPeerConnection;
-
   private remoteMedia: any;
 
-  /** 통화 시작 시간 */
-  startTime: number;
-
-  private TypeIn: 'video' | 'audio' | 'data';
+  /** 피어간 P2P 다중 연결을 허용하기 위해 각 피어들을 id 별로 묶어서 관리 */
+  Peers: { [id: string]: PeerForm } = {};
   /** WebRTC 자체 사용 여부  
-   * p5 컨트롤러 개체를 다루기 위해 필요함
+   * p5 컨트롤러 개체를 다루기 위해 필요함  
+   * 이 변수는 미디어 채널을 사용하는지 여부와 동일함
    */
   private OnUse = false;
-  /** 통화요청 가능 여부, 통화요청을 할 수 있고, 통화 끊기는 할 수 없음 */
-  isCallable = false;
-  /** 통화중 여부, 통화중일 땐 통화요청 할 수 없고, 통화 끊기를 할 수 있음 */
-  private isConnected = false;
-  /** 응답에 반응하여 진입 후 통화 연결되기 전 */
-  private JoinInited = false;
-
-  private LocalOffer: any;
-  private LocalOfferPartArray: string[];
-  LocalAnswer: any;
-  private ReceivedOfferPart = '';
-  private ReceivedAnswerPart = '';
-  private IceCandidates = [];
-  /** 상태를 표시하는 문구 */
+  /** 상태를 표시하는 문구 (간이 통화에서 표시됨, 기억되어야 하므로 여기에 배치됨) */
   StatusText = '';
-  /** 전화끊기시 추가 행동 등록 */
-  HangUpCallBack: Function;
-  /** 초기화 회신 반응 행동 */
-  InitReplyCallback: Function;
 
   /** 기존 내용 삭제 및 WebRTC 기반 구축  
    * 마이크 권한을 확보하고 연결하기
-   * @param type 영상통화 / 음성통화
-   * @param media_const 미디어 입출 정보 지정, 빈 값을 넣어 기본 값으로 행동하기
-   * @param nakama 통화가 진행중인 채널 정보
-   * @param LeaveMatch nakama에서 연결된 매치가 있다면 연결끊기 처리
+   * @param type 영상통화 / 음성통화 / 데이터 채널 연결
+   * @param actId 데이터 채널을 사용하는 경우 id 처리 (미디어 채널은 1개만 사용하므로 허용하지 않음)
    */
-  async initialize(type: 'video' | 'audio' | 'data', media_const?: MediaStreamConstraints) {
-    // 보안 연결 필수, 안되면 안내 띄우고 무시
-    if (type != 'data' && window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0)
-      throw this.lang.text['WebRTCDevManager']['SecurityError'];
-    if (type != 'data') {
-      let answer = await VoiceRecorder.requestAudioRecordingPermission();
-      if (!answer.value) throw this.lang.text['WebRTCDevManager']['SecurityError'];
-    }
-    if (this.OnUse) {
+  async initialize(type: 'video' | 'audio' | 'data', actId: string) {
+    // 이미 사용중이라면 오류 띄우고 끝내기
+    if (this.OnUse && type != 'data') {
       this.p5toast.show({
         text: this.lang.text['WebRTCDevManager']['AlreadyCalling'],
       });
       throw this.lang.text['WebRTCDevManager']['AlreadyCalling'];
     }
-    await this.close_webrtc();
-    this.TypeIn = type;
+    // 기존 연결 끊기 행동 전 선행 검토
+    if (type != 'data') {
+      // 미디어 채널인 경우 보안 연결 필수, 안되면 안내 띄우고 무시
+      if (window.location.protocol == 'http:' && window.location.host.indexOf('localhost') != 0)
+        throw this.lang.text['WebRTCDevManager']['SecurityError'];
+      let answer = await VoiceRecorder.requestAudioRecordingPermission();
+      if (!answer.value) throw this.lang.text['WebRTCDevManager']['SecurityError'];
+    }
+    await this.close_webrtc(actId);
+    if (!this.Peers[actId]) this.Peers[actId] = {};
+    this.Peers[actId].TypeIn = type;
+    this.Peers[actId].IceCandidates = [];
+    this.Peers[actId].ReceivedOfferPart = '';
+    this.Peers[actId].ReceivedAnswerPart = '';
     if (type != 'data') { // 화상/음성 통화일 때에만 개체 생성
-      this.createP5_panel();
+      this.createP5_panel(actId);
       try { // 로컬 정보 생성 및 받기
         this.localMedia = document.createElement(type);
         this.localMedia.id = 'webrtc_video';
@@ -139,42 +146,38 @@ export class WebrtcService {
             }
           } else break;
         // 로컬 미디어 정보 관리
-        if (!media_const) {
-          media_const = {};
-          if (type == 'video') {
-            media_const['video'] = true;
-            if (videoId) media_const['video'] = { deviceId: videoId };
-          } else media_const['video'] = false;
-          media_const['audio'] = true;
-          if (audioId) media_const['audio'] = { deviceId: audioId };
-        }
+        let media_const = {};
+        if (type == 'video') {
+          media_const['video'] = true;
+          if (videoId) media_const['video'] = { deviceId: videoId };
+        } else media_const['video'] = false;
+        media_const['audio'] = true;
+        if (audioId) media_const['audio'] = { deviceId: audioId };
         this.localStream = await navigator.mediaDevices.getUserMedia(media_const);
         this.localMedia.srcObject = this.localStream;
-        this.isCallable = true;
       } catch (e) {
         console.log('navigator.getUserMedia error: ', e);
-        await this.close_webrtc();
+        await this.close_webrtc(actId);
         this.p5toast.show({
           text: `${this.lang.text['WebRTCDevManager']['InitErr']}: ${e}`,
         });
       }
-    } else this.isCallable = true;
-    await this.createCall();
+    }
+    await this.createCall(actId);
     if (this.p5callButton)
       this.p5callButton.elt.disabled = false;
-    this.StatusText = this.lang.text['InstantCall']['Connecting'];
   }
 
   /** 최초 연결쌍이 구성되었을 때 사용자 정보 요청하기 */
-  WEBRTC_INIT_REQ_SIGNAL(_target?: any) {
-    let data_str = JSON.stringify(this.LocalOffer);
-    this.LocalOfferPartArray = data_str.match(/(.{1,64})/g);
-    this.WEBRTC_REPLY_INIT_SIGNAL_PART(_target);
+  WEBRTC_INIT_REQ_SIGNAL(_target: any, actId: string) {
+    let data_str = JSON.stringify(this.Peers[actId].LocalOffer);
+    this.Peers[actId].LocalOfferPartArray = data_str.match(/(.{1,64})/g);
+    this.WEBRTC_REPLY_INIT_SIGNAL_PART(_target, actId);
   }
 
-  WEBRTC_REPLY_INIT_SIGNAL_PART(_target: any) {
+  WEBRTC_REPLY_INIT_SIGNAL_PART(_target: any, actId: string) {
     if (_target['client'] && _target['client'].readyState == _target['client'].OPEN) {
-      let data = this.LocalOfferPartArray.shift();
+      let data = this.Peers[actId].LocalOfferPartArray.shift();
       if (data) {
         _target['client'].send(JSON.stringify({
           type: 'socket_react',
@@ -193,13 +196,12 @@ export class WebrtcService {
     }
   }
 
-  WEBRTC_REPLY_INIT_SIGNAL(data_str: string, _target?: any) {
+  WEBRTC_REPLY_INIT_SIGNAL(data_str: string, _target: any, actId: string) {
     if (data_str == 'EOL') { // 수신 완료
-      this.createRemoteOfferFromAnswer(JSON.parse(this.ReceivedOfferPart));
-      this.ReceivedOfferPart = '';
-      if (this.InitReplyCallback) this.InitReplyCallback();
+      this.createRemoteOfferFromAnswer(JSON.parse(this.Peers[actId].ReceivedOfferPart), actId);
+      this.Peers[actId].ReceivedOfferPart = '';
     } else {
-      this.ReceivedOfferPart += data_str;
+      this.Peers[actId].ReceivedOfferPart += data_str;
       if (_target['client'] && _target['client'].readyState == _target['client'].OPEN) {
         _target['client'].send(JSON.stringify({
           type: 'socket_react',
@@ -210,26 +212,26 @@ export class WebrtcService {
     }
   }
 
-  WEBRTC_RECEIVE_ANSWER(data_str: string, _target?: any) {
+  WEBRTC_RECEIVE_ANSWER(data_str: string, _target: any, actId: string) {
     if (data_str == 'EOL') { // 수신 완료
-      this.ReceiveRemoteAnswer(JSON.parse(this.ReceivedAnswerPart), _target);
-      this.ReceivedAnswerPart = '';
-    } else this.ReceivedAnswerPart += data_str;
+      this.ReceiveRemoteAnswer(JSON.parse(this.Peers[actId].ReceivedAnswerPart), _target, actId);
+      this.Peers[actId].ReceivedAnswerPart = '';
+    } else this.Peers[actId].ReceivedAnswerPart += data_str;
   }
 
-  WEBRTC_ICE_CANDIDATES(data_str: string, _target?: any) {
-    this.ReceiveIceCandidate(JSON.parse(data_str), _target);
+  WEBRTC_ICE_CANDIDATES(data_str: string, _target: any, actId: string) {
+    this.ReceiveIceCandidate(JSON.parse(data_str), _target, actId);
   }
 
-  WEBRTC_NEGOCIATENEEDED(data_str: string) {
+  WEBRTC_NEGOCIATENEEDED(data_str: string, actId: string) {
     if (data_str == 'EOL') { // 수신 완료
-      this.createRemoteOfferFromAnswer(JSON.parse(this.ReceivedOfferPart));
-      this.ReceivedOfferPart = '';
-      this.CreateAnswer();
-    } else this.ReceivedOfferPart += data_str;
+      this.createRemoteOfferFromAnswer(JSON.parse(this.Peers[actId].ReceivedOfferPart), actId);
+      this.Peers[actId].ReceivedOfferPart = '';
+      this.CreateAnswer(undefined, actId);
+    } else this.Peers[actId].ReceivedOfferPart += data_str;
   }
 
-  createP5_panel() {
+  createP5_panel(actId: string) {
     this.OnUse = true;
     if (this.p5canvas) {
       clearTimeout(this.p5waitingAct);
@@ -262,7 +264,7 @@ export class WebrtcService {
       p.setup = () => {
         let osc: p5.Oscillator;
         let waiting = () => {
-          if (this.JoinInited) {
+          if (this.Peers[actId].JoinInited) {
             osc.stop(.1);
             clearTimeout(this.p5waitingAct);
           } else {
@@ -280,8 +282,8 @@ export class WebrtcService {
           waiting();
         }, 0);
         // 다른 기기에서 통화가 연결된 경우 나머지 기기에서 중복 연결 안내음 표시 제거
-        this.p5hangup = (duplicated = false) => {
-          if (!this.isConnected && !duplicated) return;
+        this.p5hangup = () => {
+          if (!this.Peers[actId]?.isConnected) return;
           osc.stop(.1);
           clearTimeout(this.p5waitingAct);
           osc = new p5.Oscillator(380, 'sine');
@@ -338,7 +340,7 @@ export class WebrtcService {
         this.p5callButton.style('width', '40px');
         this.p5callButton.style('height', '40px');
         this.p5callButton.mouseClicked(() => {
-          this.CreateAnswer();
+          this.CreateAnswer(undefined, actId);
         });
         this.p5callButton.elt.disabled = true;
         this.p5callButton = this.p5callButton;
@@ -389,7 +391,7 @@ export class WebrtcService {
             dev_button.elt.disabled = false;
             try {
               let info: MediaStreamConstraints = {};
-              if (this.TypeIn == 'video' && v.data.videoinput)
+              if (this.Peers[actId].TypeIn == 'video' && v.data.videoinput)
                 info['video'] = {
                   deviceId: { exact: v.data.videoinput.deviceId },
                 }
@@ -400,10 +402,10 @@ export class WebrtcService {
               this.localStream.getTracks().forEach(track => track.stop());
               this.localStream = await navigator.mediaDevices.getUserMedia(info);
               this.localMedia.srcObject = this.localStream;
-              this.PeerConnection.getSenders().forEach(sender => {
+              this.Peers[actId].PeerConnection.getSenders().forEach(sender => {
                 if (sender.track) sender.replaceTrack(this.localStream.getTracks()[0])
               });
-              this.CreateOffer();
+              this.CreateOffer(actId);
             } catch (e) {
               console.log('미디어 스트림 변경 오류: ', e);
             }
@@ -413,7 +415,7 @@ export class WebrtcService {
           this.global.StoreShortCutAct('webrtc-manage');
           this.global.ActLikeModal('webrtc-manage-io-dev', {
             list: JSON.parse(JSON.stringify(list)),
-            typein: this.TypeIn,
+            typein: this.Peers[actId].TypeIn,
             dismiss: 'webrtc-manage',
           });
         });
@@ -427,7 +429,7 @@ export class WebrtcService {
         hangup_button.style('width', '40px');
         hangup_button.style('height', '40px');
         hangup_button.mouseClicked(async () => {
-          await this.close_webrtc();
+          await this.close_webrtc(actId);
         });
       }
 
@@ -473,10 +475,8 @@ export class WebrtcService {
   }
 
   /** 상대방에게 연결 요청 */
-  async createCall() {
-    this.isCallable = false;
-    this.isConnected = true; // 연결된건 아니지만 통화종료를 수행할 수 있도록
-    this.startTime = window.performance.now();
+  async createCall(actId: string) {
+    this.Peers[actId].isConnected = true; // 연결된건 아니지만 통화종료를 수행할 수 있도록
 
     let servers: RTCConfiguration;
     try {
@@ -490,19 +490,19 @@ export class WebrtcService {
       });
       servers = null;
     }
-    this.PeerConnection = new RTCPeerConnection(servers);
+    this.Peers[actId].PeerConnection = new RTCPeerConnection(servers);
 
-    this.PeerConnection.onicecandidate = (ev) => this.handleConnection(ev);
+    this.Peers[actId].PeerConnection.onicecandidate = (ev) => this.handleConnection(ev, actId);
 
-    this.PeerConnection.oniceconnectionstatechange = (ev) => {
-      console.log('ICE Connection state: ', this.PeerConnection.iceConnectionState);
+    this.Peers[actId].PeerConnection.oniceconnectionstatechange = (ev) => {
+      console.log('ICE Connection state: ', this.Peers[actId].PeerConnection.iceConnectionState);
     };
 
-    this.PeerConnection.onconnectionstatechange = async (ev: any) => {
+    this.Peers[actId].PeerConnection.onconnectionstatechange = async (ev: any) => {
       switch (ev.target.connectionState) {
         case 'failed': // 실패
         case 'disconnected': // 연결 끊어짐
-          await this.close_webrtc();
+          await this.close_webrtc(actId);
           break;
         case 'connected':
           if (this.p5waitingAct)
@@ -514,95 +514,83 @@ export class WebrtcService {
       }
     };
     // Add local stream to connection and create offer to connect.
-    if (this.TypeIn != 'data') {
-      this.localStream.getTracks().forEach((track: any) => this.PeerConnection.addTrack(track, this.localStream));
-      this.PeerConnection.ontrack = (ev: any) => {
+    if (this.Peers[actId].TypeIn != 'data') {
+      this.localStream.getTracks().forEach((track: any) => this.Peers[actId].PeerConnection.addTrack(track, this.localStream));
+      this.Peers[actId].PeerConnection.ontrack = (ev: any) => {
         this.remoteMedia.srcObject = ev.streams[0];
       };
-    } else this.createDataChannel();
-    this.PeerConnection.ondatachannel = (event: any) => {
-      this.dataChannel = event.channel;
+    } else this.createDataChannel(undefined, actId);
+    this.Peers[actId].PeerConnection.ondatachannel = (event: any) => {
+      this.Peers[actId].dataChannel = event.channel;
     };
-    this.PeerConnection.onnegotiationneeded = async (_ev: any) => {
+    this.Peers[actId].PeerConnection.onnegotiationneeded = async (_ev: any) => {
       // 스트림 설정 변경시 재협상 필요, sdp 재교환해야함
       // 교환한 사람쪽에서 이 트리거가 발동됨
-      if (this.JoinInited) { // 응답 받아 진입한 경우에도 동작하므로 구분에 유의한다
-        await this.PeerConnection.createOffer({
+      if (this.Peers[actId].JoinInited) { // 응답 받아 진입한 경우에도 동작하므로 구분에 유의한다
+        await this.Peers[actId].PeerConnection.createOffer({
           offerToReceiveVideo: true,
-        }).then((ev: any) => this.createdOffer(ev))
+        }).then((ev: any) => this.createdOffer(ev, actId))
           .catch((e: any) => this.setSessionDescriptionError(e));
       }
     }
   }
 
-  dataChannel: RTCDataChannel;
-  dataChannelOpenAct: Function;
-  dataChannelOnMsgAct: Function;
-  dataChannelOnCloseAct: Function;
-  createDataChannel(option?: string) {
-    this.dataChannel = this.PeerConnection.createDataChannel(option);
-    this.createDataChannelListener();
+  createDataChannel(option?: string, actId?: string) {
+    this.Peers[actId].dataChannel = this.Peers[actId].PeerConnection.createDataChannel(option);
+    this.createDataChannelListener(actId);
   }
 
-  createDataChannelListener() {
-    this.dataChannel.onopen = (_ev: any) => {
-      if (this.dataChannelOpenAct) this.dataChannelOpenAct();
+  createDataChannelListener(actId: string) {
+    this.Peers[actId].dataChannel.onopen = (_ev: any) => {
+      if (this.Peers[actId].dataChannelOpenAct) this.Peers[actId].dataChannelOpenAct();
     };
-    this.dataChannel.onclose = (_ev: any) => {
-      if (this.dataChannelOnCloseAct) this.dataChannelOnCloseAct();
-      this.dataChannelOpenAct = null;
-      this.dataChannelOnMsgAct = null;
-      this.dataChannelOnCloseAct = null;
+    this.Peers[actId].dataChannel.onclose = (_ev: any) => {
+      if (this.Peers[actId].dataChannelOnCloseAct) this.Peers[actId].dataChannelOnCloseAct();
+      this.Peers[actId].dataChannelOpenAct = null;
+      this.Peers[actId].dataChannelOnMsgAct = null;
+      this.Peers[actId].dataChannelOnCloseAct = null;
     };
-    this.dataChannel.onmessage = (event: any) => {
-      if (this.dataChannelOnMsgAct) this.dataChannelOnMsgAct(event.data);
+    this.Peers[actId].dataChannel.onmessage = (event: any) => {
+      if (this.Peers[actId].dataChannelOnMsgAct) this.Peers[actId].dataChannelOnMsgAct(event.data);
     };
-  }
-
-  send(msg: string) {
-    try {
-      this.dataChannel.send(msg);
-    } catch (e) {
-      console.log('WebRTC 메시지 발송 실패: ', e);
-    }
   }
 
   /** 전화 요청 생성 */
-  CreateOffer() {
+  CreateOffer(actId: string) {
     if (this.p5callButton) this.p5callButton.hide();
 
-    this.PeerConnection.createOffer({
+    this.Peers[actId].PeerConnection.createOffer({
       offerToReceiveVideo: true,
-    }).then(ev => this.createdOffer(ev))
+    }).then(ev => this.createdOffer(ev, actId))
       .catch(e => this.setSessionDescriptionError(e));
   }
 
-  private handleConnection(event: any) {
+  private handleConnection(event: any, actId: string) {
     let iceCandidate = event.candidate;
 
     if (iceCandidate)
-      this.IceCandidates.push(new RTCIceCandidate(iceCandidate));
+      this.Peers[actId].IceCandidates.push(new RTCIceCandidate(iceCandidate));
   }
 
   /** iceCandidate를 수신받으면 잠시 후에 답변발송을 함 */
   ReplyIceCandidate: any;
   /** ice candidate 공유 받음 */
-  ReceiveIceCandidate(newIceCandidate: any, _target?: any) {
+  ReceiveIceCandidate(newIceCandidate: any, _target: any, actId: string) {
     if (this.ReplyIceCandidate) clearTimeout(this.ReplyIceCandidate);
     this.ReplyIceCandidate = setTimeout(async () => {
-      for (let i = 0, j = this.IceCandidates.length; i < j; i++) {
+      for (let i = 0, j = this.Peers[actId].IceCandidates.length; i < j; i++) {
         if (_target['client'] && _target['client'].readyState == _target['client'].OPEN)
           _target['client'].send(JSON.stringify({
             type: 'socket_react',
             act: 'WEBRTC_ICE_CANDIDATES',
             channel: _target['channel'],
-            data_str: JSON.stringify(this.IceCandidates[i]),
+            data_str: JSON.stringify(this.Peers[actId].IceCandidates[i]),
           }));
         await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
       }
-      this.IceCandidates.length = 0;
+      this.Peers[actId].IceCandidates.length = 0;
     }, 800);
-    this.PeerConnection.addIceCandidate(newIceCandidate)
+    this.Peers[actId].PeerConnection.addIceCandidate(newIceCandidate)
       .then(() => {
         console.log('Success to add new ice candidate');
       }).catch((e: any) => {
@@ -611,27 +599,27 @@ export class WebrtcService {
   }
 
   // Logs offer creation and sets peer connection session descriptions.
-  private createdOffer(description: any) {
-    this.LocalOffer = description;
+  private createdOffer(description: any, actId: string) {
+    this.Peers[actId].LocalOffer = description;
 
-    this.PeerConnection.setLocalDescription(description)
+    this.Peers[actId].PeerConnection.setLocalDescription(description)
       .then(() => {
-        this.setLocalDescriptionSuccess(this.PeerConnection);
+        this.setLocalDescriptionSuccess(this.Peers[actId].PeerConnection);
       }).catch((e: any) => this.setSessionDescriptionError(e));
   }
 
   /** 상대방이 생성한 offer를 받음 */
-  createRemoteOfferFromAnswer(description: any) {
-    this.PeerConnection.setRemoteDescription(description)
+  createRemoteOfferFromAnswer(description: any, actId: string) {
+    this.Peers[actId].PeerConnection.setRemoteDescription(description)
       .then(() => {
-        this.setRemoteDescriptionSuccess(this.PeerConnection);
+        this.setRemoteDescriptionSuccess(this.Peers[actId].PeerConnection);
       }).catch((e: any) => this.setSessionDescriptionError(e));
   }
 
   /** 응답해주기 */
-  CreateAnswer(_target?: any) {
-    this.PeerConnection.createAnswer()
-      .then((desc: any) => this.createdAnswer(desc, _target))
+  CreateAnswer(_target: any, actId: string) {
+    this.Peers[actId].PeerConnection.createAnswer()
+      .then((desc: any) => this.createdAnswer(desc, _target, actId))
       .catch((e: any) => this.setSessionDescriptionError(e));
   }
 
@@ -646,13 +634,13 @@ export class WebrtcService {
   }
 
   // Logs answer to offer creation and sets peer connection session descriptions.
-  private async createdAnswer(description: any, _target?: any) {
+  private async createdAnswer(description: any, _target: any, actId: string) {
     if (this.p5callButton) this.p5callButton.hide();
-    this.LocalAnswer = description;
+    this.Peers[actId].LocalAnswer = description;
 
-    this.PeerConnection.setLocalDescription(description)
+    this.Peers[actId].PeerConnection.setLocalDescription(description)
       .then(() => {
-        this.setLocalDescriptionSuccess(this.PeerConnection);
+        this.setLocalDescriptionSuccess(this.Peers[actId].PeerConnection);
       }).catch((e: any) => this.setSessionDescriptionError(e));
 
     let data_str = JSON.stringify(description);
@@ -674,27 +662,27 @@ export class WebrtcService {
         channel: _target.channel,
         data_str: 'EOL',
       }));
-    this.JoinInited = true;
+    this.Peers[actId].JoinInited = true;
   }
 
   /** 상대방으로부터 답변을 받음 */
-  async ReceiveRemoteAnswer(description: any, _target?: any) {
-    this.PeerConnection.setRemoteDescription(description)
+  async ReceiveRemoteAnswer(description: any, _target: any, actId: string) {
+    this.Peers[actId].PeerConnection.setRemoteDescription(description)
       .then(() => {
-        this.setRemoteDescriptionSuccess(this.PeerConnection);
+        this.setRemoteDescriptionSuccess(this.Peers[actId].PeerConnection);
       }).catch((e: any) => this.setSessionDescriptionError(e));
     // 방 생성자가 ice candidate 를 공유함
-    for (let i = 0, j = this.IceCandidates.length; i < j; i++)
+    for (let i = 0, j = this.Peers[actId].IceCandidates.length; i < j; i++)
       if (_target['client'] && _target['client'].readyState == _target['client'].OPEN) {
         _target['client'].send(JSON.stringify({
           type: 'socket_react',
           channel: _target['channel'],
           act: 'WEBRTC_ICE_CANDIDATES',
-          data_str: JSON.stringify(this.IceCandidates[i]),
+          data_str: JSON.stringify(this.Peers[actId].IceCandidates[i]),
         }));
         await new Promise((done) => setTimeout(done, this.global.WebsocketRetryTerm));
       }
-    this.IceCandidates.length = 0;
+    this.Peers[actId].IceCandidates.length = 0;
   }
 
   private setSessionDescriptionError(error: any) {
@@ -707,58 +695,46 @@ export class WebrtcService {
   }
 
   /** 통화 종료하기 */
-  private async HangUpCall() {
-    if (this.p5hangup) this.p5hangup();
-    this.isCallable = true;
-    this.isConnected = false;
-    if (this.PeerConnection) {
-      this.PeerConnection.close();
-      this.PeerConnection.onicecandidate = null;
-      this.PeerConnection.oniceconnectionstatechange = null;
-      this.PeerConnection.onconnectionstatechange = null;
-      this.PeerConnection.ontrack = null;
-      this.PeerConnection.ondatachannel = null;
-      this.PeerConnection.onnegotiationneeded = null;
+  private HangUpCall(actId: string) {
+    this.Peers[actId].isConnected = false;
+    if (this.Peers[actId].PeerConnection) {
+      this.Peers[actId].PeerConnection.close();
+      this.Peers[actId].PeerConnection.onicecandidate = null;
+      this.Peers[actId].PeerConnection.oniceconnectionstatechange = null;
+      this.Peers[actId].PeerConnection.onconnectionstatechange = null;
+      this.Peers[actId].PeerConnection.ontrack = null;
+      this.Peers[actId].PeerConnection.ondatachannel = null;
+      this.Peers[actId].PeerConnection.onnegotiationneeded = null;
     }
-    this.PeerConnection = null;
+    this.Peers[actId].PeerConnection = null;
   }
 
-  /** webrtc 관련 개체 전부 삭제 */
-  async close_webrtc(checkIfData = false) {
-    if (checkIfData && this.TypeIn != 'data') return;
-    this.InitReplyCallback = null;
-    await this.HangUpCall();
-    if (this.localMedia) this.localMedia.remove();
-    if (this.remoteMedia) this.remoteMedia.remove();
-    this.OnUse = false;
-    this.isCallable = false;
-    this.isConnected = false;
-    if (this.localStream) {
-      this.localStream.getVideoTracks().forEach((track: any) => track.stop());
-      this.localStream.getAudioTracks().forEach((track: any) => track.stop());
-    }
-    if (this.HangUpCallBack) {
-      try {
-        await this.HangUpCallBack();
-      } catch (e) {
-        console.log('전화 끊기 추가동작 오류: ', e);
+  /** webrtc 관련 개체 전부 삭제
+   * @param actId 만약 데이터라면 id를 반드시 같이 넘겨주셔야 합니다
+   */
+  async close_webrtc(actId: string) {
+    // 없는 통화라면 무시함
+    if (!this.Peers[actId]) return;
+    this.HangUpCall(actId);
+    await this.Peers[actId].HangUpCallBack?.();
+    if (this.Peers[actId].TypeIn != 'data') {
+      this.OnUse = false;
+      if (this.p5hangup) this.p5hangup();
+      if (this.localMedia) this.localMedia.remove();
+      if (this.remoteMedia) this.remoteMedia.remove();
+      if (this.localStream) {
+        this.localStream.getVideoTracks().forEach((track: any) => track.stop());
+        this.localStream.getAudioTracks().forEach((track: any) => track.stop());
       }
-      this.HangUpCallBack = null;
+      this.localMedia = null;
+      this.localStream = null;
+      this.remoteMedia = null;
     }
-    this.localMedia = null;
-    this.localStream = null;
-    this.remoteMedia = null;
-    this.LocalOffer = null;
-    this.LocalAnswer = null;
-    if (this.dataChannel) {
-      this.dataChannel.onopen = null;
-      this.dataChannel.onclose = null;
-      this.dataChannel.onmessage = null;
+    if (this.Peers[actId].dataChannel) {
+      this.Peers[actId].dataChannel.onopen = null;
+      this.Peers[actId].dataChannel.onclose = null;
+      this.Peers[actId].dataChannel.onmessage = null;
     }
-    this.dataChannel = null;
-    this.ReceivedOfferPart = '';
-    this.ReceivedAnswerPart = '';
-    this.JoinInited = false;
-    this.IceCandidates.length = 0;
+    delete this.Peers[actId];
   }
 }
