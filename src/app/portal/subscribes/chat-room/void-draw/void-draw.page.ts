@@ -106,7 +106,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
     this.global.StoreShortCutAct('void-draw')
     this.AddShortCut();
     await this.p5loading.update({
-      id: this.PageId,
+      id: 'voiddraw',
       message: this.lang.text['voidDraw']['UseThisImage'],
       forceEnd: null,
     }, true);
@@ -360,7 +360,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
               let showToast = async () => {
                 const FileURL = URL.createObjectURL(blob);
                 await this.p5loading.update({
-                  id: this.PageId,
+                  id: 'voiddraw',
                   image: FileURL,
                   forceEnd: 1000,
                 });
@@ -390,7 +390,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
                 this.navCtrl.pop();
               } else {
                 // 그냥 지금 그림 저장하기
-                this.p5loading.toast(`${this.lang.text['ContentViewer']['DownloadThisFile']}: ${tmp_filename}`, this.PageId);
+                this.p5loading.toast(`${this.lang.text['ContentViewer']['DownloadThisFile']}: ${tmp_filename}`, 'voiddraw');
                 let link = sp.createA(base64, null);
                 link.elt.download = tmp_filename;
                 link.hide();
@@ -1617,7 +1617,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
           }, {
             user_id: `tmp_${this.QRNavParams.channel}_${this.QRNavParams.user_id}`,
           }, protocol, address, false, this.PageId, this.lang.text['ChatRoom']['voidDraw']);
-          this.p5loading.remove(this.PageId);
+          this.p5loading.remove('voiddraw');
           this.webrtc.Peers[this.PageId].dataChannel.send(JSON.stringify({
             type: 'background',
             data: uploaded_address,
@@ -1731,7 +1731,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
         return;
       }
       this.p5loading.update({
-        id: this.PageId,
+        id: 'voiddraw',
       });
       this.p5save_image();
     }
@@ -1757,7 +1757,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
   WillLeaveHere = false;
   ionViewWillLeave() {
     this.p5loading.update({
-      id: this.PageId,
+      id: 'voiddraw',
       forceEnd: 0,
     }, true);
     this.global.ToggleFullScreen(false);
