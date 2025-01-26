@@ -1130,13 +1130,14 @@ export class AddPostPage implements OnInit, OnDestroy {
           }
         }
       }
-      await this.nakama.RemovePost(this.userInput, undefined, actId);
+      await this.nakama.RemovePost(this.userInput, false, actId);
       if (this.OriginalInfo) // 기존 게시물 정보 삭제
-        await this.nakama.RemovePost(this.OriginalInfo, undefined, actId);
+        await this.nakama.RemovePost(this.OriginalInfo, false, actId);
     }
     this.p5loading.update({
       id: actId,
       message: `${this.lang.text['AddPost']['WIP']}: ${this.userInput.title}`,
+      progress: null,
     });
     try {
       // 게시물 아이디 구성하기
