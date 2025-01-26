@@ -1465,6 +1465,7 @@ export class ChatRoomPage implements OnInit, OnDestroy {
     this.TargetMessageObject = targetChat;
     this.TargetMessageBackground = targetChatBg;
     if (!this.nakama.ChatroomLinkAct) return;
+    const FindedForceEnd = 2500;
     // 찾기를 진행하면서 다른 페이지로 넘어간 경우 찾기 행동을 보류함
     if (targetChat === null || this.WillLeave) {
       this.p5loading.update({
@@ -1478,7 +1479,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
         targetChat = document.getElementById(targetChatId);
         targetChatBg = document.getElementById(targetChatBgId);
         FindExactAct();
-        this.p5loading.remove('FindQoute');
+        this.p5loading.update({
+          id: 'FindQoute',
+          clickable: () => {
+            FindExactAct();
+          },
+          forceEnd: FindedForceEnd,
+        }, true);
       });
       return;
     }
@@ -1498,7 +1505,13 @@ export class ChatRoomPage implements OnInit, OnDestroy {
       this.BlockAutoScrollDown = false;
       this.OnFinding = false;
     }
-    this.p5loading.remove('FindQoute');
+    this.p5loading.update({
+      id: 'FindQoute',
+      clickable: () => {
+        FindExactAct();
+      },
+      forceEnd: FindedForceEnd,
+    }, true);
   }
 
   /** 인용 정보를 삭제함 */
