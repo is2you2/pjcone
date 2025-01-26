@@ -20,6 +20,8 @@ enum TodoFilterCategory {
   Color = 3,
   /** 생성자에 따라 필터링 */
   Creator = 4,
+  /** 사용자 입력 문자열로 필터링 */
+  InputText = 5,
 }
 
 @Component({
@@ -69,7 +71,7 @@ export class MainPage implements OnInit {
   AllCategories = {}
   /** 필터 종류 변경하기 */
   SwitchTargetFilter(force?: number) {
-    this.TargetFilterName = force ?? ((this.TargetFilterName + 1) % 5);
+    this.TargetFilterName = force ?? ((this.TargetFilterName + 1) % 6);
     switch (this.TargetFilterName) {
       case TodoFilterCategory.None:
         this.TargetFilterDisplayName = 'FilterCat_0';
@@ -86,6 +88,8 @@ export class MainPage implements OnInit {
       case TodoFilterCategory.Creator:
         this.TargetFilterDisplayName = 'FilterByCreator';
         break;
+      case TodoFilterCategory.InputText:
+        this.TargetFilterDisplayName = 'AsString';
     }
     this.CurrentFilterValue = null;
     if (this.global.p5FilteringTodos)
@@ -102,6 +106,16 @@ export class MainPage implements OnInit {
   }
   /** 모든 할 일을 완료한 경우 */
   isEmptyTodo = false;
+  /** 필터로부터 입력된 정보받기 */
+  GetFilterInput: Function;
+  /** 입력칸 포커스 해제시 복구 */
+  EnableShortcut() {
+    this.global.BlockMainShortcut = false;
+  }
+  /** 입력칸에 포커스시 단축키 막기 */
+  DisableShortcut() {
+    this.global.BlockMainShortcut = true;
+  }
   CreateTodoManager() {
     setTimeout(() => {
       if (isPlatform != 'DesktopPWA')
@@ -135,6 +149,29 @@ export class MainPage implements OnInit {
       let isPlayingCanvas = this.isPlayingCanvas;
       let CountTodo: Function;
       let ListUpdate: Function;
+      // 텍스트 입력시 행동
+      this.GetFilterInput = (ev: any, name: string) => {
+        switch (name) {
+          // 텍스트로 검색하기 행동
+          case 'InputPlaceHolder':
+            const InputText = ev.target.value;
+            for (let i = 0, j = TodoKeys.length; i < j; i++) {
+              let hasText = false;
+              /** 할 일 정보 */
+              const json = Todos[TodoKeys[i]].json;
+              // 추가 버튼 제외처리
+              if (!json.title) continue;
+              if (json.title.indexOf(InputText) >= 0) hasText = true;
+              if (hasText) {
+                Todos[TodoKeys[i]].isHidden = !hasText;
+                continue;
+              }
+              if (json.description?.indexOf(InputText) >= 0) hasText = true;
+              Todos[TodoKeys[i]].isHidden = !hasText;
+            }
+            break;
+        }
+      };
       p.setup = async () => {
         let canvas = p.createCanvas(todo_div.clientWidth, todo_div.clientHeight);
         canvas.parent(todo_div);
@@ -377,6 +414,12 @@ export class MainPage implements OnInit {
           color: '#ba987688',
           value: 'other',
         }];
+        this.AllCategories[TodoFilterCategory.InputText] = [{
+          name: 'InputPlaceHolder',
+          color: '#bbbbbb88',
+          type: 'input',
+          value: 'text',
+        }];
         this.global.p5FilteringTodos = FilteringTodos;
       }
       /** 선택된 카테고리 */
@@ -506,6 +549,8 @@ export class MainPage implements OnInit {
                     break;
                 }
             else FilteringTodos(TodoFilterCategory.None);
+            break;
+          case TodoFilterCategory.InputText:
             break;
         }
         p.redraw();
