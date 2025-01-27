@@ -111,7 +111,7 @@ export class VoidDrawPage implements OnInit, OnDestroy {
       forceEnd: null,
     }, true);
     // 다른 페이지에서 진입하는 경우가 있으므로 remove가 분리되어있어야함
-    this.p5loading.remove(this.PageId);
+    this.p5loading.remove('voiddraw');
   }
 
   AddShortCut() {
