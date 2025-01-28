@@ -2739,6 +2739,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         break;
       case 'video':
         try {
+          if (this.ContentFailedLoad) throw '비디오 불러오지 못함';
           const size = this.CacheMediaObject.size();
           let width: number, height: number;
           if (size.width > size.height) {
