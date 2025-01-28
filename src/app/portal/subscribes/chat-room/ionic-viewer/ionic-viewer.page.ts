@@ -126,8 +126,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   channelId: string;
   useP5Navigator = true;
   MessageInfo: any;
-  /** 내가 보낸 첨부파일인지 검토 */
-  IsMyMessage = false;
   Relevances: any[];
   RelevanceIndex = 0;
   /** 상단 숫자를 누르면 첨부파일 번호를 입력할 수 있음, true 일 때 보여짐 */
@@ -291,11 +289,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.isOfficial = this.navParams.isOfficial;
     this.target = this.navParams.target;
     this.channelId = this.navParams.channel_id;
-    try {
-      this.IsMyMessage = this.isOfficial == 'local' || this.MessageInfo.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id;
-    } catch (e) {
-      this.IsMyMessage = false;
-    }
     this.isQuickLaunchViewer = this.navParams.quick;
     try {
       this.isChannelOnline = this.nakama.channels_orig[this.isOfficial][this.target][this.MessageInfo['channel_id']].info['status'] == 'online';
@@ -375,7 +368,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 채널 채팅을 통해 진입한 경우, 해당 메시지 찾아주기 기능 */
   FindMessage() {
-    if (!(this.IsMyMessage && this.channelId)) return;
+    if (!(this.channelId)) return;
     if (this.global.PageDismissAct[this.navParams.dismiss])
       this.global.PageDismissAct[this.navParams.dismiss]({
         data: {
@@ -408,11 +401,6 @@ export class IonicViewerPage implements OnInit, OnDestroy {
     this.isConvertible = false;
     this.isHTMLViewer = false;
     this.MessageInfo = msg;
-    try {
-      this.IsMyMessage = this.isOfficial == 'local' || this.MessageInfo.sender_id == this.nakama.servers[this.isOfficial][this.target].session.user_id;
-    } catch (e) {
-      this.IsMyMessage = false;
-    }
     this.CurrentViewId = this.MessageInfo.message_id;
     this.FileInfo = this.MessageInfo.content;
     if (this.PageWillDestroy) return;
@@ -1680,7 +1668,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
           FileMenu.push(() => this.RemoveFile());
         if (!this.IsLocalFileLoaded && !this.NeedDownloadFile && !this.ContentFailedLoad && this.FileInfo.path && !this.isQuickLaunchViewer)
           FileMenu.push(() => this.DownloadFileFromURL());
-        if (this.IsMyMessage && this.FileInfo.url && !this.isQuickLaunchViewer)
+        if (this.FileInfo.url && !this.isQuickLaunchViewer)
           FileMenu.push(() => this.CopyQuickViewer());
         if (this.FileInfo.viewer == 'disabled')
           FileMenu.push(() => this.ForceReadAsText());
@@ -2580,7 +2568,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
    * 이 링크를 사용하면 즉시 파일 뷰어로 해당 파일을 열 수 있음
    */
   async CopyQuickViewer() {
-    if (!(this.IsMyMessage && this.FileInfo['url'] && !this.isQuickLaunchViewer)) return;
+    if (!(this.FileInfo['url'] && !this.isQuickLaunchViewer)) return;
     this.FileMenu.dismiss();
     this.ContentChanging = true;
     this.useP5Navigator = false;
@@ -2864,7 +2852,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 파일이 URL로 구성되어있는 경우 URL 주소를 복사함 */
   CopyURL() {
-    if (this.FileInfo.url && this.IsMyMessage)
+    if (this.FileInfo.url)
       this.copy_url(this.FileInfo.url.replace(/ /g, '%20'))
   }
 

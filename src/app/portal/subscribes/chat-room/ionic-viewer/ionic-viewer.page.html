@@ -100,7 +100,7 @@
                       <ion-label>{{lang.text['ContentViewer']['ContentInfo']}}</ion-label>
                     </ion-item>
                   </div>
-                  <div *ngIf="IsMyMessage && channelId">
+                  <div *ngIf="channelId">
                     <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">Shift + F</div>
                     <ion-item button (click)="FindMessage()">
                       <ion-label>{{lang.text['ContentViewer']['FindMessage']}}</ion-label>
@@ -117,7 +117,7 @@
                       <ion-label>{{lang.text['ContentViewer']['DownloadToLocal']}}</ion-label>
                     </ion-item>
                   </div>
-                  <div *ngIf="IsMyMessage && FileInfo['url'] && !isQuickLaunchViewer">
+                  <div *ngIf="FileInfo['url'] && !isQuickLaunchViewer">
                     <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">
                       {{lang.text['ContentViewer']['QuickNewWindow']}}</div>
                     <ion-item button (click)="CopyQuickViewer()" (contextmenu)="OpenNewWindow()">
@@ -189,7 +189,7 @@
             lang.text['Profile']['noname_user']}}</ion-label>
         </ion-item>
         <div>
-          <div *ngIf="global.ShowHint && FileInfo.url && IsMyMessage" class="shortcut_hint">
+          <div *ngIf="global.ShowHint && FileInfo.url" class="shortcut_hint">
             {{lang.text['ContentViewer']['ClickToCopy']}}</div>
           <ion-item *ngIf="content_creator.various" button (click)="CopyURL()">
             <ion-label style="display: contents">{{lang.text['ContentInfo']['SourceFrom']}}</ion-label>
