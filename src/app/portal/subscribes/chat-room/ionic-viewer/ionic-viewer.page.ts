@@ -626,7 +626,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** URL 링크인 경우 파일을 로컬에 다운받기 */
   async DownloadFileFromURL(force = false) {
-    if (!force && !(!this.IsLocalFileLoaded && !this.NeedDownloadFile && this.FileInfo['path'] && !this.isQuickLaunchViewer)) return;
+    if (!force && !(!this.IsLocalFileLoaded && !this.NeedDownloadFile && !this.ContentFailedLoad && this.FileInfo.path && !this.isQuickLaunchViewer)) return;
     const actId = 'ionicviewer';
     await this.p5loading.update({
       id: actId,
@@ -1663,25 +1663,27 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         }
         if (this.FileInfo.viewer == 'godot') return;
         const FileMenu: Function[] = [];
-        if (!this.NeedDownloadFile && this.showEditText && this.showEdit)
+        if (!this.NeedDownloadFile && !this.ContentFailedLoad && this.showEditText && this.showEdit)
           FileMenu.push(() => this.open_text_editor());
-        if (!this.NeedDownloadFile && this.FileInfo['viewer'] != 'audio' && this.showEdit)
+        if (!this.NeedDownloadFile && !this.ContentFailedLoad && !this.isHTMLViewer && this.FileInfo['viewer'] != 'audio' && this.showEdit)
           FileMenu.push(() => this.modify_image());
-        if (!this.NeedDownloadFile && !this.isQuickLaunchViewer)
+        if (!this.NeedDownloadFile && !this.ContentFailedLoad && !this.isQuickLaunchViewer)
           FileMenu.push(() => this.ShareContent());
-        if (!this.NeedDownloadFile)
+        if (!this.NeedDownloadFile && !this.ContentFailedLoad)
           FileMenu.push(() => this.download_file());
-        if (!this.NeedDownloadFile && this.FileInfo['viewer'] == 'image')
+        if (!this.NeedDownloadFile && !this.ContentFailedLoad && this.FileInfo['viewer'] == 'image')
           FileMenu.push(() => this.CopyImageToClipboard());
-        if (!this.NeedDownloadFile)
+        if (!this.NeedDownloadFile && !this.ContentFailedLoad)
           FileMenu.push(() => this.ToggleFocusMode());
         FileMenu.push(() => this.open_bottom_modal());
         if (this.IsLocalFileLoaded && this.FileInfo['url'])
           FileMenu.push(() => this.RemoveFile());
-        if (!this.IsLocalFileLoaded && this.FileInfo.path && !this.isQuickLaunchViewer)
+        if (!this.IsLocalFileLoaded && !this.NeedDownloadFile && !this.ContentFailedLoad && this.FileInfo.path && !this.isQuickLaunchViewer)
           FileMenu.push(() => this.DownloadFileFromURL());
-        if (this.FileInfo.url && !this.isQuickLaunchViewer)
+        if (this.IsMyMessage && this.FileInfo.url && !this.isQuickLaunchViewer)
           FileMenu.push(() => this.CopyQuickViewer());
+        if (this.FileInfo.viewer == 'disabled')
+          FileMenu.push(() => this.ForceReadAsText());
         switch (ev['code']) {
           case 'Enter':
             if (!this.CanInputValue) {
@@ -2342,7 +2344,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 내장 그림판을 이용하여 그림 편집하기 */
   async modify_image() {
-    if (!(!this.NeedDownloadFile && !this.isHTMLViewer && this.FileInfo['viewer'] != 'audio' && this.showEdit)) return;
+    if (!(!this.NeedDownloadFile && !this.ContentFailedLoad && !this.isHTMLViewer && this.FileInfo['viewer'] != 'audio' && this.showEdit)) return;
     const actId = 'voiddraw';
     switch (this.FileInfo['viewer']) {
       case 'image': { // 이미지인 경우, url 일 때
@@ -2509,7 +2511,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 클립보드에 이미지 복사하기 */
   async CopyImageToClipboard() {
-    if (!(!this.NeedDownloadFile && this.FileInfo['viewer'] == 'image')) return;
+    if (!(!this.NeedDownloadFile && !this.ContentFailedLoad && this.FileInfo['viewer'] == 'image')) return;
     let blob: Blob;
     try {
       if (this.FileInfo.url) {
@@ -2527,7 +2529,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
 
   /** 집중 모드 켜기, 메뉴들이 전부 숨겨집니다 */
   ToggleFocusMode() {
-    if (this.NeedDownloadFile) return;
+    if (!(!this.NeedDownloadFile && !this.ContentFailedLoad)) return;
     this.FileMenu.dismiss();
     this.global.ToggleFullScreen();
     this.p5canvas?.windowResized?.();
@@ -2539,7 +2541,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   forceWrite = false;
   /** url 파일로부터 파일 다운받기 */
   async download_file() {
-    if (this.NeedDownloadFile) return;
+    if (!(!this.NeedDownloadFile && !this.ContentFailedLoad)) return;
     const actId = `download_file_${Date.now()}`;
     await this.p5loading.update({
       id: actId,
@@ -2610,7 +2612,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
   /** 이 페이지에 있는지를 검토하는 녀석으로 사용중, p5 단축키 기능 제한용 */
   InnerChangedPage = false;
   ShareContent() {
-    if (this.NeedDownloadFile || this.isQuickLaunchViewer) return;
+    if (!(!this.NeedDownloadFile && !this.ContentFailedLoad && !this.isQuickLaunchViewer)) return;
     this.FileMenu.dismiss();
     let channels = this.nakama.rearrange_channels();
     for (let i = channels.length - 1; i >= 0; i--) {
@@ -2803,6 +2805,7 @@ export class IonicViewerPage implements OnInit, OnDestroy {
         break;
       case 'blender':
         try {
+          if (this.ContentFailedLoad) throw 'blender 파일 불러오지 못함';
           if (!this.FileInfo.alt_path && !this.FileInfo.path) throw '경로 없는 파일';
           let base64 = this.global.BlenderCanvasInside['elt']['toDataURL']("image/png").replace("image/png", "image/octet-stream");
           new p5((p: p5) => {

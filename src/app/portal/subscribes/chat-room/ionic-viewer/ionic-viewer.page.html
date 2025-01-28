@@ -63,31 +63,32 @@
                       <ion-label>{{lang.text['ContentViewer']['EditText']}}</ion-label>
                     </ion-item>
                   </div>
-                  <div *ngIf="!NeedDownloadFile && !isHTMLViewer && FileInfo['viewer'] != 'audio' && showEdit">
+                  <div
+                    *ngIf="!NeedDownloadFile && !ContentFailedLoad && !isHTMLViewer && FileInfo['viewer'] != 'audio' && showEdit">
                     <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">Shift + E</div>
                     <ion-item button (click)="modify_image()">
                       <ion-label>{{lang.text['ContentViewer']['Edit']}}</ion-label>
                     </ion-item>
                   </div>
-                  <div *ngIf="!NeedDownloadFile && !isQuickLaunchViewer">
+                  <div *ngIf="!NeedDownloadFile && !ContentFailedLoad && !isQuickLaunchViewer">
                     <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">Shift + S</div>
                     <ion-item button (click)="ShareContent()">
                       <ion-label>{{lang.text['ContentViewer']['ShareContent']}}</ion-label>
                     </ion-item>
                   </div>
-                  <div *ngIf="!NeedDownloadFile">
+                  <div *ngIf="!NeedDownloadFile && !ContentFailedLoad">
                     <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">Shift + D</div>
                     <ion-item button (click)="download_file()">
                       <ion-label>{{lang.text['ContentViewer']['Download']}}</ion-label>
                     </ion-item>
                   </div>
-                  <div *ngIf="!NeedDownloadFile && FileInfo['viewer'] == 'image'">
+                  <div *ngIf="!NeedDownloadFile && !ContentFailedLoad && FileInfo['viewer'] == 'image'">
                     <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">Shift + C</div>
                     <ion-item button (click)="CopyImageToClipboard()">
                       <ion-label>{{lang.text['ContentViewer']['CopyToClipboard']}}</ion-label>
                     </ion-item>
                   </div>
-                  <div *ngIf="!NeedDownloadFile">
+                  <div *ngIf="!NeedDownloadFile && !ContentFailedLoad">
                     <div *ngIf="global.ShowHint && !isHTMLViewer" class="shortcut_hint">Shift + W</div>
                     <ion-item button (click)="ToggleFocusMode()">
                       <ion-label>{{lang.text['ContentViewer']['FocusMode']}}</ion-label>
@@ -110,7 +111,8 @@
                       <ion-label>{{lang.text['ContentViewer']['RemoveFile']}}</ion-label>
                     </ion-item>
                   </div>
-                  <div *ngIf="!IsLocalFileLoaded && !NeedDownloadFile && FileInfo['path'] && !isQuickLaunchViewer">
+                  <div
+                    *ngIf="!IsLocalFileLoaded && !NeedDownloadFile && !ContentFailedLoad && FileInfo['path'] && !isQuickLaunchViewer">
                     <ion-item button (click)="DownloadFileFromURL()">
                       <ion-label>{{lang.text['ContentViewer']['DownloadToLocal']}}</ion-label>
                     </ion-item>
@@ -123,7 +125,7 @@
                     </ion-item>
                   </div>
                   <div *ngIf="FileInfo.viewer == 'disabled'">
-                    <ion-item button (click)="ForceReadAsText()" (contextmenu)="OpenNewWindow()">
+                    <ion-item button (click)="ForceReadAsText()">
                       <ion-label>{{lang.text['ContentViewer']['ForceReadAsText']}}</ion-label>
                     </ion-item>
                   </div>

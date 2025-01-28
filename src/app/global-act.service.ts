@@ -1377,6 +1377,7 @@ export class GlobalActService {
             blob = await from_url.blob();
           } catch (e) {
             console.log('뷰어에서 파일 불러오기 실패: ', e);
+            this.BlenderLoadingCtrl.dismiss();
             OnFailedToLoad();
           }
         }
